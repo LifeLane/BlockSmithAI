@@ -2,6 +2,7 @@
 "use server";
 import { generateTradingStrategy as genCoreStrategy, type GenerateTradingStrategyInput, type GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
 import { generateSarcasticDisclaimer, type SarcasticDisclaimerInput } from '@/ai/flows/generate-sarcastic-disclaimer';
+import { blocksmithChat, type BlocksmithChatInput, type BlocksmithChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
 
 export interface LiveMarketData {
   symbol: string;
@@ -28,6 +29,10 @@ export interface TickerSymbolData {
   lastPrice: string;
   priceChangePercent: string;
 }
+
+// Exporting ChatMessage type for use in ChatbotPopup
+export type ChatMessage = AIChatMessage;
+
 
 export async function fetchAllTradingSymbolsAction(): Promise<FormattedSymbol[] | FetchDataError> {
   const apiKey = process.env.BINANCE_API_KEY;
@@ -202,3 +207,29 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
     return { error: errorMessage };
   }
 }
+
+
+export async function blocksmithChatAction(input: BlocksmithChatInput): Promise<BlocksmithChatOutput | { error: string }> {
+  try {
+    if (!input.currentUserInput || input.currentUserInput.trim() === "") {
+      return { error: "Come on, at least type something. I'm not a mind reader... yet." };
+    }
+    const result = await blocksmithChat(input);
+    return result;
+  } catch (error: any) {
+    let errorMessage = "BSAI is currently contemplating the mysteries of the universe (or just erroring out).";
+     if (error.message) {
+        if ((error.message.includes("[500]") || error.message.includes("[503]")) && error.message.includes("GoogleGenerativeAI")) {
+            const statusCode = error.message.includes("[500]") ? "500 Internal Server Error" : "503 Service Unavailable";
+            errorMessage = `BSAI's connection to the digital ether (Gemini) has a glitch: ${statusCode}. Probably temporary. Try prodding it again.`;
+        } else if (error.message.includes("Text not available. Response was blocked") || error.message.includes("SAFETY")) {
+            errorMessage = "BSAI tried to say something so profound (or so naughty) that the safety filters zapped it. Try a different angle."
+        } else {
+            errorMessage = `BSAI's thought process hit a snag: ${error.message}`;
+        }
+    }
+    // More detailed error logging as before can be added here if needed
+    return { error: errorMessage };
+  }
+}
+

@@ -9,6 +9,8 @@ import ControlsTabs from '@/components/blocksmith-ai/ControlsTabs';
 import StrategyExplanationSection from '@/components/blocksmith-ai/StrategyExplanationSection';
 import LivePriceTicker from '@/components/blocksmith-ai/LivePriceTicker';
 import WelcomeScreen from '@/components/blocksmith-ai/WelcomeScreen';
+import ChatbotIcon from '@/components/blocksmith-ai/ChatbotIcon';
+import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
 import { Button } from '@/components/ui/button';
 import { 
   generateTradingStrategyAction, 
@@ -46,6 +48,8 @@ export default function BlockSmithAIPage() {
   const [availableSymbols, setAvailableSymbols] = useState<FormattedSymbol[]>(DEFAULT_SYMBOLS);
   const [isLoadingSymbols, setIsLoadingSymbols] = useState<boolean>(true);
   const [currentYear, setCurrentYear] = useState<number | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
+
 
   const { toast } = useToast();
 
@@ -59,7 +63,6 @@ export default function BlockSmithAIPage() {
     setCurrentYear(new Date().getFullYear());
   }, []);
 
-  // GSAP animation for main content area after welcome screen
   useEffect(() => {
     if (!showWelcomeScreen && mainContentRef.current) {
       const elementsToAnimate = [
@@ -225,6 +228,10 @@ export default function BlockSmithAIPage() {
     setShowWelcomeScreen(false);
   };
 
+  const handleToggleChat = () => {
+    setIsChatOpen(prev => !prev);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <div ref={appHeaderRef}> 
@@ -294,6 +301,8 @@ export default function BlockSmithAIPage() {
               </div>
             </div>
           </main>
+          <ChatbotIcon onClick={handleToggleChat} />
+          <ChatbotPopup isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
         </>
       )}
       <footer className="text-center py-4 mt-auto text-sm text-muted-foreground border-t border-border/50">
@@ -302,3 +311,4 @@ export default function BlockSmithAIPage() {
     </div>
   );
 }
+
