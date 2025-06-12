@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -18,6 +19,8 @@ export default function BlockSmithAIPage() {
   const [interval, setInterval] = useState<string>('15'); // TradingView format: "15" for 15m
   const [selectedIndicators, setSelectedIndicators] = useState<string[]>(['RSI', 'EMA']);
   const [riskLevel, setRiskLevel] = useState<string>('Medium');
+  const [apiKey, setApiKey] = useState<string>('');
+  const [apiSecret, setApiSecret] = useState<string>('');
   
   const [aiStrategy, setAiStrategy] = useState<GenerateTradingStrategyOutput | null>(null);
   const [isLoadingStrategy, setIsLoadingStrategy] = useState<boolean>(false);
@@ -31,14 +34,25 @@ export default function BlockSmithAIPage() {
     );
   };
 
+  const handleApiKeysSave = () => {
+    // In a real app, you would securely save these keys to a backend or environment config.
+    // For this prototype, we're just updating local state and showing a toast.
+    toast({
+      title: "API Keys Updated (Locally)",
+      description: "Your API keys have been updated in the current session.",
+    });
+  };
+
   const fetchStrategy = useCallback(async () => {
     setIsLoadingStrategy(true);
     setStrategyError(null);
     setAiStrategy(null);
 
-    const mockMarketData = { // This should ideally come from live API calls
+    // TODO: In the future, use apiKey and apiSecret to fetch real market data from Binance
+    // For now, mockMarketData is still used.
+    const mockMarketData = { 
       symbol: `${symbol.replace('USDT', '')}/USDT`,
-      price: "67,215.40", // Example, should be dynamic
+      price: "67,215.40", 
       "24h_change": "+1.8%",
       volume_24h: "2488.243 BTC",
       market_cap: "$1.3T",
@@ -48,10 +62,10 @@ export default function BlockSmithAIPage() {
 
     const input: GenerateTradingStrategyInput = {
       symbol,
-      interval: `${interval}m`, // AI flow might expect "15m" not "15"
+      interval: `${interval}m`, 
       indicators: selectedIndicators,
       riskLevel,
-      marketData: JSON.stringify(mockMarketData), // Pass as stringified JSON
+      marketData: JSON.stringify(mockMarketData), 
     };
 
     const result = await generateTradingStrategyAction(input);
@@ -71,13 +85,7 @@ export default function BlockSmithAIPage() {
       });
     }
     setIsLoadingStrategy(false);
-  }, [symbol, interval, selectedIndicators, riskLevel, toast]);
-
-  // Automatically fetch strategy on initial load or when core params change.
-  // For a real app, you might want a button to trigger this to avoid too many API calls.
-  // useEffect(() => {
-  //  fetchStrategy();
-  // }, [fetchStrategy]); // Dependency array includes fetchStrategy which itself depends on other states
+  }, [symbol, interval, selectedIndicators, riskLevel, toast, apiKey, apiSecret]); // Added apiKey, apiSecret to dependencies
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -101,6 +109,11 @@ export default function BlockSmithAIPage() {
               onIndicatorChange={handleIndicatorChange}
               riskLevel={riskLevel}
               onRiskChange={setRiskLevel}
+              apiKey={apiKey}
+              onApiKeyChange={setApiKey}
+              apiSecret={apiSecret}
+              onApiSecretChange={setApiSecret}
+              onApiKeysSave={handleApiKeysSave}
             />
             <MarketDataDisplay symbol={symbol} />
             
