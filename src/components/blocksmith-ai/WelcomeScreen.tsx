@@ -26,6 +26,7 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
   const [dailyGreeting, setDailyGreeting] = useState<string>("");
   const [isLoadingGreeting, setIsLoadingGreeting] = useState<boolean>(true);
   const [currentFomoIndex, setCurrentFomoIndex] = useState<number>(0);
+  const [hasAnimatedIn, setHasAnimatedIn] = useState<boolean>(false);
 
   const welcomeRef = useRef<HTMLDivElement>(null);
   const greetingCardRef = useRef<HTMLDivElement>(null);
@@ -57,9 +58,7 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
   }, []);
 
   useEffect(() => {
-    if (welcomeRef.current) {
-      gsap.set(welcomeRef.current, { autoAlpha: 1 }); // Ensure parent is visible
-      
+    if (welcomeRef.current && !isLoadingGreeting && !hasAnimatedIn) {
       const elementsToAnimate = [
         greetingCardRef.current,
         benefitsCardRef.current,
@@ -74,14 +73,21 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
           duration: 0.7,
           stagger: 0.2,
           ease: 'power3.out',
-          delay: 0.2 // Slight delay for overall screen appearance
+          delay: 0.2, 
+          onComplete: () => {
+            setHasAnimatedIn(true);
+          }
         });
+      } else if (elementsToAnimate.length === 0) {
+        // If for some reason refs aren't ready but conditions are met,
+        // still mark as animated to avoid retries.
+        setHasAnimatedIn(true);
       }
     }
-  }, [isLoadingGreeting]); // Re-run animation when greeting is loaded to ensure proper sequencing
+  }, [isLoadingGreeting, hasAnimatedIn, welcomeRef, greetingCardRef, benefitsCardRef, storyCardRef, buttonRef]);
 
   return (
-    <div ref={welcomeRef} className="flex flex-col items-center justify-center text-center p-2 md:p-4 max-w-2xl mx-auto space-y-6 md:space-y-8" style={{opacity: 0}}>
+    <div ref={welcomeRef} className="flex flex-col items-center justify-center text-center p-2 md:p-4 max-w-2xl mx-auto space-y-6 md:space-y-8">
       
       {/* Daily Greeting Section */}
       <Card ref={greetingCardRef} className="w-full shadow-xl border-primary/40 bg-card/80 backdrop-blur-sm hover:border-primary transition-all duration-300 ease-in-out hover:shadow-[0_0_20px_3px_hsl(var(--primary)/0.5)]">
