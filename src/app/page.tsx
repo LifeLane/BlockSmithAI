@@ -9,11 +9,23 @@ import ControlsTabs from '@/components/blocksmith-ai/ControlsTabs';
 import StrategyExplanationSection from '@/components/blocksmith-ai/StrategyExplanationSection';
 import LivePriceTicker from '@/components/blocksmith-ai/LivePriceTicker';
 import { Button } from '@/components/ui/button';
-import { generateTradingStrategyAction, fetchMarketDataAction, type LiveMarketData } from './actions';
+import { 
+  generateTradingStrategyAction, 
+  fetchMarketDataAction, 
+  fetchAllTradingSymbolsAction,
+  type LiveMarketData,
+  type FormattedSymbol
+} from './actions';
 import type { GenerateTradingStrategyOutput, GenerateTradingStrategyInput } from '@/ai/flows/generate-trading-strategy';
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from 'lucide-react';
 import { gsap } from 'gsap';
+
+const DEFAULT_SYMBOLS: FormattedSymbol[] = [
+  { value: "BTCUSDT", label: "BTC/USDT" },
+  { value: "ETHUSDT", label: "ETH/USDT" },
+  { value: "SOLUSDT", label: "SOL/USDT" },
+];
 
 export default function BlockSmithAIPage() {
   const [symbol, setSymbol] = useState<string>('BTCUSDT');
@@ -29,16 +41,16 @@ export default function BlockSmithAIPage() {
   const [isLoadingMarketData, setIsLoadingMarketData] = useState<boolean>(false);
   const [marketDataError, setMarketDataError] = useState<string | null>(null);
 
+  const [availableSymbols, setAvailableSymbols] = useState<FormattedSymbol[]>(DEFAULT_SYMBOLS);
+  const [isLoadingSymbols, setIsLoadingSymbols] = useState<boolean>(true);
+
   const { toast } = useToast();
 
-  const appHeaderRef = useRef<HTMLDivElement>(null); // Ref for the header container div
+  const appHeaderRef = useRef<HTMLDivElement>(null); 
   const controlPanelRef = useRef<HTMLDivElement>(null); 
   const mainDisplayAreaRef = useRef<HTMLDivElement>(null);
 
-
   useEffect(() => {
-    // AppHeader now handles its own animation.
-    // Animate control panel and main display area.
     const elementsToAnimate = [
       controlPanelRef.current,
       mainDisplayAreaRef.current,
@@ -50,11 +62,30 @@ export default function BlockSmithAIPage() {
         y: 50,
         duration: 0.8,
         stagger: 0.25, 
-        delay: 0.5, // Delay to allow header animation to start
+        delay: 0.5, 
         ease: 'power3.out',
       });
     }
   }, []);
+
+  useEffect(() => {
+    const loadSymbols = async () => {
+      setIsLoadingSymbols(true);
+      const result = await fetchAllTradingSymbolsAction();
+      if ('error' in result) {
+        toast({
+          title: "Failed to Load Symbols",
+          description: result.error + " Using default list.",
+          variant: "destructive",
+        });
+        setAvailableSymbols(DEFAULT_SYMBOLS); // Fallback to default
+      } else {
+        setAvailableSymbols(result);
+      }
+      setIsLoadingSymbols(false);
+    };
+    loadSymbols();
+  }, [toast]);
 
   const handleIndicatorChange = (indicator: string, checked: boolean) => {
     setSelectedIndicators((prev) =>
@@ -129,7 +160,6 @@ export default function BlockSmithAIPage() {
         return;
     }
 
-
     if (currentDataToUse) {
         marketDataForAIString = JSON.stringify({
             symbol: currentDataToUse.symbol,
@@ -181,18 +211,20 @@ export default function BlockSmithAIPage() {
 
   return (
     <div className="min-h-screen flex flex-col pb-12 bg-background">
-      <div ref={appHeaderRef}> {/* Wrapper for AppHeader */}
+      <div ref={appHeaderRef}> 
         <AppHeader />
       </div>
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Control Panel Column (Left) */}
+          
           <div className="lg:col-span-1 space-y-6 flex flex-col" ref={controlPanelRef}>
             <SymbolIntervalSelectors
               symbol={symbol}
               onSymbolChange={setSymbol}
               interval={interval}
               onIntervalChange={setInterval}
+              symbols={availableSymbols}
+              isLoadingSymbols={isLoadingSymbols}
             />
             <ControlsTabs
               selectedIndicators={selectedIndicators}
@@ -206,7 +238,7 @@ export default function BlockSmithAIPage() {
             />
             <Button 
               onClick={fetchStrategy} 
-              disabled={isLoadingStrategy || isLoadingMarketData || !!marketDataError} 
+              disabled={isLoadingStrategy || isLoadingMarketData || !!marketDataError || isLoadingSymbols} 
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 text-base shadow-lg hover:shadow-primary/50 transition-shadow"
             >
               {isLoadingStrategy ? (
@@ -223,7 +255,7 @@ export default function BlockSmithAIPage() {
             )}
           </div>
 
-          {/* Main Display Area (Right) */}
+          
           <div className="lg:col-span-2 space-y-8" ref={mainDisplayAreaRef}>
             <div className="bg-card p-1 rounded-lg shadow-xl">
               <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />

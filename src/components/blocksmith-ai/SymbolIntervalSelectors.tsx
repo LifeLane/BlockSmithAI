@@ -17,55 +17,18 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Label } from "@/components/ui/label";
-import { Check, ChevronsUpDown, Landmark } from "lucide-react"
+import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
+import type { FormattedSymbol } from '@/app/actions';
 
 interface SymbolIntervalSelectorsProps {
   symbol: string;
   onSymbolChange: (symbol: string) => void;
   interval: string;
   onIntervalChange: (interval: string) => void;
+  symbols: FormattedSymbol[];
+  isLoadingSymbols: boolean;
 }
-
-const SYMBOLS = [
-  // Major USDT pairs
-  { value: "BTCUSDT", label: "BTC/USDT" },
-  { value: "ETHUSDT", label: "ETH/USDT" },
-  { value: "SOLUSDT", label: "SOL/USDT" },
-  { value: "BNBUSDT", label: "BNB/USDT" },
-  { value: "XRPUSDT", label: "XRP/USDT" },
-  { value: "ADAUSDT", label: "ADA/USDT" },
-  { value: "DOGEUSDT", label: "DOGE/USDT" },
-  { value: "AVAXUSDT", label: "AVAX/USDT" },
-  { value: "DOTUSDT", label: "DOT/USDT" },
-  { value: "TRXUSDT", label: "TRX/USDT" },
-  { value: "MATICUSDT", label: "MATIC/USDT" },
-  { value: "SHIBUSDT", label: "SHIB/USDT" },
-  { value: "LTCUSDT", label: "LTC/USDT" },
-  { value: "LINKUSDT", label: "LINK/USDT" },
-  { value: "UNIUSDT", label: "UNI/USDT" },
-  { value: "ATOMUSDT", label: "ATOM/USDT" },
-  { value: "ICPUSDT", label: "ICP/USDT" },
-  { value: "ETCUSDT", label: "ETC/USDT" },
-  { value: "XLMUSDT", label: "XLM/USDT" },
-  { value: "BCHUSDT", label: "BCH/USDT" },
-  { value: "FILUSDT", label: "FIL/USDT" },
-  { value: "NEARUSDT", label: "NEAR/USDT" },
-  { value: "APTUSDT", label: "APT/USDT" },
-  { value: "VETUSDT", label: "VET/USDT" },
-  { value: "HBARUSDT", label: "HBAR/USDT" },
-  { value: "OPUSDT", label: "OP/USDT" },
-  { value: "ARB1USDT", label: "ARB/USDT" }, // Note: ARB often uses ARB1USDT on Binance for spot
-  { value: "GRTUSDT", label: "GRT/USDT" },
-  { value: "AAVEUSDT", label: "AAVE/USDT" },
-  { value: "MKRUSDT", label: "MKR/USDT" },
-  // Other common pairs or interesting assets
-  { value: "PEPEUSDT", label: "PEPE/USDT" },
-  { value: "WIFUSDT", label: "WIF/USDT" },
-  { value: "BONKUSDT", label: "BONK/USDT" },
-  { value: "SUIUSDT", label: "SUI/USDT" },
-  { value: "SEIUSDT", label: "SEI/USDT" },
-];
 
 const INTERVALS = [
   { value: "1", label: "1m" },
@@ -79,18 +42,32 @@ const SymbolIntervalSelectors: FunctionComponent<SymbolIntervalSelectorsProps> =
   onSymbolChange,
   interval,
   onIntervalChange,
+  symbols,
+  isLoadingSymbols,
 }) => {
   const [openPopover, setOpenPopover] = useState(false);
-  const [currentSymbolLabel, setCurrentSymbolLabel] = useState(symbol);
+  const [currentSymbolLabel, setCurrentSymbolLabel] = useState('');
 
   useEffect(() => {
-    const selectedSymbolObj = SYMBOLS.find((s) => s.value === symbol);
+    const selectedSymbolObj = symbols.find((s) => s.value === symbol);
     if (selectedSymbolObj) {
       setCurrentSymbolLabel(selectedSymbolObj.label);
-    } else {
-      setCurrentSymbolLabel(symbol); // Fallback if not in list
+    } else if (symbol && symbols.length > 0) {
+      // If current symbol not in dynamic list (e.g. initial default), but list has loaded
+      // try to find it or show its value
+      const defaultSymbolInList = symbols.find(s => s.value === 'BTCUSDT');
+      if (defaultSymbolInList && symbol === 'BTCUSDT') {
+        setCurrentSymbolLabel(defaultSymbolInList.label);
+      } else {
+         setCurrentSymbolLabel(symbol); // Fallback to show the raw symbol value
+      }
+    } else if (symbol && isLoadingSymbols) {
+        setCurrentSymbolLabel("Loading symbols...");
     }
-  }, [symbol]);
+     else {
+      setCurrentSymbolLabel(symbol || "Select symbol...");
+    }
+  }, [symbol, symbols, isLoadingSymbols]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-card rounded-lg shadow-md">
@@ -104,25 +81,33 @@ const SymbolIntervalSelectors: FunctionComponent<SymbolIntervalSelectorsProps> =
               aria-expanded={openPopover}
               className="w-full justify-between text-sm"
               id="symbol-select"
+              disabled={isLoadingSymbols && symbols.length === 0}
             >
               <span className="truncate">
-                {currentSymbolLabel || "Select symbol..."}
+                {currentSymbolLabel || (isLoadingSymbols ? "Loading symbols..." : "Select symbol...")}
               </span>
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
             <Command>
-              <CommandInput placeholder="Search symbol..." />
+              <CommandInput placeholder="Search symbol..." disabled={isLoadingSymbols && symbols.length === 0} />
               <CommandList>
-                <CommandEmpty>No symbol found.</CommandEmpty>
+                {isLoadingSymbols && symbols.length === 0 ? (
+                  <CommandEmpty>Loading available symbols...</CommandEmpty>
+                ) : symbols.length === 0 && !isLoadingSymbols ? (
+                  <CommandEmpty>No symbols found. Check API or try again.</CommandEmpty>
+                ): (
+                  <CommandEmpty>No symbol found.</CommandEmpty>
+                )}
                 <CommandGroup>
-                  {SYMBOLS.map((s) => (
+                  {symbols.map((s) => (
                     <CommandItem
                       key={s.value}
-                      value={s.value}
+                      value={s.label} // Search by label
                       onSelect={(currentValue) => {
-                        const selected = SYMBOLS.find(item => item.value.toLowerCase() === currentValue.toLowerCase());
+                        // Find by label, then call onSymbolChange with value
+                        const selected = symbols.find(item => item.label.toLowerCase() === currentValue.toLowerCase());
                         if (selected) {
                           onSymbolChange(selected.value);
                           setCurrentSymbolLabel(selected.label);
