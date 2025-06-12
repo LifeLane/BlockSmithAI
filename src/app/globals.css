@@ -9,32 +9,32 @@ body {
 @layer base {
   :root {
     --background: 0 0% 13%; /* Dark Gray #222222 */
-    --foreground: 0 0% 98%; /* Light text for readability */
+    --foreground: 90 30% 80%; /* Very Light Greenish Gray for main text */
 
     --card: 0 0% 10%; /* Slightly darker for cards */
-    --card-foreground: 0 0% 98%;
+    --card-foreground: var(--foreground); /* Card text uses main foreground color */
 
     --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 98%;
+    --popover-foreground: var(--foreground); /* Popover text uses main foreground color */
 
-    --primary: 181 100% 74%; /* Electric Blue #7DF9FF */
-    --primary-foreground: 0 0% 7%; /* Dark text on primary */
+    --primary: 30 100% 60%; /* Saffron #FF9933 */
+    --primary-foreground: 30 100% 10%; /* Dark Brown/Black for text on Saffron */
 
     --secondary: 0 0% 20%; /* Lighter gray for secondary elements */
-    --secondary-foreground: 0 0% 90%;
+    --secondary-foreground: 90 25% 70%; /* Slightly darker/muted version of main foreground green */
 
     --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 60%; /* Gray for muted text */
+    --muted-foreground: 90 20% 55%; /* Muted green for less prominent text */
 
-    --accent: 330 100% 71%; /* Bright Pink #FF69B4 */
-    --accent-foreground: 0 0% 7%; /* Dark text on accent */
+    --accent: 51 100% 50%; /* Gold/Yellow #FFD700 */
+    --accent-foreground: 51 100% 10%; /* Dark Brown/Black for text on Yellow */
 
     --destructive: 0 70% 55%; /* A suitable red for destructive actions */
     --destructive-foreground: 0 0% 98%;
 
     --border: 0 0% 25%; /* Subtle borders */
     --input: 0 0% 20%; /* Input background */
-    --ring: 181 100% 60%; /* Ring color (Electric Blue, slightly darker for better visibility) */
+    --ring: 30 95% 55%; /* Ring color (Saffron, slightly desaturated for better visibility as a ring) */
     
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
@@ -43,15 +43,15 @@ body {
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
     
-    /* Default sidebar variables from scaffold, adjusted for dark theme */
+    /* Sidebar variables adjusted for new theme */
     --sidebar-background: 0 0% 10%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 181 100% 74%;
-    --sidebar-primary-foreground: 0 0% 7%;
-    --sidebar-accent: 0 0% 20%;
-    --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 0 0% 25%;
-    --sidebar-ring: 181 100% 60%;
+    --sidebar-foreground: var(--foreground);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: var(--secondary); /* Using secondary for sidebar accents to avoid too much bright yellow */
+    --sidebar-accent-foreground: var(--secondary-foreground);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--ring);
   }
 }
 
