@@ -1,6 +1,7 @@
 
 "use server";
-import { generateTradingStrategy as genStrategy, type GenerateTradingStrategyInput, type GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
+import { generateTradingStrategy as genCoreStrategy, type GenerateTradingStrategyInput, type GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
+import { generateSarcasticDisclaimer, type SarcasticDisclaimerInput } from '@/ai/flows/generate-sarcastic-disclaimer';
 
 export interface LiveMarketData {
   symbol: string;
@@ -19,11 +20,11 @@ interface FetchMarketDataError {
 
 export async function fetchMarketDataAction(params: { symbol: string }): Promise<LiveMarketData | FetchMarketDataError> {
   const { symbol } = params;
-  console.log('Attempting to read BINANCE_API_KEY from .env. Value currently loaded by server:', process.env.BINANCE_API_KEY);
+  // console.log('Attempting to read BINANCE_API_KEY from .env. Value currently loaded by server:', process.env.BINANCE_API_KEY);
   const apiKey = process.env.BINANCE_API_KEY;
 
   if (!apiKey || apiKey === "YOUR_BINANCE_API_KEY_REPLACE_ME") {
-    console.error('Binance API Key check failed. Loaded apiKey was:', apiKey);
+    // console.error('Binance API Key check failed. Loaded apiKey was:', apiKey);
     return { error: "Binance API Key is not configured on the server. Please set BINANCE_API_KEY in your .env file." };
   }
 
@@ -74,26 +75,43 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
         return {error: "Market data is missing or invalid. Cannot generate strategy."}
     }
 
-    const result = await genStrategy(input);
-    return result;
+    // Generate the core strategy (without disclaimer)
+    const coreStrategyResult = await genCoreStrategy(input);
+
+    // Generate the sarcastic disclaimer
+    const disclaimerInput: SarcasticDisclaimerInput = { riskLevel: input.riskLevel };
+    const disclaimerResult = await generateSarcasticDisclaimer(disclaimerInput);
+
+    // Combine the core strategy with the disclaimer
+    const finalResult: GenerateTradingStrategyOutput = {
+      ...coreStrategyResult,
+      disclaimer: disclaimerResult.disclaimer,
+    };
+    
+    return finalResult;
+
   } catch (error: any) {
     console.error("Error in generateTradingStrategyAction:", error);
     let errorMessage = "Failed to generate trading strategy. Please check server logs or try again.";
     
-    // Attempt to get a more specific message from the error object
     if (error.message) {
-      errorMessage = `Strategy generation failed: ${error.message}`;
+      if (error.message.includes("[500]") && error.message.includes("GoogleGenerativeAI")) {
+        errorMessage = "The AI model (Gemini) reported an internal server error (500). This is likely a temporary issue on Google's side. Please try again in a few moments. If the problem persists, the model might be having trouble with the request complexity or current load.";
+      } else {
+        errorMessage = `Strategy generation failed: ${error.message}`;
+      }
     }
-    // Genkit errors might have a 'details' or other properties for more context
+    
     if (error.details) {
          console.error("Error details:", error.details);
          errorMessage += ` Details: ${typeof error.details === 'object' ? JSON.stringify(error.details) : error.details}`;
     } else if (error.cause) {
         console.error("Error cause:", error.cause);
-        errorMessage += ` Cause: ${typeof error.cause === 'object' ? JSON.stringify(error.cause) : error.cause}`;
+        const causeDetails = typeof error.cause === 'object' ? JSON.stringify(error.cause, Object.getOwnPropertyNames(error.cause)) : error.cause;
+        errorMessage += ` Cause: ${causeDetails}`;
     }
-    // Log the full error structure if it's complex
-    if (typeof error === 'object' && error !== null) {
+    
+    if (typeof error === 'object' && error !== null && !error.details && !error.cause) {
         console.error("Full error object:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
     }
     return { error: errorMessage };

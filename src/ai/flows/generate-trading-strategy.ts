@@ -4,9 +4,9 @@
 /**
  * @fileOverview A trading strategy generator AI agent.
  *
- * - generateTradingStrategy - A function that handles the generation of trading strategies.
+ * - generateTradingStrategy - A function that handles the generation of trading strategies. (Note: The disclaimer is added by the calling action).
  * - GenerateTradingStrategyInput - The input type for the generateTradingStrategy function.
- * - GenerateTradingStrategyOutput - The return type for the generateTradingStrategy function.
+ * - GenerateTradingStrategyOutput - The return type for the generateTradingStrategy function (includes disclaimer).
  */
 
 import {ai} from '@/ai/genkit';
@@ -21,6 +21,8 @@ const GenerateTradingStrategyInputSchema = z.object({
 });
 export type GenerateTradingStrategyInput = z.infer<typeof GenerateTradingStrategyInputSchema>;
 
+// This schema defines the full output including the disclaimer, as expected by the client.
+// The core flow will produce a subset of this.
 const GenerateTradingStrategyOutputSchema = z.object({
   signal: z.string().describe('The trading signal (BUY, SELL, or HOLD).'),
   entry_zone: z.string().describe('The entry zone for the trade.'),
@@ -31,18 +33,28 @@ const GenerateTradingStrategyOutputSchema = z.object({
   gpt_confidence_score: z.string().describe('The GPT confidence score for the strategy (e.g., 0-100%).'),
   sentiment: z.string().describe('A brief sentiment analysis of the market conditions (e.g., Neutral, Bullish, Bearish).'),
   explanation: z.string().describe('A detailed textual explanation of the trading strategy, market assessment, entry/exit points, and risk considerations, incorporating the signal, entry zone, stop loss, and take profit levels.'),
-  disclaimer: z.string().describe('A sarcastic GPT disclaimer.'),
+  disclaimer: z.string().describe('A sarcastic GPT disclaimer.'), // This will be added by the action layer
 });
 export type GenerateTradingStrategyOutput = z.infer<typeof GenerateTradingStrategyOutputSchema>;
 
-export async function generateTradingStrategy(input: GenerateTradingStrategyInput): Promise<GenerateTradingStrategyOutput> {
+// This schema defines what the core LLM call will produce (without disclaimer)
+const GenerateTradingStrategyCoreOutputSchema = GenerateTradingStrategyOutputSchema.omit({ disclaimer: true });
+type GenerateTradingStrategyCoreOutput = z.infer<typeof GenerateTradingStrategyCoreOutputSchema>;
+
+
+// This wrapper function's return type should align with what the action layer will assemble if it were to be called directly.
+// However, the action layer `generateTradingStrategyAction` is the primary consumer.
+export async function generateTradingStrategy(input: GenerateTradingStrategyInput): Promise<GenerateTradingStrategyCoreOutput> {
+  // Note: This function now returns the core output. The disclaimer is added by the action.
+  // If this function were to be used elsewhere and the full 'GenerateTradingStrategyOutput' is needed,
+  // it would also need to call and combine the disclaimer.
   return generateTradingStrategyFlow(input);
 }
 
 const generateTradingStrategyPrompt = ai.definePrompt({
   name: 'generateTradingStrategyPrompt',
   input: {schema: GenerateTradingStrategyInputSchema},
-  output: {schema: GenerateTradingStrategyOutputSchema},
+  output: {schema: GenerateTradingStrategyCoreOutputSchema}, // Core output without disclaimer
   prompt: `You are an AI trading strategy generator. You analyze market data, technical indicators, and user-defined risk levels to generate trading strategies.
 
   Market Data: {{{marketData}}}
@@ -62,15 +74,14 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   - GPT Confidence Score (a numerical percentage of your confidence, 0-100%)
   - A brief sentiment analysis of the market conditions (e.g., Neutral, Bullish, Bearish).
   - A detailed textual explanation of the trading strategy: This explanation should be comprehensive. It must cover the reasoning behind the signal, the rationale for the entry zone, stop loss, and take profit levels. It should also discuss how the selected indicators and market data support this strategy, and address any specific considerations based on the user's risk level.
-  - A sarcastic GPT disclaimer.
-`,
+`, // Removed request for disclaimer here
 });
 
 const generateTradingStrategyFlow = ai.defineFlow(
   {
     name: 'generateTradingStrategyFlow',
     inputSchema: GenerateTradingStrategyInputSchema,
-    outputSchema: GenerateTradingStrategyOutputSchema,
+    outputSchema: GenerateTradingStrategyCoreOutputSchema, // Core output without disclaimer
   },
   async input => {
     const {output} = await generateTradingStrategyPrompt(input);
