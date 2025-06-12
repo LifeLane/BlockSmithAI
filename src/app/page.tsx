@@ -20,7 +20,6 @@ export default function BlockSmithAIPage() {
   const [interval, setInterval] = useState<string>('15');
   const [selectedIndicators, setSelectedIndicators] = useState<string[]>(['RSI', 'EMA']);
   const [riskLevel, setRiskLevel] = useState<string>('Medium');
-  // API key state is removed as it's now backend-managed
   
   const [aiStrategy, setAiStrategy] = useState<GenerateTradingStrategyOutput | null>(null);
   const [isLoadingStrategy, setIsLoadingStrategy] = useState<boolean>(false);
@@ -64,11 +63,9 @@ export default function BlockSmithAIPage() {
     );
   };
 
-  const fetchAndSetMarketData = useCallback(async (currentSymbol: string) => {
+  const fetchAndSetMarketData = useCallback(async (currentSymbol: string): Promise<LiveMarketData | null> => {
     setIsLoadingMarketData(true);
     setMarketDataError(null);
-    // Keep existing liveMarketData while loading new, or set to null if you prefer a cleared state
-    // setLiveMarketData(null); 
 
     const result = await fetchMarketDataAction({ symbol: currentSymbol });
 
@@ -81,12 +78,12 @@ export default function BlockSmithAIPage() {
         variant: "destructive",
       });
       setIsLoadingMarketData(false);
-      return false;
+      return null;
     } else {
       setLiveMarketData(result);
-      setMarketDataError(null); // Clear any previous error
+      setMarketDataError(null);
       setIsLoadingMarketData(false);
-      return true;
+      return result;
     }
   }, [toast]);
 
@@ -105,21 +102,23 @@ export default function BlockSmithAIPage() {
     setAiStrategy(null);
 
     let marketDataForAIString = '{}';
-    // Attempt to fetch fresh market data if not already loading or errored
-    // Or rely on existing liveMarketData if fetchAndSetMarketData failed but left stale data
     let currentDataToUse = liveMarketData;
 
-    if (!liveMarketData && !marketDataError) { // If no data and no error, try to fetch
-        const freshFetchSuccess = await fetchAndSetMarketData(symbol);
-        if (freshFetchSuccess) {
-            currentDataToUse = await new Promise(resolve => setTimeout(() => resolve(liveMarketData), 0)); // Wait for state update
+    if (!liveMarketData && !marketDataError) { 
+        const fetchedData = await fetchAndSetMarketData(symbol);
+        if (fetchedData) {
+            currentDataToUse = fetchedData; 
         } else {
-             // fetchAndSetMarketData already set marketDataError and showed toast
             setStrategyError(marketDataError || "Market data is unavailable. Cannot generate strategy.");
+            toast({
+                title: "Strategy Aborted",
+                description: marketDataError || "Failed to fetch market data before generating strategy.",
+                variant: "destructive",
+            });
             setIsLoadingStrategy(false);
             return;
         }
-    } else if (marketDataError && !liveMarketData) { // If there's an error and no stale data
+    } else if (marketDataError && !liveMarketData) { 
         setStrategyError(`Market data unavailable: ${marketDataError}. Strategy generation aborted.`);
         toast({
             title: "Market Data Error",
@@ -142,7 +141,6 @@ export default function BlockSmithAIPage() {
             low_24h: currentDataToUse.lowPrice,
         });
     } else {
-        // This case should ideally be caught by the checks above
         toast({
             title: "Insufficient Data",
             description: "Not enough market data to generate a strategy.",
@@ -218,7 +216,6 @@ export default function BlockSmithAIPage() {
               onIndicatorChange={handleIndicatorChange}
               riskLevel={riskLevel}
               onRiskChange={setRiskLevel}
-              // API key props removed
               liveMarketData={liveMarketData}
               isLoadingMarketData={isLoadingMarketData}
               marketDataError={marketDataError}
@@ -239,7 +236,7 @@ export default function BlockSmithAIPage() {
                 "Generate AI Strategy"
               )}
             </Button>
-             {marketDataError && !liveMarketData && ( // Show if there's an error and no data
+             {marketDataError && !liveMarketData && ( 
                 <p className="text-xs text-center text-red-500">{marketDataError}</p>
             )}
           </div>
