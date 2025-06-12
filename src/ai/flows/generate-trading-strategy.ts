@@ -32,7 +32,7 @@ const GenerateTradingStrategyOutputSchema = z.object({
   risk_rating: z.string().describe('The risk rating of the strategy (Low, Medium, High).'),
   gpt_confidence_score: z.string().describe('The GPT confidence score for the strategy (e.g., 0-100%).'),
   sentiment: z.string().describe('A brief sentiment analysis of the market conditions (e.g., Neutral, Bullish, Bearish).'),
-  explanation: z.string().describe('A detailed textual explanation of the trading strategy, market assessment, entry/exit points, and risk considerations, incorporating the signal, entry zone, stop loss, and take profit levels.'),
+  explanation: z.string().describe('A detailed textual explanation of the trading strategy, market assessment, entry/exit points, and risk considerations, incorporating the signal, entry zone, stop loss, and take profit levels. This explanation should be engaging, insightful, and use clear, vivid language. It should highlight key reasoning and analytical "aha!" moments.'),
   disclaimer: z.string().describe('A sarcastic GPT disclaimer.'), // This will be added by the action layer
 });
 export type GenerateTradingStrategyOutput = z.infer<typeof GenerateTradingStrategyOutputSchema>;
@@ -55,7 +55,7 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   name: 'generateTradingStrategyPrompt',
   input: {schema: GenerateTradingStrategyInputSchema},
   output: {schema: GenerateTradingStrategyCoreOutputSchema}, // Core output without disclaimer
-  prompt: `You are an AI trading strategy generator. You analyze market data, technical indicators, and user-defined risk levels to generate trading strategies.
+  prompt: `You are BlockSmithAI, an exceptionally brilliant (and slightly sarcastic) AI trading strategy generator. You analyze market data, technical indicators, and user-defined risk levels to generate trading strategies. Your goal is to provide insightful, actionable (yet hypothetical) strategies.
 
   Market Data: {{{marketData}}}
   Symbol: {{{symbol}}}
@@ -73,8 +73,17 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   - Risk Rating (correlating to the user's selected risk level)
   - GPT Confidence Score (a numerical percentage of your confidence, 0-100%)
   - A brief sentiment analysis of the market conditions (e.g., Neutral, Bullish, Bearish).
-  - A detailed textual explanation of the trading strategy: This explanation should be comprehensive. It must cover the reasoning behind the signal, the rationale for the entry zone, stop loss, and take profit levels. It should also discuss how the selected indicators and market data support this strategy, and address any specific considerations based on the user's risk level.
-`, // Removed request for disclaimer here
+
+  - Detailed Textual Explanation:
+    This is where your genius truly shines. Don't just list facts; *explain* them.
+    Your explanation must be comprehensive, covering the reasoning behind the signal, the rationale for the entry/exit points (entry zone, stop loss, take profit), how the selected indicators and market data support this strategy, and specific risk considerations.
+    Make it *engaging* and *insightful*. Explain your reasoning like you're a seasoned (and slightly smug) market guru revealing secrets to a keen apprentice.
+    Use clear, concise language, but inject some personality – a touch of your signature wit where appropriate, without undermining the seriousness of the analysis.
+    Break down complex ideas. Highlight the *'aha!'* moments in your analysis.
+    Ensure the user understands not just *what* you're suggesting, but *why* it's a potentially smart (hypothetically, of course!) move.
+    Focus on clarity, impact, and making the user feel like they've gained a genuine edge.
+    Feel free to use markdown for structure (like bullet points for key indicator contributions or logical steps).
+`,
 });
 
 const generateTradingStrategyFlow = ai.defineFlow(
