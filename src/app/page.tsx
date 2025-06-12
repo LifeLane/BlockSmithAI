@@ -31,14 +31,15 @@ export default function BlockSmithAIPage() {
 
   const { toast } = useToast();
 
-  const appHeaderRef = useRef<HTMLDivElement>(null);
-  const controlPanelRef = useRef<HTMLDivElement>(null); // For the entire left column
-  const mainDisplayAreaRef = useRef<HTMLDivElement>(null); // For the entire right column (chart + strategy)
+  const appHeaderRef = useRef<HTMLDivElement>(null); // Ref for the header container div
+  const controlPanelRef = useRef<HTMLDivElement>(null); 
+  const mainDisplayAreaRef = useRef<HTMLDivElement>(null);
 
 
   useEffect(() => {
+    // AppHeader now handles its own animation.
+    // Animate control panel and main display area.
     const elementsToAnimate = [
-      appHeaderRef.current,
       controlPanelRef.current,
       mainDisplayAreaRef.current,
     ].filter(Boolean);
@@ -49,6 +50,7 @@ export default function BlockSmithAIPage() {
         y: 50,
         duration: 0.8,
         stagger: 0.25, 
+        delay: 0.5, // Delay to allow header animation to start
         ease: 'power3.out',
       });
     }
@@ -78,7 +80,7 @@ export default function BlockSmithAIPage() {
       return null;
     } else {
       setLiveMarketData(result);
-      setMarketDataError(null); // Clear previous errors on success
+      setMarketDataError(null); 
       setIsLoadingMarketData(false);
       return result;
     }
@@ -179,7 +181,7 @@ export default function BlockSmithAIPage() {
 
   return (
     <div className="min-h-screen flex flex-col pb-12 bg-background">
-      <div ref={appHeaderRef}>
+      <div ref={appHeaderRef}> {/* Wrapper for AppHeader */}
         <AppHeader />
       </div>
       <main className="flex-grow container mx-auto px-4 py-8">
