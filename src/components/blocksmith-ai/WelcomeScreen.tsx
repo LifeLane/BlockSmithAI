@@ -15,26 +15,39 @@ interface WelcomeScreenProps {
 const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => {
   const welcomeRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const descriptionRef = useRef<HTMLParagraphElement>(null);
+  const descriptionContainerRef = useRef<HTMLDivElement>(null); // Renamed for clarity, this is CardContent
   const buttonRef = useRef<HTMLButtonElement>(null);
   const iconRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    // Ensure the main container is made visible by GSAP before children animate
     if (welcomeRef.current) {
-        gsap.set(welcomeRef.current, { autoAlpha: 1 }); // Ensure parent is visible for children animations
+      gsap.set(welcomeRef.current, { autoAlpha: 1 });
     }
+
+    // Set initial hidden states for all animatable elements
+    if (iconRef.current) gsap.set(iconRef.current, { autoAlpha: 0, scale: 0, rotation: -180 });
+    if (titleRef.current) gsap.set(titleRef.current, { autoAlpha: 0, y: 30 });
+    if (descriptionContainerRef.current) gsap.set(descriptionContainerRef.current, { autoAlpha: 0, y: 20 });
+    if (buttonRef.current) gsap.set(buttonRef.current, { autoAlpha: 0, scale: 0.8 });
+
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' }});
+
+    // Start animating elements sequentially or with controlled overlaps
     if (iconRef.current) {
-        tl.from(iconRef.current, { scale: 0, rotation: -180, duration: 0.8, autoAlpha: 0, delay: 0.2 });
+      tl.to(iconRef.current, { autoAlpha: 1, scale: 1, rotation: 0, duration: 0.8 }, 0.2); // Start at 0.2s absolute time
     }
     if (titleRef.current) {
-        tl.from(titleRef.current, { y: 30, autoAlpha: 0, duration: 0.6 }, "-=0.5");
+      tl.to(titleRef.current, { autoAlpha: 1, y: 0, duration: 0.6 }, ">-0.5"); // Start 0.5s before the end of the icon animation
     }
-    if (descriptionRef.current) {
-        tl.from(descriptionRef.current, { y: 20, autoAlpha: 0, duration: 0.6, stagger: 0.2 }, "-=0.4");
+    if (descriptionContainerRef.current) { // This is CardContent
+      tl.to(descriptionContainerRef.current, { autoAlpha: 1, y: 0, duration: 0.6 }, ">-0.4"); // Start 0.4s before the end of the title animation
     }
     if (buttonRef.current) {
-        tl.from(buttonRef.current, { scale: 0.8, autoAlpha: 0, duration: 0.5 }, "-=0.3");
+      // Start button animation 0.2s after the descriptionContainerRef animation begins
+      // tl.recent().startTime() gets the start time of the last added animation (descriptionContainerRef)
+      const buttonStartTime = tl.recent().startTime() + 0.2;
+      tl.to(buttonRef.current, { autoAlpha: 1, scale: 1, duration: 0.5 }, buttonStartTime);
     }
   }, []);
 
@@ -50,7 +63,7 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
             From the Experimental Labs of BlockSmithAI
           </CardDescription>
         </CardHeader>
-        <CardContent ref={descriptionRef} className="space-y-4 text-muted-foreground">
+        <CardContent ref={descriptionContainerRef} className="space-y-4 text-muted-foreground">
           <p>
             You've stumbled upon the digital forge where algorithms dream of alpha and data streams flow like caffeinated rivers.
             We've been tinkering with the market's quantum fluctuations (or just staring at charts, you know, details).
