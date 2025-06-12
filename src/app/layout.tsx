@@ -1,6 +1,8 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
+import MatrixBackground from '@/components/blocksmith-ai/MatrixBackground';
 
 export const metadata: Metadata = {
   title: 'BlockSmithAI Trading Edge',
@@ -21,6 +23,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
+        <MatrixBackground />
         {children}
         <Toaster />
       </body>
