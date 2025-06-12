@@ -1,23 +1,85 @@
 
-import { FunctionComponent } from 'react';
+'use client';
 
-interface LivePriceTickerProps {}
+import type { FunctionComponent} from 'react';
+import { useState, useEffect } from 'react';
+import { fetchTopSymbolsForTickerAction, type TickerSymbolData } from '@/app/actions';
+import { useToast } from "@/hooks/use-toast";
+import { TrendingUp, Loader2 } from 'lucide-react';
 
-const LivePriceTicker: FunctionComponent<LivePriceTickerProps> = () => {
-  // Placeholder data - in a real app, this would come from a WebSocket or frequent API calls
-  const placeholderPrices = [
-    { symbol: 'BTC/USDT', price: '$65,034.12', change: '+1.25%', positive: true },
-    { symbol: 'ETH/USDT', price: '$3,501.88', change: '-0.52%', positive: false },
-    { symbol: 'SOL/USDT', price: '$148.50', change: '+2.78%', positive: true },
-    { symbol: 'BNB/USDT', price: '$589.20', change: '-0.11%', positive: false },
-    { symbol: 'DOGE/USDT', price: '$0.1234', change: '+5.03%', positive: true },
-    { symbol: 'XRP/USDT', price: '$0.4901', change: '-1.15%', positive: false },
-  ];
+interface TickerItem {
+  symbol: string;
+  price: string;
+  change: string;
+  positive: boolean;
+}
+
+const LivePriceTicker: FunctionComponent = () => {
+  const [tickerItems, setTickerItems] = useState<TickerItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const loadTickerData = async () => {
+      setIsLoading(true);
+      const result = await fetchTopSymbolsForTickerAction();
+      if ('error' in result) {
+        toast({
+          title: "Ticker Error",
+          description: result.error,
+          variant: "destructive",
+        });
+        setTickerItems([]); // Clear items on error
+      } else {
+        const formattedItems = result.map((item: TickerSymbolData) => {
+          const price = parseFloat(item.lastPrice);
+          const changePercent = parseFloat(item.priceChangePercent);
+          return {
+            symbol: item.symbol.replace('USDT', '/USDT'),
+            price: `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: Math.max(2, (price.toString().split('.')[1]?.length || 0)) })}`,
+            change: `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`,
+            positive: changePercent >= 0,
+          };
+        });
+        setTickerItems(formattedItems);
+      }
+      setIsLoading(false);
+    };
+
+    loadTickerData();
+    // Set up an interval to refresh data, e.g., every 30 seconds
+    const intervalId = setInterval(loadTickerData, 30000); 
+    return () => clearInterval(intervalId); // Cleanup interval on component unmount
+  }, [toast]);
+
+  if (isLoading && tickerItems.length === 0) {
+    return (
+      <div className="bg-card border-y border-border/80 shadow-sm h-12 flex items-center justify-center text-muted-foreground">
+        <Loader2 className="h-5 w-5 animate-spin mr-2" />
+        Loading Ticker Data...
+      </div>
+    );
+  }
+
+  if (!isLoading && tickerItems.length === 0) {
+     return (
+      <div className="bg-card border-y border-border/80 shadow-sm h-12 flex items-center justify-center text-muted-foreground">
+        <TrendingUp className="h-5 w-5 mr-2 text-primary" />
+        Ticker data currently unavailable.
+      </div>
+    );
+  }
+  
+  // Duplicate items for continuous scroll effect if list is short
+  const displayItems = tickerItems.length > 0 && tickerItems.length < 10 
+    ? [...tickerItems, ...tickerItems, ...tickerItems] 
+    : tickerItems;
+
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border/80 shadow-md h-12 overflow-hidden z-50">
+    <div className="relative bg-card border-y border-border/80 shadow-sm h-12 overflow-hidden">
       <div className="animate-marquee whitespace-nowrap flex items-center h-full">
-        {placeholderPrices.concat(placeholderPrices).map((item, index) => ( // Duplicate for continuous scroll
+        {displayItems.map((item, index) => (
           <div key={index} className="inline-flex items-center mx-4 px-2 py-1 rounded">
             <span className="font-semibold text-sm text-foreground mr-2">{item.symbol}:</span>
             <span className="text-sm text-foreground mr-1">{item.price}</span>
@@ -30,11 +92,12 @@ const LivePriceTicker: FunctionComponent<LivePriceTickerProps> = () => {
       <style jsx>{`
         @keyframes marquee {
           0% { transform: translateX(0%); }
-          100% { transform: translateX(-50%); }
+          100% { transform: translateX(-${100 / (displayItems.length / tickerItems.length > 1 ? (displayItems.length / tickerItems.length) : 1)}%); }
         }
         .animate-marquee {
-          animation: marquee 20s linear infinite;
+          animation: marquee ${displayItems.length * 2}s linear infinite;
           will-change: transform;
+          min-width: ${displayItems.length * 150}px; /* Ensure enough width for smooth scroll */
         }
       `}</style>
     </div>

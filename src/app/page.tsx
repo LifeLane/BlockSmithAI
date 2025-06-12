@@ -53,6 +53,7 @@ export default function BlockSmithAIPage() {
   const controlPanelRef = useRef<HTMLDivElement>(null); 
   const mainDisplayAreaRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
+  const liveTickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
@@ -62,6 +63,7 @@ export default function BlockSmithAIPage() {
   useEffect(() => {
     if (!showWelcomeScreen && mainContentRef.current) {
       const elementsToAnimate = [
+        liveTickerRef.current, // Add ticker to animation sequence
         controlPanelRef.current,
         mainDisplayAreaRef.current,
       ].filter(Boolean);
@@ -71,8 +73,8 @@ export default function BlockSmithAIPage() {
           opacity: 0,
           y: 50,
           duration: 0.8,
-          stagger: 0.25, 
-          delay: 0.3, // Slight delay after welcome screen disappears
+          stagger: 0.2, 
+          delay: 0.3, 
           ease: 'power3.out',
         });
       }
@@ -89,7 +91,7 @@ export default function BlockSmithAIPage() {
           description: result.error + " Using default list.",
           variant: "destructive",
         });
-        setAvailableSymbols(DEFAULT_SYMBOLS); // Fallback to default
+        setAvailableSymbols(DEFAULT_SYMBOLS); 
       } else {
         setAvailableSymbols(result);
       }
@@ -129,7 +131,7 @@ export default function BlockSmithAIPage() {
   }, [toast]);
 
   useEffect(() => {
-    if (!showWelcomeScreen && symbol) { // Only fetch if welcome screen is not shown
+    if (!showWelcomeScreen && symbol) { 
       fetchAndSetMarketData(symbol);
     } else if (!showWelcomeScreen) {
       setLiveMarketData(null); 
@@ -224,15 +226,21 @@ export default function BlockSmithAIPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col pb-12 bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       <div ref={appHeaderRef}> 
         <AppHeader />
       </div>
-      <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center justify-center">
-        {showWelcomeScreen ? (
+      
+      {showWelcomeScreen ? (
+        <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center justify-center">
           <WelcomeScreen onProceed={handleProceedFromWelcome} />
-        ) : (
-          <div ref={mainContentRef} className="w-full">
+        </main>
+      ) : (
+        <>
+          <div ref={liveTickerRef} className="w-full sticky top-0 z-40"> {/* Ticker container for GSAP */}
+            <LivePriceTicker />
+          </div>
+          <main ref={mainContentRef} className="flex-grow container mx-auto px-4 py-8 flex flex-col w-full">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
               <div className="lg:col-span-1 space-y-6 flex flex-col" ref={controlPanelRef}>
                 <SymbolIntervalSelectors
@@ -268,7 +276,7 @@ export default function BlockSmithAIPage() {
                   )}
                 </Button>
                  {marketDataError && !liveMarketData && ( 
-                    <p className="text-xs text-center text-red-500">{marketDataError}</p>
+                    <p className="text-xs text-center text-red-400">{marketDataError}</p>
                 )}
               </div>
 
@@ -285,11 +293,10 @@ export default function BlockSmithAIPage() {
                 />
               </div>
             </div>
-          </div>
-        )}
-      </main>
-      {!showWelcomeScreen && <LivePriceTicker />}
-      <footer className="text-center py-4 text-sm text-muted-foreground border-t border-border/50">
+          </main>
+        </>
+      )}
+      <footer className="text-center py-4 mt-auto text-sm text-muted-foreground border-t border-border/50">
         {currentYear ? `© ${currentYear} ` : ''}BlockSmithAI. Powered by Google AI. Not financial advice.
       </footer>
     </div>

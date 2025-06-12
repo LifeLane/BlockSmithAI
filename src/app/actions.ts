@@ -23,12 +23,16 @@ export interface FormattedSymbol {
   label: string;
 }
 
+export interface TickerSymbolData {
+  symbol: string;
+  lastPrice: string;
+  priceChangePercent: string;
+}
+
 export async function fetchAllTradingSymbolsAction(): Promise<FormattedSymbol[] | FetchDataError> {
   const apiKey = process.env.BINANCE_API_KEY;
-  // console.log('fetchAllTradingSymbolsAction: Attempting to read BINANCE_API_KEY. Loaded:', apiKey ? 'Exists' : 'Missing or Placeholder');
 
   if (!apiKey || apiKey === "YOUR_BINANCE_API_KEY_REPLACE_ME") {
-    // console.error('fetchAllTradingSymbolsAction: Binance API Key check failed. Loaded apiKey was:', apiKey);
     return { error: "Binance API Key is not configured on the server. Cannot fetch symbol list." };
   }
 
@@ -42,7 +46,6 @@ export async function fetchAllTradingSymbolsAction(): Promise<FormattedSymbol[] 
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      // console.error(`fetchAllTradingSymbolsAction: Binance API error: ${response.status} - ${response.statusText}`, errorData);
       return { error: `Failed to fetch symbol list from Binance: ${response.statusText} - ${errorData.msg || 'Unknown error'}`, status: response.status };
     }
 
@@ -50,23 +53,58 @@ export async function fetchAllTradingSymbolsAction(): Promise<FormattedSymbol[] 
     
     const usdtPairs = data
       .filter(ticker => ticker.symbol.endsWith('USDT') && parseFloat(ticker.quoteVolume) > 0 && !ticker.symbol.includes('_'))
-      .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)) // Sort by quoteVolume (USDT volume)
-      .slice(0, 150) // Take top 150 to provide a good selection
+      .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)) 
+      .slice(0, 150) 
       .map(ticker => ({
         value: ticker.symbol,
         label: `${ticker.symbol.replace('USDT', '')}/USDT`,
       }));
 
     if (usdtPairs.length === 0) {
-        // console.warn("fetchAllTradingSymbolsAction: No USDT pairs found or filtered out.");
         return { error: "No active USDT trading pairs found from Binance." };
     }
     
     return usdtPairs;
 
   } catch (error) {
-    // console.error("fetchAllTradingSymbolsAction: Error fetching all symbols from Binance:", error);
     return { error: "An unexpected error occurred while fetching the list of trading symbols." };
+  }
+}
+
+export async function fetchTopSymbolsForTickerAction(): Promise<TickerSymbolData[] | FetchDataError> {
+  const apiKey = process.env.BINANCE_API_KEY;
+  if (!apiKey || apiKey === "YOUR_BINANCE_API_KEY_REPLACE_ME") {
+    return { error: "Binance API Key is not configured. Cannot fetch ticker data." };
+  }
+
+  const url = `https://api.binance.com/api/v3/ticker/24hr`;
+  try {
+    const response = await fetch(url, {
+      headers: { 'X-MBX-APIKEY': apiKey },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { error: `Failed to fetch ticker data from Binance: ${response.statusText} - ${errorData.msg || 'Unknown error'}`, status: response.status };
+    }
+
+    const allTickers: any[] = await response.json();
+    const topUsdtTickers = allTickers
+      .filter(ticker => ticker.symbol.endsWith('USDT') && parseFloat(ticker.quoteVolume) > 0 && !ticker.symbol.includes('_'))
+      .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+      .slice(0, 15) // Get top 15 for the ticker
+      .map(ticker => ({
+        symbol: ticker.symbol,
+        lastPrice: ticker.lastPrice,
+        priceChangePercent: ticker.priceChangePercent,
+      }));
+
+    if (topUsdtTickers.length === 0) {
+      return { error: "No active USDT trading pairs found for ticker." };
+    }
+    return topUsdtTickers;
+  } catch (error) {
+    return { error: "An unexpected error occurred while fetching ticker data." };
   }
 }
 
@@ -74,11 +112,8 @@ export async function fetchAllTradingSymbolsAction(): Promise<FormattedSymbol[] 
 export async function fetchMarketDataAction(params: { symbol: string }): Promise<LiveMarketData | FetchDataError> {
   const { symbol } = params;
   const apiKey = process.env.BINANCE_API_KEY;
-  // console.log(`fetchMarketDataAction for ${symbol}: Attempting to read BINANCE_API_KEY. Loaded:`, apiKey ? 'Exists' : 'Missing or Placeholder');
-
 
   if (!apiKey || apiKey === "YOUR_BINANCE_API_KEY_REPLACE_ME") {
-    // console.error(`fetchMarketDataAction for ${symbol}: Binance API Key check failed. Loaded apiKey was:`, apiKey);
     return { error: "Binance API Key is not configured on the server. Please set BINANCE_API_KEY in your .env file." };
   }
 
@@ -92,14 +127,12 @@ export async function fetchMarketDataAction(params: { symbol: string }): Promise
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      // console.error(`fetchMarketDataAction for ${symbol}: Binance API error: ${response.status} - ${response.statusText}`, errorData);
       return { error: `Failed to fetch market data from Binance: ${response.statusText} - ${errorData.msg || 'Unknown error'}`, status: response.status };
     }
 
     const data = await response.json();
     
     if (!data.symbol || !data.lastPrice || !data.priceChangePercent || !data.volume || !data.highPrice || !data.lowPrice || !data.quoteVolume) {
-        // console.error(`fetchMarketDataAction for ${symbol}: Received incomplete data from Binance API:`, data);
         return { error: "Received incomplete data from Binance API."}
     }
 
@@ -113,7 +146,6 @@ export async function fetchMarketDataAction(params: { symbol: string }): Promise
       quoteVolume: data.quoteVolume,
     };
   } catch (error) {
-    // console.error(`fetchMarketDataAction for ${symbol}: Error fetching market data from Binance:`, error);
     return { error: "An unexpected error occurred while fetching market data." };
   }
 }
@@ -125,7 +157,6 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
     }
     
     if (input.marketData === '{}' || !input.marketData) {
-        // console.error("Market data is missing or invalid for generateTradingStrategyAction. marketData:", input.marketData);
         return {error: "Market data is missing or invalid. Cannot generate strategy."}
     }
 
@@ -142,10 +173,8 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
     return finalResult;
 
   } catch (error: any) {
-    // console.error("Error in generateTradingStrategyAction:", error);
     let errorMessage = "Failed to generate trading strategy. Please check server logs or try again.";
     
-    // Check for GoogleGenerativeAI specific errors (like 500 or 503)
     if (error.message) {
         if ((error.message.includes("[500]") || error.message.includes("[503]")) && error.message.includes("GoogleGenerativeAI")) {
             const statusCode = error.message.includes("[500]") ? "500 Internal Server Error" : "503 Service Unavailable";
@@ -159,10 +188,8 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
     }
     
     if (error.details) {
-        //  console.error("Error details:", error.details);
          errorMessage += ` Details: ${typeof error.details === 'object' ? JSON.stringify(error.details) : error.details}`;
     } else if (error.cause && typeof error.cause === 'object') {
-        // console.error("Error cause:", error.cause);
         const causeDetails = JSON.stringify(error.cause, Object.getOwnPropertyNames(error.cause));
         errorMessage += ` Cause: ${causeDetails}`;
     }  else if (error.cause && typeof error.cause !== 'object') {
@@ -170,7 +197,6 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
     }
     
     if (typeof error === 'object' && error !== null && !error.message && !error.details && !error.cause) {
-        // console.error("Full error object (unhandled structure):", JSON.stringify(error, Object.getOwnPropertyNames(error)));
         errorMessage += ` Additional info: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`;
     }
     return { error: errorMessage };
