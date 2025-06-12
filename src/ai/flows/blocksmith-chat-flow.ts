@@ -45,9 +45,9 @@ Keep your responses concise yet impactful.
 Conversation History (if any):
 {{#if chatHistory}}
   {{#each chatHistory}}
-    {{#if (eq this.role "user")}}User: {{this.parts.0.text}}
+    {{#if this.isUser}}User: {{this.parts.0.text}}
     {{/if}}
-    {{#if (eq this.role "model")}}BSAI: {{this.parts.0.text}}
+    {{#if this.isModel}}BSAI: {{this.parts.0.text}}
     {{/if}}
   {{/each}}
 {{else}}
@@ -60,7 +60,7 @@ BSAI's Response:`;
 
 const chatPrompt = ai.definePrompt({
   name: 'blocksmithChatPrompt',
-  input: { schema: BlocksmithChatInputSchema },
+  input: { schema: BlocksmithChatInputSchema }, // Input schema uses original ChatMessage, processing happens in flow
   output: { schema: BlocksmithChatOutputSchema },
   prompt: systemPrompt, 
   config: {
@@ -76,10 +76,20 @@ const blocksmithChatFlow = ai.defineFlow(
     outputSchema: BlocksmithChatOutputSchema,
   },
   async (input) => {
-    // Construct the prompt input dynamically with history
+    // Process chatHistory to add boolean flags for Handlebars
+    const processedHistory = (input.chatHistory || []).map(msg => ({
+      ...msg,
+      isUser: msg.role === 'user',
+      isModel: msg.role === 'model',
+      // parts should be an array, so parts[0].text is fine if parts always has at least one item.
+      // Ensure parts has at least one element before accessing parts[0] if it's not guaranteed by schema.
+      // The schema z.array(z.object({ text: z.string() })) implies parts is an array of objects,
+      // and if it's not empty, parts[0] is safe.
+    }));
+    
     const flowInput = {
         currentUserInput: input.currentUserInput,
-        chatHistory: input.chatHistory || []
+        chatHistory: processedHistory // Use the processed history for the template
     };
     
     const { output } = await chatPrompt(flowInput);
@@ -91,3 +101,4 @@ const blocksmithChatFlow = ai.defineFlow(
     return output;
   }
 );
+
