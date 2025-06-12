@@ -32,18 +32,15 @@ export default function BlockSmithAIPage() {
   const { toast } = useToast();
 
   const appHeaderRef = useRef<HTMLDivElement>(null);
-  const symbolSelectorsRef = useRef<HTMLDivElement>(null);
-  const tradingViewRef = useRef<HTMLDivElement>(null);
-  const strategySectionContainerRef = useRef<HTMLDivElement>(null);
-  const controlsColumnRef = useRef<HTMLDivElement>(null);
+  const controlPanelRef = useRef<HTMLDivElement>(null); // For the entire left column
+  const mainDisplayAreaRef = useRef<HTMLDivElement>(null); // For the entire right column (chart + strategy)
+
 
   useEffect(() => {
     const elementsToAnimate = [
       appHeaderRef.current,
-      symbolSelectorsRef.current,
-      tradingViewRef.current,
-      strategySectionContainerRef.current,
-      controlsColumnRef.current,
+      controlPanelRef.current,
+      mainDisplayAreaRef.current,
     ].filter(Boolean);
 
     if (elementsToAnimate.length > 0) {
@@ -51,7 +48,7 @@ export default function BlockSmithAIPage() {
         opacity: 0,
         y: 50,
         duration: 0.8,
-        stagger: 0.2,
+        stagger: 0.25, // Slightly increased stagger for better visual separation of columns
         ease: 'power3.out',
       });
     }
@@ -66,10 +63,12 @@ export default function BlockSmithAIPage() {
   const fetchAndSetMarketData = useCallback(async (currentSymbol: string): Promise<LiveMarketData | null> => {
     setIsLoadingMarketData(true);
     setMarketDataError(null);
+    // console.log(`Fetching market data for ${currentSymbol} in fetchAndSetMarketData`);
 
     const result = await fetchMarketDataAction({ symbol: currentSymbol });
 
     if ('error' in result) {
+      // console.error("Market data fetch error in fetchAndSetMarketData:", result.error);
       setMarketDataError(result.error);
       setLiveMarketData(null); 
       toast({
@@ -80,6 +79,7 @@ export default function BlockSmithAIPage() {
       setIsLoadingMarketData(false);
       return null;
     } else {
+      // console.log("Market data fetched successfully in fetchAndSetMarketData:", result);
       setLiveMarketData(result);
       setMarketDataError(null);
       setIsLoadingMarketData(false);
@@ -89,8 +89,10 @@ export default function BlockSmithAIPage() {
 
   useEffect(() => {
     if (symbol) {
+      // console.log(`Symbol changed to ${symbol}, fetching market data.`);
       fetchAndSetMarketData(symbol);
     } else {
+      // console.log("No symbol selected, clearing market data.");
       setLiveMarketData(null); 
       setMarketDataError("No symbol selected to fetch market data.");
     }
@@ -100,25 +102,33 @@ export default function BlockSmithAIPage() {
     setIsLoadingStrategy(true);
     setStrategyError(null);
     setAiStrategy(null);
+    // console.log("Attempting to fetch strategy. Current liveMarketData:", liveMarketData, "MarketDataError:", marketDataError);
 
     let marketDataForAIString = '{}';
     let currentDataToUse = liveMarketData;
 
-    if (!liveMarketData && !marketDataError) { 
+    // If liveMarketData is null AND there's no existing marketDataError, try fetching fresh data.
+    if (!currentDataToUse && !marketDataError) { 
+        // console.log("No current market data and no error, fetching fresh for strategy...");
         const fetchedData = await fetchAndSetMarketData(symbol);
         if (fetchedData) {
+            // console.log("Fresh market data fetched successfully for strategy:", fetchedData);
             currentDataToUse = fetchedData; 
         } else {
-            setStrategyError(marketDataError || "Market data is unavailable. Cannot generate strategy.");
+            // console.error("Failed to fetch market data before generating strategy. Error:", marketDataError);
+            const errorMsg = marketDataError || "Market data is unavailable. Cannot generate strategy.";
+            setStrategyError(errorMsg);
             toast({
                 title: "Strategy Aborted",
-                description: marketDataError || "Failed to fetch market data before generating strategy.",
+                description: errorMsg,
                 variant: "destructive",
             });
             setIsLoadingStrategy(false);
             return;
         }
-    } else if (marketDataError && !liveMarketData) { 
+    // If there IS a marketDataError and no live data, abort.
+    } else if (marketDataError && !currentDataToUse) { 
+        // console.error(`Market data error exists: ${marketDataError}. Strategy generation aborted.`);
         setStrategyError(`Market data unavailable: ${marketDataError}. Strategy generation aborted.`);
         toast({
             title: "Market Data Error",
@@ -131,6 +141,7 @@ export default function BlockSmithAIPage() {
 
 
     if (currentDataToUse) {
+        // console.log("Using current market data for AI:", currentDataToUse);
         marketDataForAIString = JSON.stringify({
             symbol: currentDataToUse.symbol,
             price: currentDataToUse.lastPrice,
@@ -141,16 +152,16 @@ export default function BlockSmithAIPage() {
             low_24h: currentDataToUse.lowPrice,
         });
     } else {
+         // console.error("Insufficient market data (currentDataToUse is null) for strategy generation.");
         toast({
             title: "Insufficient Data",
-            description: "Not enough market data to generate a strategy.",
+            description: "Not enough market data to generate a strategy. Please try again or check market data source.",
             variant: "destructive",
         });
         setStrategyError("Insufficient market data for strategy generation.");
         setIsLoadingStrategy(false);
         return;
     }
-
 
     const input: GenerateTradingStrategyInput = {
       symbol,
@@ -159,10 +170,12 @@ export default function BlockSmithAIPage() {
       riskLevel,
       marketData: marketDataForAIString, 
     };
+    // console.log("Generating strategy with input:", input);
 
     const result = await generateTradingStrategyAction(input);
 
     if ('error' in result) {
+      // console.error("Strategy generation failed:", result.error);
       setStrategyError(result.error);
       toast({
         title: "Strategy Generation Failed",
@@ -170,6 +183,7 @@ export default function BlockSmithAIPage() {
         variant: "destructive",
       });
     } else {
+      // console.log("Strategy generated successfully:", result);
       setAiStrategy(result);
        toast({
         title: "Strategy Generated!",
@@ -181,36 +195,20 @@ export default function BlockSmithAIPage() {
 
 
   return (
-    <div className="min-h-screen flex flex-col pb-12">
+    <div className="min-h-screen flex flex-col pb-12 bg-background">
       <div ref={appHeaderRef}>
         <AppHeader />
       </div>
-      <main className="flex-grow container mx-auto px-4 py-8 space-y-8">
-        <div ref={symbolSelectorsRef}>
-          <SymbolIntervalSelectors
-            symbol={symbol}
-            onSymbolChange={setSymbol}
-            interval={interval}
-            onIntervalChange={setInterval}
-          />
-        </div>
-
-        <div className="bg-card p-1 rounded-lg shadow-xl" ref={tradingViewRef}>
-          <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
-        </div>
-        
-        <div className="grid md:grid-cols-3 gap-8 items-start">
-          <div className="md:col-span-2" ref={strategySectionContainerRef}>
-            <StrategyExplanationSection 
-              strategy={aiStrategy} 
-              liveMarketData={liveMarketData}
-              isLoading={isLoadingStrategy} 
-              error={strategyError}
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          {/* Control Panel Column (Left) */}
+          <div className="lg:col-span-1 space-y-6 flex flex-col" ref={controlPanelRef}>
+            <SymbolIntervalSelectors
               symbol={symbol}
+              onSymbolChange={setSymbol}
+              interval={interval}
+              onIntervalChange={setInterval}
             />
-          </div>
-
-          <div className="space-y-6 flex flex-col" ref={controlsColumnRef}>
             <ControlsTabs
               selectedIndicators={selectedIndicators}
               onIndicatorChange={handleIndicatorChange}
@@ -221,11 +219,10 @@ export default function BlockSmithAIPage() {
               marketDataError={marketDataError}
               symbolForDisplay={symbol}
             />
-            
             <Button 
               onClick={fetchStrategy} 
               disabled={isLoadingStrategy || isLoadingMarketData || !!marketDataError} 
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 text-base"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 text-base shadow-lg hover:shadow-primary/50 transition-shadow"
             >
               {isLoadingStrategy ? (
                 <>
@@ -240,10 +237,24 @@ export default function BlockSmithAIPage() {
                 <p className="text-xs text-center text-red-500">{marketDataError}</p>
             )}
           </div>
+
+          {/* Main Display Area (Right) */}
+          <div className="lg:col-span-2 space-y-8" ref={mainDisplayAreaRef}>
+            <div className="bg-card p-1 rounded-lg shadow-xl">
+              <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
+            </div>
+            <StrategyExplanationSection 
+              strategy={aiStrategy} 
+              liveMarketData={liveMarketData}
+              isLoading={isLoadingStrategy} 
+              error={strategyError}
+              symbol={symbol}
+            />
+          </div>
         </div>
       </main>
       <LivePriceTicker />
-      <footer className="text-center py-4 text-sm text-muted-foreground border-t">
+      <footer className="text-center py-4 text-sm text-muted-foreground border-t border-border/50">
         Powered by Firebase Studio & Google AI. Not financial advice.
       </footer>
     </div>
