@@ -26,7 +26,8 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
   const [dailyGreeting, setDailyGreeting] = useState<string>("");
   const [isLoadingGreeting, setIsLoadingGreeting] = useState<boolean>(true);
   const [currentFomoIndex, setCurrentFomoIndex] = useState<number>(0);
-  const [hasAnimatedIn, setHasAnimatedIn] = useState<boolean>(false);
+  
+  const animationRan = useRef<boolean>(false);
 
   const welcomeRef = useRef<HTMLDivElement>(null);
   const greetingCardRef = useRef<HTMLDivElement>(null);
@@ -58,33 +59,32 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
   }, []);
 
   useEffect(() => {
-    if (welcomeRef.current && !isLoadingGreeting && !hasAnimatedIn) {
+    if (!isLoadingGreeting && welcomeRef.current && !animationRan.current) {
       const elementsToAnimate = [
         greetingCardRef.current,
         benefitsCardRef.current,
         storyCardRef.current,
         buttonRef.current,
-      ].filter(Boolean);
+      ].filter(Boolean); // Ensure all refs are non-null
 
       if (elementsToAnimate.length > 0) {
-          gsap.from(elementsToAnimate, {
-          autoAlpha: 0,
-          y: 50,
-          duration: 0.7,
-          stagger: 0.2,
-          ease: 'power3.out',
-          delay: 0.2, 
-          onComplete: () => {
-            setHasAnimatedIn(true);
-          }
-        });
-      } else if (elementsToAnimate.length === 0) {
-        // If for some reason refs aren't ready but conditions are met,
-        // still mark as animated to avoid retries.
-        setHasAnimatedIn(true);
+          gsap.fromTo(elementsToAnimate,
+            { autoAlpha: 0, y: 50 }, // From state
+            { // To state
+              autoAlpha: 1,
+              y: 0,
+              duration: 0.7,
+              stagger: 0.2,
+              ease: 'power3.out',
+              delay: 0.2, 
+              onComplete: () => {
+                animationRan.current = true;
+              }
+            }
+          );
       }
     }
-  }, [isLoadingGreeting, hasAnimatedIn, welcomeRef, greetingCardRef, benefitsCardRef, storyCardRef, buttonRef]);
+  }, [isLoadingGreeting]); // Depend only on isLoadingGreeting
 
   return (
     <div ref={welcomeRef} className="flex flex-col items-center justify-center text-center p-2 md:p-4 max-w-2xl mx-auto space-y-6 md:space-y-8">
@@ -165,3 +165,4 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
 };
 
 export default WelcomeScreen;
+
