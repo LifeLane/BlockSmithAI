@@ -166,10 +166,10 @@ export default function BlockSmithAIPage() {
             return;
         }
     } else if (marketDataError && !currentDataToUse) { 
-        setStrategyError(\`Market data unavailable: \${marketDataError}. Strategy generation aborted.\`);
+        setStrategyError("Market data unavailable: " + marketDataError + ". Strategy generation aborted.");
         toast({
             title: "Market Data Error",
-            description: \`Cannot generate strategy: \${marketDataError}\`,
+            description: "Cannot generate strategy: " + marketDataError,
             variant: "destructive",
         });
         setIsLoadingStrategy(false);
@@ -177,14 +177,20 @@ export default function BlockSmithAIPage() {
     }
 
     if (currentDataToUse) {
+        const priceChangePercentVal = parseFloat(currentDataToUse.priceChangePercent);
+        const formattedPriceChangePercent = `${priceChangePercentVal >= 0 ? '+' : ''}${priceChangePercentVal.toFixed(2)}%`;
+        const baseAsset = currentDataToUse.symbol.replace('USDT', '');
+        const formattedVolumeBase = `${parseFloat(currentDataToUse.volume).toLocaleString(undefined, {maximumFractionDigits: 3})} ${baseAsset}`;
+        const formattedVolumeQuote = `${parseFloat(currentDataToUse.quoteVolume).toLocaleString(undefined, {maximumFractionDigits: 2})} USDT`;
+
         marketDataForAIString = JSON.stringify({
             symbol: currentDataToUse.symbol,
-            price: currentDataToUse.lastPrice,
-            price_change_percent_24h: \`\${parseFloat(currentDataToUse.priceChangePercent) >= 0 ? '+' : ''}\${parseFloat(currentDataToUse.priceChangePercent).toFixed(2)}%\`,
-            volume_24h_base: \`\${currentDataToUse.volume} \${currentDataToUse.symbol.replace('USDT', '')}\`,
-            volume_24h_quote: \`\${currentDataToUse.quoteVolume} USDT\`,
-            high_24h: currentDataToUse.highPrice,
-            low_24h: currentDataToUse.lowPrice,
+            price: parseFloat(currentDataToUse.lastPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: Math.max(2, (currentDataToUse.lastPrice.toString().split('.')[1]?.length || 0))}),
+            price_change_percent_24h: formattedPriceChangePercent,
+            volume_24h_base: formattedVolumeBase,
+            volume_24h_quote: formattedVolumeQuote,
+            high_24h: parseFloat(currentDataToUse.highPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}),
+            low_24h: parseFloat(currentDataToUse.lowPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}),
         });
     } else {
         toast({
@@ -199,7 +205,7 @@ export default function BlockSmithAIPage() {
 
     const input: GenerateTradingStrategyInput = {
       symbol,
-      interval: \`\${interval}m\`, 
+      interval: `${interval}m`, 
       indicators: selectedIndicators,
       riskLevel,
       marketData: marketDataForAIString, 
@@ -218,7 +224,7 @@ export default function BlockSmithAIPage() {
       setAiStrategy(result);
        toast({
         title: "AI Edge Revealed!",
-        description: \`New AI strategy generated for \${symbol}.\`,
+        description: `New AI strategy generated for ${symbol}.`,
       });
     }
     setIsLoadingStrategy(false);
