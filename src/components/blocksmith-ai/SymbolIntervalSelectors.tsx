@@ -72,7 +72,7 @@ const SymbolIntervalSelectors: FunctionComponent<SymbolIntervalSelectorsProps> =
       <div>
         <Label htmlFor="symbol-select" className="mb-2 block text-sm font-medium text-muted-foreground flex items-center">
           <TargetIcon className="mr-2 h-4 w-4 text-primary" />
-          Target Asset
+          Target <span className="text-primary ml-1 font-semibold">Asset</span>
         </Label>
         <Popover open={openPopover} onOpenChange={setOpenPopover}>
           <PopoverTrigger asChild>
@@ -80,7 +80,7 @@ const SymbolIntervalSelectors: FunctionComponent<SymbolIntervalSelectorsProps> =
               variant="outline"
               role="combobox"
               aria-expanded={openPopover}
-              className="w-full justify-between text-sm border-input focus:border-primary focus:ring-primary"
+              className="w-full justify-between text-sm border-input focus:border-accent focus:ring-accent"
               id="symbol-select"
               disabled={isLoadingSymbols && symbols.length === 0}
             >
@@ -119,7 +119,7 @@ const SymbolIntervalSelectors: FunctionComponent<SymbolIntervalSelectorsProps> =
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          symbol === s.value ? "opacity-100 text-primary" : "opacity-0"
+                          symbol === s.value ? "opacity-100 text-accent" : "opacity-0"
                         )}
                       />
                       {s.label}
@@ -134,10 +134,10 @@ const SymbolIntervalSelectors: FunctionComponent<SymbolIntervalSelectorsProps> =
       <div>
         <Label htmlFor="interval-select" className="mb-2 block text-sm font-medium text-muted-foreground flex items-center">
           <Clock className="mr-2 h-4 w-4 text-primary" />
-          Analysis Horizon
+          Analysis <span className="text-primary ml-1 font-semibold">Horizon</span>
         </Label>
         <Select value={interval} onValueChange={onIntervalChange}>
-          <SelectTrigger id="interval-select" className="w-full text-sm border-input focus:border-primary focus:ring-primary">
+          <SelectTrigger id="interval-select" className="w-full text-sm border-input focus:border-accent focus:ring-accent">
             <SelectValue placeholder="Select horizon" />
           </SelectTrigger>
           <SelectContent>

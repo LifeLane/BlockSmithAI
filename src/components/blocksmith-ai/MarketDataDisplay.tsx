@@ -51,7 +51,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
         <CardContent> 
           <p className="text-destructive-foreground text-sm">{error}</p>
            {error.includes("Binance API Key is not configured") && (
-            <p className="text-xs text-muted-foreground mt-1">Please contact the administrator to set up the API key on the server.</p>
+            <p className="text-xs text-muted-foreground mt-1">Please contact the administrator to set up the <strong className="text-orange-400">API key</strong> on the server.</p>
           )}
         </CardContent>
       </Card>
@@ -60,7 +60,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 
   if (!liveMarketData) {
      return (
-      <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-primary hover:shadow-[0_0_15px_2px_hsl(var(--primary)/0.4)]">
+      <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-tertiary hover:shadow-[0_0_15px_3px_hsl(var(--accent)/0.5)]">
         <CardHeader>
           <CardTitle className="flex items-center text-lg font-semibold text-foreground">
             <Database className="mr-2 h-5 w-5 text-primary" />
@@ -69,7 +69,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
            <CardDescription className="font-headline text-accent">{displaySymbol}</CardDescription>
         </CardHeader>
         <CardContent> 
-          <p className="text-sm text-muted-foreground text-center p-4">No market data available for <span className="font-bold text-accent">{displaySymbol}</span>.</p>
+          <p className="text-sm text-muted-foreground text-left p-4">No market data available for <span className="font-bold text-accent">{displaySymbol}</span>. Try selecting another <strong className="text-orange-400">asset</strong> or refresh.</p>
         </CardContent>
       </Card>
     );
@@ -83,27 +83,27 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 
 
   return (
-    <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-primary hover:shadow-[0_0_15px_2px_hsl(var(--primary)/0.4)]">
+    <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-tertiary hover:shadow-[0_0_15px_3px_hsl(var(--accent)/0.5)]">
       <CardHeader>
         <CardTitle className="flex items-center text-lg font-semibold text-foreground">
           <Database className="mr-2 h-5 w-5 text-primary" />
           Market <span className="text-primary ml-1">Overview</span>
         </CardTitle>
         <CardDescription className="font-headline">
-            <span className="text-accent font-bold">{actualBaseSymbol}/USDT</span> - <span className="text-primary font-bold">${parseFloat(data.lastPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+            <span className="text-accent font-bold">{actualBaseSymbol}/USDT</span> - <span className="text-primary font-bold">${parseFloat(data.lastPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: Math.max(2, (data.lastPrice.split('.')[1]?.length || 2)) })}</span>
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-2 text-sm"> 
+      <CardContent className="space-y-2 text-sm text-left"> 
         <p>
           <span className="font-medium text-muted-foreground">24h Change:</span>{" "}
           <span className={`font-bold ${isPositiveChange ? "text-green-400" : "text-red-400"}`}>
             {formattedPriceChange}
           </span>
         </p>
-        <p><span className="font-medium text-muted-foreground">24h High:</span> <span className="font-bold text-foreground">${parseFloat(data.highPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></p>
-        <p><span className="font-medium text-muted-foreground">24h Low:</span> <span className="font-bold text-foreground">${parseFloat(data.lowPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></p>
-        <p><span className="font-medium text-muted-foreground">Volume (24h Base):</span> <span className="font-bold text-foreground">{parseFloat(data.volume).toLocaleString(undefined, {maximumFractionDigits: 3})} {actualBaseSymbol}</span></p>
-        <p><span className="font-medium text-muted-foreground">Volume (24h Quote):</span> <span className="font-bold text-foreground">{parseFloat(data.quoteVolume).toLocaleString(undefined, {maximumFractionDigits: 2})} USDT</span></p>
+        <p><span className="font-medium text-muted-foreground">24h High:</span> <span className="font-bold text-primary">${parseFloat(data.highPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></p>
+        <p><span className="font-medium text-muted-foreground">24h Low:</span> <span className="font-bold text-orange-400">${parseFloat(data.lowPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></p>
+        <p><span className="font-medium text-muted-foreground">Volume ({actualBaseSymbol}):</span> <span className="font-bold text-tertiary">{parseFloat(data.volume).toLocaleString(undefined, {maximumFractionDigits: 3})}</span></p>
+        <p><span className="font-medium text-muted-foreground">Volume (USDT):</span> <span className="font-bold text-purple-400">{parseFloat(data.quoteVolume).toLocaleString(undefined, {maximumFractionDigits: 2})}</span></p>
       </CardContent>
     </Card>
   );

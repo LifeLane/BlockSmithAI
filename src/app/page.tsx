@@ -11,7 +11,7 @@ import LivePriceTicker from '@/components/blocksmith-ai/LivePriceTicker';
 import WelcomeScreen from '@/components/blocksmith-ai/WelcomeScreen';
 import ChatbotIcon from '@/components/blocksmith-ai/ChatbotIcon';
 import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
-import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal'; // New Modal
+import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal'; 
 import { Button } from '@/components/ui/button';
 import { 
   generateTradingStrategyAction, 
@@ -53,7 +53,6 @@ export default function BlockSmithAIPage() {
   const [currentYear, setCurrentYear] = useState<number | null>(null);
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
 
-  // State for guest usage limit
   const [analysisCount, setAnalysisCount] = useState<number>(0);
   const [lastAnalysisDate, setLastAnalysisDate] = useState<string>('');
   const [isSignedUp, setIsSignedUp] = useState<boolean>(false);
@@ -64,15 +63,13 @@ export default function BlockSmithAIPage() {
 
   const appHeaderRef = useRef<HTMLDivElement>(null); 
   const controlPanelRef = useRef<HTMLDivElement>(null); 
-  const mainDisplayAreaRef = useRef<HTMLDivElement>(null); 
+  const strategyExplanationRef = useRef<HTMLDivElement>(null); 
   const mainContentRef = useRef<HTMLDivElement>(null);
   const liveTickerRef = useRef<HTMLDivElement>(null);
   const tradingViewWidgetWrapperRef = useRef<HTMLDivElement>(null); 
 
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
-
-    // Load usage data from localStorage
     const storedCount = localStorage.getItem('bsaiAnalysisCount');
     const storedDate = localStorage.getItem('bsaiLastAnalysisDate');
     const storedSignupStatus = localStorage.getItem('bsaiIsSignedUp');
@@ -84,7 +81,6 @@ export default function BlockSmithAIPage() {
       if (storedDate === today && storedCount) {
         setAnalysisCount(parseInt(storedCount, 10));
       } else {
-        // Reset for new day or first time
         localStorage.setItem('bsaiAnalysisCount', '0');
         localStorage.setItem('bsaiLastAnalysisDate', today);
         setAnalysisCount(0);
@@ -108,7 +104,7 @@ export default function BlockSmithAIPage() {
         liveTickerRef.current, 
         tradingViewWidgetWrapperRef.current, 
         controlPanelRef.current, 
-        mainDisplayAreaRef.current, 
+        strategyExplanationRef.current, 
       ].filter(Boolean);
 
       if (elementsToAnimate.length > 0) {
@@ -187,21 +183,20 @@ export default function BlockSmithAIPage() {
       const today = new Date().toISOString().split('T')[0];
       let currentCount = analysisCount;
       if (lastAnalysisDate !== today) {
-        currentCount = 0; // Reset count for the new day
-        updateUsageData(0); // Persist reset
+        currentCount = 0; 
+        updateUsageData(0); 
       }
 
       if (currentCount >= MAX_GUEST_ANALYSES) {
         setShowAirdropModal(true);
         toast({
           title: "Daily Limit Reached",
-          description: "Guests are limited to 3 analyses per day. Sign up for unlimited access & airdrop!",
+          description: <span className="text-foreground">Guests are limited to <strong className="text-accent">3 analyses per day</strong>. <strong className="text-primary">Sign up</strong> for <strong className="text-tertiary">unlimited access</strong> & the <strong className="text-orange-400">BSAI airdrop!</strong></span>,
           variant: "default",
         });
         return;
       }
-      // Only increment if analysis proceeds for guest
-       updateUsageData(currentCount + 1);
+      updateUsageData(currentCount + 1);
     }
     
     setIsLoadingStrategy(true);
@@ -224,7 +219,6 @@ export default function BlockSmithAIPage() {
                 variant: "destructive",
             });
             setIsLoadingStrategy(false);
-            // Revert count if market data fetch failed for guest
             if(!isSignedUp && analysisCount > 0) updateUsageData(analysisCount -1);
             return;
         }
@@ -290,13 +284,12 @@ export default function BlockSmithAIPage() {
         description: result.error,
         variant: "destructive",
       });
-      // Revert count if strategy generation failed for guest
       if(!isSignedUp && analysisCount > 0) updateUsageData(analysisCount -1);
     } else {
       setAiStrategy(result);
        toast({
-        title: "AI Edge Revealed!",
-        description: `New AI strategy generated for ${symbol}.`,
+        title: <span className="text-accent">AI Edge Revealed!</span>,
+        description: <span className="text-foreground">New AI strategy generated for <strong className="text-primary">{symbol}</strong>.</span>,
       });
     }
     setIsLoadingStrategy(false);
@@ -315,12 +308,9 @@ export default function BlockSmithAIPage() {
     localStorage.setItem('bsaiIsSignedUp', 'true');
     setShowAirdropModal(false);
     toast({
-      title: "Signup Successful!",
-      description: "You're all set for the airdrop & offering. Unlimited analyses unlocked!",
+      title: <span className="text-accent">Signup Successful!</span>,
+      description: <span className="text-foreground">You're all set for the <strong className="text-orange-400">airdrop</strong> & <strong className="text-purple-400">offering</strong>. <strong className="text-primary">Unlimited analyses</strong> unlocked!</span>,
     });
-    // Optional: Automatically trigger analysis if it was blocked
-    // This might require storing the pending analysis request or just letting user click again
-    // For now, we'll just unlock the button.
   };
 
   const isButtonDisabled = isLoadingStrategy || 
@@ -377,7 +367,7 @@ export default function BlockSmithAIPage() {
                 <Button 
                   onClick={handleGenerateStrategy} 
                   disabled={isButtonDisabled}
-                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 text-base shadow-lg border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--accent)/0.7)] transition-all duration-300 ease-in-out mt-auto"
+                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 text-base shadow-lg border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 ease-in-out mt-auto"
                 >
                   {isLoadingStrategy ? (
                     <>
@@ -393,13 +383,13 @@ export default function BlockSmithAIPage() {
                 </Button>
                 {!isSignedUp && analysisCount > 0 && (
                    <p className="text-xs text-center text-muted-foreground mt-2">
-                     Analyses today: {analysisCount} / {MAX_GUEST_ANALYSES}. <button onClick={() => setShowAirdropModal(true)} className="underline text-primary hover:text-accent">Sign up</button> for unlimited.
+                     Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Sign up</button> for <strong className="text-orange-400">unlimited</strong>.
                    </p>
                 )}
               </div>
 
               {/* Strategy Explanation Column (Source Order 2, Visual Order 2 on LG) */}
-              <div className="lg:col-span-2 space-y-8 lg:order-2" ref={mainDisplayAreaRef}>
+              <div className="lg:col-span-2 space-y-8 lg:order-2" ref={strategyExplanationRef}>
                 <StrategyExplanationSection 
                   strategy={aiStrategy} 
                   liveMarketData={liveMarketData}
@@ -420,8 +410,8 @@ export default function BlockSmithAIPage() {
         </>
       )}
       <footer className="text-center py-4 mt-auto text-sm text-muted-foreground border-t border-border/50">
-        {currentYear ? `© ${currentYear} ` : ''}BlockSmithAI (because someone has to build this stuff).
-        Not financial advice, obviously. Do Your Own Research, genius! 🧐
+        {currentYear ? `© ${currentYear} ` : ''}<strong className="text-primary">BlockSmithAI</strong> (because someone has to build this <strong className="text-accent">awesome</strong> stuff).
+        Not financial advice, <strong className="text-tertiary">obviously</strong>. Do Your Own Research, <strong className="text-orange-400">genius</strong>! 🧐
       </footer>
     </div>
   );

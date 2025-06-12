@@ -66,15 +66,15 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
     return (
       <Card className="shadow-lg w-full bg-card border-border transition-all duration-300 ease-in-out">
         <CardHeader className="items-center text-center">
-          <Skeleton className="h-7 w-2/3 mb-2" />
-           <Skeleton className="h-4 w-1/3" />
+          <Skeleton className="h-7 w-2/3 mb-2 bg-muted" />
+           <Skeleton className="h-4 w-1/3 bg-muted" />
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
+            {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-20 w-full bg-muted" />)}
           </div>
-          <Skeleton className="h-12 w-full mt-4" /> 
-          <Skeleton className="h-10 w-full mt-4" /> 
+          <Skeleton className="h-12 w-full mt-4 bg-muted" /> 
+          <Skeleton className="h-10 w-full mt-4 bg-muted" /> 
         </CardContent>
       </Card>
     );
@@ -92,7 +92,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
         <CardContent className="text-center">
           <p className="text-destructive-foreground">{error}</p>
           <p className="text-sm text-muted-foreground mt-2">
-            Looks like my <strong className="text-foreground">genius circuits</strong> are misfiring. Try again, or perhaps the market itself is too <strong className="text-accent">chaotic</strong> even for me.
+            Looks like my <strong className="text-accent">genius circuits</strong> are <strong className="text-orange-500">misfiring</strong>. Try again, or perhaps the market itself is too <strong className="text-purple-400">chaotic</strong> even for me.
           </p>
         </CardContent>
       </Card>
@@ -101,11 +101,11 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
 
   if (!strategy) {
     return (
-      <Card className="shadow-lg w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_20px_5px_hsl(var(--accent)/0.5)]">
+      <Card className="shadow-lg w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_20px_5px_hsl(var(--tertiary)/0.6)]">
         <CardHeader className="items-center text-center">
           <CardTitle className="flex items-center text-xl font-semibold text-foreground">
             <Sparkles className="mr-2 h-6 w-6 text-primary" />
-            My AI Brain is <span className="text-primary mx-1">Buzzing</span> with Potential Alpha...
+            My <span className="text-primary mx-1">AI Brain</span> is <span className="text-accent">Buzzing</span> with Potential <span className="text-orange-400">Alpha</span>...
           </CardTitle>
            <CardDescription className="text-center text-muted-foreground">
              ...but it's not going to analyze <strong className="text-accent">{symbol}</strong> for free, you know. Or maybe it will. <strong className="text-primary">There's only one way to find out.</strong>
@@ -113,8 +113,8 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
         </CardHeader>
         <CardContent className="text-center">
           <p className="text-muted-foreground py-8">
-            Go on, press that <strong className="text-accent">ridiculously bright pink button</strong>. What's the worst that could happen? 
-            You might actually get a (hypothetically) <strong className="text-primary">brilliant trading idea</strong>. Or, you know, just amuse the AI.
+            Go on, press that <strong className="text-accent">ridiculously bright yellow button</strong>. What's the worst that could happen? 
+            You might actually get a (hypothetically) <strong className="text-primary">brilliant trading idea</strong>. Or, you know, just amuse the <strong className="text-purple-400">AI overlord</strong>.
           </p>
         </CardContent>
       </Card>
@@ -127,12 +127,13 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   const lowerSentiment = strategy.sentiment?.toLowerCase();
   if (lowerSentiment === 'bullish') {
     sentimentIcon = <TrendingUp className="h-5 w-5 text-green-400" />;
-    sentimentColor = 'text-green-400';
+    sentimentColor = 'text-green-400 font-bold';
   } else if (lowerSentiment === 'bearish') {
     sentimentIcon = <TrendingDown className="h-5 w-5 text-red-400" />;
-    sentimentColor = 'text-red-400';
+    sentimentColor = 'text-red-400 font-bold';
   } else {
-    sentimentIcon = <Brain className="h-5 w-5 text-primary" />;
+    sentimentIcon = <Brain className="h-5 w-5 text-purple-400" />;
+    sentimentColor = 'text-purple-400 font-semibold';
   }
 
   let signalIcon, signalColorCls, signalTextFormatted = strategy.signal?.toUpperCase() || 'N/A';
@@ -151,19 +152,19 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
       break;
     case 'HOLD':
     default:
-      signalIcon = <PauseCircle className="h-6 w-6 text-primary" />;
-      signalColorCls = "text-primary font-bold";
+      signalIcon = <PauseCircle className="h-6 w-6 text-orange-400" />;
+      signalColorCls = "text-orange-400 font-bold";
       break;
   }
 
   return (
-    <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_20px_5px_hsl(var(--accent)/0.6)]">
+    <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_20px_5px_hsl(var(--tertiary)/0.6)]">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-semibold text-foreground flex items-center justify-center">
-           <Unlock className="mr-3 h-7 w-7 text-primary" />
-          Your AI Edge Revealed: <span className="text-accent ml-2 font-bold">{symbol}</span>
+           <Unlock className="mr-3 h-7 w-7 text-accent" />
+          Your <span className="text-primary mx-1">AI Edge</span> Revealed: <span className="text-accent ml-2 font-bold">{symbol}</span>
         </CardTitle>
-         <CardDescription className="text-muted-foreground">These <strong className="text-primary">AI-driven parameters</strong> could be your next market move. <strong className="text-accent">No promises!</strong></CardDescription>
+         <CardDescription className="text-muted-foreground">These <strong className="text-primary">AI-driven parameters</strong> could be your next <strong className="text-orange-400">market move</strong>. <strong className="text-purple-400">No promises!</strong></CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         
@@ -184,7 +185,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
             title="Sentiment" 
             value={strategy.sentiment || 'N/A'} 
             icon={sentimentIcon} 
-            valueClassName={`${sentimentColor} font-semibold`}
+            valueClassName={`${sentimentColor}`}
           />
           <StatCard 
             title="Entry Zone" 
@@ -206,8 +207,8 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StatCard 
                 title="Confidence" 
-                value={<span className="text-primary">{strategy.confidence || 'N/A'}</span>}
-                icon={<ShieldCheck size={20} className="text-primary"/>} 
+                value={<span className="text-tertiary">{strategy.confidence || 'N/A'}</span>}
+                icon={<ShieldCheck size={20} className="text-tertiary"/>} 
             />
             <StatCard 
                 title="GPT Score" 
@@ -216,13 +217,13 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
             />
             <StatCard 
                 title="Risk Rating" 
-                value={<span className="text-red-500">{strategy.risk_rating || 'N/A'}</span>} 
-                icon={<AlertTriangle size={20} className="text-red-500"/>} 
+                value={<span className="text-orange-500">{strategy.risk_rating || 'N/A'}</span>} 
+                icon={<AlertTriangle size={20} className="text-orange-500"/>} 
             />
         </div>
         
         <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="item-1" className="border-accent/30 bg-background/30 rounded-lg shadow hover:border-accent transition-colors">
+          <AccordionItem value="item-1" className="border-accent/30 bg-background/30 rounded-lg shadow hover:border-tertiary transition-colors">
             <AccordionTrigger className="px-4 py-3 text-base hover:no-underline hover:text-primary transition-colors">
               <div className="flex items-center">
                 <Info className="mr-2 h-5 w-5 text-primary" />

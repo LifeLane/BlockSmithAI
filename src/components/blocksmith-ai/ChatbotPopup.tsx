@@ -62,8 +62,8 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
 
       if ('error' in result) {
         toast({
-            title: "BSAI is feeling temperamental",
-            description: result.error,
+            title: <span className="text-orange-400">BSAI is feeling temperamental</span>,
+            description: <span className="text-foreground">{result.error}</span>,
             variant: "destructive",
         });
         setMessages((prevMessages) => [...prevMessages, {role: 'model', parts: [{text: `Hmph. My circuits are buzzing incorrectly. Error: ${result.error}`}]}]);
@@ -73,8 +73,8 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "An unexpected error occurred.";
       toast({
-        title: "Connection Error",
-        description: `Could not reach BSAI: ${errorMsg}`,
+        title: <span className="text-red-500">Connection Error</span>,
+        description: <span className="text-foreground">Could not reach BSAI: {errorMsg}</span>,
         variant: "destructive",
       });
       setMessages((prevMessages) => [...prevMessages, {role: 'model', parts: [{text: `Looks like the hamsters powering my server are on strike. Try again later.`}]}]);
@@ -93,7 +93,7 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
             Chat with <span className="text-accent ml-1">BlockSmithAI</span>
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Your sarcastic crypto genius is <strong className="text-foreground">ready</strong> to (begrudgingly) assist.
+            Your <strong className="text-purple-400">sarcastic crypto genius</strong> is <strong className="text-orange-400">ready</strong> to (begrudgingly) assist.
           </DialogDescription>
         </DialogHeader>
         

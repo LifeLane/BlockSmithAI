@@ -54,27 +54,27 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
           <CardTitle ref={titleRef} className="text-3xl font-bold font-headline text-foreground">
             Greetings, <span className="text-primary">Intrepid Analyst</span>!
           </CardTitle>
-          <CardDescription className="text-accent font-semibold">
-            From the Experimental Labs of BlockSmithAI
+          <CardDescription className="text-tertiary font-semibold">
+            From the <strong className="text-orange-400">Experimental Labs</strong> of <strong className="text-accent">BlockSmithAI</strong>
           </CardDescription>
         </CardHeader>
         <CardContent ref={descriptionContainerRef} className="space-y-4 text-muted-foreground">
           <p>
-            You've stumbled upon the digital forge where <strong className="text-foreground/90">algorithms dream of alpha</strong> and data streams flow like caffeinated rivers.
-            We've been tinkering with the market's quantum fluctuations (or just staring at charts, you know, details).
+            You've stumbled upon the digital forge where <strong className="text-foreground/90">algorithms dream of <span className="text-orange-400">alpha</span></strong> and data streams flow like <strong className="text-purple-400">caffeinated rivers</strong>.
+            We've been tinkering with the market's <strong className="text-primary">quantum fluctuations</strong> (or just staring at charts, you know, <strong className="text-accent">details</strong>).
           </p>
           <p>
-            Our AI is primed, protocols are... <strong className="text-foreground/90">mostly stable</strong>, and the coffee machine is probably working.
-            Ready to peer into the crystal ball of code and see what <strong className="text-primary">"insights"</strong> we've conjured?
+            Our AI is <strong className="text-primary">primed</strong>, protocols are... <strong className="text-foreground/90">mostly stable</strong>, and the <strong className="text-purple-400">coffee machine</strong> is probably working.
+            Ready to peer into the <strong className="text-orange-400">crystal ball</strong> of code and see what <strong className="text-accent">"insights"</strong> we've conjured?
           </p>
           <Button
             ref={buttonRef}
             onClick={onProceed}
             size="lg"
-            className="mt-6 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 px-8 text-lg shadow-lg hover:shadow-accent/50 transition-all duration-300 transform hover:scale-105 active:scale-95"
+            className="mt-6 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 px-8 text-lg shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105 active:scale-95"
           >
             <Sparkles className="mr-2 h-5 w-5" />
-            Unleash the AI Oracle
+            Unleash the <span className="text-primary-foreground">AI Oracle</span>
           </Button>
         </CardContent>
       </Card>

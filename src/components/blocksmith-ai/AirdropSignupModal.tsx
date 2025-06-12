@@ -15,9 +15,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/ui/label"; // Not used, can remove if FormLabel is sufficient
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Mail, Send as TelegramIcon, Link as SolanaIcon, Gift, Rocket, Sparkles } from 'lucide-react'; // Using Send for Telegram, Link for Solana
+import { Mail, Send as TelegramIcon, Link as SolanaIcon, Gift, Rocket, Sparkles } from 'lucide-react';
 
 interface AirdropSignupModalProps {
   isOpen: boolean;
@@ -44,11 +44,9 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
   });
 
   const onSubmit = async (data: SignupFormData) => {
-    // In a real app, you'd send this data to your backend.
-    // For now, we just simulate success.
     console.log("Airdrop Signup Data:", data);
     onSignupSuccess();
-    form.reset(); // Reset form after successful submission
+    form.reset(); 
   };
 
   return (
@@ -57,11 +55,11 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
         <DialogHeader className="text-center items-center">
           <Gift className="h-12 w-12 text-accent mb-3" />
           <DialogTitle className="text-2xl font-headline text-primary flex items-center justify-center">
-            <Sparkles className="h-6 w-6 mr-2 text-primary" />
-            Unlock Your <span className="text-accent mx-1">Full Potential!</span>
+            <Sparkles className="h-6 w-6 mr-2 text-accent" />
+            Unlock Your <span className="text-orange-400 mx-1">Full Potential!</span>
           </DialogTitle>
           <DialogDescription className="text-muted-foreground px-2">
-            Join the BlockSmithAI revolution! Submit your details for a <strong className="text-foreground">massive 40 Billion $BSAI token airdrop</strong>, exclusive access to our <strong className="text-foreground">1st Public Offering</strong>, and <strong className="text-primary">unlimited AI analyses</strong>.
+            Join the <strong className="text-purple-400">BlockSmithAI revolution!</strong> Submit for a <strong className="text-accent">massive 40 Billion $BSAI token airdrop</strong>, exclusive access to our <strong className="text-primary">1st Public Offering</strong>, and <strong className="text-orange-400">unlimited AI analyses</strong>.
           </DialogDescription>
         </DialogHeader>
         
@@ -76,7 +74,7 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
                     <Mail className="mr-2 h-4 w-4 text-primary" /> Email Address
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="you@example.com" {...field} className="bg-background focus:border-accent"/>
+                    <Input placeholder="you@example.com" {...field} className="bg-background focus:border-accent focus:ring-accent"/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -91,7 +89,7 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
                     <TelegramIcon className="mr-2 h-4 w-4 text-primary" /> Telegram Username
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="@your_username" {...field} className="bg-background focus:border-accent"/>
+                    <Input placeholder="@your_username" {...field} className="bg-background focus:border-accent focus:ring-accent"/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -106,7 +104,7 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
                     <SolanaIcon className="mr-2 h-4 w-4 text-primary" /> Solana Wallet Address
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="Your Solana public key" {...field} className="bg-background focus:border-accent"/>
+                    <Input placeholder="Your Solana public key" {...field} className="bg-background focus:border-accent focus:ring-accent"/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -119,14 +117,14 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
                 disabled={form.formState.isSubmitting}
               >
                 <Rocket className="mr-2 h-5 w-5" />
-                Secure My Spot & Unlock AI!
+                Secure My Spot & <span className="text-primary-foreground">Unlock AI!</span>
               </Button>
             </DialogFooter>
           </form>
         </Form>
         <p className="text-xs text-muted-foreground text-center px-6 pb-4">
-            By submitting, you agree to be contacted about the BSAI airdrop and public offering.
-            Holding $BSAI tokens grants unlimited analysis access.
+            By submitting, you agree to be contacted about the <strong className="text-accent">BSAI airdrop</strong> and <strong className="text-primary">public offering</strong>.
+            Holding <strong className="text-orange-400">$BSAI tokens</strong> grants <strong className="text-purple-400">unlimited analysis access</strong>.
         </p>
       </DialogContent>
     </Dialog>
