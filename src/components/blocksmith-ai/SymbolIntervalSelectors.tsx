@@ -17,7 +17,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Label } from "@/components/ui/label";
-import { Check, ChevronsUpDown } from "lucide-react"
+import { Check, ChevronsUpDown, Target as TargetIcon, Clock } from "lucide-react" // Added TargetIcon and Clock
 import { cn } from "@/lib/utils"
 import type { FormattedSymbol } from '@/app/actions';
 
@@ -53,26 +53,27 @@ const SymbolIntervalSelectors: FunctionComponent<SymbolIntervalSelectorsProps> =
     if (selectedSymbolObj) {
       setCurrentSymbolLabel(selectedSymbolObj.label);
     } else if (symbol && symbols.length > 0) {
-      // If current symbol not in dynamic list (e.g. initial default), but list has loaded
-      // try to find it or show its value
       const defaultSymbolInList = symbols.find(s => s.value === 'BTCUSDT');
       if (defaultSymbolInList && symbol === 'BTCUSDT') {
         setCurrentSymbolLabel(defaultSymbolInList.label);
       } else {
-         setCurrentSymbolLabel(symbol); // Fallback to show the raw symbol value
+         setCurrentSymbolLabel(symbol); 
       }
     } else if (symbol && isLoadingSymbols) {
-        setCurrentSymbolLabel("Loading symbols...");
+        setCurrentSymbolLabel("Loading assets...");
     }
      else {
-      setCurrentSymbolLabel(symbol || "Select symbol...");
+      setCurrentSymbolLabel(symbol || "Select asset...");
     }
   }, [symbol, symbols, isLoadingSymbols]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-card rounded-lg shadow-md">
       <div>
-        <Label htmlFor="symbol-select" className="mb-2 block text-sm font-medium text-muted-foreground">Symbol</Label>
+        <Label htmlFor="symbol-select" className="mb-2 block text-sm font-medium text-muted-foreground flex items-center">
+          <TargetIcon className="mr-2 h-4 w-4 text-primary" />
+          Target Asset
+        </Label>
         <Popover open={openPopover} onOpenChange={setOpenPopover}>
           <PopoverTrigger asChild>
             <Button
@@ -84,29 +85,28 @@ const SymbolIntervalSelectors: FunctionComponent<SymbolIntervalSelectorsProps> =
               disabled={isLoadingSymbols && symbols.length === 0}
             >
               <span className="truncate">
-                {currentSymbolLabel || (isLoadingSymbols ? "Loading symbols..." : "Select symbol...")}
+                {currentSymbolLabel || (isLoadingSymbols ? "Loading assets..." : "Select asset...")}
               </span>
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
             <Command>
-              <CommandInput placeholder="Search symbol..." disabled={isLoadingSymbols && symbols.length === 0} />
+              <CommandInput placeholder="Search asset..." disabled={isLoadingSymbols && symbols.length === 0} />
               <CommandList>
                 {isLoadingSymbols && symbols.length === 0 ? (
-                  <CommandEmpty>Loading available symbols...</CommandEmpty>
+                  <CommandEmpty>Loading available assets...</CommandEmpty>
                 ) : symbols.length === 0 && !isLoadingSymbols ? (
-                  <CommandEmpty>No symbols found. Check API or try again.</CommandEmpty>
+                  <CommandEmpty>No assets found. Check API or try again.</CommandEmpty>
                 ): (
-                  <CommandEmpty>No symbol found.</CommandEmpty>
+                  <CommandEmpty>No asset found.</CommandEmpty>
                 )}
                 <CommandGroup>
                   {symbols.map((s) => (
                     <CommandItem
                       key={s.value}
-                      value={s.label} // Search by label
+                      value={s.label} 
                       onSelect={(currentValue) => {
-                        // Find by label, then call onSymbolChange with value
                         const selected = symbols.find(item => item.label.toLowerCase() === currentValue.toLowerCase());
                         if (selected) {
                           onSymbolChange(selected.value);
@@ -132,10 +132,13 @@ const SymbolIntervalSelectors: FunctionComponent<SymbolIntervalSelectorsProps> =
         </Popover>
       </div>
       <div>
-        <Label htmlFor="interval-select" className="mb-2 block text-sm font-medium text-muted-foreground">Timeframe</Label>
+        <Label htmlFor="interval-select" className="mb-2 block text-sm font-medium text-muted-foreground flex items-center">
+          <Clock className="mr-2 h-4 w-4 text-primary" />
+          Analysis Horizon
+        </Label>
         <Select value={interval} onValueChange={onIntervalChange}>
           <SelectTrigger id="interval-select" className="w-full text-sm">
-            <SelectValue placeholder="Select interval" />
+            <SelectValue placeholder="Select horizon" />
           </SelectTrigger>
           <SelectContent>
             {INTERVALS.map((i) => (

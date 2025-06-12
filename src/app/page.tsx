@@ -8,6 +8,7 @@ import TradingViewWidget from '@/components/blocksmith-ai/TradingViewWidget';
 import ControlsTabs from '@/components/blocksmith-ai/ControlsTabs';
 import StrategyExplanationSection from '@/components/blocksmith-ai/StrategyExplanationSection';
 import LivePriceTicker from '@/components/blocksmith-ai/LivePriceTicker';
+import WelcomeScreen from '@/components/blocksmith-ai/WelcomeScreen';
 import { Button } from '@/components/ui/button';
 import { 
   generateTradingStrategyAction, 
@@ -28,6 +29,7 @@ const DEFAULT_SYMBOLS: FormattedSymbol[] = [
 ];
 
 export default function BlockSmithAIPage() {
+  const [showWelcomeScreen, setShowWelcomeScreen] = useState<boolean>(true);
   const [symbol, setSymbol] = useState<string>('BTCUSDT');
   const [interval, setInterval] = useState<string>('15');
   const [selectedIndicators, setSelectedIndicators] = useState<string[]>(['RSI', 'EMA']);
@@ -50,28 +52,32 @@ export default function BlockSmithAIPage() {
   const appHeaderRef = useRef<HTMLDivElement>(null); 
   const controlPanelRef = useRef<HTMLDivElement>(null); 
   const mainDisplayAreaRef = useRef<HTMLDivElement>(null);
+  const mainContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
   }, []);
 
+  // GSAP animation for main content area after welcome screen
   useEffect(() => {
-    const elementsToAnimate = [
-      controlPanelRef.current,
-      mainDisplayAreaRef.current,
-    ].filter(Boolean);
+    if (!showWelcomeScreen && mainContentRef.current) {
+      const elementsToAnimate = [
+        controlPanelRef.current,
+        mainDisplayAreaRef.current,
+      ].filter(Boolean);
 
-    if (elementsToAnimate.length > 0) {
-      gsap.from(elementsToAnimate, {
-        opacity: 0,
-        y: 50,
-        duration: 0.8,
-        stagger: 0.25, 
-        delay: 0.5, 
-        ease: 'power3.out',
-      });
+      if (elementsToAnimate.length > 0) {
+        gsap.from(elementsToAnimate, {
+          opacity: 0,
+          y: 50,
+          duration: 0.8,
+          stagger: 0.25, 
+          delay: 0.3, // Slight delay after welcome screen disappears
+          ease: 'power3.out',
+        });
+      }
     }
-  }, []);
+  }, [showWelcomeScreen]);
 
   useEffect(() => {
     const loadSymbols = async () => {
@@ -123,13 +129,13 @@ export default function BlockSmithAIPage() {
   }, [toast]);
 
   useEffect(() => {
-    if (symbol) {
+    if (!showWelcomeScreen && symbol) { // Only fetch if welcome screen is not shown
       fetchAndSetMarketData(symbol);
-    } else {
+    } else if (!showWelcomeScreen) {
       setLiveMarketData(null); 
       setMarketDataError("No symbol selected to fetch market data.");
     }
-  }, [symbol, fetchAndSetMarketData]);
+  }, [symbol, fetchAndSetMarketData, showWelcomeScreen]);
   
   const fetchStrategy = useCallback(async () => {
     setIsLoadingStrategy(true);
@@ -213,69 +219,76 @@ export default function BlockSmithAIPage() {
     setIsLoadingStrategy(false);
   }, [symbol, interval, selectedIndicators, riskLevel, toast, liveMarketData, fetchAndSetMarketData, marketDataError]);
 
+  const handleProceedFromWelcome = () => {
+    setShowWelcomeScreen(false);
+  };
 
   return (
     <div className="min-h-screen flex flex-col pb-12 bg-background">
       <div ref={appHeaderRef}> 
         <AppHeader />
       </div>
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          
-          <div className="lg:col-span-1 space-y-6 flex flex-col" ref={controlPanelRef}>
-            <SymbolIntervalSelectors
-              symbol={symbol}
-              onSymbolChange={setSymbol}
-              interval={interval}
-              onIntervalChange={setInterval}
-              symbols={availableSymbols}
-              isLoadingSymbols={isLoadingSymbols}
-            />
-            <ControlsTabs
-              selectedIndicators={selectedIndicators}
-              onIndicatorChange={handleIndicatorChange}
-              riskLevel={riskLevel}
-              onRiskChange={setRiskLevel}
-              liveMarketData={liveMarketData}
-              isLoadingMarketData={isLoadingMarketData}
-              marketDataError={marketDataError}
-              symbolForDisplay={symbol}
-            />
-            <Button 
-              onClick={fetchStrategy} 
-              disabled={isLoadingStrategy || isLoadingMarketData || !!marketDataError || isLoadingSymbols} 
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 text-base shadow-lg hover:shadow-primary/50 transition-shadow"
-            >
-              {isLoadingStrategy ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Unlocking Your Edge...
-                </>
-              ) : (
-                "Reveal My AI Edge!"
-              )}
-            </Button>
-             {marketDataError && !liveMarketData && ( 
-                <p className="text-xs text-center text-red-500">{marketDataError}</p>
-            )}
-          </div>
+      <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center justify-center">
+        {showWelcomeScreen ? (
+          <WelcomeScreen onProceed={handleProceedFromWelcome} />
+        ) : (
+          <div ref={mainContentRef} className="w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+              <div className="lg:col-span-1 space-y-6 flex flex-col" ref={controlPanelRef}>
+                <SymbolIntervalSelectors
+                  symbol={symbol}
+                  onSymbolChange={setSymbol}
+                  interval={interval}
+                  onIntervalChange={setInterval}
+                  symbols={availableSymbols}
+                  isLoadingSymbols={isLoadingSymbols}
+                />
+                <ControlsTabs
+                  selectedIndicators={selectedIndicators}
+                  onIndicatorChange={handleIndicatorChange}
+                  riskLevel={riskLevel}
+                  onRiskChange={setRiskLevel}
+                  liveMarketData={liveMarketData}
+                  isLoadingMarketData={isLoadingMarketData}
+                  marketDataError={marketDataError}
+                  symbolForDisplay={symbol}
+                />
+                <Button 
+                  onClick={fetchStrategy} 
+                  disabled={isLoadingStrategy || isLoadingMarketData || !!marketDataError || isLoadingSymbols} 
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 text-base shadow-lg hover:shadow-primary/50 transition-shadow"
+                >
+                  {isLoadingStrategy ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Unlocking Your Edge...
+                    </>
+                  ) : (
+                    "Reveal My AI Edge!"
+                  )}
+                </Button>
+                 {marketDataError && !liveMarketData && ( 
+                    <p className="text-xs text-center text-red-500">{marketDataError}</p>
+                )}
+              </div>
 
-          
-          <div className="lg:col-span-2 space-y-8" ref={mainDisplayAreaRef}>
-            <div className="bg-card p-1 rounded-lg shadow-xl">
-              <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
+              <div className="lg:col-span-2 space-y-8" ref={mainDisplayAreaRef}>
+                <div className="bg-card p-1 rounded-lg shadow-xl">
+                  <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
+                </div>
+                <StrategyExplanationSection 
+                  strategy={aiStrategy} 
+                  liveMarketData={liveMarketData}
+                  isLoading={isLoadingStrategy} 
+                  error={strategyError}
+                  symbol={symbol}
+                />
+              </div>
             </div>
-            <StrategyExplanationSection 
-              strategy={aiStrategy} 
-              liveMarketData={liveMarketData}
-              isLoading={isLoadingStrategy} 
-              error={strategyError}
-              symbol={symbol}
-            />
           </div>
-        </div>
+        )}
       </main>
-      <LivePriceTicker />
+      {!showWelcomeScreen && <LivePriceTicker />}
       <footer className="text-center py-4 text-sm text-muted-foreground border-t border-border/50">
         {currentYear ? `© ${currentYear} ` : ''}BlockSmithAI. Powered by Google AI. Not financial advice.
       </footer>

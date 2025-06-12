@@ -1,0 +1,77 @@
+
+'use client';
+
+import type { FunctionComponent } from 'react';
+import { useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { TestTube2, Sparkles } from 'lucide-react';
+import { gsap } from 'gsap';
+
+interface WelcomeScreenProps {
+  onProceed: () => void;
+}
+
+const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => {
+  const welcomeRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const descriptionRef = useRef<HTMLParagraphElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const iconRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    if (welcomeRef.current) {
+        gsap.set(welcomeRef.current, { autoAlpha: 1 }); // Ensure parent is visible for children animations
+    }
+    if (iconRef.current) {
+        tl.from(iconRef.current, { scale: 0, rotation: -180, duration: 0.8, autoAlpha: 0, delay: 0.2 });
+    }
+    if (titleRef.current) {
+        tl.from(titleRef.current, { y: 30, autoAlpha: 0, duration: 0.6 }, "-=0.5");
+    }
+    if (descriptionRef.current) {
+        tl.from(descriptionRef.current, { y: 20, autoAlpha: 0, duration: 0.6, stagger: 0.2 }, "-=0.4");
+    }
+    if (buttonRef.current) {
+        tl.from(buttonRef.current, { scale: 0.8, autoAlpha: 0, duration: 0.5 }, "-=0.3");
+    }
+  }, []);
+
+  return (
+    <div ref={welcomeRef} className="flex flex-col items-center justify-center text-center p-4 max-w-xl mx-auto" style={{opacity: 0}}>
+      <Card className="w-full shadow-xl border-primary/30 bg-card/80 backdrop-blur-sm">
+        <CardHeader className="items-center">
+          <TestTube2 ref={iconRef} className="h-16 w-16 text-primary mb-4" />
+          <CardTitle ref={titleRef} className="text-3xl font-bold font-headline text-foreground">
+            Greetings, Intrepid Analyst!
+          </CardTitle>
+          <CardDescription className="text-primary font-semibold">
+            From the Experimental Labs of BlockSmithAI
+          </CardDescription>
+        </CardHeader>
+        <CardContent ref={descriptionRef} className="space-y-4 text-muted-foreground">
+          <p>
+            You've stumbled upon the digital forge where algorithms dream of alpha and data streams flow like caffeinated rivers.
+            We've been tinkering with the market's quantum fluctuations (or just staring at charts, you know, details).
+          </p>
+          <p>
+            Our AI is primed, protocols are... mostly stable, and the coffee machine is probably working.
+            Ready to peer into the crystal ball of code and see what "insights" we've conjured?
+          </p>
+          <Button
+            ref={buttonRef}
+            onClick={onProceed}
+            size="lg"
+            className="mt-6 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 px-8 text-lg shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105"
+          >
+            <Sparkles className="mr-2 h-5 w-5" />
+            Unleash the AI Oracle
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default WelcomeScreen;
