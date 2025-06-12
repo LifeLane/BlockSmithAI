@@ -11,6 +11,7 @@ import LivePriceTicker from '@/components/blocksmith-ai/LivePriceTicker';
 import WelcomeScreen from '@/components/blocksmith-ai/WelcomeScreen';
 import ChatbotIcon from '@/components/blocksmith-ai/ChatbotIcon';
 import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
+import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal'; // New Modal
 import { Button } from '@/components/ui/button';
 import { 
   generateTradingStrategyAction, 
@@ -29,6 +30,8 @@ const DEFAULT_SYMBOLS: FormattedSymbol[] = [
   { value: "ETHUSDT", label: "ETH/USDT" },
   { value: "SOLUSDT", label: "SOL/USDT" },
 ];
+
+const MAX_GUEST_ANALYSES = 3;
 
 export default function BlockSmithAIPage() {
   const [showWelcomeScreen, setShowWelcomeScreen] = useState<boolean>(true);
@@ -50,6 +53,12 @@ export default function BlockSmithAIPage() {
   const [currentYear, setCurrentYear] = useState<number | null>(null);
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
 
+  // State for guest usage limit
+  const [analysisCount, setAnalysisCount] = useState<number>(0);
+  const [lastAnalysisDate, setLastAnalysisDate] = useState<string>('');
+  const [isSignedUp, setIsSignedUp] = useState<boolean>(false);
+  const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
+
 
   const { toast } = useToast();
 
@@ -62,7 +71,36 @@ export default function BlockSmithAIPage() {
 
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
+
+    // Load usage data from localStorage
+    const storedCount = localStorage.getItem('bsaiAnalysisCount');
+    const storedDate = localStorage.getItem('bsaiLastAnalysisDate');
+    const storedSignupStatus = localStorage.getItem('bsaiIsSignedUp');
+    const today = new Date().toISOString().split('T')[0];
+
+    if (storedSignupStatus === 'true') {
+      setIsSignedUp(true);
+    } else {
+      if (storedDate === today && storedCount) {
+        setAnalysisCount(parseInt(storedCount, 10));
+      } else {
+        // Reset for new day or first time
+        localStorage.setItem('bsaiAnalysisCount', '0');
+        localStorage.setItem('bsaiLastAnalysisDate', today);
+        setAnalysisCount(0);
+      }
+      setLastAnalysisDate(today);
+    }
   }, []);
+
+  const updateUsageData = (newCount: number) => {
+    const today = new Date().toISOString().split('T')[0];
+    localStorage.setItem('bsaiAnalysisCount', newCount.toString());
+    localStorage.setItem('bsaiLastAnalysisDate', today);
+    setAnalysisCount(newCount);
+    setLastAnalysisDate(today);
+  };
+
 
   useEffect(() => {
     if (!showWelcomeScreen && mainContentRef.current) {
@@ -144,7 +182,28 @@ export default function BlockSmithAIPage() {
     }
   }, [symbol, fetchAndSetMarketData, showWelcomeScreen]);
   
-  const fetchStrategy = useCallback(async () => {
+  const handleGenerateStrategy = useCallback(async () => {
+    if (!isSignedUp) {
+      const today = new Date().toISOString().split('T')[0];
+      let currentCount = analysisCount;
+      if (lastAnalysisDate !== today) {
+        currentCount = 0; // Reset count for the new day
+        updateUsageData(0); // Persist reset
+      }
+
+      if (currentCount >= MAX_GUEST_ANALYSES) {
+        setShowAirdropModal(true);
+        toast({
+          title: "Daily Limit Reached",
+          description: "Guests are limited to 3 analyses per day. Sign up for unlimited access & airdrop!",
+          variant: "default",
+        });
+        return;
+      }
+      // Only increment if analysis proceeds for guest
+       updateUsageData(currentCount + 1);
+    }
+    
     setIsLoadingStrategy(true);
     setStrategyError(null);
     setAiStrategy(null);
@@ -165,6 +224,8 @@ export default function BlockSmithAIPage() {
                 variant: "destructive",
             });
             setIsLoadingStrategy(false);
+            // Revert count if market data fetch failed for guest
+            if(!isSignedUp && analysisCount > 0) updateUsageData(analysisCount -1);
             return;
         }
     } else if (marketDataError && !currentDataToUse) { 
@@ -175,6 +236,7 @@ export default function BlockSmithAIPage() {
             variant: "destructive",
         });
         setIsLoadingStrategy(false);
+        if(!isSignedUp && analysisCount > 0) updateUsageData(analysisCount -1);
         return;
     }
 
@@ -189,7 +251,6 @@ export default function BlockSmithAIPage() {
         const lastPriceFormatted = parseFloat(currentDataToUse.lastPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: Math.max(2, (currentDataToUse.lastPrice.toString().split('.')[1]?.length || 0))});
         const highPriceFormatted = parseFloat(currentDataToUse.highPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         const lowPriceFormatted = parseFloat(currentDataToUse.lowPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-
 
         marketDataForAIString = JSON.stringify({
             symbol: currentDataToUse.symbol,
@@ -208,6 +269,7 @@ export default function BlockSmithAIPage() {
         });
         setStrategyError("Insufficient market data for strategy generation.");
         setIsLoadingStrategy(false);
+        if(!isSignedUp && analysisCount > 0) updateUsageData(analysisCount -1);
         return;
     }
 
@@ -228,6 +290,8 @@ export default function BlockSmithAIPage() {
         description: result.error,
         variant: "destructive",
       });
+      // Revert count if strategy generation failed for guest
+      if(!isSignedUp && analysisCount > 0) updateUsageData(analysisCount -1);
     } else {
       setAiStrategy(result);
        toast({
@@ -236,7 +300,7 @@ export default function BlockSmithAIPage() {
       });
     }
     setIsLoadingStrategy(false);
-  }, [symbol, interval, selectedIndicators, riskLevel, toast, liveMarketData, fetchAndSetMarketData, marketDataError]);
+  }, [symbol, interval, selectedIndicators, riskLevel, toast, liveMarketData, fetchAndSetMarketData, marketDataError, isSignedUp, analysisCount, lastAnalysisDate]);
 
   const handleProceedFromWelcome = () => {
     setShowWelcomeScreen(false);
@@ -245,6 +309,26 @@ export default function BlockSmithAIPage() {
   const handleToggleChat = () => {
     setIsChatOpen(prev => !prev);
   };
+
+  const handleAirdropSignupSuccess = () => {
+    setIsSignedUp(true);
+    localStorage.setItem('bsaiIsSignedUp', 'true');
+    setShowAirdropModal(false);
+    toast({
+      title: "Signup Successful!",
+      description: "You're all set for the airdrop & offering. Unlimited analyses unlocked!",
+    });
+    // Optional: Automatically trigger analysis if it was blocked
+    // This might require storing the pending analysis request or just letting user click again
+    // For now, we'll just unlock the button.
+  };
+
+  const isButtonDisabled = isLoadingStrategy || 
+                           isLoadingMarketData || 
+                           !!marketDataError || 
+                           isLoadingSymbols || 
+                           (!isSignedUp && analysisCount >= MAX_GUEST_ANALYSES && !showAirdropModal);
+
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -291,8 +375,8 @@ export default function BlockSmithAIPage() {
                     <p className="text-xs text-center text-red-400">{marketDataError}</p>
                 )}
                 <Button 
-                  onClick={fetchStrategy} 
-                  disabled={isLoadingStrategy || isLoadingMarketData || !!marketDataError || isLoadingSymbols} 
+                  onClick={handleGenerateStrategy} 
+                  disabled={isButtonDisabled}
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 text-base shadow-lg border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--accent)/0.7)] transition-all duration-300 ease-in-out mt-auto"
                 >
                   {isLoadingStrategy ? (
@@ -307,6 +391,11 @@ export default function BlockSmithAIPage() {
                     </>
                   )}
                 </Button>
+                {!isSignedUp && analysisCount > 0 && (
+                   <p className="text-xs text-center text-muted-foreground mt-2">
+                     Analyses today: {analysisCount} / {MAX_GUEST_ANALYSES}. <button onClick={() => setShowAirdropModal(true)} className="underline text-primary hover:text-accent">Sign up</button> for unlimited.
+                   </p>
+                )}
               </div>
 
               {/* Strategy Explanation Column (Source Order 2, Visual Order 2 on LG) */}
@@ -323,6 +412,11 @@ export default function BlockSmithAIPage() {
           </main>
           <ChatbotIcon onClick={handleToggleChat} />
           <ChatbotPopup isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
+          <AirdropSignupModal 
+            isOpen={showAirdropModal} 
+            onOpenChange={setShowAirdropModal}
+            onSignupSuccess={handleAirdropSignupSuccess}
+          />
         </>
       )}
       <footer className="text-center py-4 mt-auto text-sm text-muted-foreground border-t border-border/50">
