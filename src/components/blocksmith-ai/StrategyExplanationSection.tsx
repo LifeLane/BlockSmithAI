@@ -121,7 +121,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
     );
   }
 
-  const currentPrice = liveMarketData?.lastPrice ? parseFloat(liveMarketData.lastPrice).toLocaleString(undefined, { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
+  const currentPrice = liveMarketData?.lastPrice ? parseFloat(liveMarketData.lastPrice).toLocaleString(undefined, { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: Math.max(2, (liveMarketData.lastPrice.split('.')[1]?.length || 0)) }) : 'N/A';
   
   let sentimentIcon, sentimentColor = 'text-foreground';
   const lowerSentiment = strategy.sentiment?.toLowerCase();
@@ -230,7 +230,10 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4 pt-0">
-              <article className="prose prose-sm prose-invert max-w-none text-foreground/90 leading-relaxed prose-strong:text-primary prose-headings:text-accent">
+              <article className="prose prose-base prose-invert max-w-none text-foreground/90 leading-relaxed 
+                                prose-strong:text-primary prose-headings:text-accent 
+                                prose-ul:text-foreground/90 prose-ol:text-foreground/90
+                                prose-li:marker:text-primary">
                 {strategy.explanation || 'No detailed explanation provided.'}
               </article>
             </AccordionContent>
