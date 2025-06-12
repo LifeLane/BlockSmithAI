@@ -288,7 +288,7 @@ export default function BlockSmithAIPage() {
                 <Button 
                   onClick={fetchStrategy} 
                   disabled={isLoadingStrategy || isLoadingMarketData || !!marketDataError || isLoadingSymbols} 
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 text-base shadow-lg border-2 border-transparent hover:border-accent hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 ease-in-out"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 text-base shadow-lg border-2 border-transparent hover:border-accent hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 ease-in-out mt-auto"
                 >
                   {isLoadingStrategy ? (
                     <>
@@ -326,3 +326,4 @@ export default function BlockSmithAIPage() {
 }
 
     
+
