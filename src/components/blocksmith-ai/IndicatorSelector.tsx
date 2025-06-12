@@ -1,3 +1,4 @@
+
 import { FunctionComponent } from 'react';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -16,7 +17,7 @@ const IndicatorSelector: FunctionComponent<IndicatorSelectorProps> = ({
   onIndicatorChange,
 }) => {
   return (
-    <Card className="shadow-md">
+    <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-primary hover:shadow-[0_0_15px_2px_hsl(var(--primary)/0.3)]">
       <CardHeader>
         <CardTitle className="flex items-center text-lg font-semibold">
           <SlidersHorizontal className="mr-2 h-5 w-5 text-primary" />

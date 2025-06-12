@@ -5,7 +5,6 @@ import { Database, AlertCircle, Loader2 } from 'lucide-react';
 import type { LiveMarketData } from '@/app/actions';
 
 interface MarketDataDisplayProps {
-  // apiKeySet prop removed
   liveMarketData: LiveMarketData | null;
   isLoading: boolean;
   error: string | null;
@@ -21,12 +20,9 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
   const baseSymbol = symbolForDisplay.replace('USDT', '');
   const displaySymbol = `${baseSymbol}/USDT`;
 
-  // Removed apiKeySet check, error from backend for missing key will be handled by `error` prop
-  // if (!apiKeySet) { ... }
-
   if (isLoading) {
     return (
-      <Card className="shadow-md">
+      <Card className="shadow-md transition-all duration-300 ease-in-out">
         <CardHeader>
           <CardTitle className="flex items-center text-lg font-semibold">
             <Database className="mr-2 h-5 w-5 text-primary" />
@@ -44,7 +40,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 
   if (error) {
     return (
-      <Card className="shadow-md border-destructive">
+      <Card className="shadow-md border-destructive transition-all duration-300 ease-in-out">
         <CardHeader>
           <CardTitle className="flex items-center text-lg font-semibold text-destructive">
             <AlertCircle className="mr-2 h-5 w-5" />
@@ -64,7 +60,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 
   if (!liveMarketData) {
      return (
-      <Card className="shadow-md">
+      <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-primary hover:shadow-[0_0_15px_2px_hsl(var(--accent)/0.4)]">
         <CardHeader>
           <CardTitle className="flex items-center text-lg font-semibold">
             <Database className="mr-2 h-5 w-5 text-primary" />
@@ -87,7 +83,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 
 
   return (
-    <Card className="shadow-md">
+    <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-primary hover:shadow-[0_0_15px_2px_hsl(var(--accent)/0.4)]">
       <CardHeader>
         <CardTitle className="flex items-center text-lg font-semibold">
           <Database className="mr-2 h-5 w-5 text-primary" />

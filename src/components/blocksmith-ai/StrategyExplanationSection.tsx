@@ -65,7 +65,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
 }) => {
   if (isLoading) {
     return (
-      <Card className="shadow-lg w-full bg-card border-border">
+      <Card className="shadow-lg w-full bg-card border-border transition-all duration-300 ease-in-out">
         <CardHeader>
           <Skeleton className="h-7 w-1/3 mb-2" />
            <Skeleton className="h-4 w-1/4" />
@@ -83,7 +83,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
 
   if (error) {
     return (
-      <Card className="shadow-lg border-destructive w-full bg-card">
+      <Card className="shadow-lg border-destructive w-full bg-card transition-all duration-300 ease-in-out">
         <CardHeader>
           <CardTitle className="flex items-center text-destructive text-xl">
             <AlertTriangle className="mr-2 h-5 w-5" />
@@ -102,7 +102,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
 
   if (!strategy) {
     return (
-      <Card className="shadow-lg w-full bg-card border-border">
+      <Card className="shadow-lg w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_20px_5px_hsl(var(--primary)/0.4)]">
         <CardHeader>
           <CardTitle className="flex items-center text-xl font-semibold text-foreground">
             <Sparkles className="mr-2 h-6 w-6 text-primary" />
@@ -154,7 +154,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   }
 
   return (
-    <Card className="shadow-xl w-full bg-card border-border">
+    <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_20px_5px_hsl(var(--primary)/0.5)]">
       <CardHeader>
         <CardTitle className="text-2xl font-semibold text-foreground flex items-center">
            <Unlock className="mr-3 h-7 w-7 text-primary" />
