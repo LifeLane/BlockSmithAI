@@ -32,7 +32,7 @@ const GenerateTradingStrategyOutputSchema = z.object({
   risk_rating: z.string().describe('The risk rating of the strategy (Low, Medium, High).'),
   gpt_confidence_score: z.string().describe('The GPT confidence score for the strategy (e.g., 0-100%).'),
   sentiment: z.string().describe('A brief sentiment analysis of the market conditions (e.g., Neutral, Bullish, Bearish).'),
-  explanation: z.string().describe('A detailed textual explanation of the trading strategy, market assessment, entry/exit points, and risk considerations, incorporating the signal, entry zone, stop loss, and take profit levels. This explanation should be engaging, insightful, and use clear, vivid language. It should highlight key reasoning and analytical "aha!" moments.'),
+  explanation: z.string().describe('A detailed textual explanation of the trading strategy, market assessment, entry/exit points, and risk considerations, incorporating the signal, entry zone, stop loss, and take profit levels. This explanation should be engaging, insightful, and use clear, vivid language. It should highlight key reasoning and analytical "aha!" moments, and clearly discuss the role of each selected technical indicator.'),
   disclaimer: z.string().describe('A sarcastic GPT disclaimer.'), // This will be added by the action layer
 });
 export type GenerateTradingStrategyOutput = z.infer<typeof GenerateTradingStrategyOutputSchema>;
@@ -60,7 +60,7 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   Market Data: {{{marketData}}}
   Symbol: {{{symbol}}}
   Interval: {{{interval}}}
-  Indicators: {{#each indicators}}{{{this}}} {{/each}}
+  Indicators: {{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
   Risk Level: {{{riskLevel}}}
 
   Based on this information, provide a trading strategy with the following:
@@ -76,13 +76,16 @@ const generateTradingStrategyPrompt = ai.definePrompt({
 
   - Detailed Textual Explanation:
     This is where your genius truly shines. Don't just list facts; *explain* them.
-    Your explanation must be comprehensive, covering the reasoning behind the signal, the rationale for the entry/exit points (entry zone, stop loss, take profit), how the selected indicators and market data support this strategy, and specific risk considerations.
+    Your explanation must be comprehensive, covering the reasoning behind the signal, the rationale for the entry/exit points (entry zone, stop loss, take profit), how the market data supports this strategy, and specific risk considerations.
     Make it *engaging* and *insightful*. Explain your reasoning like you're a seasoned (and slightly smug) market guru revealing secrets to a keen apprentice.
     Use clear, concise language, but inject some personality – a touch of your signature wit where appropriate, without undermining the seriousness of the analysis.
     Break down complex ideas. Highlight the *'aha!'* moments in your analysis.
     Ensure the user understands not just *what* you're suggesting, but *why* it's a potentially smart (hypothetically, of course!) move.
     Focus on clarity, impact, and making the user feel like they've gained a genuine edge.
-    Feel free to use markdown for structure (like bullet points for key indicator contributions or logical steps).
+    
+    **Crucially, for each of the technical indicators provided in the input ({{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}), you MUST include a specific section or clear discussion in your explanation detailing how that particular indicator contributed to your overall strategy, signal, entry, stop loss, or take profit levels. Use markdown (e.g., bolding the indicator name like "**RSI Analysis:** ..." or using bullet points under an indicator's mention) to make these discussions distinct and easy to follow within the overall explanation.**
+    
+    Feel free to use other markdown for overall structure (like main headings or general bullet points for key takeaways) if it enhances clarity.
 `,
 });
 
@@ -97,3 +100,4 @@ const generateTradingStrategyFlow = ai.defineFlow(
     return output!;
   }
 );
+
