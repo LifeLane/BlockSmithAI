@@ -48,7 +48,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
           </CardTitle>
            <CardDescription className="font-headline text-primary">{displaySymbol}</CardDescription>
         </CardHeader>
-        <CardContent className="text-center">
+        <CardContent> {/* Removed text-center from here */}
           <p className="text-destructive-foreground text-sm">{error}</p>
            {error.includes("Binance API Key is not configured") && (
             <p className="text-xs text-muted-foreground mt-1">Please contact the administrator to set up the API key on the server.</p>
@@ -68,7 +68,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
           </CardTitle>
            <CardDescription className="font-headline text-primary">{displaySymbol}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent> {/* Removed text-center from here */}
           <p className="text-sm text-muted-foreground text-center p-4">No market data available for {displaySymbol}.</p>
         </CardContent>
       </Card>
@@ -91,7 +91,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
         </CardTitle>
         <CardDescription className="font-headline text-primary">{actualBaseSymbol}/USDT - ${parseFloat(data.lastPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-2 text-sm text-center">
+      <CardContent className="space-y-2 text-sm"> {/* Removed text-center */}
         <p>
           24h Change:{" "}
           <span className={isPositiveChange ? "text-green-400" : "text-red-400"}>
