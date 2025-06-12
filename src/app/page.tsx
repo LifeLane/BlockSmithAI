@@ -55,10 +55,10 @@ export default function BlockSmithAIPage() {
 
   const appHeaderRef = useRef<HTMLDivElement>(null); 
   const controlPanelRef = useRef<HTMLDivElement>(null); 
-  const mainDisplayAreaRef = useRef<HTMLDivElement>(null); // Will now primarily wrap StrategyExplanationSection
+  const mainDisplayAreaRef = useRef<HTMLDivElement>(null); 
   const mainContentRef = useRef<HTMLDivElement>(null);
   const liveTickerRef = useRef<HTMLDivElement>(null);
-  const tradingViewWidgetWrapperRef = useRef<HTMLDivElement>(null); // New ref for the chart wrapper
+  const tradingViewWidgetWrapperRef = useRef<HTMLDivElement>(null); 
 
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
@@ -68,9 +68,9 @@ export default function BlockSmithAIPage() {
     if (!showWelcomeScreen && mainContentRef.current) {
       const elementsToAnimate = [
         liveTickerRef.current, 
-        tradingViewWidgetWrapperRef.current, // Added chart wrapper to animation
+        tradingViewWidgetWrapperRef.current, 
         controlPanelRef.current,
-        mainDisplayAreaRef.current, // This now refers to the strategy explanation section's container
+        mainDisplayAreaRef.current, 
       ].filter(Boolean);
 
       if (elementsToAnimate.length > 0) {
@@ -256,14 +256,24 @@ export default function BlockSmithAIPage() {
             <LivePriceTicker />
           </div>
           <main ref={mainContentRef} className="flex-grow container mx-auto px-4 py-8 flex flex-col w-full">
-            {/* TradingViewWidget moved here, above the grid */}
             <div ref={tradingViewWidgetWrapperRef} className="bg-card p-1 rounded-lg shadow-xl mb-8">
               <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-              {/* Control Panel Column */}
-              <div className="lg:col-span-1 space-y-6 flex flex-col" ref={controlPanelRef}>
+              {/* Strategy Explanation Column (Source Order 1, Visual Order 2 on LG) */}
+              <div className="lg:col-span-2 space-y-8 lg:order-2" ref={mainDisplayAreaRef}>
+                <StrategyExplanationSection 
+                  strategy={aiStrategy} 
+                  liveMarketData={liveMarketData}
+                  isLoading={isLoadingStrategy} 
+                  error={strategyError}
+                  symbol={symbol}
+                />
+              </div>
+
+              {/* Control Panel Column (Source Order 2, Visual Order 1 on LG) */}
+              <div className="lg:col-span-1 space-y-6 flex flex-col lg:order-1" ref={controlPanelRef}>
                 <SymbolIntervalSelectors
                   symbol={symbol}
                   onSymbolChange={setSymbol}
@@ -300,17 +310,6 @@ export default function BlockSmithAIPage() {
                   )}
                 </Button>
               </div>
-
-              {/* Strategy Explanation Column (now only this) */}
-              <div className="lg:col-span-2 space-y-8" ref={mainDisplayAreaRef}>
-                <StrategyExplanationSection 
-                  strategy={aiStrategy} 
-                  liveMarketData={liveMarketData}
-                  isLoading={isLoadingStrategy} 
-                  error={strategyError}
-                  symbol={symbol}
-                />
-              </div>
             </div>
           </main>
           <ChatbotIcon onClick={handleToggleChat} />
@@ -324,6 +323,3 @@ export default function BlockSmithAIPage() {
     </div>
   );
 }
-
-    
-
