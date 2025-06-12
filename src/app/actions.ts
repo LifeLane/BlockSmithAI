@@ -1,6 +1,4 @@
 
-// @ts-nocheck
-// remove-ts-nocheck-next-line
 "use server";
 import { generateTradingStrategy as genStrategy, type GenerateTradingStrategyInput, type GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
 
@@ -78,9 +76,26 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
 
     const result = await genStrategy(input);
     return result;
-  } catch (error) {
-    console.error("Error generating trading strategy:", error);
-    // Consider making this error more specific if possible, or logging more details
-    return { error: "Failed to generate trading strategy. Please check server logs or try again." };
+  } catch (error: any) {
+    console.error("Error in generateTradingStrategyAction:", error);
+    let errorMessage = "Failed to generate trading strategy. Please check server logs or try again.";
+    
+    // Attempt to get a more specific message from the error object
+    if (error.message) {
+      errorMessage = `Strategy generation failed: ${error.message}`;
+    }
+    // Genkit errors might have a 'details' or other properties for more context
+    if (error.details) {
+         console.error("Error details:", error.details);
+         errorMessage += ` Details: ${typeof error.details === 'object' ? JSON.stringify(error.details) : error.details}`;
+    } else if (error.cause) {
+        console.error("Error cause:", error.cause);
+        errorMessage += ` Cause: ${typeof error.cause === 'object' ? JSON.stringify(error.cause) : error.cause}`;
+    }
+    // Log the full error structure if it's complex
+    if (typeof error === 'object' && error !== null) {
+        console.error("Full error object:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    }
+    return { error: errorMessage };
   }
 }

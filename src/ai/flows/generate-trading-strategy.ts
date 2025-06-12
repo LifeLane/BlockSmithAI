@@ -17,7 +17,7 @@ const GenerateTradingStrategyInputSchema = z.object({
   interval: z.string().describe('The time interval for the chart (e.g., 1m, 15m, 1h, 4h).'),
   indicators: z.array(z.string()).describe('A list of technical indicators selected by the user (e.g., RSI, EMA, VWAP).'),
   riskLevel: z.string().describe('The risk level selected by the user (Low, Medium, High).'),
-  marketData: z.string().describe('Market data including price, volume, market cap, and sentiment.'),
+  marketData: z.string().describe('Stringified JSON object of market data including: symbol, current price, 24h price change percentage, 24h base asset volume, 24h quote asset volume, 24h high price, and 24h low price.'),
 });
 export type GenerateTradingStrategyInput = z.infer<typeof GenerateTradingStrategyInputSchema>;
 
