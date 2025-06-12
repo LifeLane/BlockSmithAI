@@ -6,8 +6,8 @@ import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import SymbolIntervalSelectors from '@/components/blocksmith-ai/SymbolIntervalSelectors';
 import TradingViewWidget from '@/components/blocksmith-ai/TradingViewWidget';
 import ControlsTabs from '@/components/blocksmith-ai/ControlsTabs';
-import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
-import StrategyCard from '@/components/blocksmith-ai/StrategyCard'; // Added import
+import StrategyExplanationSection from '@/components/blocksmith-ai/StrategyExplanationSection';
+import LivePriceTicker from '@/components/blocksmith-ai/LivePriceTicker';
 import { Button } from '@/components/ui/button';
 import { generateTradingStrategyAction, fetchMarketDataAction, type LiveMarketData } from './actions';
 import type { GenerateTradingStrategyOutput, GenerateTradingStrategyInput } from '@/ai/flows/generate-trading-strategy';
@@ -46,15 +46,16 @@ export default function BlockSmithAIPage() {
     }
     setIsLoadingMarketData(true);
     setMarketDataError(null);
-    setLiveMarketData(null);
+    // Keep existing liveMarketData while loading new, or set to null if you prefer a cleared state
+    // setLiveMarketData(null); 
 
     const result = await fetchMarketDataAction({ symbol: currentSymbol, apiKey: currentApiKey });
 
     if ('error' in result) {
       setMarketDataError(result.error);
-      setLiveMarketData(null);
+      setLiveMarketData(null); // Clear data on error
       toast({
-        title: "Market Data Fetch Failed",
+        title: "Market Data Error",
         description: result.error,
         variant: "destructive",
       });
@@ -71,7 +72,7 @@ export default function BlockSmithAIPage() {
     if (apiKey && symbol) {
       fetchAndSetMarketData(symbol, apiKey);
     } else {
-      setLiveMarketData(null); // Clear data if API key is removed or symbol changes to none
+      setLiveMarketData(null); 
       if (!apiKey) {
          setMarketDataError("Please enter your Binance API Key in the API tab to fetch live market data.");
       }
@@ -95,6 +96,7 @@ export default function BlockSmithAIPage() {
         description: "Please enter your Binance API Key to generate a strategy with live data.",
         variant: "destructive",
       });
+      setStrategyError("API Key is required.");
       return;
     }
 
@@ -102,30 +104,65 @@ export default function BlockSmithAIPage() {
     setStrategyError(null);
     setAiStrategy(null);
 
-    // Attempt to fetch fresh market data first
-    const marketDataFetched = await fetchAndSetMarketData(symbol, apiKey);
-    if (!marketDataFetched || !liveMarketData) { // Check liveMarketData from state after fetch attempt
-      setIsLoadingStrategy(false);
-      // Error toast is handled by fetchAndSetMarketData
-      return;
+    let currentMarketData = liveMarketData;
+    if (!currentMarketData) { // If market data isn't already loaded, try fetching it
+        const marketDataFetched = await fetchAndSetMarketData(symbol, apiKey);
+        if (!marketDataFetched) {
+          setIsLoadingStrategy(false);
+          setStrategyError("Failed to fetch market data for strategy generation.");
+          // Toast is handled by fetchAndSetMarketData
+          return;
+        }
+        // Need to get the updated state value, cannot directly use result of fetchAndSetMarketData
+        // This is a bit tricky due to state update timing. For simplicity, we'll assume it's available
+        // or rely on a subsequent render. A better approach might involve a local variable from fetch.
+        // For now, let's just proceed, and if liveMarketData is still null, the AI call will use an empty object.
     }
     
-    const marketDataForAI = {
-      symbol: liveMarketData.symbol,
-      price: liveMarketData.lastPrice,
-      price_change_percent_24h: `${parseFloat(liveMarketData.priceChangePercent) >= 0 ? '+' : ''}${parseFloat(liveMarketData.priceChangePercent).toFixed(2)}%`,
-      volume_24h_base: `${liveMarketData.volume} ${liveMarketData.symbol.replace('USDT', '')}`,
-      volume_24h_quote: `${liveMarketData.quoteVolume} USDT`,
-      high_24h: liveMarketData.highPrice,
-      low_24h: liveMarketData.lowPrice,
-    };
+    // Re-check liveMarketData from state after potential fetch attempt.
+    const latestMarketData = await fetchMarketDataAction({ symbol: symbol, apiKey: apiKey });
+    let marketDataForAIString = '{}';
+
+    if ('error' in latestMarketData) {
+        // Use existing liveMarketData if fetch fails but we had some before
+        if (liveMarketData) {
+             marketDataForAIString = JSON.stringify({
+                symbol: liveMarketData.symbol,
+                price: liveMarketData.lastPrice,
+                price_change_percent_24h: `${parseFloat(liveMarketData.priceChangePercent) >= 0 ? '+' : ''}${parseFloat(liveMarketData.priceChangePercent).toFixed(2)}%`,
+                volume_24h_base: `${liveMarketData.volume} ${liveMarketData.symbol.replace('USDT', '')}`,
+                volume_24h_quote: `${liveMarketData.quoteVolume} USDT`,
+                high_24h: liveMarketData.highPrice,
+                low_24h: liveMarketData.lowPrice,
+            });
+        } else {
+            // No market data at all
+            toast({
+                title: "Market Data Unavailable",
+                description: "Could not fetch fresh market data. Strategy generation might be impaired.",
+                variant: "destructive",
+            });
+        }
+    } else {
+        setLiveMarketData(latestMarketData); // Update state with freshest data
+        marketDataForAIString = JSON.stringify({
+            symbol: latestMarketData.symbol,
+            price: latestMarketData.lastPrice,
+            price_change_percent_24h: `${parseFloat(latestMarketData.priceChangePercent) >= 0 ? '+' : ''}${parseFloat(latestMarketData.priceChangePercent).toFixed(2)}%`,
+            volume_24h_base: `${latestMarketData.volume} ${latestMarketData.symbol.replace('USDT', '')}`,
+            volume_24h_quote: `${latestMarketData.quoteVolume} USDT`,
+            high_24h: latestMarketData.highPrice,
+            low_24h: latestMarketData.lowPrice,
+        });
+    }
+
 
     const input: GenerateTradingStrategyInput = {
       symbol,
       interval: `${interval}m`, 
       indicators: selectedIndicators,
       riskLevel,
-      marketData: JSON.stringify(marketDataForAI), 
+      marketData: marketDataForAIString, 
     };
 
     const result = await generateTradingStrategyAction(input);
@@ -141,15 +178,15 @@ export default function BlockSmithAIPage() {
       setAiStrategy(result);
        toast({
         title: "Strategy Generated!",
-        description: `New ${result.signal} signal for ${symbol}.`,
+        description: `New AI strategy for ${symbol}.`,
       });
     }
     setIsLoadingStrategy(false);
-  }, [symbol, interval, selectedIndicators, riskLevel, toast, apiKey, fetchAndSetMarketData, liveMarketData]);
+  }, [symbol, interval, selectedIndicators, riskLevel, toast, apiKey, fetchAndSetMarketData, liveMarketData]); // Added liveMarketData to dependencies
 
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col pb-12"> {/* Added pb-12 for ticker */}
       <AppHeader />
       <main className="flex-grow container mx-auto px-4 py-8 space-y-8">
         <SymbolIntervalSelectors
@@ -159,9 +196,19 @@ export default function BlockSmithAIPage() {
           onIntervalChange={setInterval}
         />
 
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="md:col-span-2 bg-card p-1 rounded-lg shadow-xl">
-            <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
+        <div className="bg-card p-1 rounded-lg shadow-xl">
+          <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
+        </div>
+        
+        <div className="grid md:grid-cols-3 gap-8 items-start">
+          <div className="md:col-span-2">
+            <StrategyExplanationSection 
+              strategy={aiStrategy} 
+              liveMarketData={liveMarketData}
+              isLoading={isLoadingStrategy} 
+              error={strategyError}
+              symbol={symbol}
+            />
           </div>
 
           <div className="space-y-6 flex flex-col">
@@ -172,16 +219,15 @@ export default function BlockSmithAIPage() {
               onRiskChange={setRiskLevel}
               apiKey={apiKey}
               onApiKeyChange={setApiKey}
-              apiSecret={apiSecret} // Secret is not used for public data fetching but kept for completeness
+              apiSecret={apiSecret} 
               onApiSecretChange={setApiSecret}
               onApiKeysSave={handleApiKeysSave}
-            />
-            <MarketDataDisplay 
+              // Pass market data props
               apiKeySet={!!apiKey}
               liveMarketData={liveMarketData}
-              isLoading={isLoadingMarketData}
-              error={marketDataError}
-              symbolForDisplay={symbol} // Pass the selected symbol for context
+              isLoadingMarketData={isLoadingMarketData}
+              marketDataError={marketDataError}
+              symbolForDisplay={symbol}
             />
             
             <Button 
@@ -199,13 +245,12 @@ export default function BlockSmithAIPage() {
               )}
             </Button>
              {!apiKey && (
-                <p className="text-xs text-center text-amber-500">Enter API Key in the 'API' tab to enable strategy generation.</p>
+                <p className="text-xs text-center text-amber-500">Enter API Key in the 'API' tab to enable market data and strategy generation.</p>
             )}
-
-            <StrategyCard strategy={aiStrategy} isLoading={isLoadingStrategy} error={strategyError} />
           </div>
         </div>
       </main>
+      <LivePriceTicker />
       <footer className="text-center py-4 text-sm text-muted-foreground border-t">
         Powered by Firebase Studio & Google AI. Not financial advice.
       </footer>

@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -25,10 +26,11 @@ const GenerateTradingStrategyOutputSchema = z.object({
   entry_zone: z.string().describe('The entry zone for the trade.'),
   stop_loss: z.string().describe('The stop loss level for the trade.'),
   take_profit: z.string().describe('The take profit level for the trade.'),
-  confidence: z.string().describe('The confidence level of the strategy (e.g., 91%).'),
+  confidence: z.string().describe('The confidence level of the strategy (e.g., Low, Medium, High, or a percentage like 91%).'),
   risk_rating: z.string().describe('The risk rating of the strategy (Low, Medium, High).'),
-  gpt_confidence_score: z.string().describe('The GPT confidence score for the strategy.'),
-  sentiment: z.string().describe('A brief sentiment analysis of the market conditions.'),
+  gpt_confidence_score: z.string().describe('The GPT confidence score for the strategy (e.g., 0-100%).'),
+  sentiment: z.string().describe('A brief sentiment analysis of the market conditions (e.g., Neutral, Bullish, Bearish).'),
+  explanation: z.string().describe('A detailed textual explanation of the trading strategy, market assessment, entry/exit points, and risk considerations, incorporating the signal, entry zone, stop loss, and take profit levels.'),
   disclaimer: z.string().describe('A sarcastic GPT disclaimer.'),
 });
 export type GenerateTradingStrategyOutput = z.infer<typeof GenerateTradingStrategyOutputSchema>;
@@ -47,20 +49,20 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   Symbol: {{{symbol}}}
   Interval: {{{interval}}}
   Indicators: {{#each indicators}}{{{this}}} {{/each}}
-
   Risk Level: {{{riskLevel}}}
 
   Based on this information, provide a trading strategy with the following:
 
   - Signal (BUY, SELL, or HOLD)
-  - Entry Zone
-  - Stop Loss
-  - Take Profit
-  - Confidence Level
-  - Risk Rating
-  - A brief sentiment analysis of the market conditions.
+  - Entry Zone (specific price or range)
+  - Stop Loss (specific price)
+  - Take Profit (specific price)
+  - Confidence Level (e.g., Low, Medium, High - this should reflect your certainty in the strategy's success)
+  - Risk Rating (correlating to the user's selected risk level)
+  - GPT Confidence Score (a numerical percentage of your confidence, 0-100%)
+  - A brief sentiment analysis of the market conditions (e.g., Neutral, Bullish, Bearish).
+  - A detailed textual explanation of the trading strategy: This explanation should be comprehensive. It must cover the reasoning behind the signal, the rationale for the entry zone, stop loss, and take profit levels. It should also discuss how the selected indicators and market data support this strategy, and address any specific considerations based on the user's risk level.
   - A sarcastic GPT disclaimer.
-  - GPT Confidence Score
 `,
 });
 
