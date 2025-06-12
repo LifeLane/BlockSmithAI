@@ -21,9 +21,11 @@ interface FetchMarketDataError {
 
 export async function fetchMarketDataAction(params: { symbol: string }): Promise<LiveMarketData | FetchMarketDataError> {
   const { symbol } = params;
+  console.log('Attempting to read BINANCE_API_KEY from .env. Value currently loaded by server:', process.env.BINANCE_API_KEY);
   const apiKey = process.env.BINANCE_API_KEY;
 
   if (!apiKey || apiKey === "YOUR_BINANCE_API_KEY_REPLACE_ME") {
+    console.error('Binance API Key check failed. Loaded apiKey was:', apiKey);
     return { error: "Binance API Key is not configured on the server. Please set BINANCE_API_KEY in your .env file." };
   }
 
@@ -37,12 +39,14 @@ export async function fetchMarketDataAction(params: { symbol: string }): Promise
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error(`Binance API error: ${response.status} - ${response.statusText}`, errorData);
       return { error: `Failed to fetch market data from Binance: ${response.statusText} - ${errorData.msg || 'Unknown error'}`, status: response.status };
     }
 
     const data = await response.json();
     
     if (!data.symbol || !data.lastPrice || !data.priceChangePercent || !data.volume || !data.highPrice || !data.lowPrice || !data.quoteVolume) {
+        console.error("Received incomplete data from Binance API:", data);
         return { error: "Received incomplete data from Binance API."}
     }
 
@@ -68,6 +72,7 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
     }
     
     if (input.marketData === '{}' || !input.marketData) {
+        console.error("Market data is missing or invalid for generateTradingStrategyAction. marketData:", input.marketData);
         return {error: "Market data is missing or invalid. Cannot generate strategy."}
     }
 
