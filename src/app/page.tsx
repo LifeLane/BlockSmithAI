@@ -69,8 +69,8 @@ export default function BlockSmithAIPage() {
       const elementsToAnimate = [
         liveTickerRef.current, 
         tradingViewWidgetWrapperRef.current, 
-        controlPanelRef.current,
-        mainDisplayAreaRef.current, 
+        controlPanelRef.current, // Control panel animates first as it's visually on left
+        mainDisplayAreaRef.current, // Strategy explanation animates next
       ].filter(Boolean);
 
       if (elementsToAnimate.length > 0) {
@@ -181,18 +181,24 @@ export default function BlockSmithAIPage() {
     if (currentDataToUse) {
         const priceChangePercentVal = parseFloat(currentDataToUse.priceChangePercent);
         const formattedPriceChangePercent = `${priceChangePercentVal >= 0 ? '+' : ''}${priceChangePercentVal.toFixed(2)}%`;
+        
         const baseAsset = currentDataToUse.symbol.replace('USDT', '');
         const formattedVolumeBase = `${parseFloat(currentDataToUse.volume).toLocaleString(undefined, {maximumFractionDigits: 3})} ${baseAsset}`;
         const formattedVolumeQuote = `${parseFloat(currentDataToUse.quoteVolume).toLocaleString(undefined, {maximumFractionDigits: 2})} USDT`;
+        
+        const lastPriceFormatted = parseFloat(currentDataToUse.lastPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: Math.max(2, (currentDataToUse.lastPrice.toString().split('.')[1]?.length || 0))});
+        const highPriceFormatted = parseFloat(currentDataToUse.highPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        const lowPriceFormatted = parseFloat(currentDataToUse.lowPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
 
         marketDataForAIString = JSON.stringify({
             symbol: currentDataToUse.symbol,
-            price: parseFloat(currentDataToUse.lastPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: Math.max(2, (currentDataToUse.lastPrice.toString().split('.')[1]?.length || 0))}),
+            price: lastPriceFormatted,
             price_change_percent_24h: formattedPriceChangePercent,
             volume_24h_base: formattedVolumeBase,
             volume_24h_quote: formattedVolumeQuote,
-            high_24h: parseFloat(currentDataToUse.highPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}),
-            low_24h: parseFloat(currentDataToUse.lowPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}),
+            high_24h: highPriceFormatted,
+            low_24h: lowPriceFormatted,
         });
     } else {
         toast({
@@ -261,18 +267,7 @@ export default function BlockSmithAIPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-              {/* Strategy Explanation Column (Source Order 1, Visual Order 2 on LG) */}
-              <div className="lg:col-span-2 space-y-8 lg:order-2" ref={mainDisplayAreaRef}>
-                <StrategyExplanationSection 
-                  strategy={aiStrategy} 
-                  liveMarketData={liveMarketData}
-                  isLoading={isLoadingStrategy} 
-                  error={strategyError}
-                  symbol={symbol}
-                />
-              </div>
-
-              {/* Control Panel Column (Source Order 2, Visual Order 1 on LG) */}
+              {/* Control Panel Column (Source Order 1, Visual Order 1 on LG) */}
               <div className="lg:col-span-1 space-y-6 flex flex-col lg:order-1" ref={controlPanelRef}>
                 <SymbolIntervalSelectors
                   symbol={symbol}
@@ -309,6 +304,17 @@ export default function BlockSmithAIPage() {
                     "Reveal My AI Edge!"
                   )}
                 </Button>
+              </div>
+
+              {/* Strategy Explanation Column (Source Order 2, Visual Order 2 on LG) */}
+              <div className="lg:col-span-2 space-y-8 lg:order-2" ref={mainDisplayAreaRef}>
+                <StrategyExplanationSection 
+                  strategy={aiStrategy} 
+                  liveMarketData={liveMarketData}
+                  isLoading={isLoadingStrategy} 
+                  error={strategyError}
+                  symbol={symbol}
+                />
               </div>
             </div>
           </main>
