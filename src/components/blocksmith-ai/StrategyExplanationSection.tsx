@@ -242,8 +242,8 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
         
         {strategy.disclaimer && (
           <div className="mt-6 p-4 border-t border-primary/30 bg-background/30 rounded-lg shadow">
-            <p className="text-xs text-accent italic font-code text-center flex items-center justify-center">
-              <MessageSquareHeart className="mr-2 h-4 w-4 text-accent flex-shrink-0" />
+            <p className="text-xs text-yellow-400 italic font-code text-center flex items-center justify-center">
+              <MessageSquareHeart className="mr-2 h-4 w-4 text-yellow-400 flex-shrink-0" />
               "{strategy.disclaimer}"
             </p>
           </div>
