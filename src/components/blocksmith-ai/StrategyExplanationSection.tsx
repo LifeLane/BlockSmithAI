@@ -44,12 +44,12 @@ interface StatCardProps {
 }
 
 const StatCard: FunctionComponent<StatCardProps> = ({ title, value, icon, className = '', valueClassName = '', titleClassName = '' }) => (
-  <div className={`p-4 bg-background/50 rounded-lg shadow border border-border/50 flex flex-col ${className}`}>
-    <div className={`flex items-center text-sm text-muted-foreground mb-1 ${titleClassName}`}>
+  <div className={`p-4 bg-background/50 rounded-lg shadow border border-border/50 flex flex-col items-center ${className}`}>
+    <div className={`flex items-center text-sm text-muted-foreground mb-1 text-center ${titleClassName}`}>
       {icon && <span className="mr-2 opacity-80">{icon}</span>}
       {title}
     </div>
-    <div className={`text-xl font-bold text-foreground ${valueClassName}`}>
+    <div className={`text-xl font-bold text-foreground text-center ${valueClassName}`}>
       {value}
     </div>
   </div>

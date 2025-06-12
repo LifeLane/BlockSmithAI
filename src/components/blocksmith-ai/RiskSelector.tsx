@@ -17,7 +17,7 @@ const RiskSelector: FunctionComponent<RiskSelectorProps> = ({
   onRiskChange,
 }) => {
   return (
-    <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-primary hover:shadow-[0_0_15px_2px_hsl(var(--primary)/0.3)]">
+    <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_15px_2px_hsl(var(--primary)/0.3)]">
       <CardHeader>
         <CardTitle className="flex items-center text-lg font-semibold">
           <ShieldAlert className="mr-2 h-5 w-5 text-primary" />
