@@ -327,7 +327,7 @@ export default function BlockSmithAIPage() {
       </div>
       
       {showWelcomeScreen ? (
-        <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center justify-center">
+        <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center"> {/* Removed justify-center */}
           <WelcomeScreen onProceed={handleProceedFromWelcome} />
         </main>
       ) : (
