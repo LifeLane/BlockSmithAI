@@ -274,6 +274,9 @@ export default function BlockSmithAIPage() {
                   marketDataError={marketDataError}
                   symbolForDisplay={symbol}
                 />
+                 {marketDataError && !liveMarketData && ( 
+                    <p className="text-xs text-center text-red-400">{marketDataError}</p>
+                )}
                 <Button 
                   onClick={fetchStrategy} 
                   disabled={isLoadingStrategy || isLoadingMarketData || !!marketDataError || isLoadingSymbols} 
@@ -288,9 +291,6 @@ export default function BlockSmithAIPage() {
                     "Reveal My AI Edge!"
                   )}
                 </Button>
-                 {marketDataError && !liveMarketData && ( 
-                    <p className="text-xs text-center text-red-400">{marketDataError}</p>
-                )}
               </div>
 
               <div className="lg:col-span-2 space-y-8" ref={mainDisplayAreaRef}>
