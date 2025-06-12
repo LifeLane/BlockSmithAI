@@ -43,12 +43,17 @@ export default function BlockSmithAIPage() {
 
   const [availableSymbols, setAvailableSymbols] = useState<FormattedSymbol[]>(DEFAULT_SYMBOLS);
   const [isLoadingSymbols, setIsLoadingSymbols] = useState<boolean>(true);
+  const [currentYear, setCurrentYear] = useState<number | null>(null);
 
   const { toast } = useToast();
 
   const appHeaderRef = useRef<HTMLDivElement>(null); 
   const controlPanelRef = useRef<HTMLDivElement>(null); 
   const mainDisplayAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
 
   useEffect(() => {
     const elementsToAnimate = [
@@ -272,7 +277,7 @@ export default function BlockSmithAIPage() {
       </main>
       <LivePriceTicker />
       <footer className="text-center py-4 text-sm text-muted-foreground border-t border-border/50">
-        Powered by Firebase Studio & Google AI. Not financial advice.
+        {currentYear ? `© ${currentYear} ` : ''}BlockSmithAI. Powered by Google AI. Not financial advice.
       </footer>
     </div>
   );
