@@ -48,7 +48,7 @@ export default function BlockSmithAIPage() {
         opacity: 0,
         y: 50,
         duration: 0.8,
-        stagger: 0.25, // Slightly increased stagger for better visual separation of columns
+        stagger: 0.25, 
         ease: 'power3.out',
       });
     }
@@ -63,12 +63,10 @@ export default function BlockSmithAIPage() {
   const fetchAndSetMarketData = useCallback(async (currentSymbol: string): Promise<LiveMarketData | null> => {
     setIsLoadingMarketData(true);
     setMarketDataError(null);
-    // console.log(`Fetching market data for ${currentSymbol} in fetchAndSetMarketData`);
-
+    
     const result = await fetchMarketDataAction({ symbol: currentSymbol });
 
     if ('error' in result) {
-      // console.error("Market data fetch error in fetchAndSetMarketData:", result.error);
       setMarketDataError(result.error);
       setLiveMarketData(null); 
       toast({
@@ -79,9 +77,8 @@ export default function BlockSmithAIPage() {
       setIsLoadingMarketData(false);
       return null;
     } else {
-      // console.log("Market data fetched successfully in fetchAndSetMarketData:", result);
       setLiveMarketData(result);
-      setMarketDataError(null);
+      setMarketDataError(null); // Clear previous errors on success
       setIsLoadingMarketData(false);
       return result;
     }
@@ -89,10 +86,8 @@ export default function BlockSmithAIPage() {
 
   useEffect(() => {
     if (symbol) {
-      // console.log(`Symbol changed to ${symbol}, fetching market data.`);
       fetchAndSetMarketData(symbol);
     } else {
-      // console.log("No symbol selected, clearing market data.");
       setLiveMarketData(null); 
       setMarketDataError("No symbol selected to fetch market data.");
     }
@@ -102,20 +97,15 @@ export default function BlockSmithAIPage() {
     setIsLoadingStrategy(true);
     setStrategyError(null);
     setAiStrategy(null);
-    // console.log("Attempting to fetch strategy. Current liveMarketData:", liveMarketData, "MarketDataError:", marketDataError);
 
     let marketDataForAIString = '{}';
     let currentDataToUse = liveMarketData;
 
-    // If liveMarketData is null AND there's no existing marketDataError, try fetching fresh data.
-    if (!currentDataToUse && !marketDataError) { 
-        // console.log("No current market data and no error, fetching fresh for strategy...");
+    if (!currentDataToUse || (currentDataToUse.symbol !== symbol && !marketDataError)) {
         const fetchedData = await fetchAndSetMarketData(symbol);
         if (fetchedData) {
-            // console.log("Fresh market data fetched successfully for strategy:", fetchedData);
             currentDataToUse = fetchedData; 
         } else {
-            // console.error("Failed to fetch market data before generating strategy. Error:", marketDataError);
             const errorMsg = marketDataError || "Market data is unavailable. Cannot generate strategy.";
             setStrategyError(errorMsg);
             toast({
@@ -126,9 +116,7 @@ export default function BlockSmithAIPage() {
             setIsLoadingStrategy(false);
             return;
         }
-    // If there IS a marketDataError and no live data, abort.
     } else if (marketDataError && !currentDataToUse) { 
-        // console.error(`Market data error exists: ${marketDataError}. Strategy generation aborted.`);
         setStrategyError(`Market data unavailable: ${marketDataError}. Strategy generation aborted.`);
         toast({
             title: "Market Data Error",
@@ -141,7 +129,6 @@ export default function BlockSmithAIPage() {
 
 
     if (currentDataToUse) {
-        // console.log("Using current market data for AI:", currentDataToUse);
         marketDataForAIString = JSON.stringify({
             symbol: currentDataToUse.symbol,
             price: currentDataToUse.lastPrice,
@@ -152,7 +139,6 @@ export default function BlockSmithAIPage() {
             low_24h: currentDataToUse.lowPrice,
         });
     } else {
-         // console.error("Insufficient market data (currentDataToUse is null) for strategy generation.");
         toast({
             title: "Insufficient Data",
             description: "Not enough market data to generate a strategy. Please try again or check market data source.",
@@ -170,12 +156,10 @@ export default function BlockSmithAIPage() {
       riskLevel,
       marketData: marketDataForAIString, 
     };
-    // console.log("Generating strategy with input:", input);
 
     const result = await generateTradingStrategyAction(input);
 
     if ('error' in result) {
-      // console.error("Strategy generation failed:", result.error);
       setStrategyError(result.error);
       toast({
         title: "Strategy Generation Failed",
@@ -183,11 +167,10 @@ export default function BlockSmithAIPage() {
         variant: "destructive",
       });
     } else {
-      // console.log("Strategy generated successfully:", result);
       setAiStrategy(result);
        toast({
-        title: "Strategy Generated!",
-        description: `New AI strategy for ${symbol}.`,
+        title: "AI Edge Revealed!",
+        description: `New AI strategy generated for ${symbol}.`,
       });
     }
     setIsLoadingStrategy(false);
@@ -227,10 +210,10 @@ export default function BlockSmithAIPage() {
               {isLoadingStrategy ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Generating Strategy...
+                  Unlocking Your Edge...
                 </>
               ) : (
-                "Generate AI Strategy"
+                "Reveal My AI Edge!"
               )}
             </Button>
              {marketDataError && !liveMarketData && ( 

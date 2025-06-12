@@ -9,7 +9,7 @@ const AppHeader: FunctionComponent<AppHeaderProps> = () => {
       <div className="container mx-auto flex items-center space-x-3">
         <Zap className="h-10 w-10 text-primary" />
         <h1 className="text-4xl font-bold font-headline text-primary">
-          BlockSmith<span className="text-foreground">AI</span> Trading Edge
+          BlockSmith<span className="text-foreground">AI</span>: <span className="text-foreground">Unlock</span> Your Trading Edge
         </h1>
       </div>
     </header>

@@ -22,7 +22,8 @@ import {
   ShieldCheck,
   Percent,
   MessageSquareHeart,
-  Sparkles
+  Sparkles,
+  Unlock
 } from 'lucide-react';
 
 interface StrategyExplanationSectionProps {
@@ -105,13 +106,13 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
         <CardHeader>
           <CardTitle className="flex items-center text-xl font-semibold text-foreground">
             <Sparkles className="mr-2 h-6 w-6 text-primary" />
-            AI Strategy Insights
+            Your Next Market Edge is Waiting...
           </CardTitle>
-           <CardDescription>Generate an AI strategy to see the details for {symbol}.</CardDescription>
+           <CardDescription>Don't miss out! Get your AI-powered insights for {symbol} now.</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-8">
-            Click "Generate AI Strategy" to get started!
+            Hit 'Reveal My AI Edge!' and Discover What the AI Recommends!
           </p>
         </CardContent>
       </Card>
@@ -156,10 +157,10 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
     <Card className="shadow-xl w-full bg-card border-border">
       <CardHeader>
         <CardTitle className="text-2xl font-semibold text-foreground flex items-center">
-           <Sparkles className="mr-3 h-7 w-7 text-primary" />
-          AI Strategy Insights: <span className="text-primary ml-2">{symbol}</span>
+           <Unlock className="mr-3 h-7 w-7 text-primary" />
+          Your AI Edge Revealed: <span className="text-primary ml-2">{symbol}</span>
         </CardTitle>
-         <CardDescription>QuantumGPT analysis and trade parameters based on your inputs.</CardDescription>
+         <CardDescription>Act on these AI-driven parameters before the market moves!</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         
@@ -223,7 +224,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
             <AccordionTrigger className="px-4 py-3 text-base hover:no-underline">
               <div className="flex items-center">
                 <Info className="mr-2 h-5 w-5 text-primary" />
-                View Detailed AI Explanation
+                Dive Deeper: Unpack the Full AI Rationale
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4 pt-0">
