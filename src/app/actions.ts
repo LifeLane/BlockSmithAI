@@ -19,11 +19,12 @@ interface FetchMarketDataError {
   status?: number;
 }
 
-export async function fetchMarketDataAction(params: { symbol: string; apiKey: string }): Promise<LiveMarketData | FetchMarketDataError> {
-  const { symbol, apiKey } = params; // Corrected this line
-  
-  if (!apiKey) {
-    return { error: "API Key is required." };
+export async function fetchMarketDataAction(params: { symbol: string }): Promise<LiveMarketData | FetchMarketDataError> {
+  const { symbol } = params;
+  const apiKey = process.env.BINANCE_API_KEY;
+
+  if (!apiKey || apiKey === "YOUR_BINANCE_API_KEY_REPLACE_ME") {
+    return { error: "Binance API Key is not configured on the server. Please set BINANCE_API_KEY in your .env file." };
   }
 
   const url = `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`;
@@ -41,7 +42,6 @@ export async function fetchMarketDataAction(params: { symbol: string; apiKey: st
 
     const data = await response.json();
     
-    // Validate that necessary fields are present
     if (!data.symbol || !data.lastPrice || !data.priceChangePercent || !data.volume || !data.highPrice || !data.lowPrice || !data.quoteVolume) {
         return { error: "Received incomplete data from Binance API."}
     }
@@ -50,7 +50,7 @@ export async function fetchMarketDataAction(params: { symbol: string; apiKey: st
       symbol: data.symbol,
       lastPrice: data.lastPrice,
       priceChangePercent: data.priceChangePercent,
-      volume: data.volume, // This is base asset volume
+      volume: data.volume,
       highPrice: data.highPrice,
       lowPrice: data.lowPrice,
       quoteVolume: data.quoteVolume,
@@ -63,18 +63,19 @@ export async function fetchMarketDataAction(params: { symbol: string; apiKey: st
 
 export async function generateTradingStrategyAction(input: GenerateTradingStrategyInput): Promise<GenerateTradingStrategyOutput | { error: string }> {
   try {
-    // Ensure marketData is a string as expected by the AI flow
     if (typeof input.marketData !== 'string') {
         input.marketData = typeof input.marketData === 'object' ? JSON.stringify(input.marketData) : '{}';
     }
-    if (input.marketData === '{}' && !input.symbol) { // Prevent calling AI with no data
-        return {error: "Market data or symbol is missing for strategy generation."}
+    
+    if (input.marketData === '{}' || !input.marketData) {
+        return {error: "Market data is missing or invalid. Cannot generate strategy."}
     }
+
     const result = await genStrategy(input);
     return result;
   } catch (error) {
     console.error("Error generating trading strategy:", error);
-    return { error: "Failed to generate trading strategy. Please try again." };
+    // Consider making this error more specific if possible, or logging more details
+    return { error: "Failed to generate trading strategy. Please check server logs or try again." };
   }
 }
-

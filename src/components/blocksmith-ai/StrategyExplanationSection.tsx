@@ -69,7 +69,9 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
         </CardHeader>
         <CardContent>
           <p className="text-destructive-foreground">{error}</p>
-          <p className="text-sm text-muted-foreground mt-2">Please ensure your API key is correct and try again.</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            There was an issue generating the strategy. Please check server logs or try again later.
+          </p>
         </CardContent>
       </Card>
     );

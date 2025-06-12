@@ -3,22 +3,16 @@ import { FunctionComponent } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import IndicatorSelector from './IndicatorSelector';
 import RiskSelector from './RiskSelector';
-import ApiSettingsForm from './ApiSettingsForm';
-import MarketDataDisplay from './MarketDataDisplay'; // Import MarketDataDisplay
-import type { LiveMarketData } from '@/app/actions'; // Import LiveMarketData type
+// ApiSettingsForm import removed
+import MarketDataDisplay from './MarketDataDisplay';
+import type { LiveMarketData } from '@/app/actions';
 
 interface ControlsTabsProps {
   selectedIndicators: string[];
   onIndicatorChange: (indicator: string, checked: boolean) => void;
   riskLevel: string;
   onRiskChange: (riskLevel: string) => void;
-  apiKey: string;
-  onApiKeyChange: (key: string) => void;
-  apiSecret: string;
-  onApiSecretChange: (secret: string) => void;
-  onApiKeysSave: () => void;
-  // Props for MarketDataDisplay
-  apiKeySet: boolean;
+  // API key related props removed
   liveMarketData: LiveMarketData | null;
   isLoadingMarketData: boolean;
   marketDataError: string | null;
@@ -30,12 +24,7 @@ const ControlsTabs: FunctionComponent<ControlsTabsProps> = ({
   onIndicatorChange,
   riskLevel,
   onRiskChange,
-  apiKey,
-  onApiKeyChange,
-  apiSecret,
-  onApiSecretChange,
-  onApiKeysSave,
-  apiKeySet,
+  // API key props removed
   liveMarketData,
   isLoadingMarketData,
   marketDataError,
@@ -43,15 +32,15 @@ const ControlsTabs: FunctionComponent<ControlsTabsProps> = ({
 }) => {
   return (
     <Tabs defaultValue="indicators" className="w-full">
-      <TabsList className="grid w-full grid-cols-4 bg-card border-b-0 rounded-t-lg">
+      <TabsList className="grid w-full grid-cols-3 bg-card border-b-0 rounded-t-lg"> {/* Grid cols changed from 4 to 3 */}
         <TabsTrigger value="market" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Market</TabsTrigger>
         <TabsTrigger value="indicators" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Indicators</TabsTrigger>
         <TabsTrigger value="risk" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Risk</TabsTrigger>
-        <TabsTrigger value="api" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">API</TabsTrigger>
+        {/* API TabTrigger removed */}
       </TabsList>
       <TabsContent value="market" className="mt-0 rounded-b-lg bg-card p-0">
         <MarketDataDisplay
-          apiKeySet={apiKeySet}
+          // apiKeySet prop removed
           liveMarketData={liveMarketData}
           isLoading={isLoadingMarketData}
           error={marketDataError}
@@ -67,15 +56,7 @@ const ControlsTabs: FunctionComponent<ControlsTabsProps> = ({
       <TabsContent value="risk" className="mt-0 rounded-b-lg bg-card p-0">
         <RiskSelector riskLevel={riskLevel} onRiskChange={onRiskChange} />
       </TabsContent>
-      <TabsContent value="api" className="mt-0 rounded-b-lg bg-card p-0">
-        <ApiSettingsForm
-          apiKey={apiKey}
-          onApiKeyChange={onApiKeyChange}
-          apiSecret={apiSecret}
-          onApiSecretChange={onApiSecretChange}
-          onSave={onApiKeysSave}
-        />
-      </TabsContent>
+      {/* API TabsContent removed */}
     </Tabs>
   );
 };
