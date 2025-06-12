@@ -166,10 +166,10 @@ export default function BlockSmithAIPage() {
             return;
         }
     } else if (marketDataError && !currentDataToUse) { 
-        setStrategyError(`Market data unavailable: ${marketDataError}. Strategy generation aborted.`);
+        setStrategyError(\`Market data unavailable: \${marketDataError}. Strategy generation aborted.\`);
         toast({
             title: "Market Data Error",
-            description: `Cannot generate strategy: ${marketDataError}`,
+            description: \`Cannot generate strategy: \${marketDataError}\`,
             variant: "destructive",
         });
         setIsLoadingStrategy(false);
@@ -180,9 +180,9 @@ export default function BlockSmithAIPage() {
         marketDataForAIString = JSON.stringify({
             symbol: currentDataToUse.symbol,
             price: currentDataToUse.lastPrice,
-            price_change_percent_24h: `${parseFloat(currentDataToUse.priceChangePercent) >= 0 ? '+' : ''}${parseFloat(currentDataToUse.priceChangePercent).toFixed(2)}%`,
-            volume_24h_base: `${currentDataToUse.volume} ${currentDataToUse.symbol.replace('USDT', '')}`,
-            volume_24h_quote: `${currentDataToUse.quoteVolume} USDT`,
+            price_change_percent_24h: \`\${parseFloat(currentDataToUse.priceChangePercent) >= 0 ? '+' : ''}\${parseFloat(currentDataToUse.priceChangePercent).toFixed(2)}%\`,
+            volume_24h_base: \`\${currentDataToUse.volume} \${currentDataToUse.symbol.replace('USDT', '')}\`,
+            volume_24h_quote: \`\${currentDataToUse.quoteVolume} USDT\`,
             high_24h: currentDataToUse.highPrice,
             low_24h: currentDataToUse.lowPrice,
         });
@@ -199,7 +199,7 @@ export default function BlockSmithAIPage() {
 
     const input: GenerateTradingStrategyInput = {
       symbol,
-      interval: `${interval}m`, 
+      interval: \`\${interval}m\`, 
       indicators: selectedIndicators,
       riskLevel,
       marketData: marketDataForAIString, 
@@ -218,7 +218,7 @@ export default function BlockSmithAIPage() {
       setAiStrategy(result);
        toast({
         title: "AI Edge Revealed!",
-        description: `New AI strategy generated for ${symbol}.`,
+        description: \`New AI strategy generated for \${symbol}.\`,
       });
     }
     setIsLoadingStrategy(false);
@@ -306,7 +306,8 @@ export default function BlockSmithAIPage() {
         </>
       )}
       <footer className="text-center py-4 mt-auto text-sm text-muted-foreground border-t border-border/50">
-        {currentYear ? `© ${currentYear} ` : ''}BlockSmithAI. Powered by Google AI. Not financial advice.
+        {currentYear ? `© ${currentYear} ` : ''}BlockSmithAI (because someone has to build this stuff).
+        Not financial advice, obviously. Do Your Own Research, genius! 🧐
       </footer>
     </div>
   );
