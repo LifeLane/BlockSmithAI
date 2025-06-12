@@ -6,7 +6,7 @@ import MatrixBackground from '@/components/blocksmith-ai/MatrixBackground';
 
 export const metadata: Metadata = {
   title: 'BlockSmithAI Trading Edge',
-  description: 'Quantum-Powered Trading Signal Web App by Firebase Studio',
+  description: 'AI-Powered Trading Signal Web App by BlockSmithAI Industries',
 };
 
 export default function RootLayout({
@@ -22,9 +22,11 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased">
+      <body className="font-body antialiased bg-background text-foreground">
         <MatrixBackground />
-        {children}
+        <div className="relative z-10"> {/* Ensure content is above background */}
+          {children}
+        </div>
         <Toaster />
       </body>
     </html>

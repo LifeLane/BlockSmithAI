@@ -17,11 +17,11 @@ const IndicatorSelector: FunctionComponent<IndicatorSelectorProps> = ({
   onIndicatorChange,
 }) => {
   return (
-    <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-primary hover:shadow-[0_0_15px_2px_hsl(var(--accent)/0.4)]">
+    <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-primary hover:shadow-[0_0_15px_2px_hsl(var(--accent)/0.5)]">
       <CardHeader>
-        <CardTitle className="flex items-center text-lg font-semibold">
+        <CardTitle className="flex items-center text-lg font-semibold text-foreground">
           <SlidersHorizontal className="mr-2 h-5 w-5 text-primary" />
-          Technical Indicators
+          Technical <span className="text-primary ml-1">Indicators</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -32,9 +32,9 @@ const IndicatorSelector: FunctionComponent<IndicatorSelectorProps> = ({
                 id={`indicator-${indicator}`}
                 checked={selectedIndicators.includes(indicator)}
                 onCheckedChange={(checked) => onIndicatorChange(indicator, !!checked)}
-                className="border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                className="border-primary focus:ring-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
               />
-              <Label htmlFor={`indicator-${indicator}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <Label htmlFor={`indicator-${indicator}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 hover:text-primary transition-colors">
                 {indicator}
               </Label>
             </div>

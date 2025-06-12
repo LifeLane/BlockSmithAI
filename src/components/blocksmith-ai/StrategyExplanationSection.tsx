@@ -18,7 +18,6 @@ import {
   ShieldX,
   Target,
   Info,
-  BarChart,
   ShieldCheck,
   Percent,
   MessageSquareHeart,
@@ -44,12 +43,12 @@ interface StatCardProps {
 }
 
 const StatCard: FunctionComponent<StatCardProps> = ({ title, value, icon, className = '', valueClassName = '', titleClassName = '' }) => (
-  <div className={`p-4 bg-background/50 rounded-lg shadow border border-border/50 flex flex-col items-center ${className}`}>
-    <div className={`flex items-center text-sm text-muted-foreground mb-1 text-center ${titleClassName}`}>
+  <div className={`p-4 bg-background/50 rounded-lg shadow border border-border/50 flex flex-col items-center text-center ${className}`}>
+    <div className={`flex items-center text-sm text-muted-foreground mb-1 ${titleClassName}`}>
       {icon && <span className="mr-2 opacity-80">{icon}</span>}
       {title}
     </div>
-    <div className={`text-xl font-bold text-foreground text-center ${valueClassName}`}>
+    <div className={`text-xl font-bold text-foreground ${valueClassName}`}>
       {value}
     </div>
   </div>
@@ -66,16 +65,16 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   if (isLoading) {
     return (
       <Card className="shadow-lg w-full bg-card border-border transition-all duration-300 ease-in-out">
-        <CardHeader className="items-center">
-          <Skeleton className="h-7 w-1/3 mb-2" />
-           <Skeleton className="h-4 w-1/4" />
+        <CardHeader className="items-center text-center">
+          <Skeleton className="h-7 w-2/3 mb-2" />
+           <Skeleton className="h-4 w-1/3" />
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
           </div>
-          <Skeleton className="h-12 w-full mt-4" /> {/* For accordion trigger */}
-          <Skeleton className="h-10 w-full mt-4" /> {/* Disclaimer */}
+          <Skeleton className="h-12 w-full mt-4" /> 
+          <Skeleton className="h-10 w-full mt-4" /> 
         </CardContent>
       </Card>
     );
@@ -84,16 +83,16 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   if (error) {
     return (
       <Card className="shadow-lg border-destructive w-full bg-card transition-all duration-300 ease-in-out">
-        <CardHeader className="items-center">
+        <CardHeader className="items-center text-center">
           <CardTitle className="flex items-center text-destructive text-xl">
             <AlertTriangle className="mr-2 h-5 w-5" />
-            Strategy Generation Error
+            Strategy Generation <span className="text-red-400 ml-1">Misfire</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center">
           <p className="text-destructive-foreground">{error}</p>
           <p className="text-sm text-muted-foreground mt-2">
-            Looks like my genius circuits are misfiring. Try again, or perhaps the market itself is too chaotic even for me.
+            Looks like my <strong className="text-foreground">genius circuits</strong> are misfiring. Try again, or perhaps the market itself is too <strong className="text-accent">chaotic</strong> even for me.
           </p>
         </CardContent>
       </Card>
@@ -102,20 +101,20 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
 
   if (!strategy) {
     return (
-      <Card className="shadow-lg w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_20px_5px_hsl(var(--primary)/0.4)]">
-        <CardHeader className="items-center">
-          <CardTitle className="flex items-center text-xl font-semibold text-foreground text-center">
+      <Card className="shadow-lg w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_20px_5px_hsl(var(--accent)/0.5)]">
+        <CardHeader className="items-center text-center">
+          <CardTitle className="flex items-center text-xl font-semibold text-foreground">
             <Sparkles className="mr-2 h-6 w-6 text-primary" />
-            My AI Brain is Buzzing with Potential Alpha...
+            My AI Brain is <span className="text-primary mx-1">Buzzing</span> with Potential Alpha...
           </CardTitle>
-           <CardDescription className="text-center">
-             ...but it's not going to analyze {symbol} for free, you know. Or maybe it will. There's only one way to find out.
+           <CardDescription className="text-center text-muted-foreground">
+             ...but it's not going to analyze <strong className="text-accent">{symbol}</strong> for free, you know. Or maybe it will. <strong className="text-primary">There's only one way to find out.</strong>
            </CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-center py-8">
-            Go on, press that ridiculously bright button. What's the worst that could happen? 
-            You might actually get a (hypothetically) brilliant trading idea. Or, you know, just amuse the AI.
+        <CardContent className="text-center">
+          <p className="text-muted-foreground py-8">
+            Go on, press that <strong className="text-accent">ridiculously bright pink button</strong>. What's the worst that could happen? 
+            You might actually get a (hypothetically) <strong className="text-primary">brilliant trading idea</strong>. Or, you know, just amuse the AI.
           </p>
         </CardContent>
       </Card>
@@ -127,111 +126,111 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   let sentimentIcon, sentimentColor = 'text-foreground';
   const lowerSentiment = strategy.sentiment?.toLowerCase();
   if (lowerSentiment === 'bullish') {
-    sentimentIcon = <TrendingUp className="h-5 w-5" />;
+    sentimentIcon = <TrendingUp className="h-5 w-5 text-green-400" />;
     sentimentColor = 'text-green-400';
   } else if (lowerSentiment === 'bearish') {
-    sentimentIcon = <TrendingDown className="h-5 w-5" />;
+    sentimentIcon = <TrendingDown className="h-5 w-5 text-red-400" />;
     sentimentColor = 'text-red-400';
   } else {
-    sentimentIcon = <Brain className="h-5 w-5" />;
+    sentimentIcon = <Brain className="h-5 w-5 text-primary" />;
   }
 
-  let signalIcon, signalColorCls;
-  const signalText = strategy.signal?.toUpperCase() || 'N/A';
-  switch (signalText) {
+  let signalIcon, signalColorCls, signalTextFormatted = strategy.signal?.toUpperCase() || 'N/A';
+  switch (signalTextFormatted) {
     case 'BUY':
     case 'LONG':
-      signalIcon = <ArrowUpCircle className="h-6 w-6" />;
-      signalColorCls = "text-green-400";
+      signalIcon = <ArrowUpCircle className="h-6 w-6 text-green-400" />;
+      signalColorCls = "text-green-400 font-bold";
+      signalTextFormatted = "BUY / LONG"
       break;
     case 'SELL':
     case 'SHORT':
-      signalIcon = <ArrowDownCircle className="h-6 w-6" />;
-      signalColorCls = "text-red-400";
+      signalIcon = <ArrowDownCircle className="h-6 w-6 text-red-400" />;
+      signalColorCls = "text-red-400 font-bold";
+      signalTextFormatted = "SELL / SHORT"
       break;
     case 'HOLD':
     default:
-      signalIcon = <PauseCircle className="h-6 w-6" />;
-      signalColorCls = "text-primary";
+      signalIcon = <PauseCircle className="h-6 w-6 text-primary" />;
+      signalColorCls = "text-primary font-bold";
       break;
   }
 
   return (
-    <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_20px_5px_hsl(var(--primary)/0.5)]">
-      <CardHeader>
-        <CardTitle className="text-2xl font-semibold text-foreground flex items-center">
+    <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_20px_5px_hsl(var(--accent)/0.6)]">
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl font-semibold text-foreground flex items-center justify-center">
            <Unlock className="mr-3 h-7 w-7 text-primary" />
-          Your AI Edge Revealed: <span className="text-primary ml-2">{symbol}</span>
+          Your AI Edge Revealed: <span className="text-accent ml-2 font-bold">{symbol}</span>
         </CardTitle>
-         <CardDescription>Act on these AI-driven parameters before the market moves!</CardDescription>
+         <CardDescription className="text-muted-foreground">These <strong className="text-primary">AI-driven parameters</strong> could be your next market move. <strong className="text-accent">No promises!</strong></CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <StatCard 
             title="AI Signal" 
-            value={signalText} 
+            value={signalTextFormatted} 
             icon={signalIcon} 
             valueClassName={signalColorCls} 
-            className="sm:col-span-1 lg:col-span-1"
+            className="sm:col-span-1 lg:col-span-1 border-primary/50"
           />
           <StatCard 
             title="Current Price" 
-            value={currentPrice} 
-            icon={<DollarSign size={20}/>} 
-            valueClassName="text-primary"
+            value={<span className="text-primary">{currentPrice}</span>}
+            icon={<DollarSign size={20} className="text-primary"/>} 
           />
            <StatCard 
             title="Sentiment" 
             value={strategy.sentiment || 'N/A'} 
             icon={sentimentIcon} 
-            valueClassName={sentimentColor}
+            valueClassName={`${sentimentColor} font-semibold`}
           />
           <StatCard 
             title="Entry Zone" 
-            value={strategy.entry_zone || 'N/A'} 
-            icon={<LogIn size={20}/>} 
+            value={<span className="text-primary">{strategy.entry_zone || 'N/A'}</span>}
+            icon={<LogIn size={20} className="text-primary"/>} 
           />
           <StatCard 
             title="Stop Loss" 
-            value={strategy.stop_loss || 'N/A'} 
-            icon={<ShieldX size={20}/>} 
+            value={<span className="text-red-400">{strategy.stop_loss || 'N/A'}</span>}
+            icon={<ShieldX size={20} className="text-red-400"/>} 
           />
           <StatCard 
             title="Take Profit" 
-            value={strategy.take_profit || 'N/A'} 
-            icon={<Target size={20}/>} 
+            value={<span className="text-green-400">{strategy.take_profit || 'N/A'}</span>}
+            icon={<Target size={20} className="text-green-400"/>} 
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StatCard 
                 title="Confidence" 
-                value={strategy.confidence || 'N/A'} 
-                icon={<ShieldCheck size={20}/>} 
+                value={<span className="text-primary">{strategy.confidence || 'N/A'}</span>}
+                icon={<ShieldCheck size={20} className="text-primary"/>} 
             />
             <StatCard 
                 title="GPT Score" 
-                value={strategy.gpt_confidence_score || 'N/A'} 
-                icon={<Percent size={20}/>} 
+                value={<span className="text-accent">{strategy.gpt_confidence_score || 'N/A'}</span>}
+                icon={<Percent size={20} className="text-accent"/>} 
             />
             <StatCard 
                 title="Risk Rating" 
-                value={strategy.risk_rating || 'N/A'} 
-                icon={<AlertTriangle size={20}/>} 
+                value={<span className="text-red-500">{strategy.risk_rating || 'N/A'}</span>} 
+                icon={<AlertTriangle size={20} className="text-red-500"/>} 
             />
         </div>
         
         <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="item-1" className="border-border/50 bg-background/30 rounded-lg shadow">
-            <AccordionTrigger className="px-4 py-3 text-base hover:no-underline">
+          <AccordionItem value="item-1" className="border-accent/30 bg-background/30 rounded-lg shadow hover:border-accent transition-colors">
+            <AccordionTrigger className="px-4 py-3 text-base hover:no-underline hover:text-primary transition-colors">
               <div className="flex items-center">
                 <Info className="mr-2 h-5 w-5 text-primary" />
-                Dive Deeper: Unpack the Full AI Rationale
+                <span className="font-semibold">Dive Deeper: Unpack the Full <span className="text-accent">AI Rationale</span></span>
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4 pt-0">
-              <article className="prose prose-sm prose-invert max-w-none text-foreground/90 leading-relaxed">
+              <article className="prose prose-sm prose-invert max-w-none text-foreground/90 leading-relaxed prose-strong:text-primary prose-headings:text-accent">
                 {strategy.explanation || 'No detailed explanation provided.'}
               </article>
             </AccordionContent>
@@ -239,9 +238,9 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
         </Accordion>
         
         {strategy.disclaimer && (
-          <div className="mt-6 p-4 border-t border-border/50 bg-background/30 rounded-lg shadow">
+          <div className="mt-6 p-4 border-t border-primary/30 bg-background/30 rounded-lg shadow">
             <p className="text-xs text-muted-foreground italic text-center flex items-center justify-center">
-              <MessageSquareHeart className="mr-2 h-4 w-4 text-pink-400 flex-shrink-0" />
+              <MessageSquareHeart className="mr-2 h-4 w-4 text-accent flex-shrink-0" />
               "{strategy.disclaimer}"
             </p>
           </div>

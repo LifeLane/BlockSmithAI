@@ -21,7 +21,7 @@ import {
 } from './actions';
 import type { GenerateTradingStrategyOutput, GenerateTradingStrategyInput } from '@/ai/flows/generate-trading-strategy';
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
 import { gsap } from 'gsap';
 
 const DEFAULT_SYMBOLS: FormattedSymbol[] = [
@@ -69,8 +69,8 @@ export default function BlockSmithAIPage() {
       const elementsToAnimate = [
         liveTickerRef.current, 
         tradingViewWidgetWrapperRef.current, 
-        controlPanelRef.current, // Control panel animates first as it's visually on left
-        mainDisplayAreaRef.current, // Strategy explanation animates next
+        controlPanelRef.current, 
+        mainDisplayAreaRef.current, 
       ].filter(Boolean);
 
       if (elementsToAnimate.length > 0) {
@@ -293,7 +293,7 @@ export default function BlockSmithAIPage() {
                 <Button 
                   onClick={fetchStrategy} 
                   disabled={isLoadingStrategy || isLoadingMarketData || !!marketDataError || isLoadingSymbols} 
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 text-base shadow-lg border-2 border-transparent hover:border-accent hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 ease-in-out mt-auto"
+                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 text-base shadow-lg border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--accent)/0.7)] transition-all duration-300 ease-in-out mt-auto"
                 >
                   {isLoadingStrategy ? (
                     <>
@@ -301,7 +301,10 @@ export default function BlockSmithAIPage() {
                       Unlocking Your Edge...
                     </>
                   ) : (
-                    "Reveal My AI Edge!"
+                    <>
+                      <Sparkles className="mr-2 h-5 w-5" />
+                       Reveal My AI Edge!
+                    </>
                   )}
                 </Button>
               </div>

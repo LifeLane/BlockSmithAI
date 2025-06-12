@@ -17,7 +17,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Label } from "@/components/ui/label";
-import { Check, ChevronsUpDown, Target as TargetIcon, Clock } from "lucide-react" // Added TargetIcon and Clock
+import { Check, ChevronsUpDown, Target as TargetIcon, Clock } from "lucide-react" 
 import { cn } from "@/lib/utils"
 import type { FormattedSymbol } from '@/app/actions';
 
@@ -80,7 +80,7 @@ const SymbolIntervalSelectors: FunctionComponent<SymbolIntervalSelectorsProps> =
               variant="outline"
               role="combobox"
               aria-expanded={openPopover}
-              className="w-full justify-between text-sm"
+              className="w-full justify-between text-sm border-input focus:border-primary focus:ring-primary"
               id="symbol-select"
               disabled={isLoadingSymbols && symbols.length === 0}
             >
@@ -119,7 +119,7 @@ const SymbolIntervalSelectors: FunctionComponent<SymbolIntervalSelectorsProps> =
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          symbol === s.value ? "opacity-100" : "opacity-0"
+                          symbol === s.value ? "opacity-100 text-primary" : "opacity-0"
                         )}
                       />
                       {s.label}
@@ -137,7 +137,7 @@ const SymbolIntervalSelectors: FunctionComponent<SymbolIntervalSelectorsProps> =
           Analysis Horizon
         </Label>
         <Select value={interval} onValueChange={onIntervalChange}>
-          <SelectTrigger id="interval-select" className="w-full text-sm">
+          <SelectTrigger id="interval-select" className="w-full text-sm border-input focus:border-primary focus:ring-primary">
             <SelectValue placeholder="Select horizon" />
           </SelectTrigger>
           <SelectContent>

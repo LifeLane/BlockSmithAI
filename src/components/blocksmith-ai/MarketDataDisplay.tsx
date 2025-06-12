@@ -24,11 +24,11 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
     return (
       <Card className="shadow-md transition-all duration-300 ease-in-out">
         <CardHeader>
-          <CardTitle className="flex items-center text-lg font-semibold">
+          <CardTitle className="flex items-center text-lg font-semibold text-foreground">
             <Database className="mr-2 h-5 w-5 text-primary" />
-            Market Overview
+            Market <span className="text-primary ml-1">Overview</span>
           </CardTitle>
-          <CardDescription className="font-headline text-primary">{displaySymbol}</CardDescription>
+          <CardDescription className="font-headline text-accent">{displaySymbol}</CardDescription>
         </CardHeader>
         <CardContent className="flex items-center justify-center p-8">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -44,11 +44,11 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
         <CardHeader>
           <CardTitle className="flex items-center text-lg font-semibold text-destructive">
             <AlertCircle className="mr-2 h-5 w-5" />
-            Market Overview
+            Market <span className="text-red-400 ml-1">Overview Error</span>
           </CardTitle>
-           <CardDescription className="font-headline text-primary">{displaySymbol}</CardDescription>
+           <CardDescription className="font-headline text-accent">{displaySymbol}</CardDescription>
         </CardHeader>
-        <CardContent> {/* Removed text-center from here */}
+        <CardContent> 
           <p className="text-destructive-foreground text-sm">{error}</p>
            {error.includes("Binance API Key is not configured") && (
             <p className="text-xs text-muted-foreground mt-1">Please contact the administrator to set up the API key on the server.</p>
@@ -60,16 +60,16 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 
   if (!liveMarketData) {
      return (
-      <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-primary hover:shadow-[0_0_15px_2px_hsl(var(--accent)/0.4)]">
+      <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-primary hover:shadow-[0_0_15px_2px_hsl(var(--primary)/0.4)]">
         <CardHeader>
-          <CardTitle className="flex items-center text-lg font-semibold">
+          <CardTitle className="flex items-center text-lg font-semibold text-foreground">
             <Database className="mr-2 h-5 w-5 text-primary" />
-            Market Overview
+            Market <span className="text-primary ml-1">Overview</span>
           </CardTitle>
-           <CardDescription className="font-headline text-primary">{displaySymbol}</CardDescription>
+           <CardDescription className="font-headline text-accent">{displaySymbol}</CardDescription>
         </CardHeader>
-        <CardContent> {/* Removed text-center from here */}
-          <p className="text-sm text-muted-foreground text-center p-4">No market data available for {displaySymbol}.</p>
+        <CardContent> 
+          <p className="text-sm text-muted-foreground text-center p-4">No market data available for <span className="font-bold text-accent">{displaySymbol}</span>.</p>
         </CardContent>
       </Card>
     );
@@ -83,25 +83,27 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 
 
   return (
-    <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-primary hover:shadow-[0_0_15px_2px_hsl(var(--accent)/0.4)]">
+    <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-primary hover:shadow-[0_0_15px_2px_hsl(var(--primary)/0.4)]">
       <CardHeader>
-        <CardTitle className="flex items-center text-lg font-semibold">
+        <CardTitle className="flex items-center text-lg font-semibold text-foreground">
           <Database className="mr-2 h-5 w-5 text-primary" />
-          Market Overview
+          Market <span className="text-primary ml-1">Overview</span>
         </CardTitle>
-        <CardDescription className="font-headline text-primary">{actualBaseSymbol}/USDT - ${parseFloat(data.lastPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</CardDescription>
+        <CardDescription className="font-headline">
+            <span className="text-accent font-bold">{actualBaseSymbol}/USDT</span> - <span className="text-primary font-bold">${parseFloat(data.lastPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+        </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-2 text-sm"> {/* Removed text-center */}
+      <CardContent className="space-y-2 text-sm"> 
         <p>
-          24h Change:{" "}
-          <span className={isPositiveChange ? "text-green-400" : "text-red-400"}>
+          <span className="font-medium text-muted-foreground">24h Change:</span>{" "}
+          <span className={`font-bold ${isPositiveChange ? "text-green-400" : "text-red-400"}`}>
             {formattedPriceChange}
           </span>
         </p>
-        <p>24h High: <span className="font-semibold">${parseFloat(data.highPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></p>
-        <p>24h Low: <span className="font-semibold">${parseFloat(data.lowPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></p>
-        <p>Volume (24h Base): {parseFloat(data.volume).toLocaleString(undefined, {maximumFractionDigits: 3})} {actualBaseSymbol}</p>
-        <p>Volume (24h Quote): {parseFloat(data.quoteVolume).toLocaleString(undefined, {maximumFractionDigits: 2})} USDT</p>
+        <p><span className="font-medium text-muted-foreground">24h High:</span> <span className="font-bold text-foreground">${parseFloat(data.highPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></p>
+        <p><span className="font-medium text-muted-foreground">24h Low:</span> <span className="font-bold text-foreground">${parseFloat(data.lowPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></p>
+        <p><span className="font-medium text-muted-foreground">Volume (24h Base):</span> <span className="font-bold text-foreground">{parseFloat(data.volume).toLocaleString(undefined, {maximumFractionDigits: 3})} {actualBaseSymbol}</span></p>
+        <p><span className="font-medium text-muted-foreground">Volume (24h Quote):</span> <span className="font-bold text-foreground">{parseFloat(data.quoteVolume).toLocaleString(undefined, {maximumFractionDigits: 2})} USDT</span></p>
       </CardContent>
     </Card>
   );

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Send, Sparkles, MessageSquareQuote } from 'lucide-react';
-import { blocksmithChatAction, type ChatMessage } from '@/app/actions'; // Assuming action and type are exported
+import { blocksmithChatAction, type ChatMessage } from '@/app/actions'; 
 import { useToast } from "@/hooks/use-toast";
 
 interface ChatbotPopupProps {
@@ -31,9 +31,9 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
-      setTimeout(() => inputRef.current?.focus(), 100); // Allow dialog to render
+      setTimeout(() => inputRef.current?.focus(), 100); 
     }
-    if (isOpen && messages.length <= 1) { // Reset to initial message if re-opened and only initial exists
+    if (isOpen && messages.length <= 1) { 
         setMessages([BSAI_INITIAL_MESSAGE]);
     }
   }, [isOpen]);
@@ -52,8 +52,7 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
     setUserInput('');
     setIsLoading(true);
 
-    // Prepare chat history for the AI (exclude the very latest user message as it's passed separately)
-    const historyForAI = messages.slice(-10); // Send last 10 messages as history, adjust as needed
+    const historyForAI = messages.slice(-10); 
 
     try {
       const result = await blocksmithChatAction({
@@ -67,7 +66,6 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
             description: result.error,
             variant: "destructive",
         });
-        // Optionally add an error message to chat
         setMessages((prevMessages) => [...prevMessages, {role: 'model', parts: [{text: `Hmph. My circuits are buzzing incorrectly. Error: ${result.error}`}]}]);
       } else {
         setMessages((prevMessages) => [...prevMessages, { role: 'model', parts: [{ text: result.botResponse }] }]);
@@ -92,10 +90,10 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
         <DialogHeader className="p-4 border-b border-border">
           <DialogTitle className="flex items-center text-xl text-primary font-headline">
             <Sparkles className="h-6 w-6 mr-2 text-accent" />
-            Chat with BlockSmithAI
+            Chat with <span className="text-accent ml-1">BlockSmithAI</span>
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Your sarcastic crypto genius is ready to (begrudgingly) assist.
+            Your sarcastic crypto genius is <strong className="text-foreground">ready</strong> to (begrudgingly) assist.
           </DialogDescription>
         </DialogHeader>
         
@@ -121,7 +119,7 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
             <div className="flex justify-start">
               <div className="p-3 rounded-lg bg-secondary text-secondary-foreground shadow flex items-center">
                 <Loader2 className="h-5 w-5 animate-spin mr-2 text-primary" />
-                BSAI is conjuring a response...
+                BSAI is conjuring a <span className="text-accent ml-1">response...</span>
               </div>
             </div>
           )}
@@ -156,4 +154,3 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
 };
 
 export default ChatbotPopup;
-

@@ -63,8 +63,8 @@ const AppHeader: FunctionComponent<AppHeaderProps> = () => {
             <span className="letter text-foreground">h</span>
           </div>
           <div className="word-ai ml-1 flex">
-            <span className="letter text-primary">A</span>
-            <span className="letter text-primary">I</span>
+            <span className="letter text-accent">A</span>
+            <span className="letter text-accent">I</span>
           </div>
         </div>
         <div ref={zapIconWrapperRef} className="ml-2 flex items-center">
