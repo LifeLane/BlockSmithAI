@@ -3,7 +3,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import MatrixBackground from '@/components/blocksmith-ai/MatrixBackground';
-import AnimatedPageBorder from '@/components/blocksmith-ai/AnimatedPageBorder'; // Added import
+import AnimatedPageBorder from '@/components/blocksmith-ai/AnimatedPageBorder';
 
 export const metadata: Metadata = {
   title: 'BlockSmithAI Trading Edge',
@@ -23,10 +23,11 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased bg-background text-foreground">
+      <body className="font-body antialiased"> {/* Removed bg-background and text-foreground from body */}
         <MatrixBackground />
-        <AnimatedPageBorder /> {/* Added component here */}
-        <div className="relative z-10"> {/* Ensure content is above background */}
+        <AnimatedPageBorder />
+        {/* This div now handles the main background and text color, and ensures content is above the MatrixBackground */}
+        <div className="relative z-1 bg-background text-foreground min-h-screen flex flex-col"> 
           {children}
         </div>
         <Toaster />

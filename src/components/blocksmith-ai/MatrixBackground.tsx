@@ -87,7 +87,7 @@ const MatrixBackground: FunctionComponent = () => {
         left: 0,
         width: '100vw',
         height: '100vh',
-        zIndex: -10, // Ensure it's well behind other content
+        zIndex: 0, // Changed from -10 to 0; main content wrapper will be z-1
         display: 'block', 
       }}
       aria-hidden="true"

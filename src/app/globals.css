@@ -5,12 +5,13 @@
 
 body {
   font-family: 'Space Grotesk', Arial, Helvetica, sans-serif;
+  /* background-color: transparent; Ensure body is transparent for Matrix effect */
 }
 
 @layer base {
   :root {
     --background: 0 0% 13%; /* Dark Gray #222222 */
-    --foreground: 100 10% 90%; /* Lighter foreground */
+    --foreground: 210 20% 98%; /* Lighter foreground for better readability on dark bg */
 
     --card: 0 0% 10%; /* Slightly darker for cards */
     --card-foreground: var(--foreground);
@@ -19,30 +20,30 @@ body {
     --popover-foreground: var(--foreground);
 
     --primary: 181 100% 74%; /* Electric Blue #7DF9FF */
-    --primary-foreground: 181 100% 10%; /* Dark Blue for text on Electric Blue */
+    --primary-foreground: 181 100% 5%; /* Darker Blue for text on Electric Blue */
 
     --secondary: 0 0% 20%; /* Lighter gray for secondary elements */
-    --secondary-foreground: 100 10% 80%; /* Lighter secondary text */
+    --secondary-foreground: 210 20% 85%; /* Lighter secondary text */
 
     --muted: 0 0% 20%;
-    --muted-foreground: 100 10% 65%; /* Muted text */
+    --muted-foreground: 210 20% 65%; /* Muted text */
 
     --accent: 52 100% 55%; /* Bright Yellow #FFD91A */
-    --accent-foreground: 52 100% 10%; /* Dark for text on Bright Yellow */
+    --accent-foreground: 52 100% 5%; /* Dark for text on Bright Yellow */
     
     --tertiary: 265 80% 65%; /* Vibrant Purple #9358F5 */
-    --tertiary-foreground: 265 100% 10%; /* Dark for text on Purple */
+    --tertiary-foreground: 265 100% 5%; /* Dark for text on Purple */
 
     --destructive: 0 70% 55%; /* A suitable red for destructive actions */
     --destructive-foreground: 0 0% 98%;
 
     --border: 0 0% 25%; /* Subtle borders */
     --input: 0 0% 20%; /* Input background */
-    --ring: 52 95% 55%; /* Ring color (Bright Yellow, slightly desaturated for ring) */
+    --ring: hsl(var(--accent)); /* Ring color based on new Accent (Bright Yellow) */
     
-    --chart-1: 181 100% 74%; /* Electric Blue */
-    --chart-2: 52 100% 55%; /* Bright Yellow */
-    --chart-3: 265 80% 65%; /* Vibrant Purple */
+    --chart-1: hsl(var(--primary)); 
+    --chart-2: hsl(var(--accent)); 
+    --chart-3: hsl(var(--tertiary));
     --chart-4: 35 100% 55%; /* Saffron/Orange-like */
     --chart-5: 200 80% 60%; /* Cyan/Teal for variety */
     --radius: 0.5rem;
@@ -50,36 +51,36 @@ body {
     /* Sidebar variables adjusted for new theme */
     --sidebar-background: 0 0% 10%;
     --sidebar-foreground: var(--foreground);
-    --sidebar-primary: var(--primary); /* Electric Blue for sidebar primary actions */
+    --sidebar-primary: var(--primary); 
     --sidebar-primary-foreground: var(--primary-foreground);
-    --sidebar-accent: var(--accent);  /* Yellow for sidebar accents */
+    --sidebar-accent: var(--accent);  
     --sidebar-accent-foreground: var(--accent-foreground);
     --sidebar-border: var(--border);
-    --sidebar-ring: var(--ring); /* Yellow for sidebar ring */
+    --sidebar-ring: var(--ring); 
   }
 
   .dark {
     --background: 0 0% 13%;
-    --foreground: 100 10% 90%;
+    --foreground: 210 20% 98%;
     --card: 0 0% 10%;
     --card-foreground: var(--foreground);
     --popover: 0 0% 10%;
     --popover-foreground: var(--foreground);
     --primary: 181 100% 74%;
-    --primary-foreground: 181 100% 10%;
+    --primary-foreground: 181 100% 5%;
     --secondary: 0 0% 20%;
-    --secondary-foreground: 100 10% 80%;
+    --secondary-foreground: 210 20% 85%;
     --muted: 0 0% 20%;
-    --muted-foreground: 100 10% 65%;
+    --muted-foreground: 210 20% 65%;
     --accent: 52 100% 55%;
-    --accent-foreground: 52 100% 10%;
+    --accent-foreground: 52 100% 5%;
     --tertiary: 265 80% 65%;
-    --tertiary-foreground: 265 100% 10%;
+    --tertiary-foreground: 265 100% 5%;
     --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 25%;
     --input: 0 0% 20%;
-    --ring: 52 95% 55%;
+    --ring: hsl(var(--accent));
   }
 }
 
@@ -88,6 +89,8 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    /* @apply bg-background text-foreground; */ /* Removed bg-background */
+    @apply text-foreground; 
+    background-color: transparent; /* Explicitly set body background to transparent */
   }
 }

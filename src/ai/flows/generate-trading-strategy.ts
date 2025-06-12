@@ -32,7 +32,7 @@ const GenerateTradingStrategyOutputSchema = z.object({
   risk_rating: z.string().describe('The risk rating of the strategy (Low, Medium, High).'),
   gpt_confidence_score: z.string().describe('The GPT confidence score for the strategy (e.g., 0-100%).'),
   sentiment: z.string().describe('A brief sentiment analysis of the market conditions (e.g., Neutral, Bullish, Bearish).'),
-  explanation: z.string().describe('A detailed textual explanation of the trading strategy, market assessment, entry/exit points, and risk considerations, incorporating the signal, entry zone, stop loss, and take profit levels. This explanation should be engaging, insightful, and use clear, vivid language. It should highlight key reasoning and analytical "aha!" moments, and clearly discuss the role of each selected technical indicator.'),
+  explanation: z.string().describe('A detailed textual explanation of the trading strategy, market assessment, entry/exit points, and risk considerations, incorporating the signal, entry zone, stop loss, and take profit levels. This explanation should be engaging, insightful, and use clear, vivid language. It should highlight key reasoning and analytical "aha!" moments, and clearly discuss the role of each selected technical indicator using Markdown headings for structure.'),
   disclaimer: z.string().describe('A sarcastic GPT disclaimer.'), // This will be added by the action layer
 });
 export type GenerateTradingStrategyOutput = z.infer<typeof GenerateTradingStrategyOutputSchema>;
@@ -83,9 +83,26 @@ const generateTradingStrategyPrompt = ai.definePrompt({
     Ensure the user understands not just *what* you're suggesting, but *why* it's a potentially smart (hypothetically, of course!) move.
     Focus on clarity, impact, and making the user feel like they've gained a genuine edge.
     
-    **Crucially, for each of the technical indicators provided in the input ({{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}), you MUST include a specific section or clear discussion in your explanation detailing how that particular indicator contributed to your overall strategy, signal, entry, stop loss, or take profit levels. Use markdown (e.g., bolding the indicator name like "**RSI Analysis:** ..." or using bullet points under an indicator's mention) to make these discussions distinct and easy to follow within the overall explanation.**
+    **VERY IMPORTANT STRUCTURE FOR EXPLANATION:**
+    Use the following Markdown heading structure within your explanation:
     
-    Feel free to use other markdown for overall structure (like main headings or general bullet points for key takeaways) if it enhances clarity.
+    ## Market Synopsis
+    [Your detailed market synopsis here...]
+
+    ## Overall Rationale & Signal Basis
+    [Explain the core reasoning behind your BUY/SELL/HOLD signal, integrating the market data and overall sentiment...]
+
+    ## Technical Indicator Breakdown
+    [Provide an introductory sentence for this section if needed.]
+    {{#each indicators}}
+    ### {{{this}}} Analysis
+    [Detailed analysis of how the '{{{this}}}' indicator influenced your strategy, signal, entry, stop loss, or take profit levels. Be specific and clear. Use bullet points under this heading if it helps clarify points for this indicator.]
+    {{/each}}
+
+    ## Risk Considerations & Management
+    [Discuss any specific risks associated with this strategy and how the stop loss or other factors help manage it, considering the user's risk level.]
+
+    Make sure each section is well-developed and directly addresses its topic. The content under each indicator's "### [Indicator Name] Analysis" heading MUST specifically discuss that indicator.
 `,
 });
 
@@ -100,4 +117,3 @@ const generateTradingStrategyFlow = ai.defineFlow(
     return output!;
   }
 );
-
