@@ -1,0 +1,40 @@
+import { FunctionComponent } from 'react';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ShieldAlert } from 'lucide-react';
+
+interface RiskSelectorProps {
+  riskLevel: string;
+  onRiskChange: (riskLevel: string) => void;
+}
+
+const RISK_LEVELS = ["Low", "Medium", "High"];
+
+const RiskSelector: FunctionComponent<RiskSelectorProps> = ({
+  riskLevel,
+  onRiskChange,
+}) => {
+  return (
+    <Card className="shadow-md">
+      <CardHeader>
+        <CardTitle className="flex items-center text-lg font-semibold">
+          <ShieldAlert className="mr-2 h-5 w-5 text-primary" />
+          Risk Level
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <RadioGroup value={riskLevel} onValueChange={onRiskChange} className="space-y-2">
+          {RISK_LEVELS.map((level) => (
+            <div key={level} className="flex items-center space-x-2">
+              <RadioGroupItem value={level} id={`risk-${level}`} className="border-primary text-primary focus:ring-primary"/>
+              <Label htmlFor={`risk-${level}`} className="text-sm font-medium">{level}</Label>
+            </div>
+          ))}
+        </RadioGroup>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default RiskSelector;
