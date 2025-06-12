@@ -45,8 +45,8 @@ const AppHeader: FunctionComponent<AppHeaderProps> = () => {
   }, []);
 
   return (
-    <header className="py-4">
-      <div className="container mx-auto flex items-center justify-center h-16">
+    <header> {/* Removed py-4 */}
+      <div className="container mx-auto flex items-center justify-center h-10"> {/* Reduced height */}
         <div className="logo-container flex items-baseline text-3xl sm:text-4xl font-bold font-headline select-none" ref={logoContainerRef}>
           <div className="word-block flex">
             <span className="letter text-primary">B</span>

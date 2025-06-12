@@ -3,6 +3,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import MatrixBackground from '@/components/blocksmith-ai/MatrixBackground';
+import AnimatedPageBorder from '@/components/blocksmith-ai/AnimatedPageBorder'; // Added import
 
 export const metadata: Metadata = {
   title: 'BlockSmithAI Trading Edge',
@@ -24,6 +25,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased bg-background text-foreground">
         <MatrixBackground />
+        <AnimatedPageBorder /> {/* Added component here */}
         <div className="relative z-10"> {/* Ensure content is above background */}
           {children}
         </div>
