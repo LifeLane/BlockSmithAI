@@ -66,7 +66,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   if (isLoading) {
     return (
       <Card className="shadow-lg w-full bg-card border-border transition-all duration-300 ease-in-out">
-        <CardHeader>
+        <CardHeader className="items-center">
           <Skeleton className="h-7 w-1/3 mb-2" />
            <Skeleton className="h-4 w-1/4" />
         </CardHeader>
@@ -84,16 +84,16 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   if (error) {
     return (
       <Card className="shadow-lg border-destructive w-full bg-card transition-all duration-300 ease-in-out">
-        <CardHeader>
+        <CardHeader className="items-center">
           <CardTitle className="flex items-center text-destructive text-xl">
             <AlertTriangle className="mr-2 h-5 w-5" />
             Strategy Generation Error
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="text-center">
           <p className="text-destructive-foreground">{error}</p>
           <p className="text-sm text-muted-foreground mt-2">
-            There was an issue generating the strategy. Please check server logs or try again.
+            Looks like my genius circuits are misfiring. Try again, or perhaps the market itself is too chaotic even for me.
           </p>
         </CardContent>
       </Card>
@@ -103,16 +103,19 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   if (!strategy) {
     return (
       <Card className="shadow-lg w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_20px_5px_hsl(var(--primary)/0.4)]">
-        <CardHeader>
-          <CardTitle className="flex items-center text-xl font-semibold text-foreground">
+        <CardHeader className="items-center">
+          <CardTitle className="flex items-center text-xl font-semibold text-foreground text-center">
             <Sparkles className="mr-2 h-6 w-6 text-primary" />
-            Your Next Market Edge is Waiting...
+            My AI Brain is Buzzing with Potential Alpha...
           </CardTitle>
-           <CardDescription>Don't miss out! Get your AI-powered insights for {symbol} now.</CardDescription>
+           <CardDescription className="text-center">
+             ...but it's not going to analyze {symbol} for free, you know. Or maybe it will. There's only one way to find out.
+           </CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-8">
-            Hit 'Reveal My AI Edge!' and Discover What the AI Recommends!
+            Go on, press that ridiculously bright button. What's the worst that could happen? 
+            You might actually get a (hypothetically) brilliant trading idea. Or, you know, just amuse the AI.
           </p>
         </CardContent>
       </Card>
