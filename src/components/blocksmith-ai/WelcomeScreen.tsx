@@ -2,82 +2,158 @@
 'use client';
 
 import type { FunctionComponent } from 'react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { TestTube2, Sparkles } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { CalendarDays, Lightbulb, BarChartBig, AlertTriangle, Zap, Rocket, Sparkles } from 'lucide-react';
 import { gsap } from 'gsap';
+import { generateDailyGreetingAction } from '@/app/actions';
 
 interface WelcomeScreenProps {
   onProceed: () => void;
 }
 
+const FOMO_HOOKS = [
+  "Unlock Your Edge NOW!",
+  "Don't Miss Today's Alpha!",
+  "The Market Waits For No One...",
+  "Reveal BlockSmithAI Secrets!",
+  "Is Your Next Big Trade HERE?",
+];
+
 const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => {
+  const [dailyGreeting, setDailyGreeting] = useState<string>("");
+  const [isLoadingGreeting, setIsLoadingGreeting] = useState<boolean>(true);
+  const [currentFomoIndex, setCurrentFomoIndex] = useState<number>(0);
+
   const welcomeRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const descriptionContainerRef = useRef<HTMLDivElement>(null); 
+  const greetingCardRef = useRef<HTMLDivElement>(null);
+  const benefitsCardRef = useRef<HTMLDivElement>(null);
+  const storyCardRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const iconRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    const fetchGreeting = async () => {
+      setIsLoadingGreeting(true);
+      const result = await generateDailyGreetingAction();
+      if ('error' in result) {
+        setDailyGreeting(result.greeting || "Welcome back, Analyst! Ready to conquer the charts?"); // Fallback
+        console.error("Failed to fetch daily greeting:", result.error);
+      } else {
+        setDailyGreeting(result.greeting);
+      }
+      setIsLoadingGreeting(false);
+    };
+    fetchGreeting();
+  }, []);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCurrentFomoIndex((prevIndex) => (prevIndex + 1) % FOMO_HOOKS.length);
+    }, 1000); // Rotate every 1 second
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   useEffect(() => {
     if (welcomeRef.current) {
-      gsap.set(welcomeRef.current, { autoAlpha: 1 });
-    }
+      gsap.set(welcomeRef.current, { autoAlpha: 1 }); // Ensure parent is visible
+      
+      const elementsToAnimate = [
+        greetingCardRef.current,
+        benefitsCardRef.current,
+        storyCardRef.current,
+        buttonRef.current,
+      ].filter(Boolean);
 
-    if (iconRef.current) gsap.set(iconRef.current, { autoAlpha: 0, scale: 0, rotation: -180 });
-    if (titleRef.current) gsap.set(titleRef.current, { autoAlpha: 0, y: 30 });
-    if (descriptionContainerRef.current) gsap.set(descriptionContainerRef.current, { autoAlpha: 0, y: 20 });
-    if (buttonRef.current) gsap.set(buttonRef.current, { autoAlpha: 0, scale: 0.8 });
-
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' }});
-
-    if (iconRef.current) {
-      tl.to(iconRef.current, { autoAlpha: 1, scale: 1, rotation: 0, duration: 0.8 }, 0.2); 
+      if (elementsToAnimate.length > 0) {
+          gsap.from(elementsToAnimate, {
+          autoAlpha: 0,
+          y: 50,
+          duration: 0.7,
+          stagger: 0.2,
+          ease: 'power3.out',
+          delay: 0.2 // Slight delay for overall screen appearance
+        });
+      }
     }
-    if (titleRef.current) {
-      tl.to(titleRef.current, { autoAlpha: 1, y: 0, duration: 0.6 }, ">-0.5"); 
-    }
-    if (descriptionContainerRef.current) { 
-      tl.to(descriptionContainerRef.current, { autoAlpha: 1, y: 0, duration: 0.6 }, ">-0.4"); 
-    }
-    if (buttonRef.current) {
-      const buttonStartTime = tl.recent().startTime() + 0.2;
-      tl.to(buttonRef.current, { autoAlpha: 1, scale: 1, duration: 0.5 }, buttonStartTime);
-    }
-  }, []);
+  }, [isLoadingGreeting]); // Re-run animation when greeting is loaded to ensure proper sequencing
 
   return (
-    <div ref={welcomeRef} className="flex flex-col items-center justify-center text-center p-4 max-w-xl mx-auto" style={{opacity: 0}}>
-      <Card className="w-full shadow-xl border-primary/30 bg-card/80 backdrop-blur-sm">
-        <CardHeader className="items-center">
-          <TestTube2 ref={iconRef} className="h-16 w-16 text-primary mb-4" />
-          <CardTitle ref={titleRef} className="text-3xl font-bold font-headline text-foreground">
-            Greetings, <span className="text-primary">Intrepid Analyst</span>!
+    <div ref={welcomeRef} className="flex flex-col items-center justify-center text-center p-2 md:p-4 max-w-2xl mx-auto space-y-6 md:space-y-8" style={{opacity: 0}}>
+      
+      {/* Daily Greeting Section */}
+      <Card ref={greetingCardRef} className="w-full shadow-xl border-primary/40 bg-card/80 backdrop-blur-sm hover:border-primary transition-all duration-300 ease-in-out hover:shadow-[0_0_20px_3px_hsl(var(--primary)/0.5)]">
+        <CardHeader className="items-center pb-3">
+          <CalendarDays className="h-10 w-10 text-primary mb-2" />
+          <CardTitle className="text-xl md:text-2xl font-bold font-headline text-foreground">
+            A Moment with <span className="text-primary">BlockSmithAI</span>:
           </CardTitle>
-          <CardDescription className="text-tertiary font-semibold">
-            From the <strong className="text-orange-400">Experimental Labs</strong> of <strong className="text-accent">BlockSmithAI</strong>
-          </CardDescription>
         </CardHeader>
-        <CardContent ref={descriptionContainerRef} className="space-y-4 text-muted-foreground">
-          <p>
-            You've stumbled upon the digital forge where <strong className="text-foreground/90">algorithms dream of <span className="text-orange-400">alpha</span></strong> and data streams flow like <strong className="text-purple-400">caffeinated rivers</strong>.
-            We've been tinkering with the market's <strong className="text-primary">quantum fluctuations</strong> (or just staring at charts, you know, <strong className="text-accent">details</strong>).
-          </p>
-          <p>
-            Our AI is <strong className="text-primary">primed</strong>, protocols are... <strong className="text-foreground/90">mostly stable</strong>, and the <strong className="text-purple-400">coffee machine</strong> is probably working.
-            Ready to peer into the <strong className="text-orange-400">crystal ball</strong> of code and see what <strong className="text-accent">"insights"</strong> we've conjured?
-          </p>
-          <Button
-            ref={buttonRef}
-            onClick={onProceed}
-            size="lg"
-            className="mt-6 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 px-8 text-lg shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105 active:scale-95"
-          >
-            <Sparkles className="mr-2 h-5 w-5" />
-            Unleash the <span className="text-primary-foreground">AI Oracle</span>
-          </Button>
+        <CardContent className="text-sm md:text-base text-muted-foreground min-h-[50px]">
+          {isLoadingGreeting ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-3/4 mx-auto bg-muted/50" />
+              <Skeleton className="h-4 w-1/2 mx-auto bg-muted/50" />
+            </div>
+          ) : (
+            <p className="italic">{dailyGreeting}</p>
+          )}
         </CardContent>
       </Card>
+
+      {/* Benefits Section */}
+      <Card ref={benefitsCardRef} className="w-full shadow-xl border-accent/40 bg-card/80 backdrop-blur-sm hover:border-accent transition-all duration-300 ease-in-out hover:shadow-[0_0_20px_3px_hsl(var(--accent)/0.5)]">
+        <CardHeader className="items-center pb-3">
+           <Zap className="h-10 w-10 text-accent mb-2"/>
+          <CardTitle className="text-xl md:text-2xl font-bold font-headline text-foreground">
+            Your <span className="text-accent">Unfair Advantage</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-left text-sm md:text-base text-muted-foreground px-4 md:px-6">
+          <div className="flex items-start space-x-3">
+            <Lightbulb className="h-5 w-5 text-primary mt-1 shrink-0" />
+            <p><strong className="text-primary">AI-Powered Insights:</strong> Leverage cutting-edge AI to decode market complexities and spot potential opportunities normal squishy humans might miss.</p>
+          </div>
+          <div className="flex items-start space-x-3">
+            <BarChartBig className="h-5 w-5 text-primary mt-1 shrink-0" />
+            <p><strong className="text-primary">Actionable Strategies:</strong> Get clear, concise trading parameters (entry, TP/SL) so you spend less time guessing, more time executing (hypothetically!).</p>
+          </div>
+           <div className="flex items-start space-x-3">
+            <Rocket className="h-5 w-5 text-primary mt-1 shrink-0" />
+            <p><strong className="text-primary">Stay Ahead of the Curve:</strong> In the fast-paced crypto world, having an AI co-pilot means you're always equipped with the latest data-driven perspectives.</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Hook Story Section */}
+      <Card ref={storyCardRef} className="w-full shadow-xl border-tertiary/40 bg-card/80 backdrop-blur-sm hover:border-tertiary transition-all duration-300 ease-in-out hover:shadow-[0_0_20px_3px_hsl(var(--tertiary)/0.5)]">
+        <CardHeader className="items-center pb-3">
+          <AlertTriangle className="h-10 w-10 text-tertiary mb-2" />
+          <CardTitle className="text-xl md:text-2xl font-bold font-headline text-foreground">
+            The <span className="text-tertiary">Legend</span> of the <span className="text-orange-400">Lost Alpha</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm md:text-base text-muted-foreground">
+          <p>
+            They say in the digital ether, amidst flickering charts and whispered rumors, lies the <strong className="text-orange-400">Lost Alpha</strong> – opportunities missed by the masses, captured only by those with <strong className="text-primary">vision</strong> and the right <strong className="text-accent">tools</strong>.
+            BlockSmithAI was forged in these very data-streams, a beacon for seekers of that elusive edge. Are you just watching, or are you <strong className="text-purple-400">ready to explore?</strong>
+          </p>
+        </CardContent>
+      </Card>
+      
+      <Button
+        ref={buttonRef}
+        onClick={onProceed}
+        size="lg"
+        className="mt-6 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 px-6 md:px-8 text-base md:text-lg shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105 active:scale-95 w-full max-w-md"
+      >
+        <Sparkles className="mr-2 h-5 w-5 text-yellow-300" /> 
+        <span className="inline-block min-w-[250px] text-center">
+          {FOMO_HOOKS[currentFomoIndex]}
+        </span>
+      </Button>
     </div>
   );
 };

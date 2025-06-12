@@ -3,6 +3,7 @@
 import { generateTradingStrategy as genCoreStrategy, type GenerateTradingStrategyInput, type GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
 import { generateSarcasticDisclaimer, type SarcasticDisclaimerInput } from '@/ai/flows/generate-sarcastic-disclaimer';
 import { blocksmithChat, type BlocksmithChatInput, type BlocksmithChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
+import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
 
 export interface LiveMarketData {
   symbol: string;
@@ -228,8 +229,27 @@ export async function blocksmithChatAction(input: BlocksmithChatInput): Promise<
             errorMessage = `BSAI's thought process hit a snag: ${error.message}`;
         }
     }
-    // More detailed error logging as before can be added here if needed
     return { error: errorMessage };
   }
 }
 
+export async function generateDailyGreetingAction(): Promise<GenerateDailyGreetingOutput | { error: string }> {
+  try {
+    const result = await generateDailyGreeting();
+    return result;
+  } catch (error: any) {
+    let errorMessage = "BlockSmithAI is having a moment of digital stage fright. No greeting today!";
+    if (error.message) {
+      if ((error.message.includes("[500]") || error.message.includes("[503]")) && error.message.includes("GoogleGenerativeAI")) {
+        const statusCode = error.message.includes("[500]") ? "500 Internal Server Error" : "503 Service Unavailable";
+        errorMessage = `BSAI's muse (Gemini) is on a coffee break: ${statusCode}. Try again later.`;
+      } else if (error.message.includes("Text not available. Response was blocked") || error.message.includes("SAFETY")) {
+        errorMessage = "BSAI tried to greet you so profoundly its words got caught in the safety net. Standard greeting it is!";
+      } else {
+        errorMessage = `Daily greeting malfunction: ${error.message}`;
+      }
+    }
+    console.error("Error in generateDailyGreetingAction:", errorMessage, error);
+    return { error: errorMessage, greeting: "Welcome, Analyst! Let's decode the markets." }; // Provide a fallback greeting
+  }
+}
