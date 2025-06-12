@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import SymbolIntervalSelectors from '@/components/blocksmith-ai/SymbolIntervalSelectors';
 import TradingViewWidget from '@/components/blocksmith-ai/TradingViewWidget';
@@ -13,6 +13,7 @@ import { generateTradingStrategyAction, fetchMarketDataAction, type LiveMarketDa
 import type { GenerateTradingStrategyOutput, GenerateTradingStrategyInput } from '@/ai/flows/generate-trading-strategy';
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from 'lucide-react';
+import { gsap } from 'gsap';
 
 export default function BlockSmithAIPage() {
   const [symbol, setSymbol] = useState<string>('BTCUSDT');
@@ -31,6 +32,33 @@ export default function BlockSmithAIPage() {
   const [marketDataError, setMarketDataError] = useState<string | null>(null);
 
   const { toast } = useToast();
+
+  const appHeaderRef = useRef<HTMLDivElement>(null);
+  const symbolSelectorsRef = useRef<HTMLDivElement>(null);
+  const tradingViewRef = useRef<HTMLDivElement>(null);
+  const strategySectionContainerRef = useRef<HTMLDivElement>(null);
+  const controlsColumnRef = useRef<HTMLDivElement>(null);
+
+
+  useEffect(() => {
+    const elementsToAnimate = [
+      appHeaderRef.current,
+      symbolSelectorsRef.current,
+      tradingViewRef.current,
+      strategySectionContainerRef.current,
+      controlsColumnRef.current,
+    ].filter(Boolean);
+
+    if (elementsToAnimate.length > 0) {
+      gsap.from(elementsToAnimate, {
+        opacity: 0,
+        y: 50,
+        duration: 0.8,
+        stagger: 0.2,
+        ease: 'power3.out',
+      });
+    }
+  }, []);
 
   const handleIndicatorChange = (indicator: string, checked: boolean) => {
     setSelectedIndicators((prev) =>
@@ -104,55 +132,47 @@ export default function BlockSmithAIPage() {
     setStrategyError(null);
     setAiStrategy(null);
 
-    let currentMarketData = liveMarketData;
-    if (!currentMarketData) { // If market data isn't already loaded, try fetching it
-        const marketDataFetched = await fetchAndSetMarketData(symbol, apiKey);
-        if (!marketDataFetched) {
-          setIsLoadingStrategy(false);
-          setStrategyError("Failed to fetch market data for strategy generation.");
-          // Toast is handled by fetchAndSetMarketData
-          return;
-        }
-        // Need to get the updated state value, cannot directly use result of fetchAndSetMarketData
-        // This is a bit tricky due to state update timing. For simplicity, we'll assume it's available
-        // or rely on a subsequent render. A better approach might involve a local variable from fetch.
-        // For now, let's just proceed, and if liveMarketData is still null, the AI call will use an empty object.
-    }
-    
-    // Re-check liveMarketData from state after potential fetch attempt.
-    const latestMarketData = await fetchMarketDataAction({ symbol: symbol, apiKey: apiKey });
+    // Ensure we have the freshest market data or attempt to fetch it
     let marketDataForAIString = '{}';
+    const latestMarketDataResult = await fetchMarketDataAction({ symbol: symbol, apiKey: apiKey });
 
-    if ('error' in latestMarketData) {
-        // Use existing liveMarketData if fetch fails but we had some before
-        if (liveMarketData) {
-             marketDataForAIString = JSON.stringify({
-                symbol: liveMarketData.symbol,
-                price: liveMarketData.lastPrice,
-                price_change_percent_24h: `${parseFloat(liveMarketData.priceChangePercent) >= 0 ? '+' : ''}${parseFloat(liveMarketData.priceChangePercent).toFixed(2)}%`,
-                volume_24h_base: `${liveMarketData.volume} ${liveMarketData.symbol.replace('USDT', '')}`,
-                volume_24h_quote: `${liveMarketData.quoteVolume} USDT`,
-                high_24h: liveMarketData.highPrice,
-                low_24h: liveMarketData.lowPrice,
-            });
-        } else {
-            // No market data at all
-            toast({
-                title: "Market Data Unavailable",
-                description: "Could not fetch fresh market data. Strategy generation might be impaired.",
-                variant: "destructive",
-            });
-        }
-    } else {
-        setLiveMarketData(latestMarketData); // Update state with freshest data
+    if ('error' in latestMarketDataResult) {
+      // If fetching fresh data fails, try to use potentially stale liveMarketData from state if available
+      if (liveMarketData) {
         marketDataForAIString = JSON.stringify({
-            symbol: latestMarketData.symbol,
-            price: latestMarketData.lastPrice,
-            price_change_percent_24h: `${parseFloat(latestMarketData.priceChangePercent) >= 0 ? '+' : ''}${parseFloat(latestMarketData.priceChangePercent).toFixed(2)}%`,
-            volume_24h_base: `${latestMarketData.volume} ${latestMarketData.symbol.replace('USDT', '')}`,
-            volume_24h_quote: `${latestMarketData.quoteVolume} USDT`,
-            high_24h: latestMarketData.highPrice,
-            low_24h: latestMarketData.lowPrice,
+            symbol: liveMarketData.symbol,
+            price: liveMarketData.lastPrice,
+            price_change_percent_24h: `${parseFloat(liveMarketData.priceChangePercent) >= 0 ? '+' : ''}${parseFloat(liveMarketData.priceChangePercent).toFixed(2)}%`,
+            volume_24h_base: `${liveMarketData.volume} ${liveMarketData.symbol.replace('USDT', '')}`,
+            volume_24h_quote: `${liveMarketData.quoteVolume} USDT`,
+            high_24h: liveMarketData.highPrice,
+            low_24h: liveMarketData.lowPrice,
+        });
+        toast({
+            title: "Using Stale Market Data",
+            description: "Could not fetch fresh market data. Strategy generated with potentially stale data.",
+            variant: "default", // Or "warning" if you have one
+        });
+      } else {
+        // No market data at all
+        toast({
+            title: "Market Data Unavailable",
+            description: "Could not fetch market data. Strategy generation may be impaired or use default assumptions.",
+            variant: "destructive",
+        });
+        // Proceed with empty marketData string, AI will have to handle it
+      }
+    } else {
+        // Successfully fetched fresh market data
+        setLiveMarketData(latestMarketDataResult); // Update state with the freshest data
+        marketDataForAIString = JSON.stringify({
+            symbol: latestMarketDataResult.symbol,
+            price: latestMarketDataResult.lastPrice,
+            price_change_percent_24h: `${parseFloat(latestMarketDataResult.priceChangePercent) >= 0 ? '+' : ''}${parseFloat(latestMarketDataResult.priceChangePercent).toFixed(2)}%`,
+            volume_24h_base: `${latestMarketDataResult.volume} ${latestMarketDataResult.symbol.replace('USDT', '')}`,
+            volume_24h_quote: `${latestMarketDataResult.quoteVolume} USDT`,
+            high_24h: latestMarketDataResult.highPrice,
+            low_24h: latestMarketDataResult.lowPrice,
         });
     }
 
@@ -182,26 +202,30 @@ export default function BlockSmithAIPage() {
       });
     }
     setIsLoadingStrategy(false);
-  }, [symbol, interval, selectedIndicators, riskLevel, toast, apiKey, fetchAndSetMarketData, liveMarketData]); // Added liveMarketData to dependencies
+  }, [symbol, interval, selectedIndicators, riskLevel, toast, apiKey, liveMarketData]);
 
 
   return (
-    <div className="min-h-screen flex flex-col pb-12"> {/* Added pb-12 for ticker */}
-      <AppHeader />
+    <div className="min-h-screen flex flex-col pb-12">
+      <div ref={appHeaderRef}>
+        <AppHeader />
+      </div>
       <main className="flex-grow container mx-auto px-4 py-8 space-y-8">
-        <SymbolIntervalSelectors
-          symbol={symbol}
-          onSymbolChange={setSymbol}
-          interval={interval}
-          onIntervalChange={setInterval}
-        />
+        <div ref={symbolSelectorsRef}>
+          <SymbolIntervalSelectors
+            symbol={symbol}
+            onSymbolChange={setSymbol}
+            interval={interval}
+            onIntervalChange={setInterval}
+          />
+        </div>
 
-        <div className="bg-card p-1 rounded-lg shadow-xl">
+        <div className="bg-card p-1 rounded-lg shadow-xl" ref={tradingViewRef}>
           <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
         </div>
         
         <div className="grid md:grid-cols-3 gap-8 items-start">
-          <div className="md:col-span-2">
+          <div className="md:col-span-2" ref={strategySectionContainerRef}>
             <StrategyExplanationSection 
               strategy={aiStrategy} 
               liveMarketData={liveMarketData}
@@ -211,7 +235,7 @@ export default function BlockSmithAIPage() {
             />
           </div>
 
-          <div className="space-y-6 flex flex-col">
+          <div className="space-y-6 flex flex-col" ref={controlsColumnRef}>
             <ControlsTabs
               selectedIndicators={selectedIndicators}
               onIndicatorChange={handleIndicatorChange}
@@ -222,7 +246,6 @@ export default function BlockSmithAIPage() {
               apiSecret={apiSecret} 
               onApiSecretChange={setApiSecret}
               onApiKeysSave={handleApiKeysSave}
-              // Pass market data props
               apiKeySet={!!apiKey}
               liveMarketData={liveMarketData}
               isLoadingMarketData={isLoadingMarketData}
