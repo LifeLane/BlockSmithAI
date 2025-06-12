@@ -293,7 +293,7 @@ export default function BlockSmithAIPage() {
       });
     }
     setIsLoadingStrategy(false);
-  }, [symbol, interval, selectedIndicators, riskLevel, toast, liveMarketData, fetchAndSetMarketData, marketDataError, isSignedUp, analysisCount, lastAnalysisDate]);
+  }, [symbol, interval, selectedIndicators, riskLevel, toast, liveMarketData, fetchAndSetMarketData, marketDataError, isSignedUp, analysisCount, lastAnalysisDate, updateUsageData]);
 
   const handleProceedFromWelcome = () => {
     setShowWelcomeScreen(false);
@@ -327,7 +327,7 @@ export default function BlockSmithAIPage() {
       </div>
       
       {showWelcomeScreen ? (
-        <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center"> {/* Removed justify-center */}
+        <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center">
           <WelcomeScreen onProceed={handleProceedFromWelcome} />
         </main>
       ) : (
@@ -341,7 +341,7 @@ export default function BlockSmithAIPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-              {/* Control Panel Column (Source Order 1, Visual Order 1 on LG) */}
+               {/* Control Panel Column (Source Order 1, Visual Order 1 on LG) */}
               <div className="lg:col-span-1 space-y-6 flex flex-col lg:order-1" ref={controlPanelRef}>
                 <SymbolIntervalSelectors
                   symbol={symbol}
@@ -409,7 +409,7 @@ export default function BlockSmithAIPage() {
           />
         </>
       )}
-      <footer className="text-center py-4 mt-auto text-sm text-muted-foreground border-t border-border/50">
+      <footer className="text-center py-4 px-6 mt-auto text-sm text-muted-foreground border-t border-border/50">
         {currentYear ? `© ${currentYear} ` : ''}<strong className="text-primary">BlockSmithAI</strong> (because someone has to build this <strong className="text-accent">awesome</strong> stuff).
         Not financial advice, <strong className="text-tertiary">obviously</strong>. Do Your Own Research, <strong className="text-orange-400">genius</strong>! 🧐
       </footer>

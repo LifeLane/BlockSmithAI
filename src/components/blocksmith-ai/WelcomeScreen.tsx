@@ -65,12 +65,12 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
         benefitsCardRef.current,
         storyCardRef.current,
         buttonRef.current,
-      ].filter(Boolean); // Ensure all refs are non-null
+      ].filter(Boolean); 
 
       if (elementsToAnimate.length > 0) {
           gsap.fromTo(elementsToAnimate,
-            { autoAlpha: 0, y: 50 }, // From state
-            { // To state
+            { autoAlpha: 0, y: 50 }, 
+            { 
               autoAlpha: 1,
               y: 0,
               duration: 0.7,
@@ -84,7 +84,7 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
           );
       }
     }
-  }, [isLoadingGreeting]); // Depend only on isLoadingGreeting
+  }, [isLoadingGreeting]); 
 
   return (
     <div ref={welcomeRef} className="flex flex-col items-center justify-center text-center p-2 md:p-4 max-w-2xl mx-auto space-y-6 md:space-y-8">
@@ -117,17 +117,17 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
             Your <span className="text-accent">Unfair Advantage</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 text-left text-sm md:text-base text-muted-foreground px-4 md:px-6">
-          <div className="flex items-start space-x-3">
-            <Lightbulb className="h-5 w-5 text-primary mt-1 shrink-0" />
+        <CardContent className="space-y-3 text-sm md:text-base text-muted-foreground px-4 md:px-6">
+          <div className="flex flex-col items-center space-y-1 md:space-y-0 md:flex-row md:items-center md:space-x-3">
+            <Lightbulb className="h-5 w-5 text-primary mb-1 md:mb-0 shrink-0" />
             <p><strong className="text-primary">AI-Powered Insights:</strong> Leverage cutting-edge AI to decode market complexities and spot potential opportunities normal squishy humans might miss.</p>
           </div>
-          <div className="flex items-start space-x-3">
-            <BarChartBig className="h-5 w-5 text-primary mt-1 shrink-0" />
+          <div className="flex flex-col items-center space-y-1 md:space-y-0 md:flex-row md:items-center md:space-x-3">
+            <BarChartBig className="h-5 w-5 text-primary mb-1 md:mb-0 shrink-0" />
             <p><strong className="text-primary">Actionable Strategies:</strong> Get clear, concise trading parameters (entry, TP/SL) so you spend less time guessing, more time executing (hypothetically!).</p>
           </div>
-           <div className="flex items-start space-x-3">
-            <Rocket className="h-5 w-5 text-primary mt-1 shrink-0" />
+           <div className="flex flex-col items-center space-y-1 md:space-y-0 md:flex-row md:items-center md:space-x-3">
+            <Rocket className="h-5 w-5 text-primary mb-1 md:mb-0 shrink-0" />
             <p><strong className="text-primary">Stay Ahead of the Curve:</strong> In the fast-paced crypto world, having an AI co-pilot means you're always equipped with the latest data-driven perspectives.</p>
           </div>
         </CardContent>
@@ -165,4 +165,3 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
 };
 
 export default WelcomeScreen;
-
