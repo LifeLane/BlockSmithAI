@@ -5,11 +5,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
 import type { LiveMarketData } from '@/app/actions';
-import { 
-  Brain, 
-  AlertTriangle, 
-  DollarSign, 
-  TrendingUp, 
+import {
+  Brain,
+  AlertTriangle,
+  DollarSign,
+  TrendingUp,
   TrendingDown,
   ArrowUpCircle,
   ArrowDownCircle,
@@ -27,11 +27,12 @@ import {
   Lightbulb,
   ThumbsUp,
   ThumbsDown,
-  Activity, // For Summary
-  FileText, // For Key Findings
-  Goal, // For Key Suggestions
-  ClipboardList, // For Do's and Don'ts
-  Glasses // For Indicator Deep Dive
+  Activity, 
+  FileText, 
+  Goal, 
+  ClipboardList, 
+  Glasses,
+  Loader2 
 } from 'lucide-react';
 
 interface StrategyExplanationSectionProps {
@@ -40,7 +41,7 @@ interface StrategyExplanationSectionProps {
   isLoading: boolean;
   error?: string | null;
   symbol: string;
-  selectedIndicators: string[]; // Pass selected indicators for context
+  selectedIndicators: string[]; 
 }
 
 interface StatCardProps {
@@ -65,12 +66,12 @@ const StatCard: FunctionComponent<StatCardProps> = ({ title, value, icon, classN
 );
 
 const MarkdownContentDisplay: FunctionComponent<{ content: string | undefined; fallbackText: string }> = ({ content, fallbackText }) => (
-  <article className="prose prose-sm sm:prose-base prose-invert max-w-none text-foreground/90 leading-relaxed 
+  <article className="prose prose-sm sm:prose-base prose-invert max-w-none text-foreground/90 leading-relaxed
                     prose-strong:text-primary prose-headings:text-accent prose-headings:font-headline
                     prose-ul:text-foreground/90 prose-ol:text-foreground/90 prose-ul:list-disc prose-ul:ml-5
                     prose-li:marker:text-primary prose-a:text-tertiary hover:prose-a:text-accent
                     prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground prose-blockquote:italic">
-    {content || fallbackText}
+    {content ? <div dangerouslySetInnerHTML={{ __html: content.replace(/\n/g, '<br />') }} /> : fallbackText}
   </article>
 );
 
@@ -94,8 +95,8 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
           <div className="flex justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
           </div>
-          <Skeleton className="h-6 w-full mt-4 bg-muted" /> 
-          <Skeleton className="h-10 w-full mt-2 bg-muted" /> 
+          <Skeleton className="h-6 w-full mt-4 bg-muted" />
+          <Skeleton className="h-10 w-full mt-2 bg-muted" />
           <Skeleton className="h-20 w-full mt-2 bg-muted" />
         </CardContent>
       </Card>
@@ -121,7 +122,6 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
     );
   }
 
-  // Initial Banner State
   if (!strategy) {
     return (
       <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_25px_7px_hsl(var(--tertiary)/0.5)]">
@@ -144,9 +144,8 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
     );
   }
 
-  // Strategy Loaded State - Multi-Tab Interface
   const currentPrice = liveMarketData?.lastPrice ? parseFloat(liveMarketData.lastPrice).toLocaleString(undefined, { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: Math.max(2, (liveMarketData.lastPrice.split('.')[1]?.length || 0)) }) : 'N/A';
-  
+
   let sentimentIcon, sentimentColor = 'text-foreground';
   const lowerSentiment = strategy.sentiment?.toLowerCase();
   if (lowerSentiment === 'bullish') {
@@ -181,6 +180,8 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
       break;
   }
 
+  const commonTriggerClasses = "text-xs sm:text-sm py-2.5 px-2 data-[state=active]:shadow-lg hover:shadow-md transition-all duration-200 ease-in-out rounded-md flex-grow min-w-0";
+
   return (
     <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out">
       <CardHeader className="text-center pb-4 pt-5">
@@ -191,65 +192,65 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
       </CardHeader>
       <CardContent className="space-y-6 px-2 sm:px-4 pb-5">
         <Tabs defaultValue="summary" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1 bg-card/60 border border-border/70 mb-4 p-1 h-auto">
-            <TabsTrigger value="summary" className="text-xs sm:text-sm data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-md hover:bg-primary/5 py-1.5 sm:py-2 px-1"><Activity className="mr-1.5 h-4 w-4" />Summary</TabsTrigger>
-            <TabsTrigger value="findings" className="text-xs sm:text-sm data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:shadow-md hover:bg-accent/5 py-1.5 sm:py-2 px-1"><FileText className="mr-1.5 h-4 w-4" />Findings</TabsTrigger>
-            <TabsTrigger value="suggestions" className="text-xs sm:text-sm data-[state=active]:bg-tertiary/10 data-[state=active]:text-tertiary data-[state=active]:shadow-md hover:bg-tertiary/5 py-1.5 sm:py-2 px-1"><Goal className="mr-1.5 h-4 w-4" />Suggestions</TabsTrigger>
-            <TabsTrigger value="dos-donts" className="text-xs sm:text-sm data-[state=active]:bg-orange-500/10 data-[state=active]:text-orange-500 data-[state=active]:shadow-md hover:bg-orange-500/5 py-1.5 sm:py-2 px-1"><ClipboardList className="mr-1.5 h-4 w-4" />Do's/Don'ts</TabsTrigger>
-            <TabsTrigger value="deep-dive" className="text-xs sm:text-sm data-[state=active]:bg-purple-500/10 data-[state=active]:text-purple-500 data-[state=active]:shadow-md hover:bg-purple-500/5 py-1.5 sm:py-2 px-1"><Glasses className="mr-1.5 h-4 w-4" />Deep Dive</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 bg-card/70 border border-border/80 mb-6 p-2 h-auto rounded-lg">
+            <TabsTrigger value="summary" className={`${commonTriggerClasses} data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-primary/10 hover:text-primary`}><Activity className="mr-1.5 h-4 w-4" />Summary</TabsTrigger>
+            <TabsTrigger value="findings" className={`${commonTriggerClasses} data-[state=active]:bg-accent/20 data-[state=active]:text-accent hover:bg-accent/10 hover:text-accent`}><FileText className="mr-1.5 h-4 w-4" />Findings</TabsTrigger>
+            <TabsTrigger value="suggestions" className={`${commonTriggerClasses} data-[state=active]:bg-tertiary/20 data-[state=active]:text-tertiary hover:bg-tertiary/10 hover:text-tertiary`}><Goal className="mr-1.5 h-4 w-4" />Suggestions</TabsTrigger>
+            <TabsTrigger value="dos-donts" className={`${commonTriggerClasses} data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-500 hover:bg-orange-500/10 hover:text-orange-500`}><ClipboardList className="mr-1.5 h-4 w-4" />Do's/Don'ts</TabsTrigger>
+            <TabsTrigger value="deep-dive" className={`${commonTriggerClasses} data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-500 hover:bg-purple-500/10 hover:text-purple-500`}><Glasses className="mr-1.5 h-4 w-4" />Deep Dive</TabsTrigger>
           </TabsList>
 
           <TabsContent value="summary" className="p-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-              <StatCard 
-                title="AI Signal" 
-                value={signalTextFormatted} 
-                icon={signalIcon} 
-                valueClassName={signalColorCls} 
+              <StatCard
+                title="AI Signal"
+                value={signalTextFormatted}
+                icon={signalIcon}
+                valueClassName={signalColorCls}
                 className="sm:col-span-1 lg:col-span-1 border-primary/50"
               />
-              <StatCard 
-                title="Current Price" 
+              <StatCard
+                title="Current Price"
                 value={<span className="text-primary">{currentPrice}</span>}
-                icon={<DollarSign size={20} className="text-primary"/>} 
+                icon={<DollarSign size={20} className="text-primary"/>}
               />
-              <StatCard 
-                title="Sentiment" 
-                value={strategy.sentiment || 'N/A'} 
-                icon={sentimentIcon} 
+              <StatCard
+                title="Sentiment"
+                value={strategy.sentiment || 'N/A'}
+                icon={sentimentIcon}
                 valueClassName={`${sentimentColor}`}
               />
-              <StatCard 
-                title="Entry Zone" 
+              <StatCard
+                title="Entry Zone"
                 value={<span className="text-primary">{strategy.entry_zone || 'N/A'}</span>}
-                icon={<LogIn size={20} className="text-primary"/>} 
+                icon={<LogIn size={20} className="text-primary"/>}
               />
-              <StatCard 
-                title="Stop Loss" 
+              <StatCard
+                title="Stop Loss"
                 value={<span className="text-red-400">{strategy.stop_loss || 'N/A'}</span>}
-                icon={<ShieldX size={20} className="text-red-400"/>} 
+                icon={<ShieldX size={20} className="text-red-400"/>}
               />
-              <StatCard 
-                title="Take Profit" 
+              <StatCard
+                title="Take Profit"
                 value={<span className="text-green-400">{strategy.take_profit || 'N/A'}</span>}
-                icon={<Target size={20} className="text-green-400"/>} 
+                icon={<Target size={20} className="text-green-400"/>}
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-3 md:mt-4">
-                <StatCard 
-                    title="Confidence" 
+                <StatCard
+                    title="Confidence"
                     value={<span className="text-tertiary">{strategy.confidence || 'N/A'}</span>}
-                    icon={<ShieldCheck size={20} className="text-tertiary"/>} 
+                    icon={<ShieldCheck size={20} className="text-tertiary"/>}
                 />
-                <StatCard 
-                    title="GPT Score" 
+                <StatCard
+                    title="GPT Score"
                     value={<span className="text-accent">{strategy.gpt_confidence_score || 'N/A'}</span>}
-                    icon={<Percent size={20} className="text-accent"/>} 
+                    icon={<Percent size={20} className="text-accent"/>}
                 />
-                <StatCard 
-                    title="Risk Rating" 
-                    value={<span className="text-orange-500">{strategy.risk_rating || 'N/A'}</span>} 
-                    icon={<AlertTriangle size={20} className="text-orange-500"/>} 
+                <StatCard
+                    title="Risk Rating"
+                    value={<span className="text-orange-500">{strategy.risk_rating || 'N/A'}</span>}
+                    icon={<AlertTriangle size={20} className="text-orange-500"/>}
                 />
             </div>
           </TabsContent>
@@ -261,7 +262,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
           <TabsContent value="suggestions" className="p-2 sm:p-4 bg-background/30 rounded-md border border-border/50">
              <MarkdownContentDisplay content={strategy.keySuggestions} fallbackText="No specific suggestions provided by AI." />
           </TabsContent>
-          
+
           <TabsContent value="dos-donts" className="p-2 sm:p-4 bg-background/30 rounded-md border border-border/50">
              <MarkdownContentDisplay content={strategy.dosAndDonts} fallbackText="No specific Do's and Don'ts provided by AI." />
           </TabsContent>
@@ -270,7 +271,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
             <MarkdownContentDisplay content={strategy.explanation} fallbackText="No detailed explanation provided by AI." />
           </TabsContent>
         </Tabs>
-        
+
         {strategy.disclaimer && (
           <div className="mt-6 p-4 border-t border-primary/30 bg-background/50 rounded-lg shadow">
             <p className="text-xs text-yellow-400 italic font-code text-center flex items-center justify-center">

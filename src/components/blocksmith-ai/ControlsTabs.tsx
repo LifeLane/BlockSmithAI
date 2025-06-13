@@ -30,12 +30,18 @@ const ControlsTabs: FunctionComponent<ControlsTabsProps> = ({
 }) => {
   return (
     <Tabs defaultValue="market-pulse" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 bg-card/50 border border-border/70 mb-4">
-        <TabsTrigger value="market-pulse" className="text-xs sm:text-sm data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-md hover:bg-primary/5">
-          <Activity className="mr-1.5 h-4 w-4" /> Market Pulse
+      <TabsList className="grid w-full grid-cols-2 bg-card border border-border/80 rounded-lg p-1 mb-4">
+        <TabsTrigger
+          value="market-pulse"
+          className="text-sm sm:text-base py-2.5 px-3 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-lg hover:bg-primary/10 hover:text-primary transition-all duration-200 ease-in-out rounded-md"
+        >
+          <Activity className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" /> Market Pulse
         </TabsTrigger>
-        <TabsTrigger value="strategy-config" className="text-xs sm:text-sm data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:shadow-md hover:bg-accent/5">
-          <Settings className="mr-1.5 h-4 w-4" /> AI Strategy Config
+        <TabsTrigger
+          value="strategy-config"
+          className="text-sm sm:text-base py-2.5 px-3 data-[state=active]:bg-accent/20 data-[state=active]:text-accent data-[state=active]:shadow-lg hover:bg-accent/10 hover:text-accent transition-all duration-200 ease-in-out rounded-md"
+        >
+          <Settings className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" /> AI Strategy Config
         </TabsTrigger>
       </TabsList>
       <TabsContent value="market-pulse">
