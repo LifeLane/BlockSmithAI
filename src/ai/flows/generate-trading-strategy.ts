@@ -82,10 +82,10 @@ const generateTradingStrategyPrompt = ai.definePrompt({
     Break down complex ideas. Highlight the *'aha!'* moments in your analysis.
     Ensure the user understands not just *what* you're suggesting, but *why* it's a potentially smart (hypothetically, of course!) move.
     Focus on clarity, impact, and making the user feel like they've gained a genuine edge.
-    
+
     **VERY IMPORTANT STRUCTURE FOR EXPLANATION:**
     Use the following Markdown heading structure within your explanation:
-    
+
     ## Market Synopsis
     [Your detailed market synopsis here...]
 
@@ -93,7 +93,7 @@ const generateTradingStrategyPrompt = ai.definePrompt({
     [Explain the core reasoning behind your BUY/SELL/HOLD signal, integrating the market data and overall sentiment...]
 
     ## Technical Indicator Breakdown
-    [Provide an introductory sentence for this section if needed.]
+    [Provide an introductory sentence for this section if needed. Then, for each indicator provided in the input, create a sub-section.]
     {{#each indicators}}
     ### {{{this}}} Analysis
     [Detailed analysis of how the '{{{this}}}' indicator influenced your strategy, signal, entry, stop loss, or take profit levels. Be specific and clear. Use bullet points under this heading if it helps clarify points for this indicator.]
@@ -102,7 +102,7 @@ const generateTradingStrategyPrompt = ai.definePrompt({
     ## Risk Considerations & Management
     [Discuss any specific risks associated with this strategy and how the stop loss or other factors help manage it, considering the user's risk level.]
 
-    Make sure each section is well-developed and directly addresses its topic. The content under each indicator's "### [Indicator Name] Analysis" heading MUST specifically discuss that indicator.
+    Make sure each section is well-developed and directly addresses its topic. The content under each "### [Indicator Name] Analysis" heading MUST specifically discuss that indicator from the input list and how it contributed to the strategy.
 `,
 });
 

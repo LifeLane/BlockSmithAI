@@ -38,7 +38,7 @@ const MatrixBackground: FunctionComponent = () => {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // --primary: 181 100% 74%; /* Electric Blue #7DF9FF */
-        ctx.fillStyle = '#7DF9FF'; 
+        ctx.fillStyle = '#7DF9FF';
         ctx.font = fontSize + 'px monospace';
 
         for (let i = 0; i < drops.length; i++) {
@@ -59,13 +59,13 @@ const MatrixBackground: FunctionComponent = () => {
       animate();
     };
 
-    setup(); 
+    setup();
 
     const handleResize = () => {
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
       }
-      setup(); 
+      setup();
     };
 
     window.addEventListener('resize', handleResize);
@@ -87,8 +87,8 @@ const MatrixBackground: FunctionComponent = () => {
         left: 0,
         width: '100vw',
         height: '100vh',
-        zIndex: 0, // Changed from -10 to 0; main content wrapper will be z-1
-        display: 'block', 
+        zIndex: 0, // Content wrapper is z-1, so this is behind.
+        display: 'block',
       }}
       aria-hidden="true"
     />

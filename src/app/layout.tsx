@@ -23,11 +23,11 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased"> {/* Removed bg-background and text-foreground from body */}
+      <body className="font-body antialiased"> {/* Ensure no conflicting background classes here */}
         <MatrixBackground />
         <AnimatedPageBorder />
         {/* This div now handles the main background and text color, and ensures content is above the MatrixBackground */}
-        <div className="relative z-1 bg-background text-foreground min-h-screen flex flex-col"> 
+        <div className="relative z-1 bg-background text-foreground min-h-screen flex flex-col">
           {children}
         </div>
         <Toaster />
