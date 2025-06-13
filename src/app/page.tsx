@@ -5,7 +5,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import SymbolIntervalSelectors from '@/components/blocksmith-ai/SymbolIntervalSelectors';
 import TradingViewWidget from '@/components/blocksmith-ai/TradingViewWidget';
-import ControlsTabs from '@/components/blocksmith-ai/ControlsTabs';
+// import ControlsTabs from '@/components/blocksmith-ai/ControlsTabs'; // No longer used
+import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
+import IndicatorSelector from '@/components/blocksmith-ai/IndicatorSelector';
+import RiskSelector from '@/components/blocksmith-ai/RiskSelector';
 import StrategyExplanationSection from '@/components/blocksmith-ai/StrategyExplanationSection';
 import LivePriceTicker from '@/components/blocksmith-ai/LivePriceTicker';
 import WelcomeScreen from '@/components/blocksmith-ai/WelcomeScreen';
@@ -62,8 +65,8 @@ export default function BlockSmithAIPage() {
   const { toast } = useToast();
 
   const appHeaderRef = useRef<HTMLDivElement>(null);
-  const controlPanelAndChartRef = useRef<HTMLDivElement>(null); // Will wrap controls and chart
-  const strategyBannerRef = useRef<HTMLDivElement>(null); // For the initial banner/explanation section
+  const controlPanelAndChartRef = useRef<HTMLDivElement>(null); 
+  const strategyBannerRef = useRef<HTMLDivElement>(null); 
   const mainContentRef = useRef<HTMLDivElement>(null);
   const liveTickerRef = useRef<HTMLDivElement>(null);
 
@@ -103,8 +106,8 @@ export default function BlockSmithAIPage() {
 
       const elementsToAnimate = [
         liveTickerRef.current,
-        strategyBannerRef.current, // Animate the new banner/explanation section
-        controlPanelAndChartRef.current, // Animate the wrapper for controls and chart
+        strategyBannerRef.current, 
+        controlPanelAndChartRef.current, 
       ].filter(Boolean);
 
       if (elementsToAnimate.length > 0) {
@@ -201,7 +204,7 @@ export default function BlockSmithAIPage() {
 
     setIsLoadingStrategy(true);
     setStrategyError(null);
-    setAiStrategy(null); // Clear previous strategy
+    setAiStrategy(null); 
 
     let marketDataForAIString = '{}';
     let currentDataToUse = liveMarketData;
@@ -337,7 +340,6 @@ export default function BlockSmithAIPage() {
           </div>
           <main ref={mainContentRef} className="flex-grow container mx-auto px-4 py-8 flex flex-col w-full">
             
-            {/* Strategy Explanation Section / Banner - MOVED HERE */}
             <div ref={strategyBannerRef} className="mb-8 w-full">
               <StrategyExplanationSection
                 strategy={aiStrategy}
@@ -349,10 +351,7 @@ export default function BlockSmithAIPage() {
               />
             </div>
 
-            {/* Wrapper for Control Panel and Chart */}
             <div ref={controlPanelAndChartRef} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-              {/* TradingView Widget Column (Source Order 1, Visual Order 1 on LG, or 2 if controls are first) */}
-              {/* Let's make controls first visually for typical dashboard layout */}
               <div className="lg:col-span-1 space-y-6 flex flex-col lg:order-1">
                 <SymbolIntervalSelectors
                   symbol={symbol}
@@ -362,15 +361,19 @@ export default function BlockSmithAIPage() {
                   symbols={availableSymbols}
                   isLoadingSymbols={isLoadingSymbols}
                 />
-                <ControlsTabs
+                <MarketDataDisplay
+                  liveMarketData={liveMarketData}
+                  isLoading={isLoadingMarketData}
+                  error={marketDataError}
+                  symbolForDisplay={symbol}
+                />
+                <IndicatorSelector
                   selectedIndicators={selectedIndicators}
                   onIndicatorChange={handleIndicatorChange}
-                  riskLevel={riskLevel}
-                  onRiskChange={setRiskLevel}
-                  liveMarketData={liveMarketData}
-                  isLoadingMarketData={isLoadingMarketData}
-                  marketDataError={marketDataError}
-                  symbolForDisplay={symbol}
+                />
+                <RiskSelector 
+                  riskLevel={riskLevel} 
+                  onRiskChange={setRiskLevel} 
                 />
                  {marketDataError && !liveMarketData && (
                     <p className="text-xs text-center text-red-400">{marketDataError}</p>
@@ -399,7 +402,6 @@ export default function BlockSmithAIPage() {
                 )}
               </div>
               
-              {/* Trading View Widget (Source Order 2, Visual Order 2 on LG) */}
               <div className="lg:col-span-2 bg-card p-1 rounded-lg shadow-xl lg:order-2">
                 <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
               </div>
@@ -420,4 +422,5 @@ export default function BlockSmithAIPage() {
       </footer>
     </div>
   );
+
     
