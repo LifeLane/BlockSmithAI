@@ -168,6 +168,37 @@ export default function BlockSmithAIPage() {
     }
   }, [showWelcomeScreen]);
 
+    const handleMainScroll = useCallback(() => {
+      if (!showWelcomeScreen) {
+        const scrollY = window.scrollY;
+
+        const applyParallax = (ref: React.RefObject<HTMLElement>, speed: number) => {
+            if (ref.current) {
+                // Apply transform based on scrollY and speed
+                const offset = scrollY * speed;
+                ref.current.style.transform = `translateY(${offset}px)`;
+                 ref.current.style.willChange = 'transform';
+            }
+        };
+
+        // Apply different speeds to main sections
+        applyParallax(strategyBannerRef as React.RefObject<HTMLElement>, -0.05);
+        applyParallax(controlPanelAndChartRef as React.RefObject<HTMLElement>, -0.1);
+      }
+    }, [showWelcomeScreen]);
+
+    useEffect(() => {
+        if (!showWelcomeScreen) {
+            window.addEventListener('scroll', handleMainScroll);
+            // Apply initial parallax on mount if not on welcome screen
+            handleMainScroll();
+        }
+
+        return () => {
+            window.removeEventListener('scroll', handleMainScroll);
+        };
+    }, [showWelcomeScreen, handleMainScroll]);
+
   useEffect(() => {
     const loadSymbols = async () => {
       setIsLoadingSymbols(true);
@@ -260,18 +291,6 @@ export default function BlockSmithAIPage() {
         const fetchedData = await fetchAndSetMarketData(symbol);
         if (fetchedData) {
             currentDataToUse = fetchedData;
-        } else {
-            const errorMsg = marketDataError || "Market data is unavailable. Cannot generate strategy.";
-            setStrategyError(errorMsg);
-            toast({
-                title: "Strategy Aborted",
-                description: errorMsg,
-                variant: "destructive",
-            });
-            setIsLoadingStrategy(false);
-            if(!isSignedUp && analysisCount > 0) updateUsageData(analysisCount -1);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            return;
         }
     } else if (marketDataError && !currentDataToUse) {
         setStrategyError("Market data unavailable: " + marketDataError + ". Strategy generation aborted.");
@@ -420,7 +439,7 @@ export default function BlockSmithAIPage() {
           </div>
           <main ref={mainContentRef} className="flex-grow container mx-auto px-4 py-8 flex flex-col w-full">
             
-            <div ref={strategyBannerRef} className="mb-8 w-full">
+            <div ref={strategyBannerRef} className="mb-8 w-full relative"> {/* Added relative for positioning */}
               <StrategyExplanationSection
                 strategy={aiStrategy}
                 liveMarketData={liveMarketData}
@@ -430,7 +449,7 @@ export default function BlockSmithAIPage() {
               />
             </div>
 
-            <div ref={controlPanelAndChartRef} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div ref={controlPanelAndChartRef} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start relative"> {/* Added relative for positioning */}
               <div className="lg:col-span-1 space-y-6 flex flex-col lg:order-1"> {/* Control Panel */}
                 <SymbolIntervalSelectors
                   symbol={symbol}
