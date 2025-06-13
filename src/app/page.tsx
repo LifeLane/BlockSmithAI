@@ -14,6 +14,8 @@ import WelcomeScreen from '@/components/blocksmith-ai/WelcomeScreen';
 import ChatbotIcon from '@/components/blocksmith-ai/ChatbotIcon';
 import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
+import ApiSettingsModal from '@/components/blocksmith-ai/ApiSettingsModal';
+import ExchangeLinkCard from '@/components/blocksmith-ai/ExchangeLinkCard';
 import { Button } from '@/components/ui/button';
 import {
   generateTradingStrategyAction,
@@ -60,6 +62,11 @@ export default function BlockSmithAIPage() {
   const [isSignedUp, setIsSignedUp] = useState<boolean>(false);
   const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
 
+  const [apiKey, setApiKey] = useState<string>('');
+  const [apiSecret, setApiSecret] = useState<string>('');
+  const [apiKeysSet, setApiKeysSet] = useState<boolean>(false);
+  const [showApiSettingsModal, setShowApiSettingsModal] = useState<boolean>(false);
+
 
   const { toast } = useToast();
 
@@ -88,6 +95,14 @@ export default function BlockSmithAIPage() {
       }
       setLastAnalysisDate(today);
     }
+
+    const storedApiKey = localStorage.getItem('bsaiApiKey');
+    const storedApiSecret = localStorage.getItem('bsaiApiSecret');
+    if (storedApiKey && storedApiSecret) {
+      setApiKey(storedApiKey);
+      setApiSecret(storedApiSecret);
+      setApiKeysSet(true);
+    }
   }, []);
 
   const updateUsageData = (newCount: number) => {
@@ -96,6 +111,26 @@ export default function BlockSmithAIPage() {
     localStorage.setItem('bsaiLastAnalysisDate', today);
     setAnalysisCount(newCount);
     setLastAnalysisDate(today);
+  };
+
+  const handleSaveApiKeys = (newApiKey: string, newApiSecret: string) => {
+    localStorage.setItem('bsaiApiKey', newApiKey);
+    localStorage.setItem('bsaiApiSecret', newApiSecret);
+    setApiKey(newApiKey);
+    setApiSecret(newApiSecret);
+    setApiKeysSet(true);
+    setShowApiSettingsModal(false);
+    toast({ title: "API Keys Saved", description: "Your Binance API keys have been saved locally." });
+  };
+
+  const handleClearApiKeys = () => {
+    localStorage.removeItem('bsaiApiKey');
+    localStorage.removeItem('bsaiApiSecret');
+    setApiKey('');
+    setApiSecret('');
+    setApiKeysSet(false);
+    setShowApiSettingsModal(false);
+    toast({ title: "API Keys Cleared", description: "Your Binance API keys have been cleared from local storage." });
   };
 
 
@@ -181,6 +216,7 @@ export default function BlockSmithAIPage() {
   }, [symbol, fetchAndSetMarketData, showWelcomeScreen]);
 
   const handleGenerateStrategy = useCallback(async () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     if (!isSignedUp) {
       const today = new Date().toISOString().split('T')[0];
       let currentCount = analysisCount;
@@ -204,7 +240,6 @@ export default function BlockSmithAIPage() {
     setIsLoadingStrategy(true);
     setStrategyError(null);
     setAiStrategy(null); 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 
 
     let marketDataForAIString = '{}';
@@ -297,7 +332,6 @@ export default function BlockSmithAIPage() {
       });
     }
     setIsLoadingStrategy(false);
-    // Scroll to top again in case of any layout shifts after content loading
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [symbol, interval, selectedIndicators, riskLevel, toast, liveMarketData, fetchAndSetMarketData, marketDataError, isSignedUp, analysisCount, lastAnalysisDate, updateUsageData]);
 
@@ -317,6 +351,24 @@ export default function BlockSmithAIPage() {
       title: <span className="text-accent">Signup Successful!</span>,
       description: <span className="text-foreground">You're all set for the <strong className="text-orange-400">airdrop</strong> & <strong className="text-purple-400">offering</strong>. <strong className="text-primary">Unlimited analyses</strong> unlocked!</span>,
     });
+  };
+  
+  const handlePlaceTrade = () => {
+    // Placeholder for actual trade placement logic
+    if (apiKeysSet) {
+      toast({
+        title: "Trade Placement (Simulation)",
+        description: `Simulating trade placement for ${aiStrategy?.signal} ${symbol}... This feature is under development.`,
+        variant: "default",
+      });
+    } else {
+      toast({
+        title: "API Keys Required",
+        description: "Please configure your Binance API keys to place trades.",
+        variant: "destructive",
+      });
+      setShowApiSettingsModal(true);
+    }
   };
 
   const isButtonDisabled = isLoadingStrategy ||
@@ -350,7 +402,6 @@ export default function BlockSmithAIPage() {
                 isLoading={isLoadingStrategy}
                 error={strategyError}
                 symbol={symbol}
-                selectedIndicators={selectedIndicators}
               />
             </div>
 
@@ -377,6 +428,12 @@ export default function BlockSmithAIPage() {
                 <RiskSelector 
                   riskLevel={riskLevel} 
                   onRiskChange={setRiskLevel} 
+                />
+                <ExchangeLinkCard
+                  apiKeysSet={apiKeysSet}
+                  onConfigureKeys={() => setShowApiSettingsModal(true)}
+                  onPlaceTrade={handlePlaceTrade}
+                  strategyAvailable={!!aiStrategy}
                 />
                  {marketDataError && !liveMarketData && (
                     <p className="text-xs text-center text-red-400">{marketDataError}</p>
@@ -417,6 +474,15 @@ export default function BlockSmithAIPage() {
             onOpenChange={setShowAirdropModal}
             onSignupSuccess={handleAirdropSignupSuccess}
           />
+          <ApiSettingsModal
+            isOpen={showApiSettingsModal}
+            onOpenChange={setShowApiSettingsModal}
+            currentApiKey={apiKey}
+            currentApiSecret={apiSecret}
+            onSave={handleSaveApiKeys}
+            onClear={handleClearApiKeys}
+            apiKeysAreSet={apiKeysSet}
+          />
         </>
       )}
       <footer className="text-center py-4 px-6 mt-auto text-sm text-muted-foreground border-t border-border/50">
@@ -425,7 +491,4 @@ export default function BlockSmithAIPage() {
       </footer>
     </div>
   );
-
-    
-
-    
+}

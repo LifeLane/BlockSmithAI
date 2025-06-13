@@ -1,3 +1,3 @@
 
-// This file is no longer needed as API keys are managed on the backend.
-// It can be deleted.
+// This file can be deleted.
+// Its functionality has been implemented in ApiSettingsModal.tsx

@@ -1,10 +1,12 @@
 
 import { FunctionComponent } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
 import type { LiveMarketData } from '@/app/actions';
+import { useToast } from "@/hooks/use-toast";
 import {
   Brain,
   AlertTriangle,
@@ -27,7 +29,8 @@ import {
   Goal,
   ClipboardList,
   Glasses,
-  Loader2
+  Loader2,
+  Copy
 } from 'lucide-react';
 
 interface StrategyExplanationSectionProps {
@@ -36,7 +39,6 @@ interface StrategyExplanationSectionProps {
   isLoading: boolean;
   error?: string | null;
   symbol: string;
-  selectedIndicators: string[];
 }
 
 interface StatCardProps {
@@ -85,8 +87,41 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   isLoading,
   error,
   symbol,
-  // selectedIndicators // available if needed for the banner
 }) => {
+  const { toast } = useToast();
+
+  const handleCopyToClipboard = () => {
+    if (!strategy) return;
+    const strategyText = `
+BlockSmithAI Strategy for ${symbol}:
+Signal: ${strategy.signal}
+Entry Zone: ${strategy.entry_zone}
+Stop Loss: ${strategy.stop_loss}
+Take Profit: ${strategy.take_profit}
+Confidence: ${strategy.confidence}
+Risk Rating: ${strategy.risk_rating}
+Sentiment: ${strategy.sentiment}
+Disclaimer: ${strategy.disclaimer}
+    `.trim();
+
+    navigator.clipboard.writeText(strategyText)
+      .then(() => {
+        toast({
+          title: <span className="text-accent">Strategy Copied!</span>,
+          description: "The core strategy details have been copied to your clipboard.",
+        });
+      })
+      .catch(err => {
+        console.error("Failed to copy strategy: ", err);
+        toast({
+          title: "Copy Failed",
+          description: "Could not copy strategy details. Please try again or copy manually.",
+          variant: "destructive",
+        });
+      });
+  };
+
+
   if (isLoading) {
     return (
       <Card className="shadow-lg w-full bg-card border-border transition-all duration-300 ease-in-out">
@@ -129,8 +164,8 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
     return (
       <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_25px_7px_hsl(var(--tertiary)/0.5)]">
         <CardHeader className="items-center text-center pt-6 pb-4">
-          <CardTitle className="flex items-center text-xl sm:text-2xl md:text-3xl font-bold font-headline text-foreground break-words flex-wrap justify-center">
-            <Sparkles className="mr-3 h-7 w-7 sm:h-8 sm:w-8 text-primary animate-pulse shrink-0" />
+          <CardTitle className="flex items-center justify-center flex-wrap text-xl sm:text-2xl md:text-3xl font-bold font-headline text-foreground break-words">
+            <Sparkles className="mr-2 sm:mr-3 h-6 w-6 sm:h-7 sm:w-7 text-primary animate-pulse shrink-0" />
             My <span className="text-primary mx-1">AI Brain</span> is <span className="text-accent mx-1">Buzzing</span> with <span className="text-orange-400 ml-1">Potential Alpha</span>...
           </CardTitle>
         </CardHeader>
@@ -189,8 +224,8 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
     <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out">
       <CardHeader className="text-center pb-4 pt-5">
         <CardTitle className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground flex items-center justify-center flex-wrap font-headline break-words">
-           <Unlock className="mr-2 sm:mr-3 h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 text-primary shrink-0" />
-          Your <span className="text-primary mx-1.5">AI Edge</span> Revealed: <span className="text-accent ml-1.5 sm:ml-2 font-extrabold">{symbol}</span>
+           <Unlock className="mr-1.5 sm:mr-3 h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 text-primary shrink-0" />
+          Your <span className="text-primary mx-1 sm:mx-1.5">AI Edge</span> Revealed: <span className="text-accent ml-1 sm:ml-1.5 font-extrabold">{symbol}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 px-2 sm:px-4 pb-5">
@@ -256,6 +291,15 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
                     icon={<AlertTriangle size={20} className="text-orange-500"/>}
                 />
             </div>
+             <div className="mt-6 flex justify-center">
+                <Button 
+                    onClick={handleCopyToClipboard} 
+                    variant="outline" 
+                    className="border-accent text-accent hover:bg-accent/10 hover:text-accent font-semibold"
+                >
+                    <Copy className="mr-2 h-4 w-4" /> Copy Strategy Details
+                </Button>
+            </div>
           </TabsContent>
 
           <TabsContent value="findings" className="p-2 sm:p-4 bg-background/30 rounded-md border border-border/50">
@@ -289,5 +333,3 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
 };
 
 export default StrategyExplanationSection;
-
-    
