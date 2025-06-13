@@ -11,11 +11,11 @@ import LivePriceTicker from '@/components/blocksmith-ai/LivePriceTicker';
 import WelcomeScreen from '@/components/blocksmith-ai/WelcomeScreen';
 import ChatbotIcon from '@/components/blocksmith-ai/ChatbotIcon';
 import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
-import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal'; 
+import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
 import { Button } from '@/components/ui/button';
-import { 
-  generateTradingStrategyAction, 
-  fetchMarketDataAction, 
+import {
+  generateTradingStrategyAction,
+  fetchMarketDataAction,
   fetchAllTradingSymbolsAction,
   type LiveMarketData,
   type FormattedSymbol
@@ -39,7 +39,7 @@ export default function BlockSmithAIPage() {
   const [interval, setInterval] = useState<string>('15');
   const [selectedIndicators, setSelectedIndicators] = useState<string[]>(['RSI', 'EMA']);
   const [riskLevel, setRiskLevel] = useState<string>('Medium');
-  
+
   const [aiStrategy, setAiStrategy] = useState<GenerateTradingStrategyOutput | null>(null);
   const [isLoadingStrategy, setIsLoadingStrategy] = useState<boolean>(false);
   const [strategyError, setStrategyError] = useState<string | null>(null);
@@ -61,12 +61,12 @@ export default function BlockSmithAIPage() {
 
   const { toast } = useToast();
 
-  const appHeaderRef = useRef<HTMLDivElement>(null); 
-  const controlPanelRef = useRef<HTMLDivElement>(null); 
-  const strategyExplanationRef = useRef<HTMLDivElement>(null); 
+  const appHeaderRef = useRef<HTMLDivElement>(null);
+  const controlPanelRef = useRef<HTMLDivElement>(null);
+  const strategyExplanationRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
   const liveTickerRef = useRef<HTMLDivElement>(null);
-  const tradingViewWidgetWrapperRef = useRef<HTMLDivElement>(null); 
+  const tradingViewWidgetWrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
@@ -100,20 +100,22 @@ export default function BlockSmithAIPage() {
 
   useEffect(() => {
     if (!showWelcomeScreen && mainContentRef.current) {
+      window.scrollTo(0, 0); // Scroll to top when welcome screen is hidden
+
       const elementsToAnimate = [
-        liveTickerRef.current, 
-        tradingViewWidgetWrapperRef.current, 
-        controlPanelRef.current, 
-        strategyExplanationRef.current, 
+        liveTickerRef.current,
+        tradingViewWidgetWrapperRef.current,
+        controlPanelRef.current,
+        strategyExplanationRef.current,
       ].filter(Boolean);
 
       if (elementsToAnimate.length > 0) {
         gsap.from(elementsToAnimate, {
           opacity: 0,
-          y: 50,
+          y: -50, // Animate from above
           duration: 0.8,
-          stagger: 0.2, 
-          delay: 0.3, 
+          stagger: 0.2,
+          delay: 0.3, // Slight delay for scroll to settle and better visual
           ease: 'power3.out',
         });
       }
@@ -130,7 +132,7 @@ export default function BlockSmithAIPage() {
           description: result.error + " Using default list.",
           variant: "destructive",
         });
-        setAvailableSymbols(DEFAULT_SYMBOLS); 
+        setAvailableSymbols(DEFAULT_SYMBOLS);
       } else {
         setAvailableSymbols(result);
       }
@@ -148,12 +150,12 @@ export default function BlockSmithAIPage() {
   const fetchAndSetMarketData = useCallback(async (currentSymbol: string): Promise<LiveMarketData | null> => {
     setIsLoadingMarketData(true);
     setMarketDataError(null);
-    
+
     const result = await fetchMarketDataAction({ symbol: currentSymbol });
 
     if ('error' in result) {
       setMarketDataError(result.error);
-      setLiveMarketData(null); 
+      setLiveMarketData(null);
       toast({
         title: "Market Data Error",
         description: result.error,
@@ -163,28 +165,28 @@ export default function BlockSmithAIPage() {
       return null;
     } else {
       setLiveMarketData(result);
-      setMarketDataError(null); 
+      setMarketDataError(null);
       setIsLoadingMarketData(false);
       return result;
     }
   }, [toast]);
 
   useEffect(() => {
-    if (!showWelcomeScreen && symbol) { 
+    if (!showWelcomeScreen && symbol) {
       fetchAndSetMarketData(symbol);
     } else if (!showWelcomeScreen) {
-      setLiveMarketData(null); 
+      setLiveMarketData(null);
       setMarketDataError("No symbol selected to fetch market data.");
     }
   }, [symbol, fetchAndSetMarketData, showWelcomeScreen]);
-  
+
   const handleGenerateStrategy = useCallback(async () => {
     if (!isSignedUp) {
       const today = new Date().toISOString().split('T')[0];
       let currentCount = analysisCount;
       if (lastAnalysisDate !== today) {
-        currentCount = 0; 
-        updateUsageData(0); 
+        currentCount = 0;
+        updateUsageData(0);
       }
 
       if (currentCount >= MAX_GUEST_ANALYSES) {
@@ -198,7 +200,7 @@ export default function BlockSmithAIPage() {
       }
       updateUsageData(currentCount + 1);
     }
-    
+
     setIsLoadingStrategy(true);
     setStrategyError(null);
     setAiStrategy(null);
@@ -209,7 +211,7 @@ export default function BlockSmithAIPage() {
     if (!currentDataToUse || (currentDataToUse.symbol !== symbol && !marketDataError)) {
         const fetchedData = await fetchAndSetMarketData(symbol);
         if (fetchedData) {
-            currentDataToUse = fetchedData; 
+            currentDataToUse = fetchedData;
         } else {
             const errorMsg = marketDataError || "Market data is unavailable. Cannot generate strategy.";
             setStrategyError(errorMsg);
@@ -222,7 +224,7 @@ export default function BlockSmithAIPage() {
             if(!isSignedUp && analysisCount > 0) updateUsageData(analysisCount -1);
             return;
         }
-    } else if (marketDataError && !currentDataToUse) { 
+    } else if (marketDataError && !currentDataToUse) {
         setStrategyError("Market data unavailable: " + marketDataError + ". Strategy generation aborted.");
         toast({
             title: "Market Data Error",
@@ -237,11 +239,11 @@ export default function BlockSmithAIPage() {
     if (currentDataToUse) {
         const priceChangePercentVal = parseFloat(currentDataToUse.priceChangePercent);
         const formattedPriceChangePercent = `${priceChangePercentVal >= 0 ? '+' : ''}${priceChangePercentVal.toFixed(2)}%`;
-        
+
         const baseAsset = currentDataToUse.symbol.replace('USDT', '');
         const formattedVolumeBase = `${parseFloat(currentDataToUse.volume).toLocaleString(undefined, {maximumFractionDigits: 3})} ${baseAsset}`;
         const formattedVolumeQuote = `${parseFloat(currentDataToUse.quoteVolume).toLocaleString(undefined, {maximumFractionDigits: 2})} USDT`;
-        
+
         const lastPriceFormatted = parseFloat(currentDataToUse.lastPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: Math.max(2, (currentDataToUse.lastPrice.toString().split('.')[1]?.length || 0))});
         const highPriceFormatted = parseFloat(currentDataToUse.highPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         const lowPriceFormatted = parseFloat(currentDataToUse.lowPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -269,10 +271,10 @@ export default function BlockSmithAIPage() {
 
     const input: GenerateTradingStrategyInput = {
       symbol,
-      interval: `${interval}m`, 
+      interval: `${interval}m`,
       indicators: selectedIndicators,
       riskLevel,
-      marketData: marketDataForAIString, 
+      marketData: marketDataForAIString,
     };
 
     const result = await generateTradingStrategyAction(input);
@@ -313,19 +315,19 @@ export default function BlockSmithAIPage() {
     });
   };
 
-  const isButtonDisabled = isLoadingStrategy || 
-                           isLoadingMarketData || 
-                           !!marketDataError || 
-                           isLoadingSymbols || 
+  const isButtonDisabled = isLoadingStrategy ||
+                           isLoadingMarketData ||
+                           !!marketDataError ||
+                           isLoadingSymbols ||
                            (!isSignedUp && analysisCount >= MAX_GUEST_ANALYSES && !showAirdropModal);
 
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <div ref={appHeaderRef}> 
+      <div ref={appHeaderRef}>
         <AppHeader />
       </div>
-      
+
       {showWelcomeScreen ? (
         <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center">
           <WelcomeScreen onProceed={handleProceedFromWelcome} />
@@ -361,11 +363,11 @@ export default function BlockSmithAIPage() {
                   marketDataError={marketDataError}
                   symbolForDisplay={symbol}
                 />
-                 {marketDataError && !liveMarketData && ( 
+                 {marketDataError && !liveMarketData && (
                     <p className="text-xs text-center text-red-400">{marketDataError}</p>
                 )}
-                <Button 
-                  onClick={handleGenerateStrategy} 
+                <Button
+                  onClick={handleGenerateStrategy}
                   disabled={isButtonDisabled}
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 text-base shadow-lg border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 ease-in-out mt-auto"
                 >
@@ -390,10 +392,10 @@ export default function BlockSmithAIPage() {
 
               {/* Strategy Explanation Column (Source Order 2, Visual Order 2 on LG) */}
               <div className="lg:col-span-2 space-y-8 lg:order-2" ref={strategyExplanationRef}>
-                <StrategyExplanationSection 
-                  strategy={aiStrategy} 
+                <StrategyExplanationSection
+                  strategy={aiStrategy}
                   liveMarketData={liveMarketData}
-                  isLoading={isLoadingStrategy} 
+                  isLoading={isLoadingStrategy}
                   error={strategyError}
                   symbol={symbol}
                 />
@@ -402,8 +404,8 @@ export default function BlockSmithAIPage() {
           </main>
           <ChatbotIcon onClick={handleToggleChat} />
           <ChatbotPopup isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
-          <AirdropSignupModal 
-            isOpen={showAirdropModal} 
+          <AirdropSignupModal
+            isOpen={showAirdropModal}
             onOpenChange={setShowAirdropModal}
             onSignupSuccess={handleAirdropSignupSuccess}
           />
@@ -415,4 +417,5 @@ export default function BlockSmithAIPage() {
       </footer>
     </div>
   );
-}
+
+    
