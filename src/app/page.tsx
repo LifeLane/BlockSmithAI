@@ -18,6 +18,16 @@ import ApiSettingsModal from '@/components/blocksmith-ai/ApiSettingsModal';
 import ExchangeLinkCard from '@/components/blocksmith-ai/ExchangeLinkCard';
 import { Button } from '@/components/ui/button';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   generateTradingStrategyAction,
   fetchMarketDataAction,
   fetchAllTradingSymbolsAction,
@@ -26,7 +36,7 @@ import {
 } from './actions';
 import type { GenerateTradingStrategyOutput, GenerateTradingStrategyInput } from '@/ai/flows/generate-trading-strategy';
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles, ShieldQuestion } from 'lucide-react';
 import { gsap } from 'gsap';
 
 const DEFAULT_SYMBOLS: FormattedSymbol[] = [
@@ -66,6 +76,7 @@ export default function BlockSmithAIPage() {
   const [apiSecret, setApiSecret] = useState<string>('');
   const [apiKeysSet, setApiKeysSet] = useState<boolean>(false);
   const [showApiSettingsModal, setShowApiSettingsModal] = useState<boolean>(false);
+  const [showConfirmTradeDialog, setShowConfirmTradeDialog] = useState<boolean>(false);
 
 
   const { toast } = useToast();
@@ -129,14 +140,14 @@ export default function BlockSmithAIPage() {
     setApiKey('');
     setApiSecret('');
     setApiKeysSet(false);
-    setShowApiSettingsModal(false);
+    setShowApiSettingsModal(false); // Close modal after clearing
     toast({ title: "API Keys Cleared", description: "Your Binance API keys have been cleared from local storage." });
   };
 
 
   useEffect(() => {
     if (!showWelcomeScreen && mainContentRef.current) {
-      window.scrollTo(0, 0); 
+      // window.scrollTo(0, 0); // Scroll to top when main content is shown
 
       const elementsToAnimate = [
         liveTickerRef.current,
@@ -147,7 +158,7 @@ export default function BlockSmithAIPage() {
       if (elementsToAnimate.length > 0) {
         gsap.from(elementsToAnimate, {
           opacity: 0,
-          y: -50, 
+          y: -50, // Animate from above
           duration: 0.8,
           stagger: 0.2,
           delay: 0.3, 
@@ -216,7 +227,7 @@ export default function BlockSmithAIPage() {
   }, [symbol, fetchAndSetMarketData, showWelcomeScreen]);
 
   const handleGenerateStrategy = useCallback(async () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top when generation starts
     if (!isSignedUp) {
       const today = new Date().toISOString().split('T')[0];
       let currentCount = analysisCount;
@@ -259,6 +270,7 @@ export default function BlockSmithAIPage() {
             });
             setIsLoadingStrategy(false);
             if(!isSignedUp && analysisCount > 0) updateUsageData(analysisCount -1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
     } else if (marketDataError && !currentDataToUse) {
@@ -270,6 +282,7 @@ export default function BlockSmithAIPage() {
         });
         setIsLoadingStrategy(false);
         if(!isSignedUp && analysisCount > 0) updateUsageData(analysisCount -1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
     }
 
@@ -303,6 +316,7 @@ export default function BlockSmithAIPage() {
         setStrategyError("Insufficient market data for strategy generation.");
         setIsLoadingStrategy(false);
         if(!isSignedUp && analysisCount > 0) updateUsageData(analysisCount -1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
     }
 
@@ -332,11 +346,12 @@ export default function BlockSmithAIPage() {
       });
     }
     setIsLoadingStrategy(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top after strategy is set or error occurs
   }, [symbol, interval, selectedIndicators, riskLevel, toast, liveMarketData, fetchAndSetMarketData, marketDataError, isSignedUp, analysisCount, lastAnalysisDate, updateUsageData]);
 
   const handleProceedFromWelcome = () => {
     setShowWelcomeScreen(false);
+    window.scrollTo(0, 0); // Scroll to top when proceeding from welcome
   };
 
   const handleToggleChat = () => {
@@ -353,23 +368,33 @@ export default function BlockSmithAIPage() {
     });
   };
   
-  const handlePlaceTrade = () => {
-    // Placeholder for actual trade placement logic
-    if (apiKeysSet) {
-      toast({
-        title: "Trade Placement (Simulation)",
-        description: `Simulating trade placement for ${aiStrategy?.signal} ${symbol}... This feature is under development.`,
-        variant: "default",
-      });
-    } else {
+  const handleAttemptSimulatedTrade = () => {
+    if (apiKeysSet && aiStrategy) {
+      setShowConfirmTradeDialog(true);
+    } else if (!apiKeysSet) {
       toast({
         title: "API Keys Required",
-        description: "Please configure your Binance API keys to place trades.",
+        description: "Please configure your Binance API keys to simulate trades.",
         variant: "destructive",
       });
       setShowApiSettingsModal(true);
+    } else if (!aiStrategy) {
+         toast({
+            title: "No Strategy Available",
+            description: "Please generate an AI strategy first.",
+            variant: "default",
+        });
     }
   };
+
+  const confirmSimulatedTrade = () => {
+     toast({
+        title: <span className="text-tertiary">Trade Simulation Initiated!</span>,
+        description: <span className="text-foreground">Simulating <strong className={aiStrategy?.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{aiStrategy?.signal}</strong> for <strong className="text-primary">{aiStrategy?.symbol || symbol}</strong>. This is a DEV feature.</span>,
+        variant: "default",
+      });
+      setShowConfirmTradeDialog(false);
+  }
 
   const isButtonDisabled = isLoadingStrategy ||
                            isLoadingMarketData ||
@@ -406,7 +431,7 @@ export default function BlockSmithAIPage() {
             </div>
 
             <div ref={controlPanelAndChartRef} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-              <div className="lg:col-span-1 space-y-6 flex flex-col lg:order-1">
+              <div className="lg:col-span-1 space-y-6 flex flex-col lg:order-1"> {/* Control Panel */}
                 <SymbolIntervalSelectors
                   symbol={symbol}
                   onSymbolChange={setSymbol}
@@ -415,7 +440,7 @@ export default function BlockSmithAIPage() {
                   symbols={availableSymbols}
                   isLoadingSymbols={isLoadingSymbols}
                 />
-                 <MarketDataDisplay
+                <MarketDataDisplay
                   liveMarketData={liveMarketData}
                   isLoading={isLoadingMarketData}
                   error={marketDataError}
@@ -432,7 +457,7 @@ export default function BlockSmithAIPage() {
                 <ExchangeLinkCard
                   apiKeysSet={apiKeysSet}
                   onConfigureKeys={() => setShowApiSettingsModal(true)}
-                  onPlaceTrade={handlePlaceTrade}
+                  onPlaceTrade={handleAttemptSimulatedTrade}
                   strategyAvailable={!!aiStrategy}
                 />
                  {marketDataError && !liveMarketData && (
@@ -462,7 +487,7 @@ export default function BlockSmithAIPage() {
                 )}
               </div>
               
-              <div className="lg:col-span-2 bg-card p-1 rounded-lg shadow-xl lg:order-2">
+              <div className="lg:col-span-2 bg-card p-1 rounded-lg shadow-xl lg:order-2"> {/* Chart */}
                 <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
               </div>
             </div>
@@ -483,6 +508,35 @@ export default function BlockSmithAIPage() {
             onClear={handleClearApiKeys}
             apiKeysAreSet={apiKeysSet}
           />
+          {aiStrategy && (
+            <AlertDialog open={showConfirmTradeDialog} onOpenChange={setShowConfirmTradeDialog}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center">
+                    <ShieldQuestion className="mr-2 h-6 w-6 text-tertiary"/>
+                    Confirm Simulated Trade
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    You are about to simulate placing a <strong className={aiStrategy.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{aiStrategy.signal}</strong> order 
+                    for <strong className="text-primary">{aiStrategy.symbol || symbol}</strong>.
+                    <br />
+                    <br />
+                    This is <strong className="text-accent">NOT a real trade</strong> and is for demonstration purposes only. 
+                    BlockSmithAI is not responsible for any actions taken based on this simulation.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={confirmSimulatedTrade}
+                    className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground"
+                  >
+                    Proceed with Simulation
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </>
       )}
       <footer className="text-center py-4 px-6 mt-auto text-sm text-muted-foreground border-t border-border/50">
