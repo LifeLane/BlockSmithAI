@@ -25,7 +25,7 @@ const MatrixBackground: FunctionComponent = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       columns = Math.floor(canvas.width / fontSize);
-      drops.length = 0; // Clear existing drops
+      drops.length = 0; 
       for (let x = 0; x < columns; x++) {
         drops[x] = Math.floor(Math.random() * (canvas.height / fontSize));
       }
@@ -35,8 +35,8 @@ const MatrixBackground: FunctionComponent = () => {
       if (!ctx) return;
 
       // Trail effect: fill canvas with semi-transparent background color
-      // --background: 0 0% 13%; /* Dark Gray #222222 */ -> rgba(34, 34, 34, 0.07)
-      ctx.fillStyle = 'rgba(34, 34, 34, 0.07)';
+      // --background: 0 0% 13%; /* Dark Gray #222222 */ -> rgba(34, 34, 34, 0.10)
+      ctx.fillStyle = 'rgba(34, 34, 34, 0.10)'; // Slightly increased opacity for trail
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Character color: --primary: 181 100% 74%; /* Electric Blue #7DF9FF */
@@ -54,31 +54,56 @@ const MatrixBackground: FunctionComponent = () => {
       }
     };
 
-    const animate = () => {
+    let lastTimestamp = 0;
+    const fps = 15; // Target FPS
+    const frameInterval = 1000 / fps;
+
+    const animate = (timestamp?: number) => {
+      if (timestamp && lastTimestamp) {
+        const deltaTime = timestamp - lastTimestamp;
+        if (deltaTime < frameInterval) {
+          animationFrameIdRef.current = requestAnimationFrame(animate);
+          return;
+        }
+        lastTimestamp = timestamp - (deltaTime % frameInterval);
+      } else if (timestamp) {
+        lastTimestamp = timestamp;
+      } else {
+        // Fallback for the very first frame if timestamp is undefined
+        lastTimestamp = performance.now();
+      }
+      
       draw();
       animationFrameIdRef.current = requestAnimationFrame(animate);
     };
 
-    initializeMatrix(); // Initial setup
-    animate(); // Start animation
+    initializeMatrix(); 
+    
+    // Cancel any existing frame before starting a new one
+    if (animationFrameIdRef.current) {
+        cancelAnimationFrame(animationFrameIdRef.current);
+    }
+    animationFrameIdRef.current = requestAnimationFrame(animate);
+
 
     const handleResize = () => {
       if (animationFrameIdRef.current) {
         cancelAnimationFrame(animationFrameIdRef.current);
       }
-      initializeMatrix(); // Re-initialize on resize
-      animate(); // Restart animation
+      initializeMatrix(); 
+      // Restart animation with new dimensions after a short delay to allow layout to settle
+      animationFrameIdRef.current = requestAnimationFrame(animate);
     };
 
     window.addEventListener('resize', handleResize);
 
-    return () => { // Cleanup
+    return () => { 
       window.removeEventListener('resize', handleResize);
       if (animationFrameIdRef.current) {
         cancelAnimationFrame(animationFrameIdRef.current);
       }
     };
-  }, []); // Empty dependency array ensures this runs once on mount and cleans up on unmount
+  }, []); 
 
   return (
     <canvas
@@ -98,3 +123,5 @@ const MatrixBackground: FunctionComponent = () => {
 };
 
 export default MatrixBackground;
+
+    
