@@ -1,9 +1,9 @@
 
 import { FunctionComponent } from 'react';
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal, CheckSquare, Square } from 'lucide-react';
+import { cn } from "@/lib/utils";
 
 interface IndicatorSelectorProps {
   selectedIndicators: string[];
@@ -25,20 +25,26 @@ const IndicatorSelector: FunctionComponent<IndicatorSelectorProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          {INDICATORS.map((indicator) => (
-            <div key={indicator} className="flex items-center space-x-2">
-              <Checkbox
-                id={`indicator-${indicator}`}
-                checked={selectedIndicators.includes(indicator)}
-                onCheckedChange={(checked) => onIndicatorChange(indicator, !!checked)}
-                className="border-primary focus:ring-accent data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-              />
-              <Label htmlFor={`indicator-${indicator}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 hover:text-accent transition-colors">
+        <div className="flex flex-wrap gap-3">
+          {INDICATORS.map((indicator) => {
+            const isSelected = selectedIndicators.includes(indicator);
+            return (
+              <Button
+                key={indicator}
+                onClick={() => onIndicatorChange(indicator, !isSelected)}
+                variant="outline"
+                className={cn(
+                  "px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out border",
+                  isSelected
+                    ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
+                    : "bg-secondary text-secondary-foreground border-border hover:bg-accent hover:text-accent-foreground hover:border-accent"
+                )}
+              >
+                {isSelected ? <CheckSquare className="mr-2 h-4 w-4" /> : <Square className="mr-2 h-4 w-4 opacity-50" />}
                 {indicator}
-              </Label>
-            </div>
-          ))}
+              </Button>
+            );
+          })}
         </div>
       </CardContent>
     </Card>

@@ -1,9 +1,9 @@
 
 import { FunctionComponent } from 'react';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, Shield } from 'lucide-react';
+import { cn } from "@/lib/utils";
 
 interface RiskSelectorProps {
   riskLevel: string;
@@ -25,14 +25,27 @@ const RiskSelector: FunctionComponent<RiskSelectorProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <RadioGroup value={riskLevel} onValueChange={onRiskChange} className="space-y-2">
-          {RISK_LEVELS.map((level) => (
-            <div key={level} className="flex items-center space-x-2">
-              <RadioGroupItem value={level} id={`risk-${level}`} className="border-primary text-accent focus:ring-accent"/>
-              <Label htmlFor={`risk-${level}`} className="text-sm font-medium hover:text-accent transition-colors">{level}</Label>
-            </div>
-          ))}
-        </RadioGroup>
+        <div className="flex flex-wrap gap-3 sm:justify-around">
+          {RISK_LEVELS.map((level) => {
+            const isSelected = riskLevel === level;
+            return (
+              <Button
+                key={level}
+                onClick={() => onRiskChange(level)}
+                variant="outline"
+                className={cn(
+                  "px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out border flex-grow sm:flex-grow-0",
+                  isSelected
+                    ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
+                    : "bg-secondary text-secondary-foreground border-border hover:bg-accent hover:text-accent-foreground hover:border-accent"
+                )}
+              >
+                {isSelected ? <ShieldCheck className="mr-2 h-4 w-4" /> : <Shield className="mr-2 h-4 w-4 opacity-50" />}
+                {level}
+              </Button>
+            );
+          })}
+        </div>
       </CardContent>
     </Card>
   );
