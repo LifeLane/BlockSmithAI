@@ -121,7 +121,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
     return (
       <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_25px_7px_hsl(var(--tertiary)/0.5)]">
         <CardHeader className="items-center text-center pt-6 pb-4">
-          <CardTitle className="flex items-center text-xl sm:text-2xl md:text-3xl font-bold font-headline text-foreground break-words">
+          <CardTitle className="flex items-center text-xl sm:text-2xl md:text-3xl font-bold font-headline text-foreground break-words flex-wrap justify-center">
             <Sparkles className="mr-3 h-7 w-7 sm:h-8 sm:w-8 text-primary animate-pulse shrink-0" />
             My <span className="text-primary mx-1">AI Brain</span> is <span className="text-accent mx-1">Buzzing</span> with <span className="text-orange-400 ml-1">Potential Alpha</span>...
           </CardTitle>
@@ -180,7 +180,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   return (
     <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out">
       <CardHeader className="text-center pb-4 pt-5">
-        <CardTitle className="text-xl sm:text-2xl font-semibold text-foreground flex items-center justify-center font-headline">
+        <CardTitle className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground flex items-center justify-center flex-wrap font-headline break-words">
            <Unlock className="mr-2 sm:mr-3 h-6 w-6 sm:h-7 sm:w-7 text-accent shrink-0" />
           Your <span className="text-primary mx-1">AI Edge</span> Revealed: <span className="text-accent ml-1 sm:ml-2 font-bold">{symbol}</span>
         </CardTitle>
@@ -281,5 +281,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
 };
 
 export default StrategyExplanationSection;
+
+    
 
     

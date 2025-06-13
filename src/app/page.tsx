@@ -5,7 +5,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import SymbolIntervalSelectors from '@/components/blocksmith-ai/SymbolIntervalSelectors';
 import TradingViewWidget from '@/components/blocksmith-ai/TradingViewWidget';
-// import ControlsTabs from '@/components/blocksmith-ai/ControlsTabs'; // No longer used
 import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
 import IndicatorSelector from '@/components/blocksmith-ai/IndicatorSelector';
 import RiskSelector from '@/components/blocksmith-ai/RiskSelector';
@@ -205,6 +204,8 @@ export default function BlockSmithAIPage() {
     setIsLoadingStrategy(true);
     setStrategyError(null);
     setAiStrategy(null); 
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
 
     let marketDataForAIString = '{}';
     let currentDataToUse = liveMarketData;
@@ -296,6 +297,8 @@ export default function BlockSmithAIPage() {
       });
     }
     setIsLoadingStrategy(false);
+    // Scroll to top again in case of any layout shifts after content loading
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [symbol, interval, selectedIndicators, riskLevel, toast, liveMarketData, fetchAndSetMarketData, marketDataError, isSignedUp, analysisCount, lastAnalysisDate, updateUsageData]);
 
   const handleProceedFromWelcome = () => {
@@ -361,7 +364,7 @@ export default function BlockSmithAIPage() {
                   symbols={availableSymbols}
                   isLoadingSymbols={isLoadingSymbols}
                 />
-                <MarketDataDisplay
+                 <MarketDataDisplay
                   liveMarketData={liveMarketData}
                   isLoading={isLoadingMarketData}
                   error={marketDataError}
@@ -422,5 +425,7 @@ export default function BlockSmithAIPage() {
       </footer>
     </div>
   );
+
+    
 
     
