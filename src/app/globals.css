@@ -5,7 +5,6 @@
 
 body {
   font-family: 'Space Grotesk', Arial, Helvetica, sans-serif;
-  /* background-color: transparent; Ensure body is transparent for Matrix effect */
 }
 
 @layer base {
@@ -89,8 +88,6 @@ body {
     @apply border-border;
   }
   body {
-    /* @apply bg-background text-foreground; */ /* Removed bg-background */
-    @apply text-foreground;
-    background-color: transparent; /* Explicitly set body background to transparent */
+    @apply bg-background text-foreground; /* Reverted to apply theme background and foreground to body */
   }
 }
