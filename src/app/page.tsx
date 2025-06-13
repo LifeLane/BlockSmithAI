@@ -62,11 +62,10 @@ export default function BlockSmithAIPage() {
   const { toast } = useToast();
 
   const appHeaderRef = useRef<HTMLDivElement>(null);
-  const controlPanelRef = useRef<HTMLDivElement>(null);
-  const strategyExplanationRef = useRef<HTMLDivElement>(null);
+  const controlPanelAndChartRef = useRef<HTMLDivElement>(null); // Will wrap controls and chart
+  const strategyBannerRef = useRef<HTMLDivElement>(null); // For the initial banner/explanation section
   const mainContentRef = useRef<HTMLDivElement>(null);
   const liveTickerRef = useRef<HTMLDivElement>(null);
-  const tradingViewWidgetWrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
@@ -100,22 +99,21 @@ export default function BlockSmithAIPage() {
 
   useEffect(() => {
     if (!showWelcomeScreen && mainContentRef.current) {
-      window.scrollTo(0, 0); // Scroll to top when welcome screen is hidden
+      window.scrollTo(0, 0); 
 
       const elementsToAnimate = [
         liveTickerRef.current,
-        tradingViewWidgetWrapperRef.current,
-        controlPanelRef.current,
-        strategyExplanationRef.current,
+        strategyBannerRef.current, // Animate the new banner/explanation section
+        controlPanelAndChartRef.current, // Animate the wrapper for controls and chart
       ].filter(Boolean);
 
       if (elementsToAnimate.length > 0) {
         gsap.from(elementsToAnimate, {
           opacity: 0,
-          y: -50, // Animate from above
+          y: -50, 
           duration: 0.8,
           stagger: 0.2,
-          delay: 0.3, // Slight delay for scroll to settle and better visual
+          delay: 0.3, 
           ease: 'power3.out',
         });
       }
@@ -203,7 +201,7 @@ export default function BlockSmithAIPage() {
 
     setIsLoadingStrategy(true);
     setStrategyError(null);
-    setAiStrategy(null);
+    setAiStrategy(null); // Clear previous strategy
 
     let marketDataForAIString = '{}';
     let currentDataToUse = liveMarketData;
@@ -338,13 +336,24 @@ export default function BlockSmithAIPage() {
             <LivePriceTicker />
           </div>
           <main ref={mainContentRef} className="flex-grow container mx-auto px-4 py-8 flex flex-col w-full">
-            <div ref={tradingViewWidgetWrapperRef} className="bg-card p-1 rounded-lg shadow-xl mb-8">
-              <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
+            
+            {/* Strategy Explanation Section / Banner - MOVED HERE */}
+            <div ref={strategyBannerRef} className="mb-8 w-full">
+              <StrategyExplanationSection
+                strategy={aiStrategy}
+                liveMarketData={liveMarketData}
+                isLoading={isLoadingStrategy}
+                error={strategyError}
+                symbol={symbol}
+                selectedIndicators={selectedIndicators}
+              />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-               {/* Control Panel Column (Source Order 1, Visual Order 1 on LG) */}
-              <div className="lg:col-span-1 space-y-6 flex flex-col lg:order-1" ref={controlPanelRef}>
+            {/* Wrapper for Control Panel and Chart */}
+            <div ref={controlPanelAndChartRef} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+              {/* TradingView Widget Column (Source Order 1, Visual Order 1 on LG, or 2 if controls are first) */}
+              {/* Let's make controls first visually for typical dashboard layout */}
+              <div className="lg:col-span-1 space-y-6 flex flex-col lg:order-1">
                 <SymbolIntervalSelectors
                   symbol={symbol}
                   onSymbolChange={setSymbol}
@@ -389,16 +398,10 @@ export default function BlockSmithAIPage() {
                    </p>
                 )}
               </div>
-
-              {/* Strategy Explanation Column (Source Order 2, Visual Order 2 on LG) */}
-              <div className="lg:col-span-2 space-y-8 lg:order-2" ref={strategyExplanationRef}>
-                <StrategyExplanationSection
-                  strategy={aiStrategy}
-                  liveMarketData={liveMarketData}
-                  isLoading={isLoadingStrategy}
-                  error={strategyError}
-                  symbol={symbol}
-                />
+              
+              {/* Trading View Widget (Source Order 2, Visual Order 2 on LG) */}
+              <div className="lg:col-span-2 bg-card p-1 rounded-lg shadow-xl lg:order-2">
+                <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
               </div>
             </div>
           </main>
@@ -417,5 +420,4 @@ export default function BlockSmithAIPage() {
       </footer>
     </div>
   );
-
     

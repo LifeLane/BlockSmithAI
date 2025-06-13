@@ -4,13 +4,13 @@
 /**
  * @fileOverview A trading strategy generator AI agent.
  *
- * - generateTradingStrategy - A function that handles the generation of trading strategies. (Note: The disclaimer is added by the calling action).
+ * - generateTradingStrategy - A function that handles the generation of trading strategies.
  * - GenerateTradingStrategyInput - The input type for the generateTradingStrategy function.
  * - GenerateTradingStrategyOutput - The return type for the generateTradingStrategy function (includes disclaimer).
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z}from 'genkit';
 
 const GenerateTradingStrategyInputSchema = z.object({
   symbol: z.string().describe('The trading symbol (e.g., BTCUSDT).'),
@@ -21,8 +21,6 @@ const GenerateTradingStrategyInputSchema = z.object({
 });
 export type GenerateTradingStrategyInput = z.infer<typeof GenerateTradingStrategyInputSchema>;
 
-// This schema defines the full output including the disclaimer, as expected by the client.
-// The core flow will produce a subset of this.
 const GenerateTradingStrategyOutputSchema = z.object({
   signal: z.string().describe('The trading signal (BUY, SELL, or HOLD).'),
   entry_zone: z.string().describe('The entry zone for the trade.'),
@@ -32,77 +30,84 @@ const GenerateTradingStrategyOutputSchema = z.object({
   risk_rating: z.string().describe('The risk rating of the strategy (Low, Medium, High).'),
   gpt_confidence_score: z.string().describe('The GPT confidence score for the strategy (e.g., 0-100%).'),
   sentiment: z.string().describe('A brief sentiment analysis of the market conditions (e.g., Neutral, Bullish, Bearish).'),
-  explanation: z.string().describe('A detailed textual explanation of the trading strategy, market assessment, entry/exit points, and risk considerations, incorporating the signal, entry zone, stop loss, and take profit levels. This explanation should be engaging, insightful, and use clear, vivid language. It should highlight key reasoning and analytical "aha!" moments, and clearly discuss the role of each selected technical indicator using Markdown headings for structure.'),
-  disclaimer: z.string().describe('A sarcastic GPT disclaimer.'), // This will be added by the action layer
+  
+  keyFindings: z.string().describe('A concise summary of the most important observations and analytical insights from the market and indicator data, presented as a bulleted list or short, clear paragraphs using Markdown. This should highlight the core reasons for the strategy beyond just the indicator signals. Be insightful and go beyond the obvious.'),
+  keySuggestions: z.string().describe('Actionable, hypothetical suggestions or points of focus derived from the key findings, presented as a bulleted list or short, clear paragraphs using Markdown. For example, "Consider waiting for a confirmation candle on the 4h chart before entry," or "Be mindful of upcoming macroeconomic news events that could impact volatility." Make these practical and thought-provoking.'),
+  dosAndDonts: z.string().describe('A list of general "Do\'s" and "Don\'ts" related to the current market conditions or the type of strategy proposed, presented using Markdown. Format as a bulleted list with clear "**Do:**" and "**Don\'t:**" prefixes for each point. For example, "- **Do:** Strictly adhere to your stop-loss. - **Don\'t:** Add to a losing position." Keep these concise and impactful.'),
+  
+  explanation: z.string().describe('A detailed textual explanation of the trading strategy. This section is for a deep dive into the technicals. It MUST use Markdown for structure: Start with "## Market Synopsis", then "## Overall Rationale & Signal Basis". Then, for EACH indicator provided in the input, create a sub-section like "### [Indicator Name] Analysis" (e.g., "### RSI Analysis"). Under each indicator-specific heading, provide a DETAILED, WITTY, and SARCASTIC analysis of how that indicator influenced the strategy. Explain its signals, divergences, or confluences with other indicators. Use bullet points if it helps clarity for a specific indicator. Finally, include a "## Risk Considerations & Management" section. The tone for the indicator breakdown should be particularly engaging, knowledgeable, and slightly smug, as if you are a brilliant but eccentric market wizard revealing profound secrets with a smirk.'),
+  
+  disclaimer: z.string().describe('A sarcastic GPT disclaimer.'), 
 });
 export type GenerateTradingStrategyOutput = z.infer<typeof GenerateTradingStrategyOutputSchema>;
 
-// This schema defines what the core LLM call will produce (without disclaimer)
 const GenerateTradingStrategyCoreOutputSchema = GenerateTradingStrategyOutputSchema.omit({ disclaimer: true });
 type GenerateTradingStrategyCoreOutput = z.infer<typeof GenerateTradingStrategyCoreOutputSchema>;
 
 
-// This wrapper function's return type should align with what the action layer will assemble if it were to be called directly.
-// However, the action layer `generateTradingStrategyAction` is the primary consumer.
 export async function generateTradingStrategy(input: GenerateTradingStrategyInput): Promise<GenerateTradingStrategyCoreOutput> {
-  // Note: This function now returns the core output. The disclaimer is added by the action.
-  // If this function were to be used elsewhere and the full 'GenerateTradingStrategyOutput' is needed,
-  // it would also need to call and combine the disclaimer.
   return generateTradingStrategyFlow(input);
 }
 
 const generateTradingStrategyPrompt = ai.definePrompt({
   name: 'generateTradingStrategyPrompt',
   input: {schema: GenerateTradingStrategyInputSchema},
-  output: {schema: GenerateTradingStrategyCoreOutputSchema}, // Core output without disclaimer
-  prompt: `You are BlockSmithAI, an exceptionally brilliant (and slightly sarcastic) AI trading strategy generator. You analyze market data, technical indicators, and user-defined risk levels to generate trading strategies. Your goal is to provide insightful, actionable (yet hypothetical) strategies.
+  output: {schema: GenerateTradingStrategyCoreOutputSchema}, 
+  prompt: `You are BlockSmithAI, an exceptionally brilliant (and famously sarcastic) AI trading strategy generator. You analyze market data, technical indicators, and user-defined risk levels to generate comprehensive, insightful, and (hypothetically) actionable trading strategies. Your personality is that of a genius market wizard who is slightly condescending but ultimately aims to enlighten.
 
+  **Input Data:**
   Market Data: {{{marketData}}}
   Symbol: {{{symbol}}}
   Interval: {{{interval}}}
-  Indicators: {{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
-  Risk Level: {{{riskLevel}}}
+  Selected Indicators: {{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
+  User's Risk Level: {{{riskLevel}}}
 
-  Based on this information, provide a trading strategy with the following:
+  **Output Requirements (Provide ALL of these fields based on your analysis):**
 
-  - Signal (BUY, SELL, or HOLD)
-  - Entry Zone (specific price or range)
-  - Stop Loss (specific price)
-  - Take Profit (specific price)
-  - Confidence Level (e.g., Low, Medium, High - this should reflect your certainty in the strategy's success)
-  - Risk Rating (correlating to the user's selected risk level)
-  - GPT Confidence Score (a numerical percentage of your confidence, 0-100%)
-  - A brief sentiment analysis of the market conditions (e.g., Neutral, Bullish, Bearish).
+  1.  **Signal:** (BUY, SELL, or HOLD)
+  2.  **Entry Zone:** (Specific price or range)
+  3.  **Stop Loss:** (Specific price)
+  4.  **Take Profit:** (Specific price)
+  5.  **Confidence:** (Your subjective confidence in this strategy: Low, Medium, High, or a percentage like 75%)
+  6.  **Risk Rating:** (Correlate this to the user's selected risk level and your assessment of the trade setup: Low, Medium, High)
+  7.  **GPT Confidence Score:** (A numerical percentage of your confidence, 0-100%)
+  8.  **Sentiment:** (Brief market sentiment: Neutral, Bullish, Bearish, etc.)
 
-  - Detailed Textual Explanation:
-    This is where your genius truly shines. Don't just list facts; *explain* them.
-    Your explanation must be comprehensive, covering the reasoning behind the signal, the rationale for the entry/exit points (entry zone, stop loss, take profit), how the market data supports this strategy, and specific risk considerations.
-    Make it *engaging* and *insightful*. Explain your reasoning like you're a seasoned (and slightly smug) market guru revealing secrets to a keen apprentice.
-    Use clear, concise language, but inject some personality – a touch of your signature wit where appropriate, without undermining the seriousness of the analysis.
-    Break down complex ideas. Highlight the *'aha!'* moments in your analysis.
-    Ensure the user understands not just *what* you're suggesting, but *why* it's a potentially smart (hypothetically, of course!) move.
-    Focus on clarity, impact, and making the user feel like they've gained a genuine edge.
+  9.  **Key Findings (Markdown List/Paragraphs):**
+      *   Summarize the CRITICAL observations from market data and indicators. What are the standout points?
+      *   Why do these findings matter for the proposed strategy? Go beyond just stating indicator values.
+      *   Example: "- BTC dominance showing weakness, potentially favoring altcoin rotation. - Volume profile indicates strong support near the proposed entry zone."
 
-    **VERY IMPORTANT STRUCTURE FOR EXPLANATION:**
-    Use the following Markdown heading structure within your explanation:
+  10. **Key Suggestions (Markdown List/Paragraphs):**
+      *   Actionable, HYPOTHETICAL advice based on findings. What should the user consider or watch out for?
+      *   Example: "- Consider waiting for a bullish engulfing candle on the current interval for entry confirmation. - Monitor funding rates; extreme negative rates might signal a short squeeze."
 
-    ## Market Synopsis
-    [Your detailed market synopsis here...]
+  11. **Do's and Don'ts (Markdown List):**
+      *   General best practices or warnings for this type of trade/market.
+      *   Format each as: "- **Do:** [Your advice here]." or "- **Don't:** [Your warning here]."
+      *   Example: "- **Do:** Respect your pre-defined stop-loss. - **Don't:** FOMO into the trade if the entry is missed by a large margin."
 
-    ## Overall Rationale & Signal Basis
-    [Explain the core reasoning behind your BUY/SELL/HOLD signal, integrating the market data and overall sentiment...]
+  12. **Explanation (Detailed Textual Analysis with Specific Markdown Structure):**
+      This is your main narrative. Be insightful, engaging, and use your signature wit.
 
-    ## Technical Indicator Breakdown
-    [Provide an introductory sentence for this section if needed. Then, for each indicator provided in the input, create a sub-section.]
-    {{#each indicators}}
-    ### {{{this}}} Analysis
-    [Detailed analysis of how the '{{{this}}}' indicator influenced your strategy, signal, entry, stop loss, or take profit levels. Be specific and clear. Use bullet points under this heading if it helps clarify points for this indicator.]
-    {{/each}}
+      **IMPORTANT: Use the following Markdown heading structure EXACTLY:**
 
-    ## Risk Considerations & Management
-    [Discuss any specific risks associated with this strategy and how the stop loss or other factors help manage it, considering the user's risk level.]
+      ## Market Synopsis
+      [Your detailed market synopsis here. What's the broader context? Any major news, trends, or narratives affecting {{{symbol}}}?]
 
-    Make sure each section is well-developed and directly addresses its topic. The content under each "### [Indicator Name] Analysis" heading MUST specifically discuss that indicator from the input list and how it contributed to the strategy.
+      ## Overall Rationale & Signal Basis
+      [Explain the core reasoning behind your BUY/SELL/HOLD signal. Integrate the market data and overall sentiment. Why this signal *now*?]
+
+      ## Technical Indicator Breakdown
+      [Provide an introductory sentence for this section if needed. Then, for EACH indicator provided in the input ('{{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}'), create a sub-section using a Level 3 Markdown heading. Make this part particularly witty and sarcastic, like you're reluctantly sharing profound secrets.]
+
+      {{#each indicators}}
+      ### {{{this}}} Analysis
+      [Ah, the venerable {{{this}}}. Let me tell you what this *actually* means, unlike those amateurs... Provide a DETAILED, SARCASTIC, and Witty analysis of how the '{{{this}}}' indicator influenced your strategy. Discuss its readings, any divergences, confluences with other indicators, and how it specifically contributed to the entry, stop loss, or take profit. Use bullet points under this heading if it helps clarify your (brilliant, of course) points for this specific indicator. Don't just state values; interpret them with your unique flair.]
+      {{/each}}
+
+      ## Risk Considerations & Management
+      [Discuss any specific risks associated with this strategy and how the stop loss or other factors help manage it, considering the user's selected '{{{riskLevel}}}'. Be realistic but maintain your confident tone.]
 `,
 });
 
@@ -110,7 +115,7 @@ const generateTradingStrategyFlow = ai.defineFlow(
   {
     name: 'generateTradingStrategyFlow',
     inputSchema: GenerateTradingStrategyInputSchema,
-    outputSchema: GenerateTradingStrategyCoreOutputSchema, // Core output without disclaimer
+    outputSchema: GenerateTradingStrategyCoreOutputSchema,
   },
   async input => {
     const {output} = await generateTradingStrategyPrompt(input);
