@@ -2,7 +2,7 @@
 'use client';
 
 import type { FunctionComponent } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -85,6 +85,43 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
       }
     }
   }, [isLoadingGreeting]); 
+
+  const handleScroll = useCallback(() => {
+    const scrollY = window.scrollY;
+
+    const applyParallax = (ref: React.RefObject<HTMLElement>, speed: number) => {
+        if (ref.current) {
+            // Apply transform based on scrollY and speed
+            const offset = scrollY * speed;
+            ref.current.style.transform = `translateY(${offset}px)`;
+            // Add a small transition for smoothness (optional, depends on desired effect)
+            // ref.current.style.transition = 'transform 0.1s ease-out';
+            // Hint to the browser that this element's transform will change
+            ref.current.style.willChange = 'transform';
+        }
+    };
+
+    // Apply different negative speeds for the parallax effect
+    // Negative speeds make elements move *up* relative to standard scroll direction
+    applyParallax(greetingCardRef as React.RefObject<HTMLElement>, -0.05); // Moves slightly up
+    applyParallax(benefitsCardRef as React.RefObject<HTMLElement>, -0.1);
+    applyParallax(storyCardRef as React.RefObject<HTMLElement>, -0.15);
+    applyParallax(buttonRef as React.RefObject<HTMLElement>, -0.2); // Moves faster up
+}, []);
+
+  useEffect(() => {
+    // Only add listener if welcome screen is currently shown
+    if (welcomeRef.current) {
+         window.addEventListener('scroll', handleScroll);
+        // Apply initial parallax based on current scroll position on mount
+        handleScroll();
+    }
+
+
+    return () => {
+         window.removeEventListener('scroll', handleScroll);
+    };
+}, [handleScroll]); 
 
   return (
     <div ref={welcomeRef} className="flex flex-col items-center justify-center text-center p-2 md:p-4 max-w-2xl mx-auto space-y-4 md:space-y-6">
