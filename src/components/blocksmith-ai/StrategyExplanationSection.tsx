@@ -22,12 +22,12 @@ import {
   MessageSquareHeart,
   Sparkles,
   Unlock,
-  Activity, 
-  FileText, 
-  Goal, 
-  ClipboardList, 
+  Activity,
+  FileText,
+  Goal,
+  ClipboardList,
   Glasses,
-  Loader2 
+  Loader2
 } from 'lucide-react';
 
 interface StrategyExplanationSectionProps {
@@ -36,7 +36,7 @@ interface StrategyExplanationSectionProps {
   isLoading: boolean;
   error?: string | null;
   symbol: string;
-  selectedIndicators: string[]; 
+  selectedIndicators: string[];
 }
 
 interface StatCardProps {
@@ -61,12 +61,20 @@ const StatCard: FunctionComponent<StatCardProps> = ({ title, value, icon, classN
 );
 
 const MarkdownContentDisplay: FunctionComponent<{ content: string | undefined; fallbackText: string }> = ({ content, fallbackText }) => (
-  <article className="prose prose-sm sm:prose-base prose-invert max-w-none text-foreground/90 leading-relaxed
-                    prose-strong:text-primary prose-headings:text-accent prose-headings:font-headline
-                    prose-ul:text-foreground/90 prose-ol:text-foreground/90 prose-ul:list-disc prose-ul:ml-5
-                    prose-li:marker:text-primary prose-a:text-tertiary hover:prose-a:text-accent
-                    prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground prose-blockquote:italic">
-    {content ? <div dangerouslySetInnerHTML={{ __html: content.replace(/\n/g, '<br />') }} /> : fallbackText}
+  <article className="prose prose-sm sm:prose-base prose-invert max-w-none 
+                    text-foreground leading-relaxed 
+                    prose-headings:text-accent prose-headings:font-semibold prose-headings:mb-3 prose-headings:mt-5
+                    prose-h2:text-lg prose-h2:sm:text-xl prose-h3:text-base prose-h3:sm:text-lg 
+                    prose-p:text-foreground/95 prose-p:mb-3
+                    prose-strong:text-primary prose-strong:font-semibold
+                    prose-ul:text-foreground/90 prose-ul:list-disc prose-ul:ml-6 prose-ul:space-y-1
+                    prose-ol:text-foreground/90 prose-ol:list-decimal prose-ol:ml-6 prose-ol:space-y-1
+                    prose-li:text-foreground/90 prose-li:marker:text-primary prose-li:my-1
+                    prose-a:text-tertiary hover:prose-a:text-accent prose-a:font-medium
+                    prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground prose-blockquote:italic prose-blockquote:pl-4 prose-blockquote:my-4
+                    prose-code:text-accent/90 prose-code:font-code prose-code:bg-muted/40 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-sm prose-code:text-xs
+                    ">
+    {content ? <div dangerouslySetInnerHTML={{ __html: content.replace(/\n\s*\n/g, '<br /><br />').replace(/\n/g, '<br />') }} /> : <p className="text-muted-foreground">{fallbackText}</p>}
   </article>
 );
 
@@ -180,19 +188,19 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   return (
     <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out">
       <CardHeader className="text-center pb-4 pt-5">
-        <CardTitle className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground flex items-center justify-center flex-wrap font-headline break-words">
-           <Unlock className="mr-2 sm:mr-3 h-6 w-6 sm:h-7 sm:w-7 text-accent shrink-0" />
-          Your <span className="text-primary mx-1">AI Edge</span> Revealed: <span className="text-accent ml-1 sm:ml-2 font-bold">{symbol}</span>
+        <CardTitle className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground flex items-center justify-center flex-wrap font-headline break-words">
+           <Unlock className="mr-2 sm:mr-3 h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 text-primary shrink-0" />
+          Your <span className="text-primary mx-1.5">AI Edge</span> Revealed: <span className="text-accent ml-1.5 sm:ml-2 font-extrabold">{symbol}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 px-2 sm:px-4 pb-5">
         <Tabs defaultValue="summary" className="w-full">
           <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 bg-card/70 border border-border/80 mb-6 p-2 h-auto rounded-lg">
-            <TabsTrigger value="summary" className={`${commonTriggerClasses} data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-primary/10 hover:text-primary`}><Activity className="mr-1.5 h-4 w-4" />Summary</TabsTrigger>
-            <TabsTrigger value="findings" className={`${commonTriggerClasses} data-[state=active]:bg-accent/20 data-[state=active]:text-accent hover:bg-accent/10 hover:text-accent`}><FileText className="mr-1.5 h-4 w-4" />Findings</TabsTrigger>
-            <TabsTrigger value="suggestions" className={`${commonTriggerClasses} data-[state=active]:bg-tertiary/20 data-[state=active]:text-tertiary hover:bg-tertiary/10 hover:text-tertiary`}><Goal className="mr-1.5 h-4 w-4" />Suggestions</TabsTrigger>
-            <TabsTrigger value="dos-donts" className={`${commonTriggerClasses} data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-500 hover:bg-orange-500/10 hover:text-orange-500`}><ClipboardList className="mr-1.5 h-4 w-4" />Do's/Don'ts</TabsTrigger>
-            <TabsTrigger value="deep-dive" className={`${commonTriggerClasses} data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-500 hover:bg-purple-500/10 hover:text-purple-500`}><Glasses className="mr-1.5 h-4 w-4" />Deep Dive</TabsTrigger>
+            <TabsTrigger value="summary" className={`${commonTriggerClasses} data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-primary/10 hover:text-primary`}><Activity className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Summary</TabsTrigger>
+            <TabsTrigger value="findings" className={`${commonTriggerClasses} data-[state=active]:bg-accent/20 data-[state=active]:text-accent hover:bg-accent/10 hover:text-accent`}><FileText className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Findings</TabsTrigger>
+            <TabsTrigger value="suggestions" className={`${commonTriggerClasses} data-[state=active]:bg-tertiary/20 data-[state=active]:text-tertiary hover:bg-tertiary/10 hover:text-tertiary`}><Goal className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Suggestions</TabsTrigger>
+            <TabsTrigger value="dos-donts" className={`${commonTriggerClasses} data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-500 hover:bg-orange-500/10 hover:text-orange-500`}><ClipboardList className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Do's/Don'ts</TabsTrigger>
+            <TabsTrigger value="deep-dive" className={`${commonTriggerClasses} data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-500 hover:bg-purple-500/10 hover:text-purple-500`}><Glasses className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Deep Dive</TabsTrigger>
           </TabsList>
 
           <TabsContent value="summary" className="p-1">
@@ -281,7 +289,5 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
 };
 
 export default StrategyExplanationSection;
-
-    
 
     
