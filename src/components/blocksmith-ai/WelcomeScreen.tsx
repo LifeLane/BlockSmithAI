@@ -87,7 +87,7 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
   }, [isLoadingGreeting]); 
 
   return (
-    <div ref={welcomeRef} className="flex flex-col items-center justify-center text-center p-2 md:p-4 max-w-2xl mx-auto space-y-6 md:space-y-8">
+    <div ref={welcomeRef} className="flex flex-col items-center justify-center text-center p-2 md:p-4 max-w-2xl mx-auto space-y-4 md:space-y-6">
       
       {/* Daily Greeting Section */}
       <Card ref={greetingCardRef} className="w-full shadow-xl border-primary/40 bg-card/80 backdrop-blur-sm hover:border-primary transition-all duration-300 ease-in-out hover:shadow-[0_0_20px_3px_hsl(var(--primary)/0.5)]">
