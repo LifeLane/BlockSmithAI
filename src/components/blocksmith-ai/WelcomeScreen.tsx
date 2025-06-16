@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CalendarDays, Lightbulb, BarChartBig, AlertTriangle, Zap, Rocket, Sparkles } from 'lucide-react';
+import { CalendarDays, Zap, Rocket, Sparkles } from 'lucide-react';
 import { gsap } from 'gsap';
 import { generateDailyGreetingAction } from '@/app/actions';
 
@@ -15,11 +15,11 @@ interface WelcomeScreenProps {
 }
 
 const FOMO_HOOKS = [
-  "Explore BlockSmithAI Now!",
-  "Unlock Your Trading Edge!",
-  "Reveal AI-Powered Insights!",
-  "Start Your Analysis!",
-  "Enter the Future of Trading!",
+  "Launch BlockSmithAI!",
+  "Ignite Your AI Edge!",
+  "Discover Crypto Alpha!",
+  "Start AI Analysis Now!",
+  "Unleash Trading Strategies!",
 ];
 
 const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => {
@@ -74,7 +74,7 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
               autoAlpha: 1,
               y: 0,
               duration: 0.7,
-              stagger: 0.15, // Slightly reduced stagger
+              stagger: 0.15, 
               ease: 'power3.out',
               delay: 0.2, 
               onComplete: () => {
@@ -97,7 +97,6 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
         }
     };
 
-    // Reduced parallax speeds for a more subtle effect
     applyParallax(greetingCardRef as React.RefObject<HTMLElement>, -0.03); 
     applyParallax(benefitsCardRef as React.RefObject<HTMLElement>, -0.06);
     applyParallax(storyCardRef as React.RefObject<HTMLElement>, -0.09);
@@ -115,16 +114,16 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
 }, [handleScroll]); 
 
   return (
-    <div ref={welcomeRef} className="flex flex-col items-center justify-center text-center p-2 md:p-4 max-w-xl mx-auto space-y-4 md:space-y-5"> {/* Reduced max-width slightly */}
+    <div ref={welcomeRef} className="flex flex-col items-center justify-center text-center p-2 md:p-4 max-w-xl mx-auto space-y-4 md:space-y-5">
       
       <Card ref={greetingCardRef} className="w-full shadow-xl border-primary/40 bg-card/80 backdrop-blur-sm hover:border-primary transition-all duration-300 ease-in-out hover:shadow-[0_0_20px_3px_hsl(var(--primary)/0.5)]">
-        <CardHeader className="items-center pb-2 pt-4"> {/* Reduced padding */}
-          <CalendarDays className="h-8 w-8 md:h-10 md:w-10 text-primary mb-1" /> {/* Slightly smaller icon */}
-          <CardTitle className="text-lg md:text-xl font-bold font-headline text-foreground"> {/* Reduced font size */}
+        <CardHeader className="items-center pb-2 pt-4"> 
+          <CalendarDays className="h-8 w-8 md:h-10 md:w-10 text-primary mb-1" /> 
+          <CardTitle className="text-lg md:text-xl font-bold font-headline text-foreground"> 
             A Moment with <span className="text-primary">BlockSmithAI</span>:
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-sm md:text-base text-muted-foreground min-h-[40px] px-4 pb-4"> {/* Reduced padding */}
+        <CardContent className="text-sm md:text-base text-muted-foreground min-h-[40px] px-4 pb-4"> 
           {isLoadingGreeting ? (
             <div className="space-y-1">
               <Skeleton className="h-3 w-3/4 mx-auto bg-muted/50" />
@@ -143,7 +142,7 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
             Your <span className="text-accent">Unfair Advantage</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 text-sm md:text-base text-muted-foreground px-4 md:px-5 pb-4"> {/* Reduced padding and spacing */}
+        <CardContent className="space-y-2 text-sm md:text-base text-muted-foreground px-4 md:px-5 pb-4"> 
            <p><strong className="text-primary">AI-Powered Insights:</strong> Decode market complexities & spot opportunities.</p>
            <p><strong className="text-primary">Actionable Strategies:</strong> Get clear parameters (entry, TP/SL) to act decisively (hypothetically!).</p>
         </CardContent>
@@ -151,7 +150,7 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
 
       <Card ref={storyCardRef} className="w-full shadow-xl border-tertiary/40 bg-card/80 backdrop-blur-sm hover:border-tertiary transition-all duration-300 ease-in-out hover:shadow-[0_0_20px_3px_hsl(var(--tertiary)/0.5)]">
         <CardHeader className="items-center pb-2 pt-4">
-          <Rocket className="h-8 w-8 md:h-10 md:w-10 text-tertiary mb-1" /> {/* Changed icon */}
+          <Rocket className="h-8 w-8 md:h-10 md:w-10 text-tertiary mb-1" /> 
           <CardTitle className="text-lg md:text-xl font-bold font-headline text-foreground">
             Your <span className="text-tertiary">Quest</span> Awaits
           </CardTitle>
@@ -168,10 +167,10 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
         ref={buttonRef}
         onClick={onProceed}
         size="lg"
-        className="mt-4 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 px-6 md:px-8 text-base md:text-lg shadow-xl border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 transform hover:scale-105 active:scale-95 w-full max-w-xs sm:max-w-sm" /* max-width for button */
+        className="mt-4 bg-gradient-to-r from-primary via-accent to-tertiary text-primary-foreground font-semibold py-3 px-6 md:px-8 text-base md:text-lg shadow-xl border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 transform hover:scale-105 active:scale-95 w-full max-w-xs sm:max-w-sm"
       >
-        <Sparkles className="mr-2 h-5 w-5 text-yellow-300" /> 
-        <span className="inline-block min-w-[240px] text-center"> {/* Slightly reduced min-width */}
+        <Sparkles className="mr-2 h-5 w-5 text-primary" /> 
+        <span className="inline-block min-w-[240px] text-center"> 
           {FOMO_HOOKS[currentFomoIndex]}
         </span>
       </Button>
@@ -181,3 +180,5 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
 };
 
 export default WelcomeScreen;
+
+    
