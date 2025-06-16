@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CalendarDays, Zap, Rocket, Sparkles } from 'lucide-react';
+import { CalendarDays, Zap, Rocket } from 'lucide-react';
 import { gsap } from 'gsap';
 import { generateDailyGreetingAction } from '@/app/actions';
 
@@ -167,9 +167,8 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
         ref={buttonRef}
         onClick={onProceed}
         size="lg"
-        className="mt-4 bg-gradient-to-r from-primary via-accent to-tertiary text-primary-foreground font-semibold py-3 px-6 md:px-8 text-base md:text-lg shadow-xl border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 transform hover:scale-105 active:scale-95 w-full max-w-xs sm:max-w-sm"
+        className="mt-4 bg-gradient-to-r from-primary via-accent to-tertiary text-primary-foreground font-semibold py-3 px-6 md:px-8 text-lg md:text-xl shadow-xl border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 transform hover:scale-105 active:scale-95 w-full max-w-xs sm:max-w-sm"
       >
-        <Sparkles className="mr-2 h-5 w-5 text-primary" /> 
         <span className="inline-block min-w-[240px] text-center"> 
           {FOMO_HOOKS[currentFomoIndex]}
         </span>
@@ -180,5 +179,3 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
 };
 
 export default WelcomeScreen;
-
-    
