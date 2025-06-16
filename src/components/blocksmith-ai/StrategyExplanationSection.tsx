@@ -30,7 +30,8 @@ import {
   ClipboardList,
   Glasses,
   Loader2,
-  Copy
+  Copy,
+  CandlestickChart
 } from 'lucide-react';
 
 interface StrategyExplanationSectionProps {
@@ -67,11 +68,11 @@ const MarkdownContentDisplay: FunctionComponent<{ content: string | undefined; f
                     text-foreground leading-relaxed 
                     prose-headings:text-primary prose-headings:font-semibold prose-headings:mb-4 prose-headings:mt-6
                     prose-h2:text-xl prose-h2:sm:text-2xl prose-h3:text-lg prose-h3:sm:text-xl 
-                    prose-p:text-foreground prose-p:mb-3 prose-p:leading-relaxed
+                    prose-p:text-foreground/95 prose-p:mb-3 prose-p:leading-relaxed
                     prose-strong:text-accent prose-strong:font-bold
-                    prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ul:text-foreground/95
-                    prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 prose-ol:text-foreground/95
-                    prose-li:text-foreground/95 prose-li:marker:text-primary prose-li:my-1.5 
+                    prose-ul:list-disc prose-ul:ml-6 prose-ul:space-y-2 prose-ul:text-foreground/90
+                    prose-ol:list-decimal prose-ol:ml-6 prose-ol:space-y-2 prose-ol:text-foreground/90
+                    prose-li:text-foreground/90 prose-li:marker:text-primary prose-li:my-1.5
                     prose-a:text-tertiary hover:prose-a:text-accent/80 prose-a:font-medium prose-a:underline
                     prose-blockquote:border-l-4 prose-blockquote:border-tertiary prose-blockquote:bg-muted/30 prose-blockquote:text-muted-foreground prose-blockquote:italic prose-blockquote:pl-4 prose-blockquote:py-2 prose-blockquote:my-4 rounded-r-md
                     prose-code:text-purple-400 prose-code:font-code prose-code:bg-muted/50 prose-code:px-1.5 prose-code:py-1 prose-code:rounded-md prose-code:text-sm
@@ -165,7 +166,7 @@ Disclaimer: ${strategy.disclaimer}
       <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_25px_7px_hsl(var(--tertiary)/0.5)]">
         <CardHeader className="items-center text-center pt-6 pb-4">
           <CardTitle className="flex items-center justify-center flex-wrap text-xl sm:text-2xl md:text-3xl font-bold font-headline text-foreground break-words">
-            <Sparkles className="mr-2 sm:mr-3 h-7 w-7 sm:h-8 sm:w-8 text-primary animate-pulse shrink-0" />
+            <Sparkles className="mr-1.5 sm:mr-3 h-7 w-7 sm:h-8 sm:w-8 text-primary animate-pulse shrink-0" />
             My <span className="text-primary mx-1 sm:mx-1.5">AI Brain</span> is <span className="text-accent mx-1 sm:mx-1.5">Buzzing</span> with <span className="text-orange-400 ml-1 sm:ml-1.5">Potential Alpha</span>...
           </CardTitle>
         </CardHeader>
@@ -232,11 +233,12 @@ Disclaimer: ${strategy.disclaimer}
       </CardHeader>
       <CardContent className="space-y-6 px-2 sm:px-4 pb-5">
         <Tabs defaultValue="summary" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 bg-card/70 border border-border/80 mb-6 p-2 h-auto rounded-lg">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 bg-card/70 border border-border/80 mb-6 p-2 h-auto rounded-lg">
             <TabsTrigger value="summary" className={`${commonTriggerClasses} data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-primary/10 hover:text-primary`}><Activity className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Summary</TabsTrigger>
+            <TabsTrigger value="patterns" className={`${commonTriggerClasses} data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-500 hover:bg-orange-500/10 hover:text-orange-500`}><CandlestickChart className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Pattern Intel</TabsTrigger>
             <TabsTrigger value="findings" className={`${commonTriggerClasses} data-[state=active]:bg-accent/20 data-[state=active]:text-accent hover:bg-accent/10 hover:text-accent`}><FileText className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Findings</TabsTrigger>
             <TabsTrigger value="suggestions" className={`${commonTriggerClasses} data-[state=active]:bg-tertiary/20 data-[state=active]:text-tertiary hover:bg-tertiary/10 hover:text-tertiary`}><Goal className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Suggestions</TabsTrigger>
-            <TabsTrigger value="dos-donts" className={`${commonTriggerClasses} data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-500 hover:bg-orange-500/10 hover:text-orange-500`}><ClipboardList className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Do's/Don'ts</TabsTrigger>
+            <TabsTrigger value="dos-donts" className={`${commonTriggerClasses} data-[state=active]:bg-yellow-500/20 data-[state=active]:text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-500`}><ClipboardList className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Do's/Don'ts</TabsTrigger>
             <TabsTrigger value="deep-dive" className={`${commonTriggerClasses} data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-500 hover:bg-purple-500/10 hover:text-purple-500`}><Glasses className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Deep Dive</TabsTrigger>
           </TabsList>
 
@@ -302,6 +304,10 @@ Disclaimer: ${strategy.disclaimer}
                     <Copy className="mr-2 h-4 w-4" /> Copy Strategy Details
                 </Button>
             </div>
+          </TabsContent>
+
+          <TabsContent value="patterns" className={textTabContentClasses}>
+             <MarkdownContentDisplay content={strategy.patternAnalysis} fallbackText="No specific pattern analysis provided by AI for this strategy." />
           </TabsContent>
 
           <TabsContent value="findings" className={textTabContentClasses}>
