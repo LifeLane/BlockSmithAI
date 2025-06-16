@@ -1,6 +1,7 @@
 
 "use client";
-import { FunctionComponent, useState, useEffect } from 'react';
+import type { FunctionComponent} from 'react';
+import { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button"
 import {
@@ -80,7 +81,7 @@ const SymbolIntervalSelectors: FunctionComponent<SymbolIntervalSelectorsProps> =
               variant="outline"
               role="combobox"
               aria-expanded={openPopover}
-              className="w-full justify-between text-sm border-input focus:border-accent focus:ring-accent"
+              className="w-full justify-between text-sm bg-secondary hover:bg-secondary/80 text-secondary-foreground border-border/70 focus:border-accent focus:ring-accent"
               id="symbol-select"
               disabled={isLoadingSymbols && symbols.length === 0}
             >
@@ -137,7 +138,10 @@ const SymbolIntervalSelectors: FunctionComponent<SymbolIntervalSelectorsProps> =
           Analysis <span className="text-primary ml-1 font-semibold">Horizon</span>
         </Label>
         <Select value={interval} onValueChange={onIntervalChange}>
-          <SelectTrigger id="interval-select" className="w-full text-sm border-input focus:border-accent focus:ring-accent">
+          <SelectTrigger 
+            id="interval-select" 
+            className="w-full text-sm bg-secondary hover:bg-secondary/80 text-secondary-foreground border-border/70 focus:border-accent focus:ring-accent"
+          >
             <SelectValue placeholder="Select horizon" />
           </SelectTrigger>
           <SelectContent>
