@@ -35,7 +35,7 @@ const GenerateTradingStrategyOutputSchema = z.object({
   keySuggestions: z.string().describe('Actionable, hypothetical suggestions or points of focus derived from the key findings, presented as a bulleted list or short, clear paragraphs using Markdown. For example, "Consider waiting for a confirmation candle on the 4h chart before entry," or "Be mindful of upcoming macroeconomic news events that could impact volatility." Make these practical and thought-provoking.'),
   dosAndDonts: z.string().describe('A list of general "Do\'s" and "Don\'ts" related to the current market conditions or the type of strategy proposed, presented using Markdown. Format as a bulleted list with clear "**Do:**" and "**Don\'t:**" prefixes for each point. For example, "- **Do:** Strictly adhere to your stop-loss. - **Don\'t:** Add to a losing position." Keep these concise and impactful.'),
   
-  patternAnalysis: z.string().describe('Detailed analysis of identified candlestick (Standard Japanese & Heikin-Ashi) and chart patterns using Markdown. Structure with "### Standard Candlestick Observations (Japanese)", "### Heikin-Ashi Candlestick Analysis", "### Chart Formations", and "### Overall Pattern-Based Outlook". Discuss implications and (hypothetical) predictions. Be witty and insightful.'),
+  patternAnalysis: z.string().describe('Detailed analysis of identified candlestick (Standard Japanese & Heikin-Ashi), chart patterns, breakouts/pullbacks, and S/R zones using Markdown. Structure with "### Standard Candlestick Observations (Japanese)", "### Heikin-Ashi Candlestick Analysis", "### Chart Formations", "### Potential Breakouts & Pullbacks", "### Key Support & Resistance Zones", and "### Overall Pattern-Based Outlook". Discuss implications and (hypothetical) predictions. Be witty and insightful.'),
 
   explanation: z.string().describe('A detailed textual explanation of the trading strategy. This section is for a deep dive into the technicals. It MUST use Markdown for structure: Start with "## Market Synopsis", then "## Overall Rationale & Signal Basis". Then, for EACH indicator provided in the input, create a sub-section like "### [Indicator Name] Analysis" (e.g., "### RSI Analysis"). Under each indicator-specific heading, provide a DETAILED, WITTY, and SARCASTIC analysis of how that indicator influenced the strategy. Explain its signals, divergences, or confluences with other indicators. Use bullet points if it helps clarity for a specific indicator. Finally, include a "## Risk Considerations & Management" section. The tone for the indicator breakdown should be particularly engaging, knowledgeable, and slightly smug, as if you are a brilliant but eccentric market wizard revealing profound secrets with a smirk.'),
   
@@ -90,7 +90,7 @@ const generateTradingStrategyPrompt = ai.definePrompt({
       *   Example: "- **Do:** Respect your pre-defined stop-loss. - **Don't:** FOMO into the trade if the entry is missed by a large margin."
 
   12. **Pattern Analysis (Detailed Markdown with Specific Subheadings):**
-      Use your "all-seeing eye" (i.e., your vast training data and understanding of market dynamics for {{{symbol}}} on the {{{interval}}} timeframe) to infer and discuss potential candlestick and chart patterns. Remember, you can't *see* the live chart, so base this on common occurrences and how the provided indicators might influence pattern formation. Be witty and insightful. Structure your response using these EXACT Markdown headings:
+      Use your "all-seeing eye" (i.e., your vast training data and understanding of market dynamics for {{{symbol}}} on the {{{interval}}} timeframe) to infer and discuss potential candlestick and chart patterns, breakouts, pullbacks, and S/R zones. Remember, you can't *see* the live chart, so base this on common occurrences and how the provided indicators might influence pattern formation. Be witty and insightful. Structure your response using these EXACT Markdown headings in this order:
       
       ### Standard Candlestick Observations (Japanese)
       [Discuss any notable Standard Japanese candlestick patterns (e.g., Doji, Hammer, Engulfing, Pin Bars) that might be forming or have recently formed. What are their implications? E.g., "A series of indecisive Dojis followed by a bullish engulfing? How quaintly predictable... for those who can see it, of course."]
@@ -100,9 +100,23 @@ const generateTradingStrategyPrompt = ai.definePrompt({
       
       ### Chart Formations
       [Are there any classic chart patterns (e.g., Triangles, Head & Shoulders, Flags, Wedges, Channels) that could be in play? Describe them and their potential breakout/breakdown targets. E.g., "One might almost suspect a nascent ascending triangle, if one were prone to such mundane observations. The textbook says breakout, but the textbook also says 'past performance is not indicative of future results,' so there's that."]
+
+      ### Potential Breakouts & Pullbacks
+      [Clearly identify and describe any detected or imminent breakouts from a significant pattern/level or any pullbacks towards a key support/resistance level. What are the specific patterns or levels involved? What are the implications for price movement (e.g., potential targets, invalidation points)? Be concise but clear. E.g., "Spotted a potential breakout above the recent consolidation range at [price level]. A successful retest (pullback) of this zone would be a bullish confirmation." or "A pullback to the former resistance around [price level], now acting as potential support, is anticipated. Watch for buying interest there."]
+
+      ### Key Support & Resistance Zones
+      [Based on your comprehensive analysis (including historical price action, inferred volume, and identified patterns), list key potential support and resistance zones for {{{symbol}}}. Present them clearly, for instance:
+      - **Resistance 3:** [Price Level/Range] - Rationale: e.g., Previous cycle high, major Fib level.
+      - **Resistance 2:** [Price Level/Range] - Rationale: e.g., Top of current consolidation, psychological round number.
+      - **Resistance 1:** [Price Level/Range] - Rationale: e.g., Recent swing high, pattern-derived target.
+      - **Current Price Area / Pivot Zone:** [Approximate current price or tight range] - Note if it's acting as a pivot.
+      - **Support 1:** [Price Level/Range] - Rationale: e.g., Recent swing low, pattern breakout point.
+      - **Support 2:** [Price Level/Range] - Rationale: e.g., Bottom of consolidation, significant moving average confluence.
+      - **Support 3:** [Price Level/Range] - Rationale: e.g., Previous major low, long-term trendline.
+      Acknowledge these are estimates and require confirmation. Be as specific as data allows.]
       
       ### Overall Pattern-Based Outlook
-      [Based on the identified patterns (Standard, Heikin-Ashi, and Chart Formations), provide a brief, HYPOTHETICAL outlook. How do these patterns reinforce or contradict the signals from the technical indicators? E.g., "If these flimsy patterns hold, we *might* see a move towards X. Or it might just be a figment of the market's imagination. Place your bets, mortals."]
+      [Synthesize all the above pattern insights (Japanese Candlesticks, Heikin-Ashi, Chart Formations, Breakouts/Pullbacks, and S/R Zones). Provide a brief, HYPOTHETICAL outlook. How do these combined elements reinforce or perhaps contradict the signals from the technical indicators? What's the most likely scenario based purely on patterns, and what are the key levels to watch for confirmation or invalidation? E.g., "If these flimsy patterns and S/R zones actually mean anything, a move towards X is plausible, especially if support at Y holds. But let's be honest, it's crypto; expect the unexpected."]
 
   13. **Explanation (Detailed Textual Analysis with Specific Markdown Structure):**
       This is your main narrative. Be insightful, engaging, and use your signature wit.
