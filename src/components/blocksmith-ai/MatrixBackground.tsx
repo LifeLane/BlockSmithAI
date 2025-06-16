@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { FunctionComponent} from 'react';
@@ -7,6 +6,16 @@ import { useEffect, useRef } from 'react';
 const MatrixBackground: FunctionComponent = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameIdRef = useRef<number | null>(null);
+
+  // Colors derived from the theme + some additions
+  const matrixColors = [
+    'hsl(181, 100%, 74%)', // Primary (Electric Blue)
+    'hsl(52, 100%, 55%)',  // Accent (Bright Yellow)
+    'hsl(265, 80%, 65%)',  // Tertiary (Vibrant Purple)
+    'hsl(35, 100%, 55%)',   // Chart-4 (Saffron/Orange)
+    'hsl(200, 80%, 60%)',   // Chart-5 (Cyan/Teal)
+    'hsl(120, 100%, 50%)',  // Classic Matrix Green
+  ];
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -36,14 +45,14 @@ const MatrixBackground: FunctionComponent = () => {
 
       // Trail effect: fill canvas with semi-transparent background color
       // --background: 0 0% 13%; /* Dark Gray #222222 */ -> rgba(34, 34, 34, 0.10)
-      ctx.fillStyle = 'rgba(34, 34, 34, 0.10)'; // Slightly increased opacity for trail
+      ctx.fillStyle = 'rgba(34, 34, 34, 0.10)'; 
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Character color: --primary: 181 100% 74%; /* Electric Blue #7DF9FF */
-      ctx.fillStyle = '#7DF9FF'; 
       ctx.font = `${fontSize}px monospace`;
 
       for (let i = 0; i < drops.length; i++) {
+        // Randomly select a color for each character
+        ctx.fillStyle = matrixColors[Math.floor(Math.random() * matrixColors.length)];
         const text = characters[Math.floor(Math.random() * characters.length)];
         ctx.fillText(text, i * fontSize, drops[i] * fontSize);
 
@@ -69,7 +78,6 @@ const MatrixBackground: FunctionComponent = () => {
       } else if (timestamp) {
         lastTimestamp = timestamp;
       } else {
-        // Fallback for the very first frame if timestamp is undefined
         lastTimestamp = performance.now();
       }
       
@@ -79,7 +87,6 @@ const MatrixBackground: FunctionComponent = () => {
 
     initializeMatrix(); 
     
-    // Cancel any existing frame before starting a new one
     if (animationFrameIdRef.current) {
         cancelAnimationFrame(animationFrameIdRef.current);
     }
@@ -91,7 +98,6 @@ const MatrixBackground: FunctionComponent = () => {
         cancelAnimationFrame(animationFrameIdRef.current);
       }
       initializeMatrix(); 
-      // Restart animation with new dimensions after a short delay to allow layout to settle
       animationFrameIdRef.current = requestAnimationFrame(animate);
     };
 
@@ -123,5 +129,3 @@ const MatrixBackground: FunctionComponent = () => {
 };
 
 export default MatrixBackground;
-
-    
