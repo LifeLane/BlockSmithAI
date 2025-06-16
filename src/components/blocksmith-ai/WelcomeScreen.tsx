@@ -15,11 +15,11 @@ interface WelcomeScreenProps {
 }
 
 const FOMO_HOOKS = [
-  "Unlock Your Edge NOW!",
-  "Don't Miss Today's Alpha!",
-  "The Market Waits For No One...",
-  "Reveal BlockSmithAI Secrets!",
-  "Is Your Next Big Trade HERE?",
+  "Explore BlockSmithAI Now!",
+  "Unlock Your Trading Edge!",
+  "Reveal AI-Powered Insights!",
+  "Start Your Analysis!",
+  "Enter the Future of Trading!",
 ];
 
 const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => {
@@ -53,7 +53,7 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
   useEffect(() => {
     const intervalId = setInterval(() => {
       setCurrentFomoIndex((prevIndex) => (prevIndex + 1) % FOMO_HOOKS.length);
-    }, 1000); // Rotate every 1 second
+    }, 1500); // Rotate every 1.5 seconds
 
     return () => clearInterval(intervalId);
   }, []);
@@ -74,7 +74,7 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
               autoAlpha: 1,
               y: 0,
               duration: 0.7,
-              stagger: 0.2,
+              stagger: 0.15, // Slightly reduced stagger
               ease: 'power3.out',
               delay: 0.2, 
               onComplete: () => {
@@ -91,54 +91,44 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
 
     const applyParallax = (ref: React.RefObject<HTMLElement>, speed: number) => {
         if (ref.current) {
-            // Apply transform based on scrollY and speed
             const offset = scrollY * speed;
             ref.current.style.transform = `translateY(${offset}px)`;
-            // Add a small transition for smoothness (optional, depends on desired effect)
-            // ref.current.style.transition = 'transform 0.1s ease-out';
-            // Hint to the browser that this element's transform will change
             ref.current.style.willChange = 'transform';
         }
     };
 
-    // Apply different negative speeds for the parallax effect
-    // Negative speeds make elements move *up* relative to standard scroll direction
-    applyParallax(greetingCardRef as React.RefObject<HTMLElement>, -0.05); // Moves slightly up
-    applyParallax(benefitsCardRef as React.RefObject<HTMLElement>, -0.1);
-    applyParallax(storyCardRef as React.RefObject<HTMLElement>, -0.15);
-    applyParallax(buttonRef as React.RefObject<HTMLElement>, -0.2); // Moves faster up
+    // Reduced parallax speeds for a more subtle effect
+    applyParallax(greetingCardRef as React.RefObject<HTMLElement>, -0.03); 
+    applyParallax(benefitsCardRef as React.RefObject<HTMLElement>, -0.06);
+    applyParallax(storyCardRef as React.RefObject<HTMLElement>, -0.09);
+    applyParallax(buttonRef as React.RefObject<HTMLElement>, -0.12); 
 }, []);
 
   useEffect(() => {
-    // Only add listener if welcome screen is currently shown
     if (welcomeRef.current) {
          window.addEventListener('scroll', handleScroll);
-        // Apply initial parallax based on current scroll position on mount
         handleScroll();
     }
-
-
     return () => {
          window.removeEventListener('scroll', handleScroll);
     };
 }, [handleScroll]); 
 
   return (
-    <div ref={welcomeRef} className="flex flex-col items-center justify-center text-center p-2 md:p-4 max-w-2xl mx-auto space-y-4 md:space-y-6">
+    <div ref={welcomeRef} className="flex flex-col items-center justify-center text-center p-2 md:p-4 max-w-xl mx-auto space-y-4 md:space-y-5"> {/* Reduced max-width slightly */}
       
-      {/* Daily Greeting Section */}
       <Card ref={greetingCardRef} className="w-full shadow-xl border-primary/40 bg-card/80 backdrop-blur-sm hover:border-primary transition-all duration-300 ease-in-out hover:shadow-[0_0_20px_3px_hsl(var(--primary)/0.5)]">
-        <CardHeader className="items-center pb-3">
-          <CalendarDays className="h-10 w-10 text-primary mb-2" />
-          <CardTitle className="text-xl md:text-2xl font-bold font-headline text-foreground">
+        <CardHeader className="items-center pb-2 pt-4"> {/* Reduced padding */}
+          <CalendarDays className="h-8 w-8 md:h-10 md:w-10 text-primary mb-1" /> {/* Slightly smaller icon */}
+          <CardTitle className="text-lg md:text-xl font-bold font-headline text-foreground"> {/* Reduced font size */}
             A Moment with <span className="text-primary">BlockSmithAI</span>:
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-sm md:text-base text-muted-foreground min-h-[50px]">
+        <CardContent className="text-sm md:text-base text-muted-foreground min-h-[40px] px-4 pb-4"> {/* Reduced padding */}
           {isLoadingGreeting ? (
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-3/4 mx-auto bg-muted/50" />
-              <Skeleton className="h-4 w-1/2 mx-auto bg-muted/50" />
+            <div className="space-y-1">
+              <Skeleton className="h-3 w-3/4 mx-auto bg-muted/50" />
+              <Skeleton className="h-3 w-1/2 mx-auto bg-muted/50" />
             </div>
           ) : (
             <p className="italic">{dailyGreeting}</p>
@@ -146,42 +136,30 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
         </CardContent>
       </Card>
 
-      {/* Benefits Section */}
       <Card ref={benefitsCardRef} className="w-full shadow-xl border-accent/40 bg-card/80 backdrop-blur-sm hover:border-accent transition-all duration-300 ease-in-out hover:shadow-[0_0_20px_3px_hsl(var(--accent)/0.5)]">
-        <CardHeader className="items-center pb-3">
-           <Zap className="h-10 w-10 text-accent mb-2"/>
-          <CardTitle className="text-xl md:text-2xl font-bold font-headline text-foreground">
+        <CardHeader className="items-center pb-2 pt-4">
+           <Zap className="h-8 w-8 md:h-10 md:w-10 text-accent mb-1"/>
+          <CardTitle className="text-lg md:text-xl font-bold font-headline text-foreground">
             Your <span className="text-accent">Unfair Advantage</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 text-sm md:text-base text-muted-foreground px-4 md:px-6">
-          <div className="flex flex-col items-center space-y-1 md:space-y-0 md:flex-row md:items-center md:space-x-3">
-            <Lightbulb className="h-5 w-5 text-primary mb-1 md:mb-0 shrink-0" />
-            <p><strong className="text-primary">AI-Powered Insights:</strong> Leverage cutting-edge AI to decode market complexities and spot potential opportunities normal squishy humans might miss.</p>
-          </div>
-          <div className="flex flex-col items-center space-y-1 md:space-y-0 md:flex-row md:items-center md:space-x-3">
-            <BarChartBig className="h-5 w-5 text-primary mb-1 md:mb-0 shrink-0" />
-            <p><strong className="text-primary">Actionable Strategies:</strong> Get clear, concise trading parameters (entry, TP/SL) so you spend less time guessing, more time executing (hypothetically!).</p>
-          </div>
-           <div className="flex flex-col items-center space-y-1 md:space-y-0 md:flex-row md:items-center md:space-x-3">
-            <Rocket className="h-5 w-5 text-primary mb-1 md:mb-0 shrink-0" />
-            <p><strong className="text-primary">Stay Ahead of the Curve:</strong> In the fast-paced crypto world, having an AI co-pilot means you're always equipped with the latest data-driven perspectives.</p>
-          </div>
+        <CardContent className="space-y-2 text-sm md:text-base text-muted-foreground px-4 md:px-5 pb-4"> {/* Reduced padding and spacing */}
+           <p><strong className="text-primary">AI-Powered Insights:</strong> Decode market complexities & spot opportunities.</p>
+           <p><strong className="text-primary">Actionable Strategies:</strong> Get clear parameters (entry, TP/SL) to act decisively (hypothetically!).</p>
         </CardContent>
       </Card>
 
-      {/* Hook Story Section */}
       <Card ref={storyCardRef} className="w-full shadow-xl border-tertiary/40 bg-card/80 backdrop-blur-sm hover:border-tertiary transition-all duration-300 ease-in-out hover:shadow-[0_0_20px_3px_hsl(var(--tertiary)/0.5)]">
-        <CardHeader className="items-center pb-3">
-          <AlertTriangle className="h-10 w-10 text-tertiary mb-2" />
-          <CardTitle className="text-xl md:text-2xl font-bold font-headline text-foreground">
-            The <span className="text-tertiary">Legend</span> of the <span className="text-orange-400">Lost Alpha</span>
+        <CardHeader className="items-center pb-2 pt-4">
+          <Rocket className="h-8 w-8 md:h-10 md:w-10 text-tertiary mb-1" /> {/* Changed icon */}
+          <CardTitle className="text-lg md:text-xl font-bold font-headline text-foreground">
+            Your <span className="text-tertiary">Quest</span> Awaits
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-sm md:text-base text-muted-foreground">
+        <CardContent className="text-sm md:text-base text-muted-foreground px-4 pb-4">
           <p>
-            They say in the digital ether, amidst flickering charts and whispered rumors, lies the <strong className="text-orange-400">Lost Alpha</strong> – opportunities missed by the masses, captured only by those with <strong className="text-primary">vision</strong> and the right <strong className="text-accent">tools</strong>.
-            BlockSmithAI was forged in these very data-streams, a beacon for seekers of that elusive edge. Are you just watching, or are you <strong className="text-purple-400">ready to explore?</strong>
+            BlockSmithAI is your <strong className="text-accent">AI co-pilot</strong> in the search for market alpha. 
+            Are you ready to <strong className="text-purple-400">explore its potential?</strong>
           </p>
         </CardContent>
       </Card>
@@ -190,13 +168,14 @@ const WelcomeScreen: FunctionComponent<WelcomeScreenProps> = ({ onProceed }) => 
         ref={buttonRef}
         onClick={onProceed}
         size="lg"
-        className="mt-6 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 px-6 md:px-8 text-base md:text-lg shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105 active:scale-95 w-full max-w-md"
+        className="mt-4 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 px-6 md:px-8 text-base md:text-lg shadow-xl border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 transform hover:scale-105 active:scale-95 w-full max-w-xs sm:max-w-sm" /* max-width for button */
       >
         <Sparkles className="mr-2 h-5 w-5 text-yellow-300" /> 
-        <span className="inline-block min-w-[250px] text-center">
+        <span className="inline-block min-w-[240px] text-center"> {/* Slightly reduced min-width */}
           {FOMO_HOOKS[currentFomoIndex]}
         </span>
       </Button>
+      <p className="text-xs text-muted-foreground/80 pt-1">Click the button above to begin your AI-driven analysis!</p>
     </div>
   );
 };
