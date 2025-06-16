@@ -65,16 +65,16 @@ const StatCard: FunctionComponent<StatCardProps> = ({ title, value, icon, classN
 const MarkdownContentDisplay: FunctionComponent<{ content: string | undefined; fallbackText: string }> = ({ content, fallbackText }) => (
   <article className="prose prose-sm sm:prose-base prose-invert max-w-none 
                     text-foreground leading-relaxed 
-                    prose-headings:text-accent prose-headings:font-semibold prose-headings:mb-3 prose-headings:mt-5
-                    prose-h2:text-lg prose-h2:sm:text-xl prose-h3:text-base prose-h3:sm:text-lg 
-                    prose-p:text-foreground/95 prose-p:mb-3
-                    prose-strong:text-primary prose-strong:font-semibold
-                    prose-ul:text-foreground/90 prose-ul:list-disc prose-ul:ml-6 prose-ul:space-y-1
-                    prose-ol:text-foreground/90 prose-ol:list-decimal prose-ol:ml-6 prose-ol:space-y-1
-                    prose-li:text-foreground/90 prose-li:marker:text-primary prose-li:my-1
-                    prose-a:text-tertiary hover:prose-a:text-accent prose-a:font-medium
-                    prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground prose-blockquote:italic prose-blockquote:pl-4 prose-blockquote:my-4
-                    prose-code:text-accent/90 prose-code:font-code prose-code:bg-muted/40 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-sm prose-code:text-xs
+                    prose-headings:text-primary prose-headings:font-semibold prose-headings:mb-4 prose-headings:mt-6
+                    prose-h2:text-xl prose-h2:sm:text-2xl prose-h3:text-lg prose-h3:sm:text-xl 
+                    prose-p:text-foreground prose-p:mb-3 prose-p:leading-relaxed
+                    prose-strong:text-accent prose-strong:font-bold
+                    prose-ul:list-disc prose-ul:ml-5 prose-ul:space-y-2 prose-ul:text-foreground/95
+                    prose-ol:list-decimal prose-ol:ml-5 prose-ol:space-y-2 prose-ol:text-foreground/95
+                    prose-li:text-foreground/95 prose-li:marker:text-primary prose-li:my-1.5 
+                    prose-a:text-tertiary hover:prose-a:text-accent/80 prose-a:font-medium prose-a:underline
+                    prose-blockquote:border-l-4 prose-blockquote:border-tertiary prose-blockquote:bg-muted/30 prose-blockquote:text-muted-foreground prose-blockquote:italic prose-blockquote:pl-4 prose-blockquote:py-2 prose-blockquote:my-4 rounded-r-md
+                    prose-code:text-purple-400 prose-code:font-code prose-code:bg-muted/50 prose-code:px-1.5 prose-code:py-1 prose-code:rounded-md prose-code:text-sm
                     ">
     {content ? <div dangerouslySetInnerHTML={{ __html: content.replace(/\n\s*\n/g, '<br /><br />').replace(/\n/g, '<br />') }} /> : <p className="text-muted-foreground">{fallbackText}</p>}
   </article>
@@ -165,8 +165,8 @@ Disclaimer: ${strategy.disclaimer}
       <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_25px_7px_hsl(var(--tertiary)/0.5)]">
         <CardHeader className="items-center text-center pt-6 pb-4">
           <CardTitle className="flex items-center justify-center flex-wrap text-xl sm:text-2xl md:text-3xl font-bold font-headline text-foreground break-words">
-            <Sparkles className="mr-2 sm:mr-3 h-6 w-6 sm:h-7 sm:w-7 text-primary animate-pulse shrink-0" />
-            My <span className="text-primary mx-1">AI Brain</span> is <span className="text-accent mx-1">Buzzing</span> with <span className="text-orange-400 ml-1">Potential Alpha</span>...
+            <Sparkles className="mr-2 sm:mr-3 h-7 w-7 sm:h-8 sm:w-8 text-primary animate-pulse shrink-0" />
+            My <span className="text-primary mx-1 sm:mx-1.5">AI Brain</span> is <span className="text-accent mx-1 sm:mx-1.5">Buzzing</span> with <span className="text-orange-400 ml-1 sm:ml-1.5">Potential Alpha</span>...
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center px-6 pb-6 space-y-3">
@@ -219,6 +219,8 @@ Disclaimer: ${strategy.disclaimer}
   }
 
   const commonTriggerClasses = "text-xs sm:text-sm py-2.5 px-2 data-[state=active]:shadow-lg hover:shadow-md transition-all duration-200 ease-in-out rounded-md flex-grow min-w-0 flex items-center justify-center";
+  const textTabContentClasses = "p-2 sm:p-4 bg-background/30 rounded-lg border border-border/60 shadow-inner";
+
 
   return (
     <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out">
@@ -302,19 +304,19 @@ Disclaimer: ${strategy.disclaimer}
             </div>
           </TabsContent>
 
-          <TabsContent value="findings" className="p-2 sm:p-4 bg-background/30 rounded-md border border-border/50">
+          <TabsContent value="findings" className={textTabContentClasses}>
              <MarkdownContentDisplay content={strategy.keyFindings} fallbackText="No specific key findings provided by AI." />
           </TabsContent>
 
-          <TabsContent value="suggestions" className="p-2 sm:p-4 bg-background/30 rounded-md border border-border/50">
+          <TabsContent value="suggestions" className={textTabContentClasses}>
              <MarkdownContentDisplay content={strategy.keySuggestions} fallbackText="No specific suggestions provided by AI." />
           </TabsContent>
 
-          <TabsContent value="dos-donts" className="p-2 sm:p-4 bg-background/30 rounded-md border border-border/50">
+          <TabsContent value="dos-donts" className={textTabContentClasses}>
              <MarkdownContentDisplay content={strategy.dosAndDonts} fallbackText="No specific Do's and Don'ts provided by AI." />
           </TabsContent>
 
-          <TabsContent value="deep-dive" className="p-2 sm:p-4 bg-background/30 rounded-md border border-border/50">
+          <TabsContent value="deep-dive" className={textTabContentClasses}>
             <MarkdownContentDisplay content={strategy.explanation} fallbackText="No detailed explanation provided by AI." />
           </TabsContent>
         </Tabs>
@@ -333,3 +335,4 @@ Disclaimer: ${strategy.disclaimer}
 };
 
 export default StrategyExplanationSection;
+
