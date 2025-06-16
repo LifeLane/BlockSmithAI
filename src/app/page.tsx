@@ -88,6 +88,7 @@ export default function BlockSmithAIPage() {
   const liveTickerRef = useRef<HTMLDivElement>(null);
   const symbolSelectorsRef = useRef<HTMLDivElement>(null);
   const tradingViewWidgetRef = useRef<HTMLDivElement>(null);
+  const controlsContainerRef = useRef<HTMLDivElement>(null);
 
 
   useEffect(() => {
@@ -155,7 +156,7 @@ export default function BlockSmithAIPage() {
         strategyBannerRef.current, 
         symbolSelectorsRef.current,
         tradingViewWidgetRef.current,
-        controlsAndChartSectionRef.current, 
+        controlsContainerRef.current, // Animate the new controls container
       ].filter(Boolean);
 
       if (elementsToAnimate.length > 0) {
@@ -184,7 +185,7 @@ export default function BlockSmithAIPage() {
         applyParallax(strategyBannerRef as React.RefObject<HTMLElement>, -0.03);
         applyParallax(symbolSelectorsRef as React.RefObject<HTMLElement>, -0.05);
         applyParallax(tradingViewWidgetRef as React.RefObject<HTMLElement>, -0.07);
-        applyParallax(controlsAndChartSectionRef as React.RefObject<HTMLElement>, -0.09);
+        applyParallax(controlsContainerRef as React.RefObject<HTMLElement>, -0.09); // Parallax for new controls container
       }
     }, [showWelcomeScreen]);
 
@@ -459,8 +460,8 @@ export default function BlockSmithAIPage() {
               <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
             </div>
 
-            <div ref={controlsAndChartSectionRef} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start relative">
-              <div className="lg:col-span-1 space-y-6 flex flex-col"> 
+            <div ref={controlsContainerRef} className="w-full mt-8">
+              <div className="w-full max-w-lg mx-auto space-y-6 flex flex-col">
                 <MarketDataDisplay
                   liveMarketData={liveMarketData}
                   isLoading={isLoadingMarketData}
@@ -487,7 +488,7 @@ export default function BlockSmithAIPage() {
                 <Button
                   onClick={handleGenerateStrategy}
                   disabled={isButtonDisabled}
-                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 text-base shadow-lg border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 ease-in-out mt-auto"
+                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 text-base shadow-lg border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 ease-in-out"
                 >
                   {isLoadingStrategy ? (
                     <>
@@ -506,13 +507,6 @@ export default function BlockSmithAIPage() {
                      Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Sign up</button> for <strong className="text-orange-400">unlimited</strong>.
                    </p>
                 )}
-              </div>
-              
-              {/* The lg:col-span-2 where the chart used to be is now effectively empty in this grid row. */}
-              {/* Or, you could adjust the grid to lg:col-span-3 for the controls if you want them to take more width */}
-              {/* For now, keeping it lg:col-span-1 to maintain its previous width and placement on the left. */}
-              <div className="lg:col-span-2">
-                {/* This space is now available. Could be used for other content or left empty. */}
               </div>
             </div>
           </main>
@@ -570,3 +564,5 @@ export default function BlockSmithAIPage() {
     </div>
   );
 }
+
+    
