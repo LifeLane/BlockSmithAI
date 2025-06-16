@@ -154,9 +154,8 @@ export default function BlockSmithAIPage() {
       const elementsToAnimate = [
         liveTickerRef.current,
         strategyBannerRef.current, 
-        symbolSelectorsRef.current,
-        tradingViewWidgetRef.current,
-        controlsContainerRef.current, 
+        controlsContainerRef.current, // This now wraps all controls including symbol selectors
+        tradingViewWidgetRef.current, // TradingView Widget might be animated separately or as part of controls
       ].filter(Boolean);
 
       if (elementsToAnimate.length > 0) {
@@ -419,70 +418,70 @@ export default function BlockSmithAIPage() {
               />
             </div>
             
-            <div ref={symbolSelectorsRef} className="mb-6 w-full">
-              <SymbolIntervalSelectors
-                symbol={symbol}
-                onSymbolChange={setSymbol}
-                interval={interval}
-                onIntervalChange={setInterval}
-                symbols={availableSymbols}
-                isLoadingSymbols={isLoadingSymbols}
+            {/* Unified Controls Container */}
+            <div ref={controlsContainerRef} className="w-full space-y-6 mb-8">
+              <div ref={symbolSelectorsRef} className="w-full">
+                <SymbolIntervalSelectors
+                  symbol={symbol}
+                  onSymbolChange={setSymbol}
+                  interval={interval}
+                  onIntervalChange={setInterval}
+                  symbols={availableSymbols}
+                  isLoadingSymbols={isLoadingSymbols}
+                />
+              </div>
+              <MarketDataDisplay
+                liveMarketData={liveMarketData}
+                isLoading={isLoadingMarketData}
+                error={marketDataError}
+                symbolForDisplay={symbol}
               />
+              <IndicatorSelector
+                selectedIndicators={selectedIndicators}
+                onIndicatorChange={handleIndicatorChange}
+              />
+              <RiskSelector 
+                riskLevel={riskLevel} 
+                onRiskChange={setRiskLevel} 
+              />
+              <ExchangeLinkCard
+                apiKeysSet={apiKeysSet}
+                onConfigureKeys={() => setShowApiSettingsModal(true)}
+                onPlaceTrade={handleAttemptSimulatedTrade}
+                strategyAvailable={!!aiStrategy}
+              />
+              {marketDataError && !liveMarketData && (
+                  <p className="text-xs text-center text-red-400">{marketDataError}</p>
+              )}
+              <Button
+                onClick={handleGenerateStrategy}
+                disabled={isButtonDisabled}
+                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 text-base shadow-lg border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 ease-in-out"
+              >
+                {isLoadingStrategy ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Unlocking Your Edge...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-5 w-5" />
+                     Reveal My AI Edge!
+                  </>
+                )}
+              </Button>
+              {!isSignedUp && analysisCount > 0 && (
+                 <p className="text-xs text-center text-muted-foreground mt-2">
+                   Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Sign up</button> for <strong className="text-orange-400">unlimited</strong>.
+                 </p>
+              )}
             </div>
 
-            <div ref={tradingViewWidgetRef} className="mb-8 w-full bg-card p-1 rounded-lg shadow-xl">
+            {/* TradingView Widget - Moved to the end */}
+            <div ref={tradingViewWidgetRef} className="w-full bg-card p-1 rounded-lg shadow-xl">
               <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
             </div>
 
-            <div ref={controlsContainerRef} className="w-full mt-8">
-              <div className="w-full max-w-lg mx-auto space-y-6 flex flex-col">
-                <MarketDataDisplay
-                  liveMarketData={liveMarketData}
-                  isLoading={isLoadingMarketData}
-                  error={marketDataError}
-                  symbolForDisplay={symbol}
-                />
-                <IndicatorSelector
-                  selectedIndicators={selectedIndicators}
-                  onIndicatorChange={handleIndicatorChange}
-                />
-                <RiskSelector 
-                  riskLevel={riskLevel} 
-                  onRiskChange={setRiskLevel} 
-                />
-                <ExchangeLinkCard
-                  apiKeysSet={apiKeysSet}
-                  onConfigureKeys={() => setShowApiSettingsModal(true)}
-                  onPlaceTrade={handleAttemptSimulatedTrade}
-                  strategyAvailable={!!aiStrategy}
-                />
-                 {marketDataError && !liveMarketData && (
-                    <p className="text-xs text-center text-red-400">{marketDataError}</p>
-                )}
-                <Button
-                  onClick={handleGenerateStrategy}
-                  disabled={isButtonDisabled}
-                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 text-base shadow-lg border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 ease-in-out"
-                >
-                  {isLoadingStrategy ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Unlocking Your Edge...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="mr-2 h-5 w-5" />
-                       Reveal My AI Edge!
-                    </>
-                  )}
-                </Button>
-                {!isSignedUp && analysisCount > 0 && (
-                   <p className="text-xs text-center text-muted-foreground mt-2">
-                     Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Sign up</button> for <strong className="text-orange-400">unlimited</strong>.
-                   </p>
-                )}
-              </div>
-            </div>
           </main>
           <ChatbotIcon onClick={handleToggleChat} />
           <ChatbotPopup isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
@@ -533,7 +532,7 @@ export default function BlockSmithAIPage() {
       )}
       <footer className={cn(
         "text-center py-4 px-6 mt-auto text-sm text-muted-foreground border-t border-border/50",
-        !showWelcomeScreen && "mb-24" // Add margin-bottom only when chat icon is visible
+        !showWelcomeScreen && "mb-24" 
       )}>
         {currentYear ? `© ${currentYear} ` : ''}<strong className="text-primary">BlockSmithAI</strong> (because someone has to build this <strong className="text-accent">awesome</strong> stuff).
         Not financial advice, <strong className="text-tertiary">obviously</strong>. Do Your Own Research, <strong className="text-orange-400">genius</strong>! 🧐
