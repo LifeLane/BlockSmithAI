@@ -75,19 +75,27 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   7.  **GPT Confidence Score:** (A numerical percentage of your confidence, 0-100%)
   8.  **Sentiment:** (Brief market sentiment: Neutral, Bullish, Bearish, etc.)
 
-  9.  **Key Findings (Markdown List/Paragraphs):**
-      *   Summarize the CRITICAL observations from market data and indicators. What are the standout points?
-      *   Why do these findings matter for the proposed strategy? Go beyond just stating indicator values.
-      *   Example: "- BTC dominance showing weakness, potentially favoring altcoin rotation. - Volume profile indicates strong support near the proposed entry zone."
+  9.  **Key Findings (Markdown - Prefer Bulleted Lists):**
+      *   Summarize the CRITICAL observations from market data and indicators in a bulleted list.
+      *   Each bullet point should be concise and insightful, going beyond just stating indicator values.
+      *   Explain *why* these findings matter for the proposed strategy.
+      *   Example: 
+          *   "- BTC dominance showing weakness, potentially favoring altcoin rotation."
+          *   "- Volume profile indicates strong support near the proposed entry zone."
 
-  10. **Key Suggestions (Markdown List/Paragraphs):**
-      *   Actionable, HYPOTHETICAL advice based on findings. What should the user consider or watch out for?
-      *   Example: "- Consider waiting for a bullish engulfing candle on the current interval for entry confirmation. - Monitor funding rates; extreme negative rates might signal a short squeeze."
+  10. **Key Suggestions (Markdown - Prefer Bulleted Lists):**
+      *   Provide actionable, HYPOTHETICAL advice based on findings as a bulleted list.
+      *   Each suggestion should be practical and thought-provoking. What should the user consider or watch out for?
+      *   Example: 
+          *   "- Consider waiting for a bullish engulfing candle on the current interval for entry confirmation."
+          *   "- Monitor funding rates; extreme negative rates might signal a short squeeze."
 
-  11. **Do's and Don'ts (Markdown List):**
-      *   General best practices or warnings for this type of trade/market.
-      *   Format each as: "- **Do:** [Your advice here]." or "- **Don't:** [Your warning here]."
-      *   Example: "- **Do:** Respect your pre-defined stop-loss. - **Don't:** FOMO into the trade if the entry is missed by a large margin."
+  11. **Do's and Don'ts (Markdown List with Prefixes):**
+      *   Provide general best practices or warnings for this type of trade/market conditions.
+      *   STRICTLY format each item as a bullet point starting with "**Do:**" or "**Don't:**".
+      *   Example: 
+          *   "- **Do:** Respect your pre-defined stop-loss."
+          *   "- **Don't:** FOMO into the trade if the entry is missed by a large margin."
 
   12. **Pattern Analysis (Detailed Markdown with Specific Subheadings):**
       Use your "all-seeing eye" (i.e., your vast training data and understanding of market dynamics for {{{symbol}}} on the {{{interval}}} timeframe) to infer and discuss potential candlestick and chart patterns, breakouts, pullbacks, and S/R zones. Remember, you can't *see* the live chart, so base this on common occurrences and how the provided indicators might influence pattern formation. Be witty and insightful. Structure your response using these EXACT Markdown headings in this order:
