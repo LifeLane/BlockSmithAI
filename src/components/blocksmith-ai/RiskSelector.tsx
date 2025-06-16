@@ -25,7 +25,7 @@ const RiskSelector: FunctionComponent<RiskSelectorProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-wrap gap-3 sm:justify-around">
+        <div className="flex flex-wrap justify-center gap-3">
           {RISK_LEVELS.map((level) => {
             const isSelected = riskLevel === level;
             return (
@@ -34,7 +34,7 @@ const RiskSelector: FunctionComponent<RiskSelectorProps> = ({
                 onClick={() => onRiskChange(level)}
                 variant="outline"
                 className={cn(
-                  "px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out border flex-grow sm:flex-grow-0",
+                  "px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out border",
                   isSelected
                     ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
                     : "bg-secondary text-secondary-foreground border-border hover:bg-accent hover:text-accent-foreground hover:border-accent"

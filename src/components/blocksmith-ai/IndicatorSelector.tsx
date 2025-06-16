@@ -25,7 +25,7 @@ const IndicatorSelector: FunctionComponent<IndicatorSelectorProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap justify-center gap-3">
           {INDICATORS.map((indicator) => {
             const isSelected = selectedIndicators.includes(indicator);
             return (
