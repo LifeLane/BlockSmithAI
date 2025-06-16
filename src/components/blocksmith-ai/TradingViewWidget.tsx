@@ -1,3 +1,4 @@
+
 'use client';
 
 import { FunctionComponent, useEffect, useRef, memo } from 'react';
@@ -12,11 +13,15 @@ interface TradingViewWidgetProps {
 // Map friendly names to TradingView study IDs
 const indicatorMap: { [key: string]: string } = {
   RSI: "RSI@tv-basicstudies",
-  EMA: "EMA@tv-basicstudies", // Assuming this is correct from prompt; otherwise "MAExp@tv-basicstudies"
+  EMA: "MAExp@tv-basicstudies", // Exponential Moving Average
   VWAP: "VWAP@tv-basicstudies",
   BOLL: "BB@tv-basicstudies", // Bollinger Bands
   SAR: "PSAR@tv-basicstudies", // Parabolic SAR
   ADX: "ADX@tv-basicstudies", // Average Directional Index
+  MACD: "MACD@tv-basicstudies", // Moving Average Convergence Divergence
+  STOCH: "Stochastic@tv-basicstudies", // Stochastic Oscillator
+  ATR: "ATR@tv-basicstudies", // Average True Range
+  OBV: "OBV@tv-basicstudies", // On-Balance Volume
 };
 
 

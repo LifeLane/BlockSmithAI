@@ -10,7 +10,7 @@ interface IndicatorSelectorProps {
   onIndicatorChange: (indicator: string, checked: boolean) => void;
 }
 
-const INDICATORS = ["RSI", "EMA", "VWAP", "BOLL", "SAR", "ADX"];
+const INDICATORS = ["RSI", "EMA", "VWAP", "BOLL", "SAR", "ADX", "MACD", "STOCH", "ATR", "OBV"];
 
 const IndicatorSelector: FunctionComponent<IndicatorSelectorProps> = ({
   selectedIndicators,
