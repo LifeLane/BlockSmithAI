@@ -23,11 +23,11 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased"> {/* Body will now get its background from globals.css */}
+      <body className="font-body antialiased">
         <MatrixBackground />
         <AnimatedPageBorder />
-        {/* This div ensures content is correctly layered if other fixed elements exist, and manages overall layout */}
-        <div className="text-foreground min-h-screen flex flex-col relative z-10 bg-transparent">
+        {/* This div ensures content is correctly layered and applies the main background */}
+        <div className="text-foreground bg-background min-h-screen flex flex-col relative z-10">
           {children}
         </div>
         <Toaster />

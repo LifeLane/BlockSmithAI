@@ -88,6 +88,7 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground; /* Reverted to apply theme background and foreground to body */
+    /* Removed bg-background and text-foreground here to allow MatrixBackground to show */
+    /* text-foreground will be inherited or set on a main wrapper */
   }
 }
