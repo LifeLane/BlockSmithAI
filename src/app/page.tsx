@@ -82,10 +82,13 @@ export default function BlockSmithAIPage() {
   const { toast } = useToast();
 
   const appHeaderRef = useRef<HTMLDivElement>(null);
-  const controlPanelAndChartRef = useRef<HTMLDivElement>(null); 
+  const controlsAndChartSectionRef = useRef<HTMLDivElement>(null); 
   const strategyBannerRef = useRef<HTMLDivElement>(null); 
   const mainContentRef = useRef<HTMLDivElement>(null);
   const liveTickerRef = useRef<HTMLDivElement>(null);
+  const symbolSelectorsRef = useRef<HTMLDivElement>(null);
+  const tradingViewWidgetRef = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
@@ -140,28 +143,28 @@ export default function BlockSmithAIPage() {
     setApiKey('');
     setApiSecret('');
     setApiKeysSet(false);
-    setShowApiSettingsModal(false); // Close modal after clearing
+    setShowApiSettingsModal(false); 
     toast({ title: "API Keys Cleared", description: "Your Binance API keys have been cleared from local storage." });
   };
 
 
   useEffect(() => {
     if (!showWelcomeScreen && mainContentRef.current) {
-      // window.scrollTo(0, 0); // Scroll to top when main content is shown
-
       const elementsToAnimate = [
         liveTickerRef.current,
         strategyBannerRef.current, 
-        controlPanelAndChartRef.current, 
+        symbolSelectorsRef.current,
+        tradingViewWidgetRef.current,
+        controlsAndChartSectionRef.current, 
       ].filter(Boolean);
 
       if (elementsToAnimate.length > 0) {
         gsap.from(elementsToAnimate, {
           opacity: 0,
-          y: -50, // Animate from above
-          duration: 0.8,
-          stagger: 0.2,
-          delay: 0.3, 
+          y: -30, 
+          duration: 0.7,
+          stagger: 0.15,
+          delay: 0.2, 
           ease: 'power3.out',
         });
       }
@@ -171,29 +174,25 @@ export default function BlockSmithAIPage() {
     const handleMainScroll = useCallback(() => {
       if (!showWelcomeScreen) {
         const scrollY = window.scrollY;
-
         const applyParallax = (ref: React.RefObject<HTMLElement>, speed: number) => {
             if (ref.current) {
-                // Apply transform based on scrollY and speed
                 const offset = scrollY * speed;
                 ref.current.style.transform = `translateY(${offset}px)`;
-                 ref.current.style.willChange = 'transform';
+                ref.current.style.willChange = 'transform';
             }
         };
-
-        // Apply different speeds to main sections
-        applyParallax(strategyBannerRef as React.RefObject<HTMLElement>, -0.05);
-        applyParallax(controlPanelAndChartRef as React.RefObject<HTMLElement>, -0.1);
+        applyParallax(strategyBannerRef as React.RefObject<HTMLElement>, -0.03);
+        applyParallax(symbolSelectorsRef as React.RefObject<HTMLElement>, -0.05);
+        applyParallax(tradingViewWidgetRef as React.RefObject<HTMLElement>, -0.07);
+        applyParallax(controlsAndChartSectionRef as React.RefObject<HTMLElement>, -0.09);
       }
     }, [showWelcomeScreen]);
 
     useEffect(() => {
         if (!showWelcomeScreen) {
             window.addEventListener('scroll', handleMainScroll);
-            // Apply initial parallax on mount if not on welcome screen
             handleMainScroll();
         }
-
         return () => {
             window.removeEventListener('scroll', handleMainScroll);
         };
@@ -227,7 +226,6 @@ export default function BlockSmithAIPage() {
   const fetchAndSetMarketData = useCallback(async (currentSymbol: string): Promise<LiveMarketData | null> => {
     setIsLoadingMarketData(true);
     setMarketDataError(null);
-
     const result = await fetchMarketDataAction({ symbol: currentSymbol });
 
     if ('error' in result) {
@@ -258,7 +256,7 @@ export default function BlockSmithAIPage() {
   }, [symbol, fetchAndSetMarketData, showWelcomeScreen]);
 
   const handleGenerateStrategy = useCallback(async () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top when generation starts
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
     if (!isSignedUp) {
       const today = new Date().toISOString().split('T')[0];
       let currentCount = analysisCount;
@@ -282,7 +280,6 @@ export default function BlockSmithAIPage() {
     setIsLoadingStrategy(true);
     setStrategyError(null);
     setAiStrategy(null); 
-
 
     let marketDataForAIString = '{}';
     let currentDataToUse = liveMarketData;
@@ -308,11 +305,9 @@ export default function BlockSmithAIPage() {
     if (currentDataToUse) {
         const priceChangePercentVal = parseFloat(currentDataToUse.priceChangePercent);
         const formattedPriceChangePercent = `${priceChangePercentVal >= 0 ? '+' : ''}${priceChangePercentVal.toFixed(2)}%`;
-
         const baseAsset = currentDataToUse.symbol.replace('USDT', '');
         const formattedVolumeBase = `${parseFloat(currentDataToUse.volume).toLocaleString(undefined, {maximumFractionDigits: 3})} ${baseAsset}`;
         const formattedVolumeQuote = `${parseFloat(currentDataToUse.quoteVolume).toLocaleString(undefined, {maximumFractionDigits: 2})} USDT`;
-
         const lastPriceFormatted = parseFloat(currentDataToUse.lastPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: Math.max(2, (currentDataToUse.lastPrice.toString().split('.')[1]?.length || 0))});
         const highPriceFormatted = parseFloat(currentDataToUse.highPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         const lowPriceFormatted = parseFloat(currentDataToUse.lowPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -365,12 +360,12 @@ export default function BlockSmithAIPage() {
       });
     }
     setIsLoadingStrategy(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top after strategy is set or error occurs
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
   }, [symbol, interval, selectedIndicators, riskLevel, toast, liveMarketData, fetchAndSetMarketData, marketDataError, isSignedUp, analysisCount, lastAnalysisDate, updateUsageData]);
 
   const handleProceedFromWelcome = () => {
     setShowWelcomeScreen(false);
-    window.scrollTo(0, 0); // Scroll to top when proceeding from welcome
+    window.scrollTo(0, 0); 
   };
 
   const handleToggleChat = () => {
@@ -439,7 +434,7 @@ export default function BlockSmithAIPage() {
           </div>
           <main ref={mainContentRef} className="flex-grow container mx-auto px-4 py-8 flex flex-col w-full">
             
-            <div ref={strategyBannerRef} className="mb-8 w-full relative"> {/* Added relative for positioning */}
+            <div ref={strategyBannerRef} className="mb-8 w-full relative">
               <StrategyExplanationSection
                 strategy={aiStrategy}
                 liveMarketData={liveMarketData}
@@ -448,17 +443,24 @@ export default function BlockSmithAIPage() {
                 symbol={symbol}
               />
             </div>
+            
+            <div ref={symbolSelectorsRef} className="mb-6 w-full">
+              <SymbolIntervalSelectors
+                symbol={symbol}
+                onSymbolChange={setSymbol}
+                interval={interval}
+                onIntervalChange={setInterval}
+                symbols={availableSymbols}
+                isLoadingSymbols={isLoadingSymbols}
+              />
+            </div>
 
-            <div ref={controlPanelAndChartRef} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start relative"> {/* Added relative for positioning */}
-              <div className="lg:col-span-1 space-y-6 flex flex-col lg:order-1"> {/* Control Panel */}
-                <SymbolIntervalSelectors
-                  symbol={symbol}
-                  onSymbolChange={setSymbol}
-                  interval={interval}
-                  onIntervalChange={setInterval}
-                  symbols={availableSymbols}
-                  isLoadingSymbols={isLoadingSymbols}
-                />
+            <div ref={tradingViewWidgetRef} className="mb-8 w-full bg-card p-1 rounded-lg shadow-xl">
+              <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
+            </div>
+
+            <div ref={controlsAndChartSectionRef} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start relative">
+              <div className="lg:col-span-1 space-y-6 flex flex-col"> 
                 <MarketDataDisplay
                   liveMarketData={liveMarketData}
                   isLoading={isLoadingMarketData}
@@ -506,8 +508,11 @@ export default function BlockSmithAIPage() {
                 )}
               </div>
               
-              <div className="lg:col-span-2 bg-card p-1 rounded-lg shadow-xl lg:order-2"> {/* Chart */}
-                <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
+              {/* The lg:col-span-2 where the chart used to be is now effectively empty in this grid row. */}
+              {/* Or, you could adjust the grid to lg:col-span-3 for the controls if you want them to take more width */}
+              {/* For now, keeping it lg:col-span-1 to maintain its previous width and placement on the left. */}
+              <div className="lg:col-span-2">
+                {/* This space is now available. Could be used for other content or left empty. */}
               </div>
             </div>
           </main>
