@@ -82,7 +82,6 @@ export default function BlockSmithAIPage() {
   const { toast } = useToast();
 
   const appHeaderRef = useRef<HTMLDivElement>(null);
-  const controlsAndChartSectionRef = useRef<HTMLDivElement>(null); 
   const strategyBannerRef = useRef<HTMLDivElement>(null); 
   const mainContentRef = useRef<HTMLDivElement>(null);
   const liveTickerRef = useRef<HTMLDivElement>(null);
@@ -156,7 +155,7 @@ export default function BlockSmithAIPage() {
         strategyBannerRef.current, 
         symbolSelectorsRef.current,
         tradingViewWidgetRef.current,
-        controlsContainerRef.current, // Animate the new controls container
+        controlsContainerRef.current, 
       ].filter(Boolean);
 
       if (elementsToAnimate.length > 0) {
@@ -172,32 +171,6 @@ export default function BlockSmithAIPage() {
     }
   }, [showWelcomeScreen]);
 
-    const handleMainScroll = useCallback(() => {
-      if (!showWelcomeScreen) {
-        const scrollY = window.scrollY;
-        const applyParallax = (ref: React.RefObject<HTMLElement>, speed: number) => {
-            if (ref.current) {
-                const offset = scrollY * speed;
-                ref.current.style.transform = `translateY(${offset}px)`;
-                ref.current.style.willChange = 'transform';
-            }
-        };
-        applyParallax(strategyBannerRef as React.RefObject<HTMLElement>, -0.03);
-        applyParallax(symbolSelectorsRef as React.RefObject<HTMLElement>, -0.05);
-        applyParallax(tradingViewWidgetRef as React.RefObject<HTMLElement>, -0.07);
-        applyParallax(controlsContainerRef as React.RefObject<HTMLElement>, -0.09); // Parallax for new controls container
-      }
-    }, [showWelcomeScreen]);
-
-    useEffect(() => {
-        if (!showWelcomeScreen) {
-            window.addEventListener('scroll', handleMainScroll);
-            handleMainScroll();
-        }
-        return () => {
-            window.removeEventListener('scroll', handleMainScroll);
-        };
-    }, [showWelcomeScreen, handleMainScroll]);
 
   useEffect(() => {
     const loadSymbols = async () => {
@@ -425,7 +398,7 @@ export default function BlockSmithAIPage() {
       </div>
 
       {showWelcomeScreen ? (
-        <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center">
+        <main className="flex-grow container mx-auto px-4 py-2 flex flex-col items-center justify-center">
           <WelcomeScreen onProceed={handleProceedFromWelcome} />
         </main>
       ) : (
@@ -564,5 +537,7 @@ export default function BlockSmithAIPage() {
     </div>
   );
 }
+
+    
 
     
