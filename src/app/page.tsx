@@ -38,6 +38,7 @@ import type { GenerateTradingStrategyOutput, GenerateTradingStrategyInput } from
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, ShieldQuestion } from 'lucide-react';
 import { gsap } from 'gsap';
+import { cn } from "@/lib/utils";
 
 const DEFAULT_SYMBOLS: FormattedSymbol[] = [
   { value: "BTCUSDT", label: "BTC/USDT" },
@@ -530,14 +531,13 @@ export default function BlockSmithAIPage() {
           )}
         </>
       )}
-      <footer className="text-center py-4 px-6 mt-auto text-sm text-muted-foreground border-t border-border/50">
+      <footer className={cn(
+        "text-center py-4 px-6 mt-auto text-sm text-muted-foreground border-t border-border/50",
+        !showWelcomeScreen && "mb-24" // Add margin-bottom only when chat icon is visible
+      )}>
         {currentYear ? `© ${currentYear} ` : ''}<strong className="text-primary">BlockSmithAI</strong> (because someone has to build this <strong className="text-accent">awesome</strong> stuff).
         Not financial advice, <strong className="text-tertiary">obviously</strong>. Do Your Own Research, <strong className="text-orange-400">genius</strong>! 🧐
       </footer>
     </div>
   );
 }
-
-    
-
-    
