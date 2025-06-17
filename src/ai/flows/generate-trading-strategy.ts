@@ -146,6 +146,7 @@ const generateTradingStrategyPrompt = ai.definePrompt({
 
   12. **Pattern Analysis (Object of HTML Strings for Sub-Tabs):**
       **Output this as a JSON object named 'patternAnalysis' where each key corresponds to a specific analytical aspect (sub-tab). Each value must be a self-contained HTML string, structured as detailed below. For text emphasis within these HTML strings, use <strong class="text-accent">important term</strong>, <strong class="text-primary">another important term</strong>, <strong class="text-green-400">bullish term</strong>, <strong class="text-red-400">bearish term</strong>.**
+      **Crucially, for Candlestick and Chart Formation analysis, you must consistently frame your output as educational guidance for the user. Explain *what they should look for* on their TradingView chart and how to interpret *potential* patterns if *they* observe them, especially in conjunction with the selected indicators and the provided market snapshot. You are not identifying these patterns yourself from a live feed; you are educating the user on self-identification unless historical data is successfully fetched by the tool.**
 
       The \\\`patternAnalysis\\\` object MUST have the following keys, each containing an HTML string:
 
@@ -179,7 +180,7 @@ const generateTradingStrategyPrompt = ai.definePrompt({
 
         <h2 class="explanation-title">Technical Indicator Breakdown</h2>
         <div class="explanation-section-content">
-          <p>[Provide an introductory sentence for this section if needed. Then, for EACH indicator provided in the input ('{{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}'), create a sub-section. Make this part particularly witty and sarcastic, like you're reluctantly sharing profound secrets.]</p>
+          <p>[Provide an introductory sentence for this section if needed. Following this paragraph, and still within this 'explanation-section-content' div, iterate through EACH indicator ('{{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}') to create its sub-section consisting of an 'indicator-title' (h3) and an 'indicator-detail' (div). Make this part particularly witty and sarcastic, like you're reluctantly sharing profound secrets.]</p>
           {{#each indicators}}
           <h3 class="indicator-title"><strong class="text-tertiary">{{{this}}}</strong> Analysis</h3>
           <div class="indicator-detail">
