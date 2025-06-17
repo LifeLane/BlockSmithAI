@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
+import type { GenerateTradingStrategyOutput, PatternAnalysisOutput } from '@/ai/flows/generate-trading-strategy';
 import type { LiveMarketData } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -31,7 +31,12 @@ import {
   Glasses,
   Loader2,
   Copy,
-  CandlestickChart
+  CandlestickChart,
+  GalleryVerticalEnd,
+  GitCommitHorizontal,
+  Layers,
+  View,
+  BarChartHorizontalBig
 } from 'lucide-react';
 
 interface StrategyExplanationSectionProps {
@@ -97,6 +102,16 @@ ${strategy.dosAndDonts?.replace(/<[^>]*>/g, '\\n').replace(/\\n\\n+/g, '\\n').tr
 ---
 Disclaimer: ${strategy.disclaimer}
     `.trim();
+
+    // Add pattern analysis details to clipboard if available
+    if (strategy.patternAnalysis && typeof strategy.patternAnalysis === 'object') {
+      textToCopy += "\n---\nPattern Intel:\n";
+      for (const key in strategy.patternAnalysis) {
+        const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+        textToCopy += `${title}:\n${(strategy.patternAnalysis as any)[key]?.replace(/<[^>]*>/g, '\\n').replace(/\\n\\n+/g, '\\n').trim()}\n\n`;
+      }
+    }
+
 
     navigator.clipboard.writeText(textToCopy)
       .then(() => {
@@ -212,8 +227,13 @@ Disclaimer: ${strategy.disclaimer}
       break;
   }
 
-  const commonTriggerClasses = "text-xs sm:text-sm py-2.5 px-4 data-[state=active]:shadow-lg hover:shadow-md transition-all duration-200 ease-in-out rounded-md flex items-center justify-center";
-  const textTabContentClasses = "p-2 sm:p-4 bg-background/30 rounded-lg border border-border/60 shadow-inner min-h-[200px]";
+  const mainTabTriggerClasses = "text-xs sm:text-sm py-2.5 px-4 data-[state=active]:shadow-lg hover:shadow-md transition-all duration-200 ease-in-out rounded-md flex items-center justify-center";
+  const textTabContentClasses = "p-1 sm:p-2 bg-background/30 rounded-lg border border-border/60 shadow-inner min-h-[200px]";
+  
+  const nestedPatternTabTriggerClasses = "text-xs px-2 py-1.5 data-[state=active]:bg-primary/80 data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/60 hover:text-primary-foreground rounded-sm flex items-center justify-center flex-grow text-center whitespace-nowrap";
+  const nestedPatternTabContentClasses = "p-2 sm:p-3 bg-background/10 rounded-md border border-border/30 shadow-inner min-h-[150px] mt-2";
+
+  const patternAnalysisData = strategy.patternAnalysis as PatternAnalysisOutput;
 
 
   return (
@@ -227,12 +247,12 @@ Disclaimer: ${strategy.disclaimer}
       <CardContent className="space-y-6 px-2 sm:px-4 pb-5">
         <Tabs defaultValue="summary" className="w-full">
           <TabsList className="flex flex-wrap justify-center gap-2 bg-card/70 border border-border/80 mb-6 p-2 h-auto rounded-lg">
-            <TabsTrigger value="summary" className={`${commonTriggerClasses} data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-primary/10 hover:text-primary`}><Activity className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Summary</TabsTrigger>
-            <TabsTrigger value="patterns" className={`${commonTriggerClasses} data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-500 hover:bg-orange-500/10 hover:text-orange-500`}><CandlestickChart className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Pattern Intel</TabsTrigger>
-            <TabsTrigger value="findings" className={`${commonTriggerClasses} data-[state=active]:bg-accent/20 data-[state=active]:text-accent hover:bg-accent/10 hover:text-accent`}><FileText className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Findings</TabsTrigger>
-            <TabsTrigger value="suggestions" className={`${commonTriggerClasses} data-[state=active]:bg-tertiary/20 data-[state=active]:text-tertiary hover:bg-tertiary/10 hover:text-tertiary`}><Goal className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Suggestions</TabsTrigger>
-            <TabsTrigger value="dos-donts" className={`${commonTriggerClasses} data-[state=active]:bg-yellow-500/20 data-[state=active]:text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-500`}><ClipboardList className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Do's/Don'ts</TabsTrigger>
-            <TabsTrigger value="deep-dive" className={`${commonTriggerClasses} data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-500 hover:bg-purple-500/10 hover:text-purple-500`}><Glasses className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Deep Dive</TabsTrigger>
+            <TabsTrigger value="summary" className={`${mainTabTriggerClasses} data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-primary/10 hover:text-primary`}><Activity className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Summary</TabsTrigger>
+            <TabsTrigger value="patterns" className={`${mainTabTriggerClasses} data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-500 hover:bg-orange-500/10 hover:text-orange-500`}><CandlestickChart className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Pattern Intel</TabsTrigger>
+            <TabsTrigger value="findings" className={`${mainTabTriggerClasses} data-[state=active]:bg-accent/20 data-[state=active]:text-accent hover:bg-accent/10 hover:text-accent`}><FileText className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Findings</TabsTrigger>
+            <TabsTrigger value="suggestions" className={`${mainTabTriggerClasses} data-[state=active]:bg-tertiary/20 data-[state=active]:text-tertiary hover:bg-tertiary/10 hover:text-tertiary`}><Goal className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Suggestions</TabsTrigger>
+            <TabsTrigger value="dos-donts" className={`${mainTabTriggerClasses} data-[state=active]:bg-yellow-500/20 data-[state=active]:text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-500`}><ClipboardList className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Do's/Don'ts</TabsTrigger>
+            <TabsTrigger value="deep-dive" className={`${mainTabTriggerClasses} data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-500 hover:bg-purple-500/10 hover:text-purple-500`}><Glasses className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Deep Dive</TabsTrigger>
           </TabsList>
 
           <TabsContent value="summary" className="p-1">
@@ -300,7 +320,51 @@ Disclaimer: ${strategy.disclaimer}
           </TabsContent>
 
           <TabsContent value="patterns" className={textTabContentClasses}>
-             <div dangerouslySetInnerHTML={{ __html: strategy.patternAnalysis || "<p class='text-muted-foreground p-4 text-center'>No specific pattern analysis provided by AI for this strategy.</p>" }} />
+            {patternAnalysisData && typeof patternAnalysisData === 'object' ? (
+              <Tabs defaultValue="recentCandles" className="w-full nested-pattern-tabs">
+                <TabsList className="flex flex-wrap justify-center gap-1 p-1.5 bg-background/50 border border-border/50 rounded-lg mb-3 h-auto">
+                  <TabsTrigger value="recentCandles" className={nestedPatternTabTriggerClasses}>
+                    <CandlestickChart size={14} className="mr-1 shrink-0"/> Recent Candles
+                  </TabsTrigger>
+                  <TabsTrigger value="heikinAshi" className={nestedPatternTabTriggerClasses}>
+                    <BarChartHorizontalBig size={14} className="mr-1 shrink-0"/> Heikin-Ashi
+                  </TabsTrigger>
+                  <TabsTrigger value="chartFormations" className={nestedPatternTabTriggerClasses}>
+                    <GalleryVerticalEnd size={14} className="mr-1 shrink-0"/> Formations
+                  </TabsTrigger>
+                  <TabsTrigger value="breakoutsPullbacks" className={nestedPatternTabTriggerClasses}>
+                    <GitCommitHorizontal size={14} className="mr-1 shrink-0"/> Breakouts
+                  </TabsTrigger>
+                  <TabsTrigger value="supportResistance" className={nestedPatternTabTriggerClasses}>
+                    <Layers size={14} className="mr-1 shrink-0"/> S/R Zones
+                  </TabsTrigger>
+                  <TabsTrigger value="overallOutlook" className={nestedPatternTabTriggerClasses}>
+                    <View size={14} className="mr-1 shrink-0"/> Outlook
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="recentCandles" className={nestedPatternTabContentClasses}>
+                  <div dangerouslySetInnerHTML={{ __html: patternAnalysisData.recentCandles || "<p class='text-muted-foreground text-sm p-3 text-center'>Recent candle analysis unavailable.</p>" }} />
+                </TabsContent>
+                <TabsContent value="heikinAshi" className={nestedPatternTabContentClasses}>
+                  <div dangerouslySetInnerHTML={{ __html: patternAnalysisData.heikinAshi || "<p class='text-muted-foreground text-sm p-3 text-center'>Heikin-Ashi analysis unavailable.</p>" }} />
+                </TabsContent>
+                <TabsContent value="chartFormations" className={nestedPatternTabContentClasses}>
+                  <div dangerouslySetInnerHTML={{ __html: patternAnalysisData.chartFormations || "<p class='text-muted-foreground text-sm p-3 text-center'>Chart formation analysis unavailable.</p>" }} />
+                </TabsContent>
+                <TabsContent value="breakoutsPullbacks" className={nestedPatternTabContentClasses}>
+                  <div dangerouslySetInnerHTML={{ __html: patternAnalysisData.breakoutsPullbacks || "<p class='text-muted-foreground text-sm p-3 text-center'>Breakout/Pullback analysis unavailable.</p>" }} />
+                </TabsContent>
+                <TabsContent value="supportResistance" className={nestedPatternTabContentClasses}>
+                  <div dangerouslySetInnerHTML={{ __html: patternAnalysisData.supportResistance || "<p class='text-muted-foreground text-sm p-3 text-center'>Support/Resistance analysis unavailable.</p>" }} />
+                </TabsContent>
+                <TabsContent value="overallOutlook" className={nestedPatternTabContentClasses}>
+                  <div dangerouslySetInnerHTML={{ __html: patternAnalysisData.overallOutlook || "<p class='text-muted-foreground text-sm p-3 text-center'>Overall pattern outlook unavailable.</p>" }} />
+                </TabsContent>
+              </Tabs>
+            ) : (
+              <p className='text-muted-foreground p-4 text-center text-sm'>Pattern analysis data is not in the expected format or is unavailable.</p>
+            )}
           </TabsContent>
 
           <TabsContent value="findings" className={textTabContentClasses}>
