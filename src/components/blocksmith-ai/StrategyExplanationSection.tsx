@@ -63,24 +63,6 @@ const StatCard: FunctionComponent<StatCardProps> = ({ title, value, icon, classN
   </div>
 );
 
-const MarkdownContentDisplay: FunctionComponent<{ content: string | undefined; fallbackText: string }> = ({ content, fallbackText }) => (
-  <article className="prose prose-sm sm:prose-base prose-invert max-w-none 
-                    text-foreground leading-relaxed 
-                    prose-headings:text-primary prose-headings:font-semibold prose-headings:mb-4 prose-headings:mt-6
-                    prose-h2:text-xl prose-h2:sm:text-2xl prose-h3:text-lg prose-h3:sm:text-xl 
-                    prose-p:text-foreground/95 prose-p:mb-3 prose-p:leading-relaxed
-                    prose-strong:text-accent prose-strong:font-bold
-                    prose-ul:list-disc prose-ul:ml-6 prose-ul:space-y-2 prose-ul:text-foreground/90
-                    prose-ol:list-decimal prose-ol:ml-6 prose-ol:space-y-2 prose-ol:text-foreground/90
-                    prose-li:text-foreground/90 prose-li:marker:text-primary prose-li:my-1.5
-                    prose-a:text-tertiary hover:prose-a:text-accent/80 prose-a:font-medium prose-a:underline
-                    prose-blockquote:border-l-4 prose-blockquote:border-tertiary prose-blockquote:bg-muted/30 prose-blockquote:text-muted-foreground prose-blockquote:italic prose-blockquote:pl-4 prose-blockquote:py-2 prose-blockquote:my-4 rounded-r-md
-                    prose-code:text-purple-400 prose-code:font-code prose-code:bg-muted/50 prose-code:px-1.5 prose-code:py-1 prose-code:rounded-md prose-code:text-sm
-                    ">
-    {content ? <div dangerouslySetInnerHTML={{ __html: content.replace(/\n\s*\n/g, '<br /><br />').replace(/\n/g, '<br />') }} /> : <p className="text-muted-foreground">{fallbackText}</p>}
-  </article>
-);
-
 
 const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionProps> = ({
   strategy,
@@ -93,7 +75,8 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
 
   const handleCopyToClipboard = () => {
     if (!strategy) return;
-    const strategyText = `
+    // Basic text extraction for copying. Could be improved to strip HTML if needed.
+    let textToCopy = `
 BlockSmithAI Strategy for ${symbol}:
 Signal: ${strategy.signal}
 Entry Zone: ${strategy.entry_zone}
@@ -102,10 +85,20 @@ Take Profit: ${strategy.take_profit}
 Confidence: ${strategy.confidence}
 Risk Rating: ${strategy.risk_rating}
 Sentiment: ${strategy.sentiment}
+---
+Key Findings:
+${strategy.keyFindings?.replace(/<[^>]*>/g, '\\n').replace(/\\n\\n+/g, '\\n').trim()}
+---
+Key Suggestions:
+${strategy.keySuggestions?.replace(/<[^>]*>/g, '\\n').replace(/\\n\\n+/g, '\\n').trim()}
+---
+Do's and Don'ts:
+${strategy.dosAndDonts?.replace(/<[^>]*>/g, '\\n').replace(/\\n\\n+/g, '\\n').trim()}
+---
 Disclaimer: ${strategy.disclaimer}
     `.trim();
 
-    navigator.clipboard.writeText(strategyText)
+    navigator.clipboard.writeText(textToCopy)
       .then(() => {
         toast({
           title: <span className="text-accent">Strategy Copied!</span>,
@@ -220,7 +213,7 @@ Disclaimer: ${strategy.disclaimer}
   }
 
   const commonTriggerClasses = "text-xs sm:text-sm py-2.5 px-4 data-[state=active]:shadow-lg hover:shadow-md transition-all duration-200 ease-in-out rounded-md flex items-center justify-center";
-  const textTabContentClasses = "p-2 sm:p-4 bg-background/30 rounded-lg border border-border/60 shadow-inner";
+  const textTabContentClasses = "p-2 sm:p-4 bg-background/30 rounded-lg border border-border/60 shadow-inner min-h-[200px]";
 
 
   return (
@@ -307,23 +300,23 @@ Disclaimer: ${strategy.disclaimer}
           </TabsContent>
 
           <TabsContent value="patterns" className={textTabContentClasses}>
-             <div dangerouslySetInnerHTML={{ __html: strategy.patternAnalysis || "<p class='text-muted-foreground'>No specific pattern analysis provided by AI.</p>" }} />
+             <div dangerouslySetInnerHTML={{ __html: strategy.patternAnalysis || "<p class='text-muted-foreground p-4 text-center'>No specific pattern analysis provided by AI for this strategy.</p>" }} />
           </TabsContent>
 
           <TabsContent value="findings" className={textTabContentClasses}>
-             <MarkdownContentDisplay content={strategy.keyFindings} fallbackText="No specific key findings provided by AI." />
+             <div dangerouslySetInnerHTML={{ __html: strategy.keyFindings || "<p class='text-muted-foreground p-4 text-center'>No specific key findings provided by AI for this strategy.</p>" }} />
           </TabsContent>
 
           <TabsContent value="suggestions" className={textTabContentClasses}>
-             <MarkdownContentDisplay content={strategy.keySuggestions} fallbackText="No specific suggestions provided by AI." />
+             <div dangerouslySetInnerHTML={{ __html: strategy.keySuggestions || "<p class='text-muted-foreground p-4 text-center'>No specific suggestions provided by AI for this strategy.</p>" }} />
           </TabsContent>
 
           <TabsContent value="dos-donts" className={textTabContentClasses}>
-             <MarkdownContentDisplay content={strategy.dosAndDonts} fallbackText="No specific Do's and Don'ts provided by AI." />
+             <div dangerouslySetInnerHTML={{ __html: strategy.dosAndDonts || "<p class='text-muted-foreground p-4 text-center'>No specific Do's and Don'ts provided by AI for this strategy.</p>" }} />
           </TabsContent>
 
           <TabsContent value="deep-dive" className={textTabContentClasses}>
-            <MarkdownContentDisplay content={strategy.explanation} fallbackText="No detailed explanation provided by AI." />
+            <div dangerouslySetInnerHTML={{ __html: strategy.explanation || "<p class='text-muted-foreground p-4 text-center'>No detailed explanation provided by AI for this strategy.</p>" }} />
           </TabsContent>
         </Tabs>
 

@@ -100,21 +100,68 @@ body {
   .sr-list { @apply space-y-1.5 mt-2; }
   .sr-item { @apply text-sm text-foreground/80; }
 
-  /* For Key Findings, Suggestions, Do/Donts, Explanation - if they become HTML too */
-  /* .findings-list, .suggestions-list { @apply space-y-3 mb-4; } */
-  /* .finding-item p, .suggestion-item p { @apply text-foreground/90; } */
+  /* Styles for Key Findings, Suggestions, Do/Donts, Explanation - if they become HTML too */
+  .findings-container .findings-title,
+  .suggestions-container .suggestions-title,
+  .dos-donts-container .dos-donts-title {
+    @apply text-lg font-semibold text-primary mb-2 border-b border-primary/20 pb-1;
+  }
 
-  /* .dos-donts-container ul { @apply list-none p-0 space-y-2; } */
-  /* .do-item, .dont-item { @apply flex items-start p-2 rounded-md; } */
-  /* .do-item { @apply bg-green-900/30 border border-green-700/50; } */
-  /* .dont-item { @apply bg-red-900/30 border border-red-700/50; } */
-  /* .do-bullet { @apply text-green-400 font-bold mr-2 text-lg leading-none; } */
-  /* .dont-bullet { @apply text-red-400 font-bold mr-2 text-lg leading-none; } */
+  .findings-container .findings-list,
+  .suggestions-container .suggestions-list { /* Applied to <ul> AI might generate */
+    @apply list-disc list-inside pl-1 space-y-1.5 text-sm text-foreground/90;
+  }
+  .findings-container .findings-list li::marker,
+  .suggestions-container .suggestions-list li::marker {
+    @apply text-primary;
+  }
+  .findings-container .finding-item p, /* if AI uses paragraphs */
+  .suggestions-container .suggestion-item p {
+    @apply text-sm text-foreground/90 mb-1.5;
+  }
 
-  /* .explanation-content h2 { @apply text-2xl font-bold text-primary mb-4 mt-6 border-b-2 border-primary/40 pb-2; } */
-  /* .explanation-content h3 { @apply text-xl font-semibold text-accent mb-3 mt-5; } */
-  /* .explanation-content p { @apply text-foreground/90 mb-4 leading-relaxed; } */
-  /* .explanation-content ul { @apply list-disc list-inside pl-4 mb-4 space-y-1 text-foreground/85; } */
-  /* .explanation-content li::marker { @apply text-primary; } */
-  /* .explanation-content strong { @apply text-accent font-semibold; } */
+  .dos-donts-container .dos-donts-list { @apply list-none p-0 space-y-2; } /* Applied to <ul> */
+  .dos-donts-container .do-item, .dos-donts-container .dont-item { /* Applied to <li> */
+    @apply flex items-start p-2.5 rounded-md border text-sm;
+  }
+  .dos-donts-container .do-item { @apply bg-green-900/30 border-green-700/50 text-green-300; }
+  .dos-donts-container .dont-item { @apply bg-red-900/30 border-red-700/50 text-red-300; }
+  /* AI will use <strong class="text-green-400">Do:</strong> or <strong class="text-red-400">Don't:</strong> */
+  .dos-donts-container .do-item strong, .dos-donts-container .dont-item strong {
+     @apply font-bold mr-1.5 shrink-0;
+  }
+
+
+  .explanation-container .explanation-title { @apply text-xl font-bold text-primary mb-3 mt-5 border-b border-primary/30 pb-1.5; }
+  .explanation-container .indicator-title { @apply text-lg font-semibold text-accent mb-2 mt-4; }
+  .explanation-container .explanation-section-content p,
+  .explanation-container .indicator-detail p {
+    @apply text-sm text-foreground/90 mb-3 leading-relaxed;
+  }
+  .explanation-container .explanation-section-content ul,
+  .explanation-container .indicator-detail ul {
+    @apply list-disc list-inside pl-4 mb-3 space-y-1 text-sm text-foreground/85;
+  }
+  .explanation-container .explanation-section-content li::marker,
+  .explanation-container .indicator-detail li::marker {
+    @apply text-primary;
+  }
+
+  /*
+    The following utility-like classes were removed as they are redundant
+    with Tailwind's built-in utilities generated from the theme and were
+    causing a circular dependency error.
+    The AI is instructed to use direct Tailwind classes like "text-primary",
+    "text-accent", "text-green-400", etc., in the HTML it generates.
+  */
+  /*
+  .text-primary { @apply text-primary; }
+  .text-accent { @apply text-accent; }
+  .text-tertiary { @apply text-tertiary; }
+  .text-green-400 { @apply text-green-400; }
+  .text-red-400 { @apply text-red-400; }
+  .text-orange-400 { @apply text-orange-400; }
+  .text-purple-400 { @apply text-purple-400; }
+  .text-foreground { @apply text-foreground; }
+  */
 }

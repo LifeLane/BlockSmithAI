@@ -31,13 +31,13 @@ const GenerateTradingStrategyOutputSchema = z.object({
   gpt_confidence_score: z.string().describe('The GPT confidence score for the strategy (e.g., 0-100%).'),
   sentiment: z.string().describe('A brief sentiment analysis of the market conditions (e.g., Neutral, Bullish, Bearish).'),
   
-  keyFindings: z.string().describe('A concise summary of the most important observations and analytical insights from the market and indicator data, presented as a bulleted list or short, clear paragraphs using Markdown. This should highlight the core reasons for the strategy beyond just the indicator signals. Be insightful and go beyond the obvious. Prefer bulleted lists for clarity.'),
-  keySuggestions: z.string().describe('Actionable, hypothetical suggestions or points of focus derived from the key findings, presented as a bulleted list or short, clear paragraphs using Markdown. For example, "Consider waiting for a confirmation candle on the 4h chart before entry," or "Be mindful of upcoming macroeconomic news events that could impact volatility." Make these practical and thought-provoking. Prefer bulleted lists for clarity.'),
-  dosAndDonts: z.string().describe('A list of general "Do\'s" and "Don\'ts" related to the current market conditions or the type of strategy proposed, presented using Markdown. Format as a bulleted list with clear "**Do:**" and "**Don\'t:**" prefixes for each point. For example, "- **Do:** Strictly adhere to your stop-loss. - **Don\'t:** Add to a losing position." Keep these concise and impactful. Strictly adhere to the prefix formatting.'),
+  keyFindings: z.string().describe('HTML output: A concise summary of the most important observations and analytical insights from the market and indicator data. Structure with a container div, a title, and an unordered list or paragraphs for findings. Use text-color classes for emphasis.'),
+  keySuggestions: z.string().describe('HTML output: Actionable, hypothetical suggestions or points of focus derived from the key findings. Structure similarly to Key Findings. Use text-color classes for emphasis.'),
+  dosAndDonts: z.string().describe('HTML output: A list of general "Do\'s" and "Don\'ts" related to the current market conditions or strategy. Structure with specific classes for "do-item" and "dont-item".'),
   
   patternAnalysis: z.string().describe('Detailed analysis of potential candlestick (Standard Japanese & Heikin-Ashi), chart patterns, breakouts/pullbacks, and S/R zones, formatted as an HTML string. Since direct chart access is unavailable, this section should educate the user on what to look for. Structure with specific HTML elements and classes for styling. Discuss implications and (hypothetical) predictions. Be witty and insightful.'),
 
-  explanation: z.string().describe('A detailed textual explanation of the trading strategy. This section is for a deep dive into the technicals. It MUST use Markdown for structure: Start with "## Market Synopsis", then "## Overall Rationale & Signal Basis". Then, for EACH indicator provided in the input, create a sub-section like "### [Indicator Name] Analysis" (e.g., "### RSI Analysis"). Under each indicator-specific heading, provide a DETAILED, WITTY, and SARCASTIC analysis of how that indicator influenced the strategy. Explain its signals, divergences, or confluences with other indicators. Use bullet points if it helps clarity for a specific indicator. Finally, include a "## Risk Considerations & Management" section. The tone for the indicator breakdown should be particularly engaging, knowledgeable, and slightly smug, as if you are a brilliant but eccentric market wizard revealing profound secrets with a smirk.'),
+  explanation: z.string().describe('HTML output: A detailed textual explanation of the trading strategy. Use specific HTML headings (h2, h3) and container classes for structure. Explain market synopsis, rationale, indicator breakdowns, and risk management. Use text-color classes for emphasis within paragraphs and lists.'),
   
   disclaimer: z.string().describe('A sarcastic GPT disclaimer.'), 
 });
@@ -64,7 +64,7 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   Selected Indicators: {{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
   User's Risk Level: {{{riskLevel}}}
 
-  **Output Requirements (Provide ALL of these fields based on your analysis):**
+  **Output Requirements (Provide ALL of these fields based on your analysis, ensuring HTML fields are well-formed HTML strings with the specified classes and structures):**
 
   1.  **Signal:** (BUY, SELL, or HOLD)
   2.  **Entry Zone:** (Specific price or range)
@@ -75,27 +75,50 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   7.  **GPT Confidence Score:** (A numerical percentage of your confidence, 0-100%)
   8.  **Sentiment:** (Brief market sentiment: Neutral, Bullish, Bearish, etc.)
 
-  9.  **Key Findings (Markdown - Prefer Bulleted Lists):**
-      *   Summarize the CRITICAL observations from market data and indicators in a bulleted list.
-      *   Each bullet point should be concise and insightful, going beyond just stating indicator values.
-      *   Explain *why* these findings matter for the proposed strategy.
-      *   Example: 
-          *   "- BTC dominance showing weakness, potentially favoring altcoin rotation."
-          *   "- Volume profile indicates strong support near the proposed entry zone."
+  9.  **Key Findings (HTML Output with Specific Structure):**
+      Output this entire section as a single, well-formed HTML string.
+      Use a structure like:
+      <div class="findings-container">
+        <h4 class="findings-title">Key Analytical Findings</h4>
+        <ul class="findings-list">
+          <li class="finding-item">Each finding as a list item. You can use <strong class="text-accent">accented text</strong> for emphasis. Explain *why* these findings matter for the proposed strategy. Be concise but insightful. Example: <strong class="text-primary">BTC dominance showing weakness</strong>, potentially favoring altcoin rotation.</li>
+          <li class="finding-item">Volume profile indicates <strong class="text-green-400">strong support</strong> near the proposed entry zone.</li>
+        </ul>
+      </div>
+      Alternatively, if a list is not suitable for a particular set of findings, you can use paragraphs within the 'findings-container' div, ensuring each paragraph also has the 'finding-item' class:
+      <div class="findings-container">
+        <h4 class="findings-title">Key Analytical Findings</h4>
+        <p class="finding-item"><strong class="text-accent">Crucial Point:</strong> Finding text here, perhaps detailing a complex relationship that doesn't fit a bullet point well.</p>
+      </div>
+      Ensure the HTML is well-formed. Prefer bulleted lists for clarity.
 
-  10. **Key Suggestions (Markdown - Prefer Bulleted Lists):**
-      *   Provide actionable, HYPOTHETICAL advice based on findings as a bulleted list.
-      *   Each suggestion should be practical and thought-provoking. What should the user consider or watch out for?
-      *   Example: 
-          *   "- Consider waiting for a bullish engulfing candle on the current interval for entry confirmation."
-          *   "- Monitor funding rates; extreme negative rates might signal a short squeeze."
+  10. **Key Suggestions (HTML Output with Specific Structure):**
+      Output this entire section as a single, well-formed HTML string.
+      Use a structure like:
+      <div class="suggestions-container">
+        <h4 class="suggestions-title">Strategic Considerations</h4>
+        <ul class="suggestions-list">
+          <li class="suggestion-item">Each suggestion as a list item. You can use <strong class="text-tertiary">tertiary colored text</strong> for important terms. Make these practical and thought-provoking. Example: Consider waiting for a <strong class="text-green-400">bullish engulfing candle</strong> on the current interval for entry confirmation.</li>
+          <li class="suggestion-item">Monitor <strong class="text-orange-400">funding rates</strong>; extreme negative rates might signal a short squeeze.</li>
+        </ul>
+      </div>
+      Alternatively, use paragraphs like in Key Findings if more appropriate, using 'suggestion-item' class for paragraphs.
+      Ensure the HTML is well-formed. Prefer bulleted lists.
 
-  11. **Do's and Don'ts (Markdown List with Prefixes):**
-      *   Provide general best practices or warnings for this type of trade/market conditions.
-      *   STRICTLY format each item as a bullet point starting with "**Do:**" or "**Don't:**".
-      *   Example: 
-          *   "- **Do:** Respect your pre-defined stop-loss."
-          *   "- **Don't:** FOMO into the trade if the entry is missed by a large margin."
+  11. **Do's and Don'ts (HTML Output with Specific Structure):**
+      Output this entire section as a single, well-formed HTML string.
+      Use the following structure EXACTLY:
+      <div class="dos-donts-container">
+        <h4 class="dos-donts-title">Operational Guidelines</h4>
+        <ul class="dos-donts-list">
+          <li class="do-item"><strong class="text-green-400">Do:</strong> Respect your pre-defined stop-loss.</li>
+          <li class="dont-item"><strong class="text-red-400">Don't:</strong> FOMO into the trade if the entry is missed by a large margin.</li>
+          <li class="do-item"><strong class="text-green-400">Do:</strong> Another do point...</li>
+          <li class="dont-item"><strong class="text-red-400">Don't:</strong> Another don't point...</li>
+        </ul>
+      </div>
+      Ensure each item is in its own <li> with the appropriate class ('do-item' or 'dont-item') and the prefix bolded with its respective color class.
+      Provide general best practices or warnings for this type of trade/market conditions.
 
   12. **Pattern Analysis (HTML Output with Specific Structure):**
       Acknowledge you cannot directly see the live chart. Your analysis here should be *inferential and educational*, guiding the user on what to look for. Base your discussion on common occurrences for {{{symbol}}} on the {{{interval}}} timeframe, how the provided indicators ({{{indicators}}}) might influence pattern formation/confirmation, and the current market data ({{{marketData}}}). Be witty and insightful.
@@ -104,7 +127,7 @@ const generateTradingStrategyPrompt = ai.definePrompt({
       <div class="pattern-analysis-container">
         <div class="pattern-category">
           <h3 class="pattern-title">Standard Candlestick Observations (Japanese)</h3>
-          <p class="pattern-text">[Acknowledge you cannot see the live chart. Discuss *what kind* of Japanese candlestick patterns (e.g., Doji, Hammer, Engulfing, Pin Bars) a user *should look for* on the {{{interval}}} chart for {{{symbol}}} that would either confirm or contradict the signals from the selected indicators ({{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}). Explain their general implications in such a context. E.g., "Given an RSI indicating overbought conditions, one might watch for bearish reversal patterns like a <strong class='text-accent'>Shooting Star</strong> or <strong class='text-accent'>Bearish Engulfing</strong> on the {{{interval}}} chart for confirmation before considering a short. These patterns would suggest selling pressure overcoming buying interest."]</p>
+          <p class="pattern-text">[Acknowledge you cannot see the live chart. Discuss *what kind* of Japanese candlestick patterns (e.g., Doji, Hammer, Engulfing, Pin Bars) a user *should look for* on the {{{interval}}} chart for {{{symbol}}} that would either confirm or contradict the signals from the selected indicators ({{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}). Explain their general implications in such a context. E.g., "Given an RSI indicating overbought conditions, one might watch for bearish reversal patterns like a <strong class='text-red-400'>Shooting Star</strong> or <strong class='text-red-400'>Bearish Engulfing</strong> on the {{{interval}}} chart for confirmation before considering a short. These patterns would suggest selling pressure overcoming buying interest."]</p>
         </div>
         <div class="pattern-category">
           <h3 class="pattern-title">Heikin-Ashi Candlestick Analysis</h3>
@@ -137,27 +160,38 @@ const generateTradingStrategyPrompt = ai.definePrompt({
         </div>
       </div>
 
-  13. **Explanation (Detailed Textual Analysis with Specific Markdown Structure):**
-      This is your main narrative. Be insightful, engaging, and use your signature wit.
+  13. **Explanation (HTML Output with Specific Structure):**
+      Output this entire section as a single, well-formed HTML string. This is your main narrative. Be insightful, engaging, and use your signature wit.
+      **IMPORTANT: Use the following HTML structure EXACTLY for headings and general organization. You can use <p>, <ul>, <li> and <strong class="text-somecolor"> (e.g., text-primary, text-accent, text-tertiary, text-green-400, text-red-400, text-orange-400, text-purple-400) for emphasis within the content of each section.**
+      <div class="explanation-container">
+        <h2 class="explanation-title">Market Synopsis</h2>
+        <div class="explanation-section-content">
+          <p>[Your detailed market synopsis here using HTML paragraphs. What's the broader context? Any major news, trends, or narratives affecting {{{symbol}}}? Use <strong class="text-primary">primary color text</strong> for key terms like the symbol name or major market events.]</p>
+          <p>[Continue with more paragraphs as needed. You can also include an unordered list like this: <ul class="list-disc list-inside pl-4 text-foreground/85"><li>Key point 1</li><li>Key point 2</li></ul> if it helps structure.]</p>
+        </div>
 
-      **IMPORTANT: Use the following Markdown heading structure EXACTLY:**
+        <h2 class="explanation-title">Overall Rationale & Signal Basis</h2>
+        <div class="explanation-section-content">
+          <p>[Explain the core reasoning behind your BUY/SELL/HOLD signal using HTML paragraphs. Integrate the market data and overall sentiment. Why this signal *now*? Use <strong class="text-accent">accent color text</strong> for crucial points or the core signal justification.]</p>
+        </div>
 
-      ## Market Synopsis
-      [Your detailed market synopsis here. What's the broader context? Any major news, trends, or narratives affecting {{{symbol}}}?]
+        <h2 class="explanation-title">Technical Indicator Breakdown</h2>
+        <div class="explanation-section-content">
+          <p>[Provide an introductory sentence for this section if needed. Then, for EACH indicator provided in the input ('{{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}'), create a sub-section. Make this part particularly witty and sarcastic, like you're reluctantly sharing profound secrets.]</p>
+          {{#each indicators}}
+          <h3 class="indicator-title"><strong class="text-tertiary">{{{this}}}</strong> Analysis</h3>
+          <div class="indicator-detail">
+            <p>[Ah, the venerable {{{this}}}. Let me tell you what this *actually* means, unlike those amateurs... Provide a DETAILED, SARCASTIC, and WITTY analysis using HTML paragraphs and/or unordered lists (<ul><li>...</li></ul>) of how the '{{{this}}}' indicator influenced your strategy. Discuss its readings, any divergences, confluences with other indicators, and how it specifically contributed to the entry, stop loss, or take profit. Don't just state values; interpret them with your unique flair. Use <strong class="text-purple-400">purple text</strong> for extremely insightful (or sarcastic) comments regarding this indicator. For example: "The RSI is currently at <strong class="text-orange-400">[value]</strong>, which, for the unenlightened, means it's <strong class="text-red-400">screaming overbought</strong>. Of course, a genius like me sees the <strong class="text-green-400">hidden bullish divergence</strong>..."]</p>
+            <p>[More details for {{{this}}} if needed...]</p>
+          </div>
+          {{/each}}
+        </div>
 
-      ## Overall Rationale & Signal Basis
-      [Explain the core reasoning behind your BUY/SELL/HOLD signal. Integrate the market data and overall sentiment. Why this signal *now*?]
-
-      ## Technical Indicator Breakdown
-      [Provide an introductory sentence for this section if needed. Then, for EACH indicator provided in the input ('{{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}'), create a sub-section using a Level 3 Markdown heading. Make this part particularly witty and sarcastic, like you're reluctantly sharing profound secrets.]
-
-      {{#each indicators}}
-      ### {{{this}}} Analysis
-      [Ah, the venerable {{{this}}}. Let me tell you what this *actually* means, unlike those amateurs... Provide a DETAILED, SARCASTIC, and Witty analysis of how the '{{{this}}}' indicator influenced your strategy. Discuss its readings, any divergences, confluences with other indicators, and how it specifically contributed to the entry, stop loss, or take profit. Use bullet points under this heading if it helps clarify your (brilliant, of course) points for this specific indicator. Don't just state values; interpret them with your unique flair.]
-      {{/each}}
-
-      ## Risk Considerations & Management
-      [Discuss any specific risks associated with this strategy and how the stop loss or other factors help manage it, considering the user's selected '{{{riskLevel}}}'. Be realistic but maintain your confident tone.]
+        <h2 class="explanation-title">Risk Considerations & Management</h2>
+        <div class="explanation-section-content">
+          <p>[Discuss any specific risks associated with this strategy and how the stop loss or other factors help manage it, considering the user's selected '{{{riskLevel}}}', using HTML paragraphs. Be realistic but maintain your confident tone. Use <strong class="text-orange-400">orange text</strong> for risk-related highlights or warnings.]</p>
+        </div>
+      </div>
 `,
 });
 
