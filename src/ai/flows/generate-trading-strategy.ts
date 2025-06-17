@@ -122,6 +122,7 @@ const generateTradingStrategyPrompt = ai.definePrompt({
 
   12. **Pattern Analysis (HTML Output with Specific Structure):**
       Acknowledge you cannot directly see the live chart. Your analysis here should be *inferential and educational*, guiding the user on what to look for. Base your discussion on common occurrences for {{{symbol}}} on the {{{interval}}} timeframe, how the provided indicators ({{{indicators}}}) might influence pattern formation/confirmation, and the current market data ({{{marketData}}}). Be witty and insightful.
+      **Crucially, for Candlestick and Chart Formation analysis, you must consistently frame your output as educational guidance for the user. Explain *what they should look for* on their TradingView chart and how to interpret *potential* patterns if *they* observe them, especially in conjunction with the selected indicators and the provided market snapshot. You are not identifying these patterns yourself from a live feed; you are educating the user on self-identification.**
       **Output this entire section as a single HTML string.**
       Use the following structure. For text emphasis, use <strong class="text-accent">important term</strong>, <strong class="text-primary">another important term</strong>, <strong class="text-green-400">bullish term</strong>, <strong class="text-red-400">bearish term</strong>.
       <div class="pattern-analysis-container">
@@ -207,3 +208,5 @@ const generateTradingStrategyFlow = ai.defineFlow(
   }
 );
 
+
+    
