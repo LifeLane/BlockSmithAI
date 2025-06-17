@@ -5,6 +5,7 @@
 
 body {
   font-family: 'Space Grotesk', Arial, Helvetica, sans-serif;
+  /* Removed bg-background here to allow MatrixBackground to show */
 }
 
 @layer base {
@@ -87,8 +88,33 @@ body {
   * {
     @apply border-border;
   }
-  body {
-    /* Removed bg-background and text-foreground here to allow MatrixBackground to show */
-    /* text-foreground will be inherited or set on a main wrapper */
-  }
+  /* body is already set above without explicit bg */
+  /* text-foreground will be inherited or set on a main wrapper */
+}
+
+@layer components {
+  .pattern-analysis-container { @apply space-y-5; }
+  .pattern-category { @apply p-4 border border-border/40 rounded-lg bg-background/20 shadow-md; }
+  .pattern-title { @apply text-lg font-semibold text-primary mb-2.5 border-b border-primary/30 pb-1.5; }
+  .pattern-text { @apply text-sm text-foreground/85 leading-relaxed; }
+  .sr-list { @apply space-y-1.5 mt-2; }
+  .sr-item { @apply text-sm text-foreground/80; }
+
+  /* For Key Findings, Suggestions, Do/Donts, Explanation - if they become HTML too */
+  /* .findings-list, .suggestions-list { @apply space-y-3 mb-4; } */
+  /* .finding-item p, .suggestion-item p { @apply text-foreground/90; } */
+
+  /* .dos-donts-container ul { @apply list-none p-0 space-y-2; } */
+  /* .do-item, .dont-item { @apply flex items-start p-2 rounded-md; } */
+  /* .do-item { @apply bg-green-900/30 border border-green-700/50; } */
+  /* .dont-item { @apply bg-red-900/30 border border-red-700/50; } */
+  /* .do-bullet { @apply text-green-400 font-bold mr-2 text-lg leading-none; } */
+  /* .dont-bullet { @apply text-red-400 font-bold mr-2 text-lg leading-none; } */
+
+  /* .explanation-content h2 { @apply text-2xl font-bold text-primary mb-4 mt-6 border-b-2 border-primary/40 pb-2; } */
+  /* .explanation-content h3 { @apply text-xl font-semibold text-accent mb-3 mt-5; } */
+  /* .explanation-content p { @apply text-foreground/90 mb-4 leading-relaxed; } */
+  /* .explanation-content ul { @apply list-disc list-inside pl-4 mb-4 space-y-1 text-foreground/85; } */
+  /* .explanation-content li::marker { @apply text-primary; } */
+  /* .explanation-content strong { @apply text-accent font-semibold; } */
 }

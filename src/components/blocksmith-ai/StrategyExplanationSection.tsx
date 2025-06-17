@@ -219,7 +219,7 @@ Disclaimer: ${strategy.disclaimer}
       break;
   }
 
-  const commonTriggerClasses = "text-xs sm:text-sm py-2.5 px-4 data-[state=active]:shadow-lg hover:shadow-md transition-all duration-200 ease-in-out rounded-md flex items-center justify-center"; // Removed flex-grow, adjusted padding
+  const commonTriggerClasses = "text-xs sm:text-sm py-2.5 px-4 data-[state=active]:shadow-lg hover:shadow-md transition-all duration-200 ease-in-out rounded-md flex items-center justify-center";
   const textTabContentClasses = "p-2 sm:p-4 bg-background/30 rounded-lg border border-border/60 shadow-inner";
 
 
@@ -233,7 +233,7 @@ Disclaimer: ${strategy.disclaimer}
       </CardHeader>
       <CardContent className="space-y-6 px-2 sm:px-4 pb-5">
         <Tabs defaultValue="summary" className="w-full">
-          <TabsList className="flex flex-wrap justify-center gap-2 bg-card/70 border border-border/80 mb-6 p-2 h-auto rounded-lg"> {/* Changed to flex-wrap and justify-center */}
+          <TabsList className="flex flex-wrap justify-center gap-2 bg-card/70 border border-border/80 mb-6 p-2 h-auto rounded-lg">
             <TabsTrigger value="summary" className={`${commonTriggerClasses} data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-primary/10 hover:text-primary`}><Activity className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Summary</TabsTrigger>
             <TabsTrigger value="patterns" className={`${commonTriggerClasses} data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-500 hover:bg-orange-500/10 hover:text-orange-500`}><CandlestickChart className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Pattern Intel</TabsTrigger>
             <TabsTrigger value="findings" className={`${commonTriggerClasses} data-[state=active]:bg-accent/20 data-[state=active]:text-accent hover:bg-accent/10 hover:text-accent`}><FileText className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Findings</TabsTrigger>
@@ -307,7 +307,7 @@ Disclaimer: ${strategy.disclaimer}
           </TabsContent>
 
           <TabsContent value="patterns" className={textTabContentClasses}>
-             <MarkdownContentDisplay content={strategy.patternAnalysis} fallbackText="No specific pattern analysis provided by AI for this strategy." />
+             <div dangerouslySetInnerHTML={{ __html: strategy.patternAnalysis || "<p class='text-muted-foreground'>No specific pattern analysis provided by AI.</p>" }} />
           </TabsContent>
 
           <TabsContent value="findings" className={textTabContentClasses}>
@@ -341,3 +341,4 @@ Disclaimer: ${strategy.disclaimer}
 };
 
 export default StrategyExplanationSection;
+
