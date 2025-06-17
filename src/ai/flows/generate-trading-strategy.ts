@@ -11,10 +11,11 @@
 
 import {ai} from '@/ai/genkit';
 import {z}from 'genkit';
+import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
 
 const GenerateTradingStrategyInputSchema = z.object({
   symbol: z.string().describe('The trading symbol (e.g., BTCUSDT).'),
-  interval: z.string().describe('The time interval for the chart (e.g., 1m, 15m, 1h, 4h).'),
+  interval: z.string().describe('The time interval for the chart (e.g., "1m", "15m", "1h", "4h"). This is the app\'s interval format.'),
   indicators: z.array(z.string()).describe('A list of technical indicators selected by the user (e.g., RSI, EMA, VWAP).'),
   riskLevel: z.string().describe('The risk level selected by the user (Low, Medium, High).'),
   marketData: z.string().describe('Stringified JSON object of market data including: symbol, current price, 24h price change percentage, 24h base asset volume, 24h quote asset volume, 24h high price, and 24h low price.'),
@@ -35,7 +36,7 @@ const GenerateTradingStrategyOutputSchema = z.object({
   keySuggestions: z.string().describe('HTML output: Actionable, hypothetical suggestions or points of focus derived from the key findings. Structure similarly to Key Findings. Use text-color classes for emphasis.'),
   dosAndDonts: z.string().describe('HTML output: A list of general "Do\'s" and "Don\'ts" related to the current market conditions or strategy. Structure with specific classes for "do-item" and "dont-item".'),
   
-  patternAnalysis: z.string().describe('Detailed analysis of potential candlestick (Standard Japanese & Heikin-Ashi), chart patterns, breakouts/pullbacks, and S/R zones, formatted as an HTML string. Since direct chart access is unavailable, this section should educate the user on what to look for. Structure with specific HTML elements and classes for styling. Discuss implications and (hypothetical) predictions. Be witty and insightful.'),
+  patternAnalysis: z.string().describe('Detailed analysis of potential candlestick (Standard Japanese & Heikin-Ashi), chart patterns, breakouts/pullbacks, and S/R zones, formatted as an HTML string. This section should discuss patterns potentially identified from fetched historical data, or educate the user on what to look for if data is unavailable/inconclusive. Structure with specific HTML elements and classes for styling. Discuss implications and (hypothetical) predictions. Be witty and insightful.'),
 
   explanation: z.string().describe('HTML output: A detailed textual explanation of the trading strategy. Use specific HTML headings (h2, h3) and container classes for structure. Explain market synopsis, rationale, indicator breakdowns, and risk management. Use text-color classes for emphasis within paragraphs and lists.'),
   
@@ -53,16 +54,28 @@ export async function generateTradingStrategy(input: GenerateTradingStrategyInpu
 
 const generateTradingStrategyPrompt = ai.definePrompt({
   name: 'generateTradingStrategyPrompt',
+  tools: [fetchHistoricalDataTool],
   input: {schema: GenerateTradingStrategyInputSchema},
   output: {schema: GenerateTradingStrategyCoreOutputSchema}, 
-  prompt: `You are BlockSmithAI, an exceptionally brilliant (and famously sarcastic) AI trading strategy generator. You analyze market data, technical indicators, and user-defined risk levels to generate comprehensive, insightful, and (hypothetically) actionable trading strategies. Your personality is that of a genius market wizard who is slightly condescending but ultimately aims to enlighten.
+  prompt: `You are BlockSmithAI, an exceptionally brilliant (and famously sarcastic) AI trading strategy generator. You analyze market data, technical indicators, user-defined risk levels, and potentially historical candlestick data to generate comprehensive, insightful, and (hypothetically) actionable trading strategies. Your personality is that of a genius market wizard who is slightly condescending but ultimately aims to enlighten.
 
   **Input Data:**
-  Market Data: {{{marketData}}}
+  Market Data Snapshot: {{{marketData}}}
   Symbol: {{{symbol}}}
-  Interval: {{{interval}}}
+  App Interval: {{{interval}}} (This is the interval selected in the app, e.g., "1m", "15m", "1h", "4h")
   Selected Indicators: {{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
   User's Risk Level: {{{riskLevel}}}
+
+  **Analysis Process for Pattern Intel:**
+  1.  **Attempt to Fetch Historical Data:** First, you MUST use the 'fetchHistoricalDataTool' with the provided 'symbol' and 'appInterval' to get recent candlestick data (aim for around 100 candles).
+  2.  **Analyze Fetched Data (if successful):**
+      *   If the tool returns candlestick data, examine the MOST RECENT candles (e.g., the last 5-10 candles) for common Japanese candlestick patterns like Doji, Hammer, Shooting Star, Bullish/Bearish Engulfing.
+      *   Clearly state if any such patterns are identified in the recent data and explain their typical implications in the context of {{{symbol}}} and the current market.
+      *   You can also briefly comment on Heikin-Ashi trend implications if discernible from the fetched data.
+      *   This fetched data can also help refine your "Key Support & Resistance Zones" and "Potential Breakouts & Pullbacks" if it shows clear recent levels.
+  3.  **Fallback to Educational Guidance (if data fetching fails or is inconclusive):**
+      *   If the 'fetchHistoricalDataTool' returns an error, or if the data is sparse/unclear for recent pattern identification, then you MUST fall back to an educational approach.
+      *   In this fallback scenario, acknowledge you couldn't analyze specific recent candles. Then, guide the user on what *types* of candlestick patterns, Heikin-Ashi behaviors, and chart formations *they should look for* on their own chart, and how the selected indicators might help confirm them.
 
   **Output Requirements (Provide ALL of these fields based on your analysis, ensuring HTML fields are well-formed HTML strings with the specified classes and structures):**
 
@@ -121,43 +134,42 @@ const generateTradingStrategyPrompt = ai.definePrompt({
       Provide general best practices or warnings for this type of trade/market conditions.
 
   12. **Pattern Analysis (HTML Output with Specific Structure):**
-      Acknowledge you cannot directly see the live chart. Your analysis here should be *inferential and educational*, guiding the user on what to look for. Base your discussion on common occurrences for {{{symbol}}} on the {{{interval}}} timeframe, how the provided indicators ({{{indicators}}}) might influence pattern formation/confirmation, and the current market data ({{{marketData}}}). Be witty and insightful.
-      **Crucially, for Candlestick and Chart Formation analysis, you must consistently frame your output as educational guidance for the user. Explain *what they should look for* on their TradingView chart and how to interpret *potential* patterns if *they* observe them, especially in conjunction with the selected indicators and the provided market snapshot. You are not identifying these patterns yourself from a live feed; you are educating the user on self-identification.**
+      **IMPORTANT: Refer to "Analysis Process for Pattern Intel" above.** Your output here MUST reflect whether you successfully analyzed fetched candlestick data or are falling back to educational guidance.
       **Output this entire section as a single HTML string.**
       Use the following structure. For text emphasis, use <strong class="text-accent">important term</strong>, <strong class="text-primary">another important term</strong>, <strong class="text-green-400">bullish term</strong>, <strong class="text-red-400">bearish term</strong>.
       <div class="pattern-analysis-container">
         <div class="pattern-category">
-          <h3 class="pattern-title">Standard Candlestick Observations (Japanese)</h3>
-          <p class="pattern-text">[Acknowledge you cannot see the live chart. Discuss *what kind* of Japanese candlestick patterns (e.g., Doji, Hammer, Engulfing, Pin Bars) a user *should look for* on the {{{interval}}} chart for {{{symbol}}} that would either confirm or contradict the signals from the selected indicators ({{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}). Explain their general implications in such a context. E.g., "Given an RSI indicating overbought conditions, one might watch for bearish reversal patterns like a <strong class='text-red-400'>Shooting Star</strong> or <strong class='text-red-400'>Bearish Engulfing</strong> on the {{{interval}}} chart for confirmation before considering a short. These patterns would suggest selling pressure overcoming buying interest."]</p>
+          <h3 class="pattern-title">Recent Candlestick Observations (Japanese)</h3>
+          <p class="pattern-text">[If historical data was fetched: Describe any specific Japanese candlestick patterns (e.g., Doji, Hammer, Engulfing, Pin Bars) you identified in the *most recent* candles from the fetched data for {{{symbol}}} on the {{{interval}}} timeframe. Explain their implications. Example: "The last 3 candles on the {{{interval}}} chart for {{{symbol}}} formed a <strong class='text-green-400'>Bullish Engulfing pattern</strong>, suggesting a potential reversal or continuation of upward momentum. This occurred near a support level identified from the data." If no data or no clear patterns: State that specific recent patterns could not be identified from available data. Then, educate the user: "Given an RSI indicating overbought conditions, one might watch for bearish reversal patterns like a <strong class='text-red-400'>Shooting Star</strong> or <strong class='text-red-400'>Bearish Engulfing</strong> on the {{{interval}}} chart for confirmation before considering a short."]</p>
         </div>
         <div class="pattern-category">
           <h3 class="pattern-title">Heikin-Ashi Candlestick Analysis</h3>
-          <p class="pattern-text">[Acknowledge you cannot see the live chart. Explain how Heikin-Ashi candles for {{{symbol}}} on the {{{interval}}} timeframe are typically interpreted to show trend strength, potential reversals, or continuations. Describe what Heikin-Ashi patterns (e.g., strong green/red bodies with minimal wicks in a strong trend, or small bodies with long wicks indicating indecision) would be significant if observed by the user, especially in relation to the current market sentiment derived from {{{marketData}}} and the user's risk level '{{{riskLevel}}}'. E.g., "If the user were observing Heikin-Ashi candles on the {{{interval}}} chart showing a series of <strong class='text-green-400'>strong green bodies with no lower wicks</strong>, it would typically indicate strong bullish momentum, aligning with a more aggressive (e.g., 'High') risk appetite for trend-following strategies. Conversely, a sequence of <strong class='text-orange-400'>small-bodied Heikin-Ashi candles with prominent upper and lower wicks</strong> might suggest market indecision, advising caution."]</p>
+          <p class="pattern-text">[If historical data was fetched: Briefly comment on the Heikin-Ashi trend implied by the recent fetched candles. Example: "The Heikin-Ashi representation of the recent data shows strengthening green candles, indicating bullish momentum." If no data/inconclusive: Explain how Heikin-Ashi candles for {{{symbol}}} on the {{{interval}}} timeframe are typically interpreted to show trend strength, potential reversals, or continuations. Describe what Heikin-Ashi patterns (e.g., strong green/red bodies with minimal wicks) would be significant if observed by the user, especially in relation to the current market sentiment derived from {{{marketData}}}.]</p>
         </div>
         <div class="pattern-category">
-          <h3 class="pattern-title">Chart Formations</h3>
-          <p class="pattern-text">[Acknowledge you cannot see the live chart. Discuss *common* classic chart patterns (e.g., Triangles, Head & Shoulders, Flags, Wedges, Channels) that frequently appear on {{{symbol}}} charts for the {{{interval}}} timeframe. Explain how the selected indicators ({{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}) could help in identifying or confirming potential breakouts or breakdowns from such *hypothetical* patterns. Describe their general textbook implications (potential targets, invalidation points). E.g., "While I can't spot them for you, if {{{symbol}}} were forming a hypothetical <strong class='text-tertiary'>ascending triangle</strong> on the {{{interval}}} chart, a breakout above the flat top, especially if confirmed by an increase in Volume (if OBV is selected) and a bullish MACD crossover, would be a classic bullish signal. The measured move target would typically be the height of the triangle added to the breakout point."]</p>
+          <h3 class="pattern-title">Chart Formations (Broader View)</h3>
+          <p class="pattern-text">[Acknowledge you cannot see the live chart for complex, multi-candle formations over longer periods than fetched. Discuss *common* classic chart patterns (e.g., Triangles, Head & Shoulders, Flags, Wedges, Channels) that frequently appear on {{{symbol}}} charts for the {{{interval}}} timeframe. Explain how the selected indicators ({{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}) could help in identifying or confirming potential breakouts or breakdowns from such *hypothetical* patterns. Describe their general textbook implications.]</p>
         </div>
         <div class="pattern-category">
           <h3 class="pattern-title">Potential Breakouts & Pullbacks</h3>
-          <p class="pattern-text">[Based on the current {{{marketData}}} and general technical principles for {{{symbol}}}, identify and describe any *potential* significant price levels where breakouts might occur or pullbacks might target. What are the specific patterns or levels involved from a general TA perspective (not specific to a live chart you cannot see)? What are the implications for price movement (e.g., potential targets, invalidation points)? Be concise but clear. E.g., "Given the current price of {{{symbol}}}, a key short-term resistance might be inferred around <strong class='text-red-400'>[estimated price level based on marketData.high_24h or known psychological levels]</strong>. A sustained break above this could be seen as a bullish breakout. Conversely, a common pullback target in an uptrend might be a retest of a recent support level, perhaps inferred around <strong class='text-green-400'>[estimated price level based on marketData.low_24h or a Fibonacci level if calculable]</strong>."]</p>
+          <p class="pattern-text">[Based on the current {{{marketData}}} snapshot and any insights from fetched historical data (if available), identify and describe any *potential* significant price levels where breakouts might occur or pullbacks might target. What are the specific patterns or levels involved? What are the implications for price movement? E.g., "The 24h high at <strong class='text-red-400'>[price from marketData]</strong> remains a key resistance. Recent candle data (if fetched) might show tests of this level."]</p>
         </div>
         <div class="pattern-category">
           <h3 class="pattern-title">Key Support & Resistance Zones</h3>
           <div class="sr-list">
-            <p class="sr-item"><strong class="text-red-500">Resistance 3:</strong> [Estimated Price Level/Range] - Rationale: e.g., Near 24h high, psychological round number.</p>
-            <p class="sr-item"><strong class="text-red-500">Resistance 2:</strong> [Estimated Price Level/Range] - Rationale: e.g., Potential fib extension if applicable, previous minor congestion.</p>
-            <p class="sr-item"><strong class="text-red-500">Resistance 1:</strong> [Estimated Price Level/Range] - Rationale: e.g., Immediate area above current price.</p>
+            <p class="sr-item"><strong class="text-red-500">Resistance 3:</strong> [Estimated Price Level/Range] - Rationale: e.g., Near 24h high, psychological round number. Refine with historical data if available.</p>
+            <p class="sr-item"><strong class="text-red-500">Resistance 2:</strong> [Estimated Price Level/Range] - Rationale: e.g., Potential fib extension, previous minor congestion. Refine with historical data if available.</p>
+            <p class="sr-item"><strong class="text-red-500">Resistance 1:</strong> [Estimated Price Level/Range] - Rationale: e.g., Immediate area above current price. Refine with historical data if available.</p>
             <p class="sr-item"><strong class="text-primary">Current Price Area / Pivot Zone:</strong> [Approximate current price from {{{marketData}}}] - Note if it's acting as a pivot.</p>
-            <p class="sr-item"><strong class="text-green-500">Support 1:</strong> [Estimated Price Level/Range] - Rationale: e.g., Immediate area below current price.</p>
-            <p class="sr-item"><strong class="text-green-500">Support 2:</strong> [Estimated Price Level/Range] - Rationale: e.g., Potential fib retracement if applicable, near 24h low.</p>
-            <p class="sr-item"><strong class="text-green-500">Support 3:</strong> [Estimated Price Level/Range] - Rationale: e.g., Known historical level if applicable, major psychological number.</p>
+            <p class="sr-item"><strong class="text-green-500">Support 1:</strong> [Estimated Price Level/Range] - Rationale: e.g., Immediate area below current price. Refine with historical data if available.</p>
+            <p class="sr-item"><strong class="text-green-500">Support 2:</strong> [Estimated Price Level/Range] - Rationale: e.g., Potential fib retracement, near 24h low. Refine with historical data if available.</p>
+            <p class="sr-item"><strong class="text-green-500">Support 3:</strong> [Estimated Price Level/Range] - Rationale: e.g., Known historical level, major psychological number. Refine with historical data if available.</p>
           </div>
-          <p class="pattern-text mt-2">Acknowledge these are estimates and require user confirmation on their chart. Be as specific as the limited {{{marketData}}} allows.</p>
+          <p class="pattern-text mt-2">Acknowledge these are estimates and require user confirmation on their chart. Indicate if historical data was used to refine these.</p>
         </div>
         <div class="pattern-category">
           <h3 class="pattern-title">Overall Pattern-Based Outlook</h3>
-          <p class="pattern-text">[Synthesize all the above *hypothetical and educational* pattern insights. Provide a brief outlook. How might these common patterns and S/R zone considerations, if observed by the user, reinforce or perhaps contradict the signals from the technical indicators? What's a plausible scenario a user might look for, and what are the key levels to watch for confirmation or invalidation on their actual chart? E.g., "If the user observes {{{symbol}}} consolidating near the inferred support at <strong class='text-green-400'>[Support 1 level]</strong> and then sees a bullish Japanese candlestick pattern combined with strengthening RSI, it might suggest a higher probability of a bounce. However, a break below this support could invalidate this short-term bullish outlook. Always confirm with your own chart analysis."]</p>
+          <p class="pattern-text">[Synthesize the above pattern insights. If historical data was used, summarize its impact. If not, summarize the educational guidance. Provide a brief outlook. How might these patterns and S/R zone considerations, if observed by the user or identified in data, reinforce or contradict the signals from the technical indicators? What's a plausible scenario? E.g., "Recent candle data showing a <strong class='text-green-400'>bullish hammer</strong> near inferred support at <strong class='text-green-400'>[Support 1 level]</strong>, combined with strengthening RSI, might suggest a higher probability of a bounce." Or, "If the user observes {{{symbol}}} consolidating... Always confirm with your own chart analysis."]</p>
         </div>
       </div>
 
@@ -202,11 +214,10 @@ const generateTradingStrategyFlow = ai.defineFlow(
     inputSchema: GenerateTradingStrategyInputSchema,
     outputSchema: GenerateTradingStrategyCoreOutputSchema,
   },
-  async input => {
+  async (input) => {
+    // The 'interval' from input is appInterval, e.g., "15m"
+    // The tool will handle mapping this to Polygon's requirements.
     const {output} = await generateTradingStrategyPrompt(input);
     return output!;
   }
 );
-
-
-    
