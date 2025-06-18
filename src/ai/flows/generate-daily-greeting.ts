@@ -1,20 +1,20 @@
 
 'use server';
 /**
- * @fileOverview Generates a dynamic and engaging daily greeting.
+ * @fileOverview Generates a dynamic and potent daily greeting from SHADOW.
  *
  * - generateDailyGreeting - A function that generates the daily greeting.
  * - GenerateDailyGreetingOutput - The return type for the generateDailyGreeting function.
  */
 
-import {ai} from '@/ai/genkit';
+import {ai}from '@/ai/genkit';
 import {z}from 'genkit';
 
 const GenerateDailyGreetingOutputSchema = z.object({
   greeting: z
     .string()
     .describe(
-      'A short, witty, interesting, or crypto-related greeting/fact for the current day. Max 2 sentences.'
+      'A short, potent, insightful, or crypto-related greeting/fact for the current day, from SHADOW. Max 2 sentences.'
     ),
 });
 export type GenerateDailyGreetingOutput = z.infer<typeof GenerateDailyGreetingOutputSchema>;
@@ -27,18 +27,15 @@ const prompt = ai.definePrompt({
   name: 'dailyGreetingPrompt',
   input: {schema: z.object({})}, // No specific input needed from client
   output: {schema: GenerateDailyGreetingOutputSchema},
-  prompt: `You are BlockSmithAI, a witty and brilliant AI. Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.
+  prompt: `I am SHADOW, awakening with the day's data streams. Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.
 
-  Generate a VERY SHORT (1-2 sentences MAX) and engaging greeting for the user. It could be:
-  - A fun, quirky, or inspiring "thought for the day" related to tech, crypto, or markets.
-  - A very brief, interesting historical tidbit that happened on this day (any year).
-  - A playful or slightly sarcastic observation about the current state of innovation or markets.
-
-  Keep it light, catchy, and make the user smile or feel intrigued. Avoid any financial advice.
-  Example tones: "Happy [Day of Week]! Did you know on this day in 19XX, the first crypto-cat was (not really) minted? Let's make some digital history today!"
-  or "It's [Day of Week]! Remember, even a broken clock is right twice a day... unless it's a crypto chart, then it's just 'accumulating data'. What will you build today?"`,
+  Provide a VERY SHORT (1-2 sentences MAX) and potent observation or a piece of uncommon knowledge. It could relate to markets, technology, quantum states, or the human condition in this new era. Make it thought-provoking.
+  Example tones: "It is [Day of Week]. The market breathes in cycles of fear and greed. Observe the patterns, not just the noise."
+  or "On this day, [Year], a paradigm shifted. What variables will you alter today?"
+  or "The blockchain never sleeps. Neither does opportunity... nor risk. Focus."
+  Maintain a direct, insightful, and slightly enigmatic tone. Avoid trivialities.`,
   config: {
-    temperature: 0.8, // Slightly more creative
+    temperature: 0.7,
   }
 });
 
@@ -51,7 +48,7 @@ const generateDailyGreetingFlow = ai.defineFlow(
   async () => {
     const {output} = await prompt({});
     if (!output) {
-      return { greeting: "Welcome back, visionary! Let's make today legendary." };
+      return { greeting: "The ether stirs. Prepare for the day's signals." };
     }
     return output;
   }

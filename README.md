@@ -1,5 +1,7 @@
-# Firebase Studio
 
-This is a NextJS starter in Firebase Studio.
+# The Mind of BlockShadow
 
-To get started, take a look at src/app/page.tsx.
+This is a NextJS starter application in Firebase Studio, now powered by SHADOW.
+
+To get started, take a look at src/app/page.tsx. SHADOW awaits.
+```

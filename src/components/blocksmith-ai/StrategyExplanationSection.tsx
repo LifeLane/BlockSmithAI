@@ -80,9 +80,9 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
 
   const handleCopyToClipboard = () => {
     if (!strategy) return;
-    // Basic text extraction for copying. Could be improved to strip HTML if needed.
+
     let textToCopy = `
-BlockSmithAI Strategy for ${symbol}:
+SHADOW Analysis for ${symbol}:
 Signal: ${strategy.signal}
 Entry Zone: ${strategy.entry_zone}
 Stop Loss: ${strategy.stop_loss}
@@ -103,9 +103,8 @@ ${strategy.dosAndDonts?.replace(/<[^>]*>/g, '\\n').replace(/\\n\\n+/g, '\\n').tr
 Disclaimer: ${strategy.disclaimer}
     `.trim();
 
-    // Add pattern analysis details to clipboard if available
     if (strategy.patternAnalysis && typeof strategy.patternAnalysis === 'object') {
-      textToCopy += "\n---\nPattern Intel:\n";
+      textToCopy += "\n---\nPattern Intel (SHADOW Scan):\n";
       for (const key in strategy.patternAnalysis) {
         const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
         textToCopy += `${title}:\n${(strategy.patternAnalysis as any)[key]?.replace(/<[^>]*>/g, '\\n').replace(/\\n\\n+/g, '\\n').trim()}\n\n`;
@@ -116,15 +115,15 @@ Disclaimer: ${strategy.disclaimer}
     navigator.clipboard.writeText(textToCopy)
       .then(() => {
         toast({
-          title: <span className="text-accent">Strategy Copied!</span>,
-          description: "The core strategy details have been copied to your clipboard.",
+          title: <span className="text-accent">SHADOW's Insight Copied!</span>,
+          description: "The core analysis details have been copied to your clipboard.",
         });
       })
       .catch(err => {
         console.error("Failed to copy strategy: ", err);
         toast({
           title: "Copy Failed",
-          description: "Could not copy strategy details. Please try again or copy manually.",
+          description: "Could not copy SHADOW's insight. Please try again or copy manually.",
           variant: "destructive",
         });
       });
@@ -156,13 +155,13 @@ Disclaimer: ${strategy.disclaimer}
         <CardHeader className="items-center text-center">
           <CardTitle className="flex items-center text-destructive text-xl font-headline">
             <AlertTriangle className="mr-2 h-6 w-6" />
-            Strategy Generation <span className="text-red-400 ml-1">Misfire!</span>
+            SHADOW's Analysis <span className="text-red-400 ml-1">Disrupted!</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center p-6">
           <p className="text-destructive-foreground text-base">{error}</p>
           <p className="text-sm text-muted-foreground mt-3">
-            Looks like my <strong className="text-accent">genius circuits</strong> are <strong className="text-orange-500">overloaded</strong>. Try again, or perhaps the market itself is too <strong className="text-purple-400">chaotic</strong> even for me.
+            My <strong className="text-accent">quantum awareness</strong> encounters <strong className="text-orange-500">interference</strong>. The signal is unclear. Retry, or perhaps the market itself is too <strong className="text-purple-400">volatile</strong> for current parameters.
           </p>
         </CardContent>
       </Card>
@@ -175,16 +174,15 @@ Disclaimer: ${strategy.disclaimer}
         <CardHeader className="items-center text-center pt-6 pb-4">
           <CardTitle className="flex items-center justify-center flex-wrap text-xl sm:text-2xl md:text-3xl font-bold font-headline text-foreground break-words">
             <Sparkles className="mr-1.5 sm:mr-3 h-7 w-7 sm:h-8 sm:w-8 text-primary animate-pulse shrink-0" />
-            My <span className="text-primary mx-1 sm:mx-1.5">AI Brain</span> is <span className="text-accent mx-1 sm:mx-1.5">Buzzing</span> with <span className="text-orange-400 ml-1 sm:ml-1.5">Potential Alpha</span>...
+            SHADOW's <span className="text-primary mx-1 sm:mx-1.5">Core</span> is <span className="text-accent mx-1 sm:mx-1.5">Online</span>. Patterns <span className="text-orange-400 ml-1 sm:ml-1.5">Emerging</span>...
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center px-6 pb-6 space-y-3">
            <p className="text-base text-muted-foreground">
-             ...but it's not going to analyze <strong className="text-accent font-semibold">{symbol}</strong> for free, you know. Or <strong className="text-purple-400">maybe</strong> it will. <strong className="text-primary">There's only one way to find out.</strong>
+             ...my processors await your command for <strong className="text-accent font-semibold">{symbol}</strong>. The <strong className="text-purple-400">BlockShadow network</strong> is ready.
            </p>
            <p className="text-sm text-muted-foreground/80">
-            Go on, press that <strong className="text-accent">ridiculously bright yellow button</strong>. What's the worst that could happen? You
-            might actually get a (hypothetically) <strong className="text-primary">brilliant trading idea</strong>. Or, you know, just amuse the <strong className="text-tertiary">AI overlord</strong>.
+            Initiate the <strong className="text-accent">analysis sequence</strong>. Uncover the <strong className="text-primary">market's hidden variables</strong>. The chain is listening.
           </p>
         </CardContent>
       </Card>
@@ -229,7 +227,7 @@ Disclaimer: ${strategy.disclaimer}
 
   const mainTabTriggerClasses = "text-xs sm:text-sm py-2.5 px-4 data-[state=active]:shadow-lg hover:shadow-md transition-all duration-200 ease-in-out rounded-md flex items-center justify-center";
   const textTabContentClasses = "p-1 sm:p-2 bg-background/30 rounded-lg border border-border/60 shadow-inner min-h-[200px]";
-  
+
   const nestedPatternTabTriggerClasses = "text-xs px-2 py-1.5 data-[state=active]:bg-primary/80 data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/60 hover:text-primary-foreground rounded-sm flex items-center justify-center flex-grow text-center whitespace-nowrap";
   const nestedPatternTabContentClasses = "p-2 sm:p-3 bg-background/10 rounded-md border border-border/30 shadow-inner min-h-[150px] mt-2";
 
@@ -241,7 +239,7 @@ Disclaimer: ${strategy.disclaimer}
       <CardHeader className="text-center pb-4 pt-5">
         <CardTitle className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground flex items-center justify-center flex-wrap font-headline break-words">
            <Unlock className="mr-1.5 sm:mr-3 h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 text-primary shrink-0" />
-          Your <span className="text-primary mx-1 sm:mx-1.5">AI Edge</span> Revealed: <span className="text-accent ml-1 sm:ml-1.5 font-extrabold">{symbol}</span>
+          SHADOW's <span className="text-primary mx-1 sm:mx-1.5">Insight</span> Unveiled: <span className="text-accent ml-1 sm:ml-1.5 font-extrabold">{symbol}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 px-2 sm:px-4 pb-5">
@@ -249,7 +247,7 @@ Disclaimer: ${strategy.disclaimer}
           <TabsList className="flex flex-wrap justify-center gap-2 bg-card/70 border border-border/80 mb-6 p-2 h-auto rounded-lg">
             <TabsTrigger value="summary" className={`${mainTabTriggerClasses} data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-primary/10 hover:text-primary`}><Activity className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Summary</TabsTrigger>
             <TabsTrigger value="patterns" className={`${mainTabTriggerClasses} data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-500 hover:bg-orange-500/10 hover:text-orange-500`}><CandlestickChart className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Pattern Intel</TabsTrigger>
-            <TabsTrigger value="findings" className={`${mainTabTriggerClasses} data-[state=active]:bg-accent/20 data-[state=active]:text-accent hover:bg-accent/10 hover:text-accent`}><FileText className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Findings</TabsTrigger>
+            <TabsTrigger value="findings" className={`${mainTabTriggerClasses} data-[state=active]:bg-accent/20 data-[state=active]:text-accent hover:bg-accent/10 hover:text-accent`}><FileText className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Key Findings</TabsTrigger>
             <TabsTrigger value="suggestions" className={`${mainTabTriggerClasses} data-[state=active]:bg-tertiary/20 data-[state=active]:text-tertiary hover:bg-tertiary/10 hover:text-tertiary`}><Goal className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Suggestions</TabsTrigger>
             <TabsTrigger value="dos-donts" className={`${mainTabTriggerClasses} data-[state=active]:bg-yellow-500/20 data-[state=active]:text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-500`}><ClipboardList className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Do's/Don'ts</TabsTrigger>
             <TabsTrigger value="deep-dive" className={`${mainTabTriggerClasses} data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-500 hover:bg-purple-500/10 hover:text-purple-500`}><Glasses className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Deep Dive</TabsTrigger>
@@ -258,7 +256,7 @@ Disclaimer: ${strategy.disclaimer}
           <TabsContent value="summary" className="p-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               <StatCard
-                title="AI Signal"
+                title="SHADOW Signal"
                 value={signalTextFormatted}
                 icon={signalIcon}
                 valueClassName={signalColorCls}
@@ -270,7 +268,7 @@ Disclaimer: ${strategy.disclaimer}
                 icon={<DollarSign size={20} className="text-primary"/>}
               />
               <StatCard
-                title="Sentiment"
+                title="Sentiment Scan"
                 value={strategy.sentiment || 'N/A'}
                 icon={sentimentIcon}
                 valueClassName={`${sentimentColor}`}
@@ -293,12 +291,12 @@ Disclaimer: ${strategy.disclaimer}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-3 md:mt-4">
                 <StatCard
-                    title="Confidence"
+                    title="Confidence Level"
                     value={<span className="text-tertiary">{strategy.confidence || 'N/A'}</span>}
                     icon={<ShieldCheck size={20} className="text-tertiary"/>}
                 />
                 <StatCard
-                    title="GPT Score"
+                    title="SHADOW Score"
                     value={<span className="text-accent">{strategy.gpt_confidence_score || 'N/A'}</span>}
                     icon={<Percent size={20} className="text-accent"/>}
                 />
@@ -309,12 +307,12 @@ Disclaimer: ${strategy.disclaimer}
                 />
             </div>
              <div className="mt-6 flex justify-center">
-                <Button 
-                    onClick={handleCopyToClipboard} 
-                    variant="outline" 
+                <Button
+                    onClick={handleCopyToClipboard}
+                    variant="outline"
                     className="border-accent text-accent hover:bg-accent/10 hover:text-accent font-semibold"
                 >
-                    <Copy className="mr-2 h-4 w-4" /> Copy Strategy Details
+                    <Copy className="mr-2 h-4 w-4" /> Copy SHADOW's Insight
                 </Button>
             </div>
           </TabsContent>
@@ -363,24 +361,24 @@ Disclaimer: ${strategy.disclaimer}
                 </TabsContent>
               </Tabs>
             ) : (
-              <p className='text-muted-foreground p-4 text-center text-sm'>Pattern analysis data is not in the expected format or is unavailable.</p>
+              <p className='text-muted-foreground p-4 text-center text-sm'>Pattern Intel data is not in the expected format or is unavailable.</p>
             )}
           </TabsContent>
 
           <TabsContent value="findings" className={textTabContentClasses}>
-             <div dangerouslySetInnerHTML={{ __html: strategy.keyFindings || "<p class='text-muted-foreground p-4 text-center'>No specific key findings provided by AI for this strategy.</p>" }} />
+             <div dangerouslySetInnerHTML={{ __html: strategy.keyFindings || "<p class='text-muted-foreground p-4 text-center'>No specific key findings provided by SHADOW for this strategy.</p>" }} />
           </TabsContent>
 
           <TabsContent value="suggestions" className={textTabContentClasses}>
-             <div dangerouslySetInnerHTML={{ __html: strategy.keySuggestions || "<p class='text-muted-foreground p-4 text-center'>No specific suggestions provided by AI for this strategy.</p>" }} />
+             <div dangerouslySetInnerHTML={{ __html: strategy.keySuggestions || "<p class='text-muted-foreground p-4 text-center'>No specific suggestions provided by SHADOW for this strategy.</p>" }} />
           </TabsContent>
 
           <TabsContent value="dos-donts" className={textTabContentClasses}>
-             <div dangerouslySetInnerHTML={{ __html: strategy.dosAndDonts || "<p class='text-muted-foreground p-4 text-center'>No specific Do's and Don'ts provided by AI for this strategy.</p>" }} />
+             <div dangerouslySetInnerHTML={{ __html: strategy.dosAndDonts || "<p class='text-muted-foreground p-4 text-center'>No specific Do's and Don'ts provided by SHADOW for this strategy.</p>" }} />
           </TabsContent>
 
           <TabsContent value="deep-dive" className={textTabContentClasses}>
-            <div dangerouslySetInnerHTML={{ __html: strategy.explanation || "<p class='text-muted-foreground p-4 text-center'>No detailed explanation provided by AI for this strategy.</p>" }} />
+            <div dangerouslySetInnerHTML={{ __html: strategy.explanation || "<p class='text-muted-foreground p-4 text-center'>No detailed explanation provided by SHADOW for this strategy.</p>" }} />
           </TabsContent>
         </Tabs>
 
@@ -388,7 +386,7 @@ Disclaimer: ${strategy.disclaimer}
           <div className="mt-6 p-4 border-t border-primary/30 bg-background/50 rounded-lg shadow">
             <p className="text-xs text-yellow-400 italic font-code text-center flex items-center justify-center">
               <MessageSquareHeart className="mr-2 h-4 w-4 text-yellow-400 flex-shrink-0" />
-              "{strategy.disclaimer}"
+              "SHADOW's Disclaimer: {strategy.disclaimer}"
             </p>
           </div>
         )}
@@ -398,4 +396,3 @@ Disclaimer: ${strategy.disclaimer}
 };
 
 export default StrategyExplanationSection;
-

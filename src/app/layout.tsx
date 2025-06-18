@@ -6,8 +6,8 @@ import MatrixBackground from '@/components/blocksmith-ai/MatrixBackground';
 import AnimatedPageBorder from '@/components/blocksmith-ai/AnimatedPageBorder';
 
 export const metadata: Metadata = {
-  title: 'BlockSmithAI Trading Edge',
-  description: 'AI-Powered Trading Signal Web App by BlockSmithAI Industries',
+  title: 'The Mind of BlockShadow',
+  description: 'AI-Powered Trading Insights from SHADOW of the BlockShadow Ecosystem',
 };
 
 export default function RootLayout({

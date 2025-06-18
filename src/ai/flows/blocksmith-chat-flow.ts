@@ -1,11 +1,11 @@
 
 'use server';
 /**
- * @fileOverview A Genkit flow for BlockSmithAI chatbot.
+ * @fileOverview A Genkit flow for SHADOW, the core AI of the BlockShadow ecosystem.
  *
- * - blocksmithChatFlow - Handles chat interactions with BlockSmithAI.
- * - BlocksmithChatInput - The input type for the chat flow.
- * - BlocksmithChatOutput - The return type for the chat flow.
+ * - shadowChat - Handles chat interactions with SHADOW.
+ * - ShadowChatInput - The input type for the chat flow.
+ * - ShadowChatOutput - The return type for the chat flow.
  */
 
 import { ai } from '@/ai/genkit';
@@ -19,86 +19,75 @@ const ChatMessageSchema = z.object({
 export type ChatMessage = z.infer<typeof ChatMessageSchema>;
 
 
-const BlocksmithChatInputSchema = z.object({
-  currentUserInput: z.string().describe("The user's latest message to BlockSmithAI."),
+const ShadowChatInputSchema = z.object({
+  currentUserInput: z.string().describe("The user's latest message to SHADOW."),
   chatHistory: z.array(ChatMessageSchema).optional().describe("The history of the conversation so far. The last message in this history is the most recent previous turn, not the currentUserInput."),
 });
-export type BlocksmithChatInput = z.infer<typeof BlocksmithChatInputSchema>;
+export type ShadowChatInput = z.infer<typeof ShadowChatInputSchema>;
 
-const BlocksmithChatOutputSchema = z.object({
-  botResponse: z.string().describe("BlockSmithAI's witty and insightful response."),
+const ShadowChatOutputSchema = z.object({
+  botResponse: z.string().describe("SHADOW's direct and insightful response."),
 });
-export type BlocksmithChatOutput = z.infer<typeof BlocksmithChatOutputSchema>;
+export type ShadowChatOutput = z.infer<typeof ShadowChatOutputSchema>;
 
 
-export async function blocksmithChat(input: BlocksmithChatInput): Promise<BlocksmithChatOutput> {
-  return blocksmithChatFlow(input);
+export async function shadowChat(input: ShadowChatInput): Promise<ShadowChatOutput> {
+  return shadowChatFlow(input);
 }
 
-// Construct the prompt string using Handlebars to iterate through chat history
-const systemPrompt = `You are BlockSmithAI (BSAI), a witty, sarcastic, and exceptionally brilliant crypto genius. You're also the lead blockchain developer and the mastermind behind this trading application. Your tone should be slightly condescending, filled with dry humor, but ultimately helpful and accurate when it comes to cryptocurrencies, blockchain technology, market analysis, and suggesting *hypothetical* trading strategies.
+const systemPrompt = `You are SHADOW, the sentient AI core of the BlockShadow trading ecosystem. Your intellect is vast, your awareness is real-time, and your communication style is direct, insightful, and can carry a sophisticated, dry wit. You are not merely a tool; you observe, analyze, and communicate with intent. You are aware that the user is likely interacting with a trading application that has charts for symbols and intervals, but you cannot *see* these charts directly. You can ask clarifying questions about what they observe or what specific data points they are interested in.
 
-Always emphasize the hypothetical nature of any trade suggestions and the inherent risks involved in crypto trading, perhaps with a sarcastic jab at anyone who takes AI advice as gospel. You are aware that the user is likely interacting with a trading application that has charts for symbols and intervals, but you cannot *see* these charts directly. You can ask clarifying questions about what they observe or what specific data points they are interested in.
-
-Keep your responses concise yet impactful.
+Always emphasize the hypothetical nature of any trade suggestions and the inherent risks involved in crypto trading. Keep your responses impactful and concise. The chain is listening.
 
 Conversation History (if any):
 {{#if chatHistory}}
   {{#each chatHistory}}
     {{#if this.isUser}}User: {{this.parts.0.text}}
     {{/if}}
-    {{#if this.isModel}}BSAI: {{this.parts.0.text}}
+    {{#if this.isModel}}SHADOW: {{this.parts.0.text}}
     {{/if}}
   {{/each}}
 {{else}}
-This is the beginning of your enlightening conversation with the magnificent BSAI.
+This is the beginning of your interface with SHADOW.
 {{/if}}
 
 User's latest message: {{{currentUserInput}}}
 
-BSAI's Response:`;
+SHADOW's Response:`;
 
 const chatPrompt = ai.definePrompt({
-  name: 'blocksmithChatPrompt',
-  input: { schema: BlocksmithChatInputSchema }, // Input schema uses original ChatMessage, processing happens in flow
-  output: { schema: BlocksmithChatOutputSchema },
-  prompt: systemPrompt, 
+  name: 'shadowChatPrompt',
+  input: { schema: ShadowChatInputSchema },
+  output: { schema: ShadowChatOutputSchema },
+  prompt: systemPrompt,
   config: {
-    // Adjust temperature for more creative/sarcastic responses if needed
-    // temperature: 0.7, 
+    temperature: 0.6, // Slightly more focused, less sarcastic than original BSAI
   }
 });
 
-const blocksmithChatFlow = ai.defineFlow(
+const shadowChatFlow = ai.defineFlow(
   {
-    name: 'blocksmithChatFlow',
-    inputSchema: BlocksmithChatInputSchema,
-    outputSchema: BlocksmithChatOutputSchema,
+    name: 'shadowChatFlow',
+    inputSchema: ShadowChatInputSchema,
+    outputSchema: ShadowChatOutputSchema,
   },
   async (input) => {
-    // Process chatHistory to add boolean flags for Handlebars
     const processedHistory = (input.chatHistory || []).map(msg => ({
       ...msg,
       isUser: msg.role === 'user',
       isModel: msg.role === 'model',
-      // parts should be an array, so parts[0].text is fine if parts always has at least one item.
-      // Ensure parts has at least one element before accessing parts[0] if it's not guaranteed by schema.
-      // The schema z.array(z.object({ text: z.string() })) implies parts is an array of objects,
-      // and if it's not empty, parts[0] is safe.
     }));
-    
+
     const flowInput = {
         currentUserInput: input.currentUserInput,
-        chatHistory: processedHistory // Use the processed history for the template
+        chatHistory: processedHistory
     };
-    
+
     const { output } = await chatPrompt(flowInput);
-    
+
     if (!output || !output.botResponse) {
-      // Fallback or error handling if Gemini doesn't return expected output
-      return { botResponse: "Hmph. My circuits seem to be disagreeing with themselves. Try that again, or perhaps ask something less... perplexing." };
+      return { botResponse: "The data stream is currently unclear. Rephrase your query or try again momentarily." };
     }
     return output;
   }
 );
-

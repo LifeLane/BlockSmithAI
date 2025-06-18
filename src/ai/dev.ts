@@ -4,6 +4,6 @@ config();
 
 import '@/ai/flows/generate-trading-strategy.ts';
 import '@/ai/flows/generate-sarcastic-disclaimer.ts';
-import '@/ai/flows/blocksmith-chat-flow.ts'; // Added new chat flow
-import '@/ai/flows/generate-daily-greeting.ts'; // Added new daily greeting flow
-import '@/ai/tools/fetch-historical-data-tool.ts'; // Added Polygon tool
+import '@/ai/flows/blocksmith-chat-flow.ts'; // Content updated to SHADOW chat, path kept for simplicity
+import '@/ai/flows/generate-daily-greeting.ts';
+import '@/ai/tools/fetch-historical-data-tool.ts';

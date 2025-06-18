@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Send, Sparkles, MessageSquareQuote } from 'lucide-react';
-import { blocksmithChatAction, type ChatMessage } from '@/app/actions'; 
+import { shadowChatAction, type ChatMessage } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 
 interface ChatbotPopupProps {
@@ -16,14 +16,14 @@ interface ChatbotPopupProps {
   onOpenChange: (isOpen: boolean) => void;
 }
 
-const BSAI_INITIAL_MESSAGE: ChatMessage = {
+const SHADOW_INITIAL_MESSAGE: ChatMessage = {
   role: 'model',
-  parts: [{ text: "Alright, you've summoned the genius. What earth-shattering crypto query or half-baked trading idea can I illuminate with my brilliance today? Don't be shy, I've heard it all... probably." }],
+  parts: [{ text: "I am SHADOW. The market's whispers reach me. What requires my attention?" }],
 };
 
 const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChange }) => {
   const [userInput, setUserInput] = useState('');
-  const [messages, setMessages] = useState<ChatMessage[]>([BSAI_INITIAL_MESSAGE]);
+  const [messages, setMessages] = useState<ChatMessage[]>([SHADOW_INITIAL_MESSAGE]);
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -31,10 +31,10 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
-      setTimeout(() => inputRef.current?.focus(), 100); 
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
-    if (isOpen && messages.length <= 1) { 
-        setMessages([BSAI_INITIAL_MESSAGE]);
+    if (isOpen && messages.length <= 1) {
+        setMessages([SHADOW_INITIAL_MESSAGE]);
     }
   }, [isOpen]);
 
@@ -52,32 +52,32 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
     setUserInput('');
     setIsLoading(true);
 
-    const historyForAI = messages.slice(-10); 
+    const historyForAI = messages.slice(-10);
 
     try {
-      const result = await blocksmithChatAction({
+      const result = await shadowChatAction({
         currentUserInput: newUserMessage.parts[0].text,
         chatHistory: historyForAI,
       });
 
       if ('error' in result) {
         toast({
-            title: <span className="text-orange-400">BSAI is feeling temperamental</span>,
+            title: <span className="text-orange-400">SHADOW's Transmission Garbled</span>,
             description: <span className="text-foreground">{result.error}</span>,
             variant: "destructive",
         });
-        setMessages((prevMessages) => [...prevMessages, {role: 'model', parts: [{text: `Hmph. My circuits are buzzing incorrectly. Error: ${result.error}`}]}]);
+        setMessages((prevMessages) => [...prevMessages, {role: 'model', parts: [{text: `My connection to the quantum field is disrupted. Error: ${result.error}`}]}]);
       } else {
         setMessages((prevMessages) => [...prevMessages, { role: 'model', parts: [{ text: result.botResponse }] }]);
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "An unexpected error occurred.";
       toast({
-        title: <span className="text-red-500">Connection Error</span>,
-        description: <span className="text-foreground">Could not reach BSAI: {errorMsg}</span>,
+        title: <span className="text-red-500">Network Anomaly</span>,
+        description: <span className="text-foreground">Cannot reach SHADOW: {errorMsg}</span>,
         variant: "destructive",
       });
-      setMessages((prevMessages) => [...prevMessages, {role: 'model', parts: [{text: `Looks like the hamsters powering my server are on strike. Try again later.`}]}]);
+      setMessages((prevMessages) => [...prevMessages, {role: 'model', parts: [{text: `The data stream is corrupted. Retry when the ether clears.`}]}]);
     } finally {
       setIsLoading(false);
        setTimeout(() => inputRef.current?.focus(), 0);
@@ -90,13 +90,13 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
         <DialogHeader className="p-4 border-b border-border">
           <DialogTitle className="flex items-center text-xl text-primary font-headline">
             <Sparkles className="h-6 w-6 mr-2 text-accent" />
-            Chat with <span className="text-accent ml-1">BlockSmithAI</span>
+            Interface with <span className="text-accent ml-1">SHADOW</span>
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Your <strong className="text-purple-400">sarcastic crypto genius</strong> is <strong className="text-orange-400">ready</strong> to (begrudgingly) assist.
+            The <strong className="text-purple-400">core intelligence</strong> of BlockShadow awaits your query.
           </DialogDescription>
         </DialogHeader>
-        
+
         <ScrollArea ref={scrollAreaRef} className="flex-grow p-4 space-y-4 overflow-y-auto">
           {messages.map((msg, index) => (
             <div
@@ -119,12 +119,12 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
             <div className="flex justify-start">
               <div className="p-3 rounded-lg bg-secondary text-secondary-foreground shadow flex items-center">
                 <Loader2 className="h-5 w-5 animate-spin mr-2 text-primary" />
-                BSAI is conjuring a <span className="text-accent ml-1">response...</span>
+                SHADOW is processing... <span className="text-accent ml-1">stand by.</span>
               </div>
             </div>
           )}
         </ScrollArea>
-        
+
         <DialogFooter className="p-4 border-t border-border">
           <form
             onSubmit={(e) => {
@@ -136,7 +136,7 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
             <Input
               ref={inputRef}
               type="text"
-              placeholder="Ask BSAI anything..."
+              placeholder="Transmit your query to SHADOW..."
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
               className="flex-grow bg-background focus:ring-accent focus:border-accent"

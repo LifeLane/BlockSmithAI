@@ -83,7 +83,7 @@ export default function BlockSmithAIPage() {
   const { toast } = useToast();
 
   const appHeaderRef = useRef<HTMLDivElement>(null);
-  const strategyBannerRef = useRef<HTMLDivElement>(null); 
+  const strategyBannerRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
   const liveTickerRef = useRef<HTMLDivElement>(null);
   const symbolSelectorsRef = useRef<HTMLDivElement>(null);
@@ -93,9 +93,9 @@ export default function BlockSmithAIPage() {
 
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
-    const storedCount = localStorage.getItem('bsaiAnalysisCount');
-    const storedDate = localStorage.getItem('bsaiLastAnalysisDate');
-    const storedSignupStatus = localStorage.getItem('bsaiIsSignedUp');
+    const storedCount = localStorage.getItem('bsaiAnalysisCount'); // Keep bsai for legacy count, can migrate later
+    const storedDate = localStorage.getItem('bsaiLastAnalysisDate'); // Keep bsai for legacy date
+    const storedSignupStatus = localStorage.getItem('bsaiIsSignedUp'); // Keep bsai for legacy status
     const today = new Date().toISOString().split('T')[0];
 
     if (storedSignupStatus === 'true') {
@@ -111,7 +111,7 @@ export default function BlockSmithAIPage() {
       setLastAnalysisDate(today);
     }
 
-    const storedApiKey = localStorage.getItem('bsaiApiKey');
+    const storedApiKey = localStorage.getItem('bsaiApiKey'); // Keep bsai for legacy keys
     const storedApiSecret = localStorage.getItem('bsaiApiSecret');
     if (storedApiKey && storedApiSecret) {
       setApiKey(storedApiKey);
@@ -144,7 +144,7 @@ export default function BlockSmithAIPage() {
     setApiKey('');
     setApiSecret('');
     setApiKeysSet(false);
-    setShowApiSettingsModal(false); 
+    setShowApiSettingsModal(false);
     toast({ title: "API Keys Cleared", description: "Your Binance API keys have been cleared from local storage." });
   };
 
@@ -153,18 +153,18 @@ export default function BlockSmithAIPage() {
     if (!showWelcomeScreen && mainContentRef.current) {
       const elementsToAnimate = [
         liveTickerRef.current,
-        strategyBannerRef.current, 
-        controlsContainerRef.current, // This now wraps all controls including symbol selectors
-        tradingViewWidgetRef.current, // TradingView Widget might be animated separately or as part of controls
+        strategyBannerRef.current,
+        controlsContainerRef.current,
+        tradingViewWidgetRef.current,
       ].filter(Boolean);
 
       if (elementsToAnimate.length > 0) {
         gsap.from(elementsToAnimate, {
           opacity: 0,
-          y: -30, 
+          y: -30,
           duration: 0.7,
           stagger: 0.15,
-          delay: 0.2, 
+          delay: 0.2,
           ease: 'power3.out',
         });
       }
@@ -230,7 +230,7 @@ export default function BlockSmithAIPage() {
   }, [symbol, fetchAndSetMarketData, showWelcomeScreen]);
 
   const handleGenerateStrategy = useCallback(async () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     if (!isSignedUp) {
       const today = new Date().toISOString().split('T')[0];
       let currentCount = analysisCount;
@@ -243,7 +243,7 @@ export default function BlockSmithAIPage() {
         setShowAirdropModal(true);
         toast({
           title: "Daily Limit Reached",
-          description: <span className="text-foreground">Guests are limited to <strong className="text-accent">3 analyses per day</strong>. <strong className="text-primary">Sign up</strong> for <strong className="text-tertiary">unlimited access</strong> & the <strong className="text-orange-400">BSAI airdrop!</strong></span>,
+          description: <span className="text-foreground">Guests are limited to <strong className="text-accent">3 analyses per day</strong>. <strong className="text-primary">Sign up</strong> for <strong className="text-tertiary">unlimited access</strong> & the <strong className="text-orange-400">$BSAI airdrop!</strong></span>,
           variant: "default",
         });
         return;
@@ -253,7 +253,7 @@ export default function BlockSmithAIPage() {
 
     setIsLoadingStrategy(true);
     setStrategyError(null);
-    setAiStrategy(null); 
+    setAiStrategy(null);
 
     let marketDataForAIString = '{}';
     let currentDataToUse = liveMarketData;
@@ -321,7 +321,7 @@ export default function BlockSmithAIPage() {
     if ('error' in result) {
       setStrategyError(result.error);
       toast({
-        title: "Strategy Generation Failed",
+        title: "SHADOW's Insight Blocked",
         description: result.error,
         variant: "destructive",
       });
@@ -329,17 +329,17 @@ export default function BlockSmithAIPage() {
     } else {
       setAiStrategy(result);
        toast({
-        title: <span className="text-accent">AI Edge Revealed!</span>,
-        description: <span className="text-foreground">New AI strategy generated for <strong className="text-primary">{symbol}</strong>.</span>,
+        title: <span className="text-accent">SHADOW's Insight Materialized!</span>,
+        description: <span className="text-foreground">New analysis for <strong className="text-primary">{symbol}</strong> has been generated.</span>,
       });
     }
     setIsLoadingStrategy(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [symbol, interval, selectedIndicators, riskLevel, toast, liveMarketData, fetchAndSetMarketData, marketDataError, isSignedUp, analysisCount, lastAnalysisDate, updateUsageData]);
 
   const handleProceedFromWelcome = () => {
     setShowWelcomeScreen(false);
-    window.scrollTo(0, 0); 
+    window.scrollTo(0, 0);
   };
 
   const handleToggleChat = () => {
@@ -351,11 +351,11 @@ export default function BlockSmithAIPage() {
     localStorage.setItem('bsaiIsSignedUp', 'true');
     setShowAirdropModal(false);
     toast({
-      title: <span className="text-accent">Signup Successful!</span>,
-      description: <span className="text-foreground">You're all set for the <strong className="text-orange-400">airdrop</strong> & <strong className="text-purple-400">offering</strong>. <strong className="text-primary">Unlimited analyses</strong> unlocked!</span>,
+      title: <span className="text-accent">BlockShadow Registration Complete!</span>,
+      description: <span className="text-foreground">You're confirmed for the <strong className="text-orange-400">$BSAI airdrop</strong> & <strong className="text-purple-400">offering</strong>. <strong className="text-primary">Unlimited SHADOW analyses</strong> unlocked!</span>,
     });
   };
-  
+
   const handleAttemptSimulatedTrade = () => {
     if (apiKeysSet && aiStrategy) {
       setShowConfirmTradeDialog(true);
@@ -368,8 +368,8 @@ export default function BlockSmithAIPage() {
       setShowApiSettingsModal(true);
     } else if (!aiStrategy) {
          toast({
-            title: "No Strategy Available",
-            description: "Please generate an AI strategy first.",
+            title: "No SHADOW Insight Available",
+            description: "Please generate an analysis from SHADOW first.",
             variant: "default",
         });
     }
@@ -378,7 +378,7 @@ export default function BlockSmithAIPage() {
   const confirmSimulatedTrade = () => {
      toast({
         title: <span className="text-tertiary">Trade Simulation Initiated!</span>,
-        description: <span className="text-foreground">Simulating <strong className={aiStrategy?.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{aiStrategy?.signal}</strong> for <strong className="text-primary">{aiStrategy?.symbol || symbol}</strong>. This is a DEV feature.</span>,
+        description: <span className="text-foreground">Simulating <strong className={aiStrategy?.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{aiStrategy?.signal}</strong> for <strong className="text-primary">{aiStrategy?.symbol || symbol}</strong>. This is for dev/demo.</span>,
         variant: "default",
       });
       setShowConfirmTradeDialog(false);
@@ -407,7 +407,7 @@ export default function BlockSmithAIPage() {
             <LivePriceTicker />
           </div>
           <main ref={mainContentRef} className="flex-grow container mx-auto px-4 py-8 flex flex-col w-full">
-            
+
             <div ref={strategyBannerRef} className="mb-8 w-full relative">
               <StrategyExplanationSection
                 strategy={aiStrategy}
@@ -417,7 +417,7 @@ export default function BlockSmithAIPage() {
                 symbol={symbol}
               />
             </div>
-            
+
             {/* Unified Controls Container */}
             <div ref={controlsContainerRef} className="w-full space-y-6 mb-8">
               <div ref={symbolSelectorsRef} className="w-full">
@@ -440,9 +440,9 @@ export default function BlockSmithAIPage() {
                 selectedIndicators={selectedIndicators}
                 onIndicatorChange={handleIndicatorChange}
               />
-              <RiskSelector 
-                riskLevel={riskLevel} 
-                onRiskChange={setRiskLevel} 
+              <RiskSelector
+                riskLevel={riskLevel}
+                onRiskChange={setRiskLevel}
               />
               <ExchangeLinkCard
                 apiKeysSet={apiKeysSet}
@@ -461,18 +461,18 @@ export default function BlockSmithAIPage() {
                 {isLoadingStrategy ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Unlocking Your Edge...
+                    SHADOW is Analyzing...
                   </>
                 ) : (
                   <>
                     <Sparkles className="mr-2 h-5 w-5" />
-                     Reveal My AI Edge!
+                     Invoke SHADOW's Insight
                   </>
                 )}
               </Button>
               {!isSignedUp && analysisCount > 0 && (
                  <p className="text-xs text-center text-muted-foreground mt-2">
-                   Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Sign up</button> for <strong className="text-orange-400">unlimited</strong>.
+                   Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Register</button> for <strong className="text-orange-400">unlimited</strong>.
                  </p>
               )}
             </div>
@@ -508,12 +508,12 @@ export default function BlockSmithAIPage() {
                     Confirm Simulated Trade
                   </AlertDialogTitle>
                   <AlertDialogDescription>
-                    You are about to simulate placing a <strong className={aiStrategy.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{aiStrategy.signal}</strong> order 
+                    You are about to simulate placing a <strong className={aiStrategy.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{aiStrategy.signal}</strong> order
                     for <strong className="text-primary">{aiStrategy.symbol || symbol}</strong>.
                     <br />
                     <br />
-                    This is <strong className="text-accent">NOT a real trade</strong> and is for demonstration purposes only. 
-                    BlockSmithAI is not responsible for any actions taken based on this simulation.
+                    This is <strong className="text-accent">NOT a real trade</strong> and is for demonstration purposes only.
+                    BlockShadow is not responsible for any actions taken based on this simulation.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -532,10 +532,10 @@ export default function BlockSmithAIPage() {
       )}
       <footer className={cn(
         "text-center py-4 px-6 mt-auto text-sm text-muted-foreground border-t border-border/50",
-        !showWelcomeScreen && "mb-24" 
+        !showWelcomeScreen && "mb-24"
       )}>
-        {currentYear ? `© ${currentYear} ` : ''}<strong className="text-primary">BlockSmithAI</strong> (because someone has to build this <strong className="text-accent">awesome</strong> stuff).
-        Not financial advice, <strong className="text-tertiary">obviously</strong>. Do Your Own Research, <strong className="text-orange-400">genius</strong>! 🧐
+        {currentYear ? `© ${currentYear} ` : ''}<strong className="text-primary">BlockShadow</strong> (The architects of SHADOW).
+        Not financial advice, <strong className="text-tertiary">obviously</strong>. The chain is listening. 👁️
       </footer>
     </div>
   );

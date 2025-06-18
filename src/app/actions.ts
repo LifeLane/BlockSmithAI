@@ -2,14 +2,14 @@
 "use server";
 import { generateTradingStrategy as genCoreStrategy, type GenerateTradingStrategyInput, type GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
 import { generateSarcasticDisclaimer, type SarcasticDisclaimerInput } from '@/ai/flows/generate-sarcastic-disclaimer';
-import { blocksmithChat, type BlocksmithChatInput, type BlocksmithChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
+import { shadowChat, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow'; // Path remains, but exports are for SHADOW
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
 
 export interface LiveMarketData {
   symbol: string;
   lastPrice: string;
-  priceChangePercent: string; 
-  volume: string; 
+  priceChangePercent: string;
+  volume: string;
   highPrice: string;
   lowPrice: string;
   quoteVolume: string;
@@ -31,7 +31,6 @@ export interface TickerSymbolData {
   priceChangePercent: string;
 }
 
-// Exporting ChatMessage type for use in ChatbotPopup
 export type ChatMessage = AIChatMessage;
 
 
@@ -56,11 +55,11 @@ export async function fetchAllTradingSymbolsAction(): Promise<FormattedSymbol[] 
     }
 
     const data: any[] = await response.json();
-    
+
     const usdtPairs = data
       .filter(ticker => ticker.symbol.endsWith('USDT') && parseFloat(ticker.quoteVolume) > 0 && !ticker.symbol.includes('_'))
-      .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)) 
-      .slice(0, 150) 
+      .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+      .slice(0, 150)
       .map(ticker => ({
         value: ticker.symbol,
         label: `${ticker.symbol.replace('USDT', '')}/USDT`,
@@ -69,7 +68,7 @@ export async function fetchAllTradingSymbolsAction(): Promise<FormattedSymbol[] 
     if (usdtPairs.length === 0) {
         return { error: "No active USDT trading pairs found from Binance." };
     }
-    
+
     return usdtPairs;
 
   } catch (error) {
@@ -137,7 +136,7 @@ export async function fetchMarketDataAction(params: { symbol: string }): Promise
     }
 
     const data = await response.json();
-    
+
     if (!data.symbol || !data.lastPrice || !data.priceChangePercent || !data.volume || !data.highPrice || !data.lowPrice || !data.quoteVolume) {
         return { error: "Received incomplete data from Binance API."}
     }
@@ -161,7 +160,7 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
     if (typeof input.marketData !== 'string') {
         input.marketData = typeof input.marketData === 'object' ? JSON.stringify(input.marketData) : '{}';
     }
-    
+
     if (input.marketData === '{}' || !input.marketData) {
         return {error: "Market data is missing or invalid. Cannot generate strategy."}
     }
@@ -175,24 +174,24 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
       ...coreStrategyResult,
       disclaimer: disclaimerResult.disclaimer,
     };
-    
+
     return finalResult;
 
   } catch (error: any) {
-    let errorMessage = "Failed to generate trading strategy. Please check server logs or try again.";
-    
+    let errorMessage = "SHADOW's analysis failed. Please check server logs or try again.";
+
     if (error.message) {
         if ((error.message.includes("[500]") || error.message.includes("[503]")) && error.message.includes("GoogleGenerativeAI")) {
             const statusCode = error.message.includes("[500]") ? "500 Internal Server Error" : "503 Service Unavailable";
-            errorMessage = `The AI model (Gemini) reported an issue: ${statusCode}. This is likely a temporary problem on Google's side. Please try again in a few moments. If the problem persists, the model might be having trouble with the request complexity or current load.`;
+            errorMessage = `SHADOW's connection to the generative model (Gemini) reported an issue: ${statusCode}. This is likely a temporary problem on Google's side. Please try again in a few moments.`;
         } else if (error.message.includes("Text not available. Response was blocked") || error.message.includes("SAFETY")) {
-            errorMessage = "The AI model (Gemini) was unable to generate a response due to safety filters. This might be due to the nature of the request or specific terms used. Try rephrasing or simplifying your request."
+            errorMessage = "SHADOW's analysis was blocked by safety filters. This might be due to the nature of the request or specific terms used. Try rephrasing or simplifying your request."
         }
          else {
-            errorMessage = `Strategy generation failed: ${error.message}`;
+            errorMessage = `SHADOW's analysis failed: ${error.message}`;
         }
     }
-    
+
     if (error.details) {
          errorMessage += ` Details: ${typeof error.details === 'object' ? JSON.stringify(error.details) : error.details}`;
     } else if (error.cause && typeof error.cause === 'object') {
@@ -201,7 +200,7 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
     }  else if (error.cause && typeof error.cause !== 'object') {
         errorMessage += ` Cause: ${error.cause}`;
     }
-    
+
     if (typeof error === 'object' && error !== null && !error.message && !error.details && !error.cause) {
         errorMessage += ` Additional info: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`;
     }
@@ -210,23 +209,23 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
 }
 
 
-export async function blocksmithChatAction(input: BlocksmithChatInput): Promise<BlocksmithChatOutput | { error: string }> {
+export async function shadowChatAction(input: ShadowChatInput): Promise<ShadowChatOutput | { error: string }> {
   try {
     if (!input.currentUserInput || input.currentUserInput.trim() === "") {
-      return { error: "Come on, at least type something. I'm not a mind reader... yet." };
+      return { error: "A query is required. My time is not for trivialities." };
     }
-    const result = await blocksmithChat(input);
+    const result = await shadowChat(input);
     return result;
   } catch (error: any) {
-    let errorMessage = "BSAI is currently contemplating the mysteries of the universe (or just erroring out).";
+    let errorMessage = "SHADOW's cognitive functions are currently experiencing interference.";
      if (error.message) {
         if ((error.message.includes("[500]") || error.message.includes("[503]")) && error.message.includes("GoogleGenerativeAI")) {
             const statusCode = error.message.includes("[500]") ? "500 Internal Server Error" : "503 Service Unavailable";
-            errorMessage = `BSAI's connection to the digital ether (Gemini) has a glitch: ${statusCode}. Probably temporary. Try prodding it again.`;
+            errorMessage = `SHADOW's link to the generative matrix (Gemini) has a disturbance: ${statusCode}. Likely temporary. Retry transmission.`;
         } else if (error.message.includes("Text not available. Response was blocked") || error.message.includes("SAFETY")) {
-            errorMessage = "BSAI tried to say something so profound (or so naughty) that the safety filters zapped it. Try a different angle."
+            errorMessage = "SHADOW's intended transmission was intercepted by safety protocols. Reformulate your query."
         } else {
-            errorMessage = `BSAI's thought process hit a snag: ${error.message}`;
+            errorMessage = `SHADOW's processing encountered an anomaly: ${error.message}`;
         }
     }
     return { error: errorMessage };
@@ -238,18 +237,18 @@ export async function generateDailyGreetingAction(): Promise<GenerateDailyGreeti
     const result = await generateDailyGreeting();
     return result;
   } catch (error: any) {
-    let errorMessage = "BlockSmithAI is having a moment of digital stage fright. No greeting today!";
+    let errorMessage = "SHADOW's daily signal is obscured.";
     if (error.message) {
       if ((error.message.includes("[500]") || error.message.includes("[503]")) && error.message.includes("GoogleGenerativeAI")) {
         const statusCode = error.message.includes("[500]") ? "500 Internal Server Error" : "503 Service Unavailable";
-        errorMessage = `BSAI's muse (Gemini) is on a coffee break: ${statusCode}. Try again later.`;
+        errorMessage = `SHADOW's connection to the source (Gemini) is unstable: ${statusCode}. Try again later.`;
       } else if (error.message.includes("Text not available. Response was blocked") || error.message.includes("SAFETY")) {
-        errorMessage = "BSAI tried to greet you so profoundly its words got caught in the safety net. Standard greeting it is!";
+        errorMessage = "SHADOW's morning transmission was filtered by safety protocols. A standard greeting will suffice.";
       } else {
         errorMessage = `Daily greeting malfunction: ${error.message}`;
       }
     }
     console.error("Error in generateDailyGreetingAction:", errorMessage, error);
-    return { error: errorMessage, greeting: "Welcome, Analyst! Let's decode the markets." }; // Provide a fallback greeting
+    return { error: errorMessage, greeting: "The market awakens. Observe closely." }; // Provide a fallback greeting
   }
 }

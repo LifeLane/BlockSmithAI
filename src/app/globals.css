@@ -28,8 +28,8 @@ body {
     --muted: 0 0% 20%;
     --muted-foreground: 210 20% 65%; /* Muted text */
 
-    --accent: 52 100% 55%; /* Bright Yellow #FFD91A */
-    --accent-foreground: 52 100% 5%; /* Dark for text on Bright Yellow */
+    --accent: 329 100% 70%; /* Bright Pink #FF69B4 */
+    --accent-foreground: 329 100% 10%; /* Dark for text on Bright Pink */
 
     --tertiary: 265 80% 65%; /* Vibrant Purple #9358F5 */
     --tertiary-foreground: 265 100% 5%; /* Dark for text on Purple */
@@ -39,11 +39,11 @@ body {
 
     --border: 0 0% 25%; /* Subtle borders */
     --input: 0 0% 20%; /* Input background */
-    --ring: hsl(var(--accent)); /* Ring color based on new Accent (Bright Yellow) */
+    --ring: hsl(var(--accent)); /* Ring color based on new Accent (Bright Pink) */
 
     --chart-1: hsl(var(--primary));
-    --chart-2: hsl(var(--accent));
-    --chart-3: hsl(var(--tertiary));
+    --chart-2: hsl(var(--accent)); /* Pink */
+    --chart-3: hsl(var(--tertiary)); /* Purple */
     --chart-4: 35 100% 55%; /* Saffron/Orange-like */
     --chart-5: 200 80% 60%; /* Cyan/Teal for variety */
     --radius: 0.5rem;
@@ -72,8 +72,8 @@ body {
     --secondary-foreground: 210 20% 85%;
     --muted: 0 0% 20%;
     --muted-foreground: 210 20% 65%;
-    --accent: 52 100% 55%;
-    --accent-foreground: 52 100% 5%;
+    --accent: 329 100% 70%; /* Bright Pink */
+    --accent-foreground: 329 100% 10%;
     --tertiary: 265 80% 65%;
     --tertiary-foreground: 265 100% 5%;
     --destructive: 0 70% 55%;
@@ -100,7 +100,6 @@ body {
   .sr-list { @apply space-y-1.5 mt-2; }
   .sr-item { @apply text-sm text-foreground/80; }
 
-  /* Styles for Key Findings, Suggestions, Do/Donts, Explanation - if they become HTML too */
   .findings-container .findings-title,
   .suggestions-container .suggestions-title,
   .dos-donts-container .dos-donts-title {
@@ -126,7 +125,7 @@ body {
   }
   .dos-donts-container .do-item { @apply bg-green-900/30 border-green-700/50 text-green-300; }
   .dos-donts-container .dont-item { @apply bg-red-900/30 border-red-700/50 text-red-300; }
-  /* AI will use <strong class="text-green-400">Do:</strong> or <strong class="text-red-400">Don't:</strong> */
+
   .dos-donts-container .do-item strong, .dos-donts-container .dont-item strong {
      @apply font-bold mr-1.5 shrink-0;
   }
@@ -147,21 +146,4 @@ body {
     @apply text-primary;
   }
 
-  /*
-    The following utility-like classes were removed as they are redundant
-    with Tailwind's built-in utilities generated from the theme and were
-    causing a circular dependency error.
-    The AI is instructed to use direct Tailwind classes like "text-primary",
-    "text-accent", "text-green-400", etc., in the HTML it generates.
-  */
-  /*
-  .text-primary { @apply text-primary; }
-  .text-accent { @apply text-accent; }
-  .text-tertiary { @apply text-tertiary; }
-  .text-green-400 { @apply text-green-400; }
-  .text-red-400 { @apply text-red-400; }
-  .text-orange-400 { @apply text-orange-400; }
-  .text-purple-400 { @apply text-purple-400; }
-  .text-foreground { @apply text-foreground; }
-  */
 }
