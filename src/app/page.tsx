@@ -84,6 +84,7 @@ export default function BlockSmithAIPage() {
 
   const appHeaderRef = useRef<HTMLDivElement>(null);
   const strategyBannerRef = useRef<HTMLDivElement>(null);
+  const marketDataBannerRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
   const liveTickerRef = useRef<HTMLDivElement>(null);
   const symbolSelectorsRef = useRef<HTMLDivElement>(null);
@@ -154,6 +155,7 @@ export default function BlockSmithAIPage() {
       const elementsToAnimate = [
         liveTickerRef.current,
         strategyBannerRef.current,
+        marketDataBannerRef.current,
         controlsContainerRef.current,
         tradingViewWidgetRef.current,
       ].filter(Boolean);
@@ -386,7 +388,7 @@ export default function BlockSmithAIPage() {
 
   const isButtonDisabled = isLoadingStrategy ||
                            isLoadingMarketData ||
-                           !!marketDataError ||
+                           !!marketDataError || // This refers to the general marketDataError state
                            isLoadingSymbols ||
                            (!isSignedUp && analysisCount >= MAX_GUEST_ANALYSES && !showAirdropModal);
 
@@ -417,6 +419,18 @@ export default function BlockSmithAIPage() {
                 symbol={symbol}
               />
             </div>
+            
+            {/* Market Data Display (Market Pulse) as a banner */}
+            {symbol && ( 
+              <div ref={marketDataBannerRef} className="mb-8 w-full">
+                <MarketDataDisplay
+                  liveMarketData={liveMarketData}
+                  isLoading={isLoadingMarketData}
+                  error={marketDataError}
+                  symbolForDisplay={symbol}
+                />
+              </div>
+            )}
 
             {/* Unified Controls Container */}
             <div ref={controlsContainerRef} className="w-full space-y-6 mb-8">
@@ -430,12 +444,6 @@ export default function BlockSmithAIPage() {
                   isLoadingSymbols={isLoadingSymbols}
                 />
               </div>
-              <MarketDataDisplay
-                liveMarketData={liveMarketData}
-                isLoading={isLoadingMarketData}
-                error={marketDataError}
-                symbolForDisplay={symbol}
-              />
               <IndicatorSelector
                 selectedIndicators={selectedIndicators}
                 onIndicatorChange={handleIndicatorChange}
@@ -444,15 +452,7 @@ export default function BlockSmithAIPage() {
                 riskLevel={riskLevel}
                 onRiskChange={setRiskLevel}
               />
-              <ExchangeLinkCard
-                apiKeysSet={apiKeysSet}
-                onConfigureKeys={() => setShowApiSettingsModal(true)}
-                onPlaceTrade={handleAttemptSimulatedTrade}
-                strategyAvailable={!!aiStrategy}
-              />
-              {marketDataError && !liveMarketData && (
-                  <p className="text-xs text-center text-red-400">{marketDataError}</p>
-              )}
+              
               <Button
                 onClick={handleGenerateStrategy}
                 disabled={isButtonDisabled}
@@ -470,6 +470,14 @@ export default function BlockSmithAIPage() {
                   </>
                 )}
               </Button>
+              
+              <ExchangeLinkCard
+                apiKeysSet={apiKeysSet}
+                onConfigureKeys={() => setShowApiSettingsModal(true)}
+                onPlaceTrade={handleAttemptSimulatedTrade}
+                strategyAvailable={!!aiStrategy}
+              />
+
               {!isSignedUp && analysisCount > 0 && (
                  <p className="text-xs text-center text-muted-foreground mt-2">
                    Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Register</button> for <strong className="text-orange-400">unlimited</strong>.
@@ -532,7 +540,7 @@ export default function BlockSmithAIPage() {
       )}
       <footer className={cn(
         "text-center py-4 px-6 mt-auto text-sm text-muted-foreground border-t border-border/50",
-        !showWelcomeScreen && "mb-24"
+        !showWelcomeScreen && "mb-24" // Add more margin to footer when chat icon is present
       )}>
         {currentYear ? `© ${currentYear} ` : ''}<strong className="text-primary">BlockShadow</strong> (The architects of SHADOW).
         Not financial advice, <strong className="text-tertiary">obviously</strong>. The chain is listening. 👁️
@@ -540,3 +548,5 @@ export default function BlockSmithAIPage() {
     </div>
   );
 }
+
+    
