@@ -81,7 +81,7 @@ const SymbolIntervalSelectors: FunctionComponent<SymbolIntervalSelectorsProps> =
               variant="outline"
               role="combobox"
               aria-expanded={openPopover}
-              className="w-full justify-between text-sm bg-accent text-accent-foreground border-accent hover:bg-destructive hover:text-destructive-foreground hover:border-destructive focus:border-destructive focus:ring-destructive"
+              className="w-full justify-between text-sm bg-accent text-accent-foreground border-accent hover:bg-primary hover:text-primary-foreground hover:border-primary focus:border-primary focus:ring-primary"
               id="symbol-select"
               disabled={isLoadingSymbols && symbols.length === 0}
             >
@@ -140,7 +140,7 @@ const SymbolIntervalSelectors: FunctionComponent<SymbolIntervalSelectorsProps> =
         <Select value={interval} onValueChange={onIntervalChange}>
           <SelectTrigger 
             id="interval-select" 
-            className="w-full text-sm bg-accent text-accent-foreground border-accent hover:bg-destructive hover:text-destructive-foreground hover:border-destructive focus:border-destructive focus:ring-destructive"
+            className="w-full text-sm bg-accent text-accent-foreground border-accent hover:bg-primary hover:text-primary-foreground hover:border-primary focus:border-primary focus:ring-primary"
           >
             <SelectValue placeholder="Select horizon" />
           </SelectTrigger>
