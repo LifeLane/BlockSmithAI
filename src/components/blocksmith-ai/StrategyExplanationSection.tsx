@@ -69,32 +69,55 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   const handleCopyToClipboard = () => {
     if (!strategy) return;
 
+    const currentDateTime = new Date().toLocaleString();
+    const parameters = [
+      { label: "Signal", value: strategy.signal || 'N/A' },
+      { label: "Entry Zone", value: strategy.entry_zone || 'N/A' },
+      { label: "Stop Loss", value: strategy.stop_loss || 'N/A' },
+      { label: "Take Profit", value: strategy.take_profit || 'N/A' },
+      { label: "Confidence", value: strategy.confidence || 'N/A' },
+      { label: "Risk Rating", value: strategy.risk_rating || 'N/A' },
+      { label: "SHADOW Score", value: strategy.gpt_confidence_score || 'N/A' },
+      { label: "Sentiment", value: strategy.sentiment || 'N/A' },
+    ];
+
+    const maxLabelLength = Math.max(...parameters.map(p => p.label.length));
+
+    const formattedParameters = parameters
+      .map(p => `  ${p.label.padEnd(maxLabelLength + 2)}: ${p.value}`)
+      .join('\n');
+
+    const indentedDisclaimer = strategy.disclaimer
+      ? strategy.disclaimer.split('\n').map(line => `  ${line.trim()}`).join('\n')
+      : "No disclaimer provided.";
+
     const textToCopy = `
-SHADOW Analysis for ${symbol}:
-Signal: ${strategy.signal}
-Entry Zone: ${strategy.entry_zone}
-Stop Loss: ${strategy.stop_loss}
-Take Profit: ${strategy.take_profit}
-Confidence: ${strategy.confidence}
-Risk Rating: ${strategy.risk_rating}
-SHADOW Score: ${strategy.gpt_confidence_score}
-Sentiment: ${strategy.sentiment}
----
-Disclaimer: ${strategy.disclaimer}
+====== SHADOW'S INSIGHT: ${symbol.toUpperCase()} ======
+
+Core Parameters:
+------------------------------------
+${formattedParameters}
+------------------------------------
+
+SHADOW's Edict (Disclaimer):
+------------------------------------
+${indentedDisclaimer}
+------------------------------------
+Analysis Timestamp: ${currentDateTime}
     `.trim();
 
     navigator.clipboard.writeText(textToCopy)
       .then(() => {
         toast({
-          title: <span className="text-accent">SHADOW's Insight Copied!</span>,
-          description: "The core strategy parameters have been copied to your clipboard.",
+          title: <span className="text-accent">SHADOW's Parameters Copied!</span>,
+          description: "The core strategy parameters and edict have been copied to your clipboard.",
         });
       })
       .catch(err => {
-        console.error("Failed to copy strategy: ", err);
+        console.error("Failed to copy SHADOW's parameters: ", err);
         toast({
           title: "Copy Failed",
-          description: "Could not copy SHADOW's insight. Please try again or copy manually.",
+          description: "Could not copy SHADOW's parameters. Please try again or copy manually.",
           variant: "destructive",
         });
       });
@@ -285,4 +308,3 @@ Disclaimer: ${strategy.disclaimer}
 };
 
 export default StrategyExplanationSection;
-
