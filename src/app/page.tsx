@@ -9,6 +9,7 @@ import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
 import IndicatorSelector from '@/components/blocksmith-ai/IndicatorSelector';
 import RiskSelector from '@/components/blocksmith-ai/RiskSelector';
 import StrategyExplanationSection from '@/components/blocksmith-ai/StrategyExplanationSection';
+import ShadowMindInterface from '@/components/blocksmith-ai/ShadowMindInterface'; // New
 import LivePriceTicker from '@/components/blocksmith-ai/LivePriceTicker';
 import WelcomeScreen from '@/components/blocksmith-ai/WelcomeScreen';
 import ChatbotIcon from '@/components/blocksmith-ai/ChatbotIcon';
@@ -34,7 +35,7 @@ import {
   type LiveMarketData,
   type FormattedSymbol
 } from './actions';
-import type { GenerateTradingStrategyOutput, GenerateTradingStrategyInput } from '@/ai/flows/generate-trading-strategy';
+import type { GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, ShieldQuestion } from 'lucide-react';
 import { gsap } from 'gsap';
@@ -51,7 +52,7 @@ const MAX_GUEST_ANALYSES = 3;
 export default function BlockSmithAIPage() {
   const [showWelcomeScreen, setShowWelcomeScreen] = useState<boolean>(true);
   const [symbol, setSymbol] = useState<string>('BTCUSDT');
-  const [interval, setInterval] = useState<string>('15');
+  const [interval, setInterval] = useState<string>('15'); // Keep as string for TV, convert for AI if needed
   const [selectedIndicators, setSelectedIndicators] = useState<string[]>(['RSI', 'EMA']);
   const [riskLevel, setRiskLevel] = useState<string>('Medium');
 
@@ -85,6 +86,7 @@ export default function BlockSmithAIPage() {
   const appHeaderRef = useRef<HTMLDivElement>(null);
   const strategyBannerRef = useRef<HTMLDivElement>(null);
   const marketDataBannerRef = useRef<HTMLDivElement>(null);
+  const shadowMindInterfaceRef = useRef<HTMLDivElement>(null); // New Ref
   const mainContentRef = useRef<HTMLDivElement>(null);
   const liveTickerRef = useRef<HTMLDivElement>(null);
   const symbolSelectorsRef = useRef<HTMLDivElement>(null);
@@ -94,9 +96,9 @@ export default function BlockSmithAIPage() {
 
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
-    const storedCount = localStorage.getItem('bsaiAnalysisCount'); // Keep bsai for legacy count, can migrate later
-    const storedDate = localStorage.getItem('bsaiLastAnalysisDate'); // Keep bsai for legacy date
-    const storedSignupStatus = localStorage.getItem('bsaiIsSignedUp'); // Keep bsai for legacy status
+    const storedCount = localStorage.getItem('bsaiAnalysisCount'); 
+    const storedDate = localStorage.getItem('bsaiLastAnalysisDate'); 
+    const storedSignupStatus = localStorage.getItem('bsaiIsSignedUp'); 
     const today = new Date().toISOString().split('T')[0];
 
     if (storedSignupStatus === 'true') {
@@ -112,7 +114,7 @@ export default function BlockSmithAIPage() {
       setLastAnalysisDate(today);
     }
 
-    const storedApiKey = localStorage.getItem('bsaiApiKey'); // Keep bsai for legacy keys
+    const storedApiKey = localStorage.getItem('bsaiApiKey'); 
     const storedApiSecret = localStorage.getItem('bsaiApiSecret');
     if (storedApiKey && storedApiSecret) {
       setApiKey(storedApiKey);
@@ -155,9 +157,10 @@ export default function BlockSmithAIPage() {
       const elementsToAnimate = [
         liveTickerRef.current,
         strategyBannerRef.current,
-        marketDataBannerRef.current,
+        marketDataBannerRef.current, // Added
         controlsContainerRef.current,
         tradingViewWidgetRef.current,
+        shadowMindInterfaceRef.current, // Added
       ].filter(Boolean);
 
       if (elementsToAnimate.length > 0) {
@@ -227,7 +230,7 @@ export default function BlockSmithAIPage() {
       fetchAndSetMarketData(symbol);
     } else if (!showWelcomeScreen) {
       setLiveMarketData(null);
-      setMarketDataError("No symbol selected to fetch market data.");
+      // No need to set marketDataError here explicitly unless no symbol selected
     }
   }, [symbol, fetchAndSetMarketData, showWelcomeScreen]);
 
@@ -310,18 +313,19 @@ export default function BlockSmithAIPage() {
         return;
     }
 
-    const input: GenerateTradingStrategyInput = {
+    const inputForAI = { // Explicitly type to satisfy GenerateTradingStrategyInput from AI flow
       symbol,
-      interval: `${interval}m`,
+      interval: `${interval}m`, // Ensure interval format for AI
       indicators: selectedIndicators,
       riskLevel,
       marketData: marketDataForAIString,
     };
 
-    const result = await generateTradingStrategyAction(input);
+    const result = await generateTradingStrategyAction(inputForAI);
 
     if ('error' in result) {
       setStrategyError(result.error);
+      setAiStrategy(null); // Clear any previous strategy on error
       toast({
         title: "SHADOW's Insight Blocked",
         description: result.error,
@@ -388,7 +392,7 @@ export default function BlockSmithAIPage() {
 
   const isButtonDisabled = isLoadingStrategy ||
                            isLoadingMarketData ||
-                           !!marketDataError || // This refers to the general marketDataError state
+                           !!marketDataError || 
                            isLoadingSymbols ||
                            (!isSignedUp && analysisCount >= MAX_GUEST_ANALYSES && !showAirdropModal);
 
@@ -420,7 +424,7 @@ export default function BlockSmithAIPage() {
               />
             </div>
             
-            {/* Market Data Display (Market Pulse) as a banner */}
+            {/* Market Data Display (Market Pulse) as a banner - only shown if symbol is selected */}
             {symbol && ( 
               <div ref={marketDataBannerRef} className="mb-8 w-full">
                 <MarketDataDisplay
@@ -456,7 +460,7 @@ export default function BlockSmithAIPage() {
               <Button
                 onClick={handleGenerateStrategy}
                 disabled={isButtonDisabled}
-                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 text-base shadow-lg border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 ease-in-out"
+                className="w-full bg-accent hover:bg-primary text-accent-foreground hover:text-primary-foreground font-semibold py-3 text-base shadow-lg border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 ease-in-out glow-button"
               >
                 {isLoadingStrategy ? (
                   <>
@@ -484,10 +488,27 @@ export default function BlockSmithAIPage() {
                  </p>
               )}
             </div>
+            
+            {/* ShadowMindInterface - Render if strategy is available */}
+            {aiStrategy && !isLoadingStrategy && !strategyError && (
+                 <div ref={shadowMindInterfaceRef}>
+                    <ShadowMindInterface 
+                        signalConfidence={aiStrategy.gpt_confidence_score}
+                        currentThought={aiStrategy.currentThought}
+                        sentimentMemory={aiStrategy.sentimentTransition || aiStrategy.sentiment}
+                        prediction={aiStrategy.shortTermPrediction}
+                        // onSynchronize={handleSynchronizeThoughts} // Placeholder for potential future action
+                    />
+                 </div>
+            )}
 
-            {/* TradingView Widget - Moved to the end */}
-            <div ref={tradingViewWidgetRef} className="w-full bg-card p-1 rounded-lg shadow-xl">
+
+            {/* TradingView Widget */}
+            <div ref={tradingViewWidgetRef} className="w-full bg-card p-1 rounded-lg shadow-xl mt-8">
               <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={selectedIndicators} />
+               <p className="text-xs text-center text-muted-foreground mt-2 p-2">
+                🧠 SHADOW SEES: “Stability Decay Detected — Pulse Watch Activated”
+               </p>
             </div>
 
           </main>
@@ -517,7 +538,7 @@ export default function BlockSmithAIPage() {
                   </AlertDialogTitle>
                   <AlertDialogDescription>
                     You are about to simulate placing a <strong className={aiStrategy.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{aiStrategy.signal}</strong> order
-                    for <strong className="text-primary">{aiStrategy.symbol || symbol}</strong>.
+                    for <strong className="text-primary">{symbol}</strong>.
                     <br />
                     <br />
                     This is <strong className="text-accent">NOT a real trade</strong> and is for demonstration purposes only.
@@ -539,14 +560,14 @@ export default function BlockSmithAIPage() {
         </>
       )}
       <footer className={cn(
-        "text-center py-4 px-6 mt-auto text-sm text-muted-foreground border-t border-border/50",
-        !showWelcomeScreen && "mb-24" // Add more margin to footer when chat icon is present
+        "text-center py-4 px-6 mt-auto text-xs text-muted-foreground border-t border-border/50 font-code",
+        !showWelcomeScreen && "mb-24" 
       )}>
         {currentYear ? `© ${currentYear} ` : ''}<strong className="text-primary">BlockShadow</strong> (The architects of SHADOW).
         Not financial advice, <strong className="text-tertiary">obviously</strong>. The chain is listening. 👁️
+        <br />
+        🧠 ShadowMind is evolving. Every trade feeds the mind.
       </footer>
     </div>
   );
 }
-
-    

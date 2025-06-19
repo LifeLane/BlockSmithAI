@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -10,13 +11,13 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Space Grotesk', 'sans-serif'],
-        headline: ['Space Grotesk', 'sans-serif'],
-        code: ['Source Code Pro', 'monospace'],
+        body: ['Orbitron', 'sans-serif'], // Updated
+        headline: ['Orbitron', 'sans-serif'], // Updated
+        code: ['Space Mono', 'monospace'], // Updated
       },
       colors: {
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
+        background: 'hsl(var(--background))', // Should be 0 0% 5% (Terminal Black)
+        foreground: 'hsl(var(--foreground))', // Should be ~180 100% 95% (Cyan-ish white)
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
@@ -26,7 +27,7 @@ export default {
           foreground: 'hsl(var(--popover-foreground))',
         },
         primary: {
-          DEFAULT: 'hsl(var(--primary))',
+          DEFAULT: 'hsl(var(--primary))', // Should be 180 100% 50% (Cyan Neon)
           foreground: 'hsl(var(--primary-foreground))',
         },
         secondary: {
@@ -38,8 +39,12 @@ export default {
           foreground: 'hsl(var(--muted-foreground))',
         },
         accent: {
-          DEFAULT: 'hsl(var(--accent))',
+          DEFAULT: 'hsl(var(--accent))', // Should be 300 100% 50% (Magenta/Pink)
           foreground: 'hsl(var(--accent-foreground))',
+        },
+        tertiary: {
+          DEFAULT: 'hsl(var(--tertiary))', // A new color for Shadow Mind
+          foreground: 'hsl(var(--tertiary-foreground))',
         },
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',

@@ -4,52 +4,53 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Space Grotesk', Arial, Helvetica, sans-serif;
+  font-family: 'Orbitron', Arial, Helvetica, sans-serif;
   /* Removed bg-background here to allow MatrixBackground to show */
 }
 
 @layer base {
   :root {
-    --background: 0 0% 13%; /* Dark Gray #222222 */
-    --foreground: 210 20% 98%; /* Lighter foreground for better readability on dark bg */
+    --background: 0 0% 5%; /* Terminal Base Black #0c0c0c */
+    --foreground: 180 100% 95%; /* Lighter foreground for readability on dark bg, leaning cyan */
 
-    --card: 0 0% 10%; /* Slightly darker for cards */
+    --card: 0 0% 8%; /* Slightly lighter than bg for cards */
     --card-foreground: var(--foreground);
 
-    --popover: 0 0% 10%;
+    --popover: 0 0% 8%;
     --popover-foreground: var(--foreground);
 
-    --primary: 181 100% 74%; /* Electric Blue #7DF9FF */
-    --primary-foreground: 181 100% 5%; /* Darker Blue for text on Electric Blue */
+    --primary: 180 100% 50%; /* Cyan Neon #00ffff */
+    --primary-foreground: 180 100% 5%; /* Darker for text on Cyan */
 
-    --secondary: 0 0% 20%; /* Lighter gray for secondary elements */
-    --secondary-foreground: 210 20% 85%; /* Lighter secondary text */
+    --secondary: 0 0% 15%; /* Lighter gray for secondary elements */
+    --secondary-foreground: 180 100% 85%; 
 
-    --muted: 0 0% 20%;
-    --muted-foreground: 210 20% 65%; /* Muted text */
+    --muted: 0 0% 15%;
+    --muted-foreground: 180 100% 65%; /* Muted text */
 
-    --accent: 329 100% 70%; /* Bright Pink #FF69B4 */
-    --accent-foreground: 329 100% 10%; /* Dark for text on Bright Pink */
+    --accent: 300 100% 50%; /* Magenta/Pink #ff00ff */
+    --accent-foreground: 300 100% 10%; /* Dark for text on Magenta */
 
-    --tertiary: 265 80% 65%; /* Vibrant Purple #9358F5 */
-    --tertiary-foreground: 265 100% 5%; /* Dark for text on Purple */
+    /* Tertiary can be a blend or a supporting dark neon */
+    --tertiary: 270 100% 60%; /* A deep violet, complementing cyan and magenta */
+    --tertiary-foreground: 270 100% 95%; 
 
     --destructive: 0 70% 55%; /* A suitable red for destructive actions */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 25%; /* Subtle borders */
-    --input: 0 0% 20%; /* Input background */
-    --ring: hsl(var(--accent)); /* Ring color based on new Accent (Bright Pink) */
+    --border: 0 0% 20%; /* Subtle borders */
+    --input: 0 0% 10%; /* Input background */
+    --ring: hsl(var(--accent)); /* Ring color based on new Accent (Magenta) */
 
     --chart-1: hsl(var(--primary));
-    --chart-2: hsl(var(--accent)); /* Pink */
-    --chart-3: hsl(var(--tertiary)); /* Purple */
-    --chart-4: 35 100% 55%; /* Saffron/Orange-like */
-    --chart-5: 200 80% 60%; /* Cyan/Teal for variety */
+    --chart-2: hsl(var(--accent)); 
+    --chart-3: hsl(var(--tertiary)); 
+    --chart-4: 35 100% 55%; /* Saffron/Orange-like - keep for variety */
+    --chart-5: 200 80% 60%; /* Cyan/Teal for variety - distinct from primary cyan */
     --radius: 0.5rem;
 
     /* Sidebar variables adjusted for new theme */
-    --sidebar-background: 0 0% 10%;
+    --sidebar-background: 0 0% 7%;
     --sidebar-foreground: var(--foreground);
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
@@ -60,26 +61,26 @@ body {
   }
 
   .dark {
-    --background: 0 0% 13%;
-    --foreground: 210 20% 98%;
-    --card: 0 0% 10%;
+    --background: 0 0% 5%;
+    --foreground: 180 100% 95%;
+    --card: 0 0% 8%;
     --card-foreground: var(--foreground);
-    --popover: 0 0% 10%;
+    --popover: 0 0% 8%;
     --popover-foreground: var(--foreground);
-    --primary: 181 100% 74%;
-    --primary-foreground: 181 100% 5%;
-    --secondary: 0 0% 20%;
-    --secondary-foreground: 210 20% 85%;
-    --muted: 0 0% 20%;
-    --muted-foreground: 210 20% 65%;
-    --accent: 329 100% 70%; /* Bright Pink */
-    --accent-foreground: 329 100% 10%;
-    --tertiary: 265 80% 65%;
-    --tertiary-foreground: 265 100% 5%;
+    --primary: 180 100% 50%;
+    --primary-foreground: 180 100% 5%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 180 100% 85%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 180 100% 65%;
+    --accent: 300 100% 50%; 
+    --accent-foreground: 300 100% 10%;
+    --tertiary: 270 100% 60%;
+    --tertiary-foreground: 270 100% 95%;
     --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 25%;
-    --input: 0 0% 20%;
+    --border: 0 0% 20%;
+    --input: 0 0% 10%;
     --ring: hsl(var(--accent));
   }
 }
@@ -88,14 +89,107 @@ body {
   * {
     @apply border-border;
   }
-  /* body is already set above without explicit bg */
-  /* text-foreground will be inherited or set on a main wrapper */
 }
 
-/* 
-  Removed CSS classes related to detailed HTML sections 
-  (e.g., .analysis-section-card, .level-category, etc.)
-  as these sections are no longer being generated or displayed.
-  The remaining CSS mainly covers ShadCN component theming and base styles.
-*/
+.glow-button {
+  background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
+  color: hsl(var(--background)); /* Ensure text is readable */
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-weight: bold;
+  border-radius: var(--radius);
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 0 5px hsl(var(--primary)), 0 0 10px hsl(var(--primary)/0.7), 0 0 15px hsl(var(--accent)/0.7);
+}
 
+.glow-button:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 10px hsl(var(--primary)), 0 0 20px hsl(var(--primary)/0.8), 0 0 30px hsl(var(--accent)/0.8), 0 0 5px hsl(var(--background)/0.5) inset;
+  background: linear-gradient(to right, hsl(var(--accent)), hsl(var(--primary)));
+}
+
+/* Styles for ShadowMindInterface */
+.shadow-mind-terminal {
+  font-family: 'Space Mono', monospace;
+  background-color: hsl(var(--background));
+  border: 1px solid hsl(var(--primary) / 0.5);
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  color: hsl(var(--foreground));
+  box-shadow: 0 0 15px hsl(var(--primary)/0.3), 0 0 5px hsl(var(--primary)/0.2) inset;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.shadow-mind-terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid hsl(var(--primary) / 0.3);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: hsl(var(--primary));
+}
+
+.shadow-mind-terminal-header-title {
+  font-weight: bold;
+}
+.shadow-mind-terminal-header-status {
+  color: hsl(var(--accent));
+  font-weight: bold;
+}
+
+
+.shadow-mind-line {
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  white-space: pre; /* Preserve spacing and ASCII art characters */
+  font-size: 0.9rem;
+}
+
+.shadow-mind-label {
+  color: hsl(var(--primary));
+  min-width: 180px; /* Adjust as needed for alignment */
+  display: inline-block;
+}
+
+.shadow-mind-value {
+  color: hsl(var(--foreground));
+  flex-grow: 1;
+}
+.shadow-mind-value.accent {
+    color: hsl(var(--accent));
+    font-weight: bold;
+}
+.shadow-mind-value.thought {
+    font-style: italic;
+    color: hsl(var(--muted-foreground));
+}
+
+
+.confidence-bar-container {
+  width: 100px; /* Or a fixed portion of the line */
+  height: 1rem;
+  background-color: hsl(var(--border) / 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+  display: inline-block;
+  margin-left: 0.5rem;
+  border: 1px solid hsl(var(--primary)/0.5);
+}
+
+.confidence-bar {
+  height: 100%;
+  background: linear-gradient(to right, hsl(var(--primary) / 0.7), hsl(var(--accent) / 0.7));
+  transition: width 0.5s ease-in-out;
+  box-shadow: 0 0 5px hsl(var(--primary)/0.5) inset;
+}
+
+.shadow-mind-footer {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid hsl(var(--primary) / 0.3);
+  text-align: center;
+}
