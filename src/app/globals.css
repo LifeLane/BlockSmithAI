@@ -92,58 +92,10 @@ body {
   /* text-foreground will be inherited or set on a main wrapper */
 }
 
-@layer components {
-  .pattern-analysis-container { @apply space-y-5; }
-  .pattern-category { @apply p-4 border border-border/40 rounded-lg bg-background/20 shadow-md; }
-  .pattern-title { @apply text-lg font-semibold text-primary mb-2.5 border-b border-primary/30 pb-1.5; }
-  .pattern-text { @apply text-sm text-foreground/85 leading-relaxed; }
-  .sr-list { @apply space-y-1.5 mt-2; }
-  .sr-item { @apply text-sm text-foreground/80; }
+/* 
+  Removed CSS classes related to detailed HTML sections 
+  (e.g., .analysis-section-card, .level-category, etc.)
+  as these sections are no longer being generated or displayed.
+  The remaining CSS mainly covers ShadCN component theming and base styles.
+*/
 
-  .findings-container .findings-title,
-  .suggestions-container .suggestions-title,
-  .dos-donts-container .dos-donts-title {
-    @apply text-lg font-semibold text-primary mb-2 border-b border-primary/20 pb-1;
-  }
-
-  .findings-container .findings-list,
-  .suggestions-container .suggestions-list { /* Applied to <ul> AI might generate */
-    @apply list-disc list-inside pl-1 space-y-1.5 text-sm text-foreground/90;
-  }
-  .findings-container .findings-list li::marker,
-  .suggestions-container .suggestions-list li::marker {
-    @apply text-primary;
-  }
-  .findings-container .finding-item p, /* if AI uses paragraphs */
-  .suggestions-container .suggestion-item p {
-    @apply text-sm text-foreground/90 mb-1.5;
-  }
-
-  .dos-donts-container .dos-donts-list { @apply list-none p-0 space-y-2; } /* Applied to <ul> */
-  .dos-donts-container .do-item, .dos-donts-container .dont-item { /* Applied to <li> */
-    @apply flex items-start p-2.5 rounded-md border text-sm;
-  }
-  .dos-donts-container .do-item { @apply bg-green-900/30 border-green-700/50 text-green-300; }
-  .dos-donts-container .dont-item { @apply bg-red-900/30 border-red-700/50 text-red-300; }
-
-  .dos-donts-container .do-item strong, .dos-donts-container .dont-item strong {
-     @apply font-bold mr-1.5 shrink-0;
-  }
-
-
-  .explanation-container .explanation-title { @apply text-xl font-bold text-primary mb-3 mt-5 border-b border-primary/30 pb-1.5; }
-  .explanation-container .indicator-title { @apply text-lg font-semibold text-accent mb-2 mt-4; }
-  .explanation-container .explanation-section-content p,
-  .explanation-container .indicator-detail p {
-    @apply text-sm text-foreground/90 mb-3 leading-relaxed;
-  }
-  .explanation-container .explanation-section-content ul,
-  .explanation-container .indicator-detail ul {
-    @apply list-disc list-inside pl-4 mb-3 space-y-1 text-sm text-foreground/85;
-  }
-  .explanation-container .explanation-section-content li::marker,
-  .explanation-container .indicator-detail li::marker {
-    @apply text-primary;
-  }
-
-}

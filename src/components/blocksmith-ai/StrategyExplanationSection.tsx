@@ -3,8 +3,7 @@ import { FunctionComponent } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { GenerateTradingStrategyOutput, PatternAnalysisOutput } from '@/ai/flows/generate-trading-strategy';
+import type { GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
 import type { LiveMarketData } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -24,19 +23,8 @@ import {
   MessageSquareHeart,
   Sparkles,
   Unlock,
-  Activity,
-  FileText,
-  Goal,
-  ClipboardList,
-  Glasses,
   Loader2,
-  Copy,
-  CandlestickChart,
-  GalleryVerticalEnd,
-  GitCommitHorizontal,
-  Layers,
-  View,
-  BarChartHorizontalBig
+  Copy
 } from 'lucide-react';
 
 interface StrategyExplanationSectionProps {
@@ -81,7 +69,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   const handleCopyToClipboard = () => {
     if (!strategy) return;
 
-    let textToCopy = `
+    const textToCopy = `
 SHADOW Analysis for ${symbol}:
 Signal: ${strategy.signal}
 Entry Zone: ${strategy.entry_zone}
@@ -89,34 +77,17 @@ Stop Loss: ${strategy.stop_loss}
 Take Profit: ${strategy.take_profit}
 Confidence: ${strategy.confidence}
 Risk Rating: ${strategy.risk_rating}
+SHADOW Score: ${strategy.gpt_confidence_score}
 Sentiment: ${strategy.sentiment}
----
-Key Findings:
-${strategy.keyFindings?.replace(/<[^>]*>/g, '\\n').replace(/\\n\\n+/g, '\\n').trim()}
----
-Key Suggestions:
-${strategy.keySuggestions?.replace(/<[^>]*>/g, '\\n').replace(/\\n\\n+/g, '\\n').trim()}
----
-Do's and Don'ts:
-${strategy.dosAndDonts?.replace(/<[^>]*>/g, '\\n').replace(/\\n\\n+/g, '\\n').trim()}
 ---
 Disclaimer: ${strategy.disclaimer}
     `.trim();
-
-    if (strategy.patternAnalysis && typeof strategy.patternAnalysis === 'object') {
-      textToCopy += "\n---\nPattern Intel (SHADOW Scan):\n";
-      for (const key in strategy.patternAnalysis) {
-        const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-        textToCopy += `${title}:\n${(strategy.patternAnalysis as any)[key]?.replace(/<[^>]*>/g, '\\n').replace(/\\n\\n+/g, '\\n').trim()}\n\n`;
-      }
-    }
-
 
     navigator.clipboard.writeText(textToCopy)
       .then(() => {
         toast({
           title: <span className="text-accent">SHADOW's Insight Copied!</span>,
-          description: "The core analysis details have been copied to your clipboard.",
+          description: "The core strategy parameters have been copied to your clipboard.",
         });
       })
       .catch(err => {
@@ -193,13 +164,17 @@ Disclaimer: ${strategy.disclaimer}
 
   let sentimentIcon, sentimentColor = 'text-foreground';
   const lowerSentiment = strategy.sentiment?.toLowerCase();
-  if (lowerSentiment === 'bullish') {
+  if (lowerSentiment?.includes('bullish')) {
     sentimentIcon = <TrendingUp className="h-5 w-5 text-green-400" />;
     sentimentColor = 'text-green-400 font-bold';
-  } else if (lowerSentiment === 'bearish') {
+  } else if (lowerSentiment?.includes('bearish')) {
     sentimentIcon = <TrendingDown className="h-5 w-5 text-red-400" />;
     sentimentColor = 'text-red-400 font-bold';
-  } else {
+  } else if (lowerSentiment?.includes('volatile')) {
+    sentimentIcon = <Brain className="h-5 w-5 text-orange-400" />;
+    sentimentColor = 'text-orange-400 font-semibold';
+  }
+  else {
     sentimentIcon = <Brain className="h-5 w-5 text-purple-400" />;
     sentimentColor = 'text-purple-400 font-semibold';
   }
@@ -225,15 +200,6 @@ Disclaimer: ${strategy.disclaimer}
       break;
   }
 
-  const mainTabTriggerClasses = "text-xs sm:text-sm py-2.5 px-4 data-[state=active]:shadow-lg hover:shadow-md transition-all duration-200 ease-in-out rounded-md flex items-center justify-center";
-  const textTabContentClasses = "p-1 sm:p-2 bg-background/30 rounded-lg border border-border/60 shadow-inner min-h-[200px]";
-
-  const nestedPatternTabTriggerClasses = "text-xs px-2 py-1.5 data-[state=active]:bg-primary/80 data-[state=active]:text-primary-foreground data-[state=active]:shadow-md hover:bg-primary/60 hover:text-primary-foreground rounded-sm flex items-center justify-center flex-grow text-center whitespace-nowrap";
-  const nestedPatternTabContentClasses = "p-2 sm:p-3 bg-background/10 rounded-md border border-border/30 shadow-inner min-h-[150px] mt-2";
-
-  const patternAnalysisData = strategy.patternAnalysis as PatternAnalysisOutput;
-
-
   return (
     <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out">
       <CardHeader className="text-center pb-4 pt-5">
@@ -243,150 +209,73 @@ Disclaimer: ${strategy.disclaimer}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 px-2 sm:px-4 pb-5">
-        <Tabs defaultValue="summary" className="w-full">
-          <TabsList className="flex flex-wrap justify-center gap-2 bg-card/70 border border-border/80 mb-6 p-2 h-auto rounded-lg">
-            <TabsTrigger value="summary" className={`${mainTabTriggerClasses} data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-primary/10 hover:text-primary`}><Activity className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Summary</TabsTrigger>
-            <TabsTrigger value="patterns" className={`${mainTabTriggerClasses} data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-500 hover:bg-orange-500/10 hover:text-orange-500`}><CandlestickChart className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Pattern Intel</TabsTrigger>
-            <TabsTrigger value="findings" className={`${mainTabTriggerClasses} data-[state=active]:bg-accent/20 data-[state=active]:text-accent hover:bg-accent/10 hover:text-accent`}><FileText className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Key Findings</TabsTrigger>
-            <TabsTrigger value="suggestions" className={`${mainTabTriggerClasses} data-[state=active]:bg-tertiary/20 data-[state=active]:text-tertiary hover:bg-tertiary/10 hover:text-tertiary`}><Goal className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Suggestions</TabsTrigger>
-            <TabsTrigger value="dos-donts" className={`${mainTabTriggerClasses} data-[state=active]:bg-yellow-500/20 data-[state=active]:text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-500`}><ClipboardList className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Do's/Don'ts</TabsTrigger>
-            <TabsTrigger value="deep-dive" className={`${mainTabTriggerClasses} data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-500 hover:bg-purple-500/10 hover:text-purple-500`}><Glasses className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5" />Deep Dive</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="summary" className="p-1">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-              <StatCard
-                title="SHADOW Signal"
-                value={signalTextFormatted}
-                icon={signalIcon}
-                valueClassName={signalColorCls}
-                className="sm:col-span-1 lg:col-span-1 border-primary/50"
-              />
-              <StatCard
-                title="Current Price"
-                value={<span className="text-primary">{currentPrice}</span>}
-                icon={<DollarSign size={20} className="text-primary"/>}
-              />
-              <StatCard
-                title="Sentiment Scan"
-                value={strategy.sentiment || 'N/A'}
-                icon={sentimentIcon}
-                valueClassName={`${sentimentColor}`}
-              />
-              <StatCard
-                title="Entry Zone"
-                value={<span className="text-primary">{strategy.entry_zone || 'N/A'}</span>}
-                icon={<LogIn size={20} className="text-primary"/>}
-              />
-              <StatCard
-                title="Stop Loss"
-                value={<span className="text-red-400">{strategy.stop_loss || 'N/A'}</span>}
-                icon={<ShieldX size={20} className="text-red-400"/>}
-              />
-              <StatCard
-                title="Take Profit"
-                value={<span className="text-green-400">{strategy.take_profit || 'N/A'}</span>}
-                icon={<Target size={20} className="text-green-400"/>}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-3 md:mt-4">
-                <StatCard
-                    title="Confidence Level"
-                    value={<span className="text-tertiary">{strategy.confidence || 'N/A'}</span>}
-                    icon={<ShieldCheck size={20} className="text-tertiary"/>}
-                />
-                <StatCard
-                    title="SHADOW Score"
-                    value={<span className="text-accent">{strategy.gpt_confidence_score || 'N/A'}</span>}
-                    icon={<Percent size={20} className="text-accent"/>}
-                />
-                <StatCard
-                    title="Risk Rating"
-                    value={<span className="text-orange-500">{strategy.risk_rating || 'N/A'}</span>}
-                    icon={<AlertTriangle size={20} className="text-orange-500"/>}
-                />
-            </div>
-             <div className="mt-6 flex justify-center">
-                <Button
-                    onClick={handleCopyToClipboard}
-                    variant="outline"
-                    className="border-accent text-accent hover:bg-accent/10 hover:text-accent font-semibold"
-                >
-                    <Copy className="mr-2 h-4 w-4" /> Copy SHADOW's Insight
-                </Button>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="patterns" className={textTabContentClasses}>
-            {patternAnalysisData && typeof patternAnalysisData === 'object' ? (
-              <Tabs defaultValue="recentCandles" className="w-full nested-pattern-tabs">
-                <TabsList className="flex flex-wrap justify-center gap-1 p-1.5 bg-background/50 border border-border/50 rounded-lg mb-3 h-auto">
-                  <TabsTrigger value="recentCandles" className={nestedPatternTabTriggerClasses}>
-                    <CandlestickChart size={14} className="mr-1 shrink-0"/> Recent Candles
-                  </TabsTrigger>
-                  <TabsTrigger value="heikinAshi" className={nestedPatternTabTriggerClasses}>
-                    <BarChartHorizontalBig size={14} className="mr-1 shrink-0"/> Heikin-Ashi
-                  </TabsTrigger>
-                  <TabsTrigger value="chartFormations" className={nestedPatternTabTriggerClasses}>
-                    <GalleryVerticalEnd size={14} className="mr-1 shrink-0"/> Formations
-                  </TabsTrigger>
-                  <TabsTrigger value="breakoutsPullbacks" className={nestedPatternTabTriggerClasses}>
-                    <GitCommitHorizontal size={14} className="mr-1 shrink-0"/> Breakouts
-                  </TabsTrigger>
-                  <TabsTrigger value="supportResistance" className={nestedPatternTabTriggerClasses}>
-                    <Layers size={14} className="mr-1 shrink-0"/> S/R Zones
-                  </TabsTrigger>
-                  <TabsTrigger value="overallOutlook" className={nestedPatternTabTriggerClasses}>
-                    <View size={14} className="mr-1 shrink-0"/> Outlook
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="recentCandles" className={nestedPatternTabContentClasses}>
-                  <div dangerouslySetInnerHTML={{ __html: patternAnalysisData.recentCandles || "<p class='text-muted-foreground text-sm p-3 text-center'>Recent candle analysis unavailable.</p>" }} />
-                </TabsContent>
-                <TabsContent value="heikinAshi" className={nestedPatternTabContentClasses}>
-                  <div dangerouslySetInnerHTML={{ __html: patternAnalysisData.heikinAshi || "<p class='text-muted-foreground text-sm p-3 text-center'>Heikin-Ashi analysis unavailable.</p>" }} />
-                </TabsContent>
-                <TabsContent value="chartFormations" className={nestedPatternTabContentClasses}>
-                  <div dangerouslySetInnerHTML={{ __html: patternAnalysisData.chartFormations || "<p class='text-muted-foreground text-sm p-3 text-center'>Chart formation analysis unavailable.</p>" }} />
-                </TabsContent>
-                <TabsContent value="breakoutsPullbacks" className={nestedPatternTabContentClasses}>
-                  <div dangerouslySetInnerHTML={{ __html: patternAnalysisData.breakoutsPullbacks || "<p class='text-muted-foreground text-sm p-3 text-center'>Breakout/Pullback analysis unavailable.</p>" }} />
-                </TabsContent>
-                <TabsContent value="supportResistance" className={nestedPatternTabContentClasses}>
-                  <div dangerouslySetInnerHTML={{ __html: patternAnalysisData.supportResistance || "<p class='text-muted-foreground text-sm p-3 text-center'>Support/Resistance analysis unavailable.</p>" }} />
-                </TabsContent>
-                <TabsContent value="overallOutlook" className={nestedPatternTabContentClasses}>
-                  <div dangerouslySetInnerHTML={{ __html: patternAnalysisData.overallOutlook || "<p class='text-muted-foreground text-sm p-3 text-center'>Overall pattern outlook unavailable.</p>" }} />
-                </TabsContent>
-              </Tabs>
-            ) : (
-              <p className='text-muted-foreground p-4 text-center text-sm'>Pattern Intel data is not in the expected format or is unavailable.</p>
-            )}
-          </TabsContent>
-
-          <TabsContent value="findings" className={textTabContentClasses}>
-             <div dangerouslySetInnerHTML={{ __html: strategy.keyFindings || "<p class='text-muted-foreground p-4 text-center'>No specific key findings provided by SHADOW for this strategy.</p>" }} />
-          </TabsContent>
-
-          <TabsContent value="suggestions" className={textTabContentClasses}>
-             <div dangerouslySetInnerHTML={{ __html: strategy.keySuggestions || "<p class='text-muted-foreground p-4 text-center'>No specific suggestions provided by SHADOW for this strategy.</p>" }} />
-          </TabsContent>
-
-          <TabsContent value="dos-donts" className={textTabContentClasses}>
-             <div dangerouslySetInnerHTML={{ __html: strategy.dosAndDonts || "<p class='text-muted-foreground p-4 text-center'>No specific Do's and Don'ts provided by SHADOW for this strategy.</p>" }} />
-          </TabsContent>
-
-          <TabsContent value="deep-dive" className={textTabContentClasses}>
-            <div dangerouslySetInnerHTML={{ __html: strategy.explanation || "<p class='text-muted-foreground p-4 text-center'>No detailed explanation provided by SHADOW for this strategy.</p>" }} />
-          </TabsContent>
-        </Tabs>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          <StatCard
+            title="SHADOW Signal"
+            value={signalTextFormatted}
+            icon={signalIcon}
+            valueClassName={signalColorCls}
+            className="sm:col-span-1 lg:col-span-1 border-primary/50"
+          />
+          <StatCard
+            title="Current Price"
+            value={<span className="text-primary">{currentPrice}</span>}
+            icon={<DollarSign size={20} className="text-primary"/>}
+          />
+          <StatCard
+            title="Sentiment Scan"
+            value={strategy.sentiment || 'N/A'}
+            icon={sentimentIcon}
+            valueClassName={`${sentimentColor}`}
+          />
+          <StatCard
+            title="Entry Zone"
+            value={<span className="text-primary">{strategy.entry_zone || 'N/A'}</span>}
+            icon={<LogIn size={20} className="text-primary"/>}
+          />
+          <StatCard
+            title="Stop Loss"
+            value={<span className="text-red-400">{strategy.stop_loss || 'N/A'}</span>}
+            icon={<ShieldX size={20} className="text-red-400"/>}
+          />
+          <StatCard
+            title="Take Profit"
+            value={<span className="text-green-400">{strategy.take_profit || 'N/A'}</span>}
+            icon={<Target size={20} className="text-green-400"/>}
+          />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-3 md:mt-4">
+            <StatCard
+                title="Confidence Level"
+                value={<span className="text-tertiary">{strategy.confidence || 'N/A'}</span>}
+                icon={<ShieldCheck size={20} className="text-tertiary"/>}
+            />
+            <StatCard
+                title="SHADOW Score"
+                value={<span className="text-accent">{strategy.gpt_confidence_score || 'N/A'}</span>}
+                icon={<Percent size={20} className="text-accent"/>}
+            />
+            <StatCard
+                title="Risk Rating"
+                value={<span className="text-orange-500">{strategy.risk_rating || 'N/A'}</span>}
+                icon={<AlertTriangle size={20} className="text-orange-500"/>}
+            />
+        </div>
+         <div className="mt-6 flex justify-center">
+            <Button
+                onClick={handleCopyToClipboard}
+                variant="outline"
+                className="border-accent text-accent hover:bg-accent/10 hover:text-accent font-semibold"
+            >
+                <Copy className="mr-2 h-4 w-4" /> Copy SHADOW's Parameters
+            </Button>
+        </div>
 
         {strategy.disclaimer && (
           <div className="mt-6 p-4 border-t border-primary/30 bg-background/50 rounded-lg shadow">
             <p className="text-xs text-yellow-400 italic font-code text-center flex items-center justify-center">
               <MessageSquareHeart className="mr-2 h-4 w-4 text-yellow-400 flex-shrink-0" />
-              "SHADOW's Disclaimer: {strategy.disclaimer}"
+              "SHADOW's Edict: {strategy.disclaimer}"
             </p>
           </div>
         )}
@@ -396,3 +285,4 @@ Disclaimer: ${strategy.disclaimer}
 };
 
 export default StrategyExplanationSection;
+
