@@ -1,8 +1,8 @@
 
 "use server";
 import { generateTradingStrategy as genCoreStrategy, type GenerateTradingStrategyInput, type GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
-import { generateSarcasticDisclaimer, type SarcasticDisclaimerInput } from '@/ai/flows/generate-sarcastic-disclaimer';
-import { shadowChat, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow'; // Path remains, but exports are for SHADOW
+import { generateSarcasticDisclaimer } from '@/ai/flows/generate-sarcastic-disclaimer'; // SarcasticDisclaimerInput type no longer needed here
+import { shadowChat, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
 
 export interface LiveMarketData {
@@ -97,7 +97,7 @@ export async function fetchTopSymbolsForTickerAction(): Promise<TickerSymbolData
     const topUsdtTickers = allTickers
       .filter(ticker => ticker.symbol.endsWith('USDT') && parseFloat(ticker.quoteVolume) > 0 && !ticker.symbol.includes('_'))
       .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-      .slice(0, 15) // Get top 15 for the ticker
+      .slice(0, 15) 
       .map(ticker => ({
         symbol: ticker.symbol,
         lastPrice: ticker.lastPrice,
@@ -132,13 +132,13 @@ export async function fetchMarketDataAction(params: { symbol: string }): Promise
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      return { error: `Failed to fetch market data from Binance: ${response.statusText} - ${errorData.msg || 'Unknown error'}`, status: response.status };
+      return { error: `Failed to fetch market data from Binance for ${symbol}: ${response.statusText} - ${errorData.msg || 'Unknown error'}`, status: response.status };
     }
 
     const data = await response.json();
 
     if (!data.symbol || !data.lastPrice || !data.priceChangePercent || !data.volume || !data.highPrice || !data.lowPrice || !data.quoteVolume) {
-        return { error: "Received incomplete data from Binance API."}
+        return { error: `Received incomplete market data from Binance API for ${symbol}.`}
     }
 
     return {
@@ -151,10 +151,11 @@ export async function fetchMarketDataAction(params: { symbol: string }): Promise
       quoteVolume: data.quoteVolume,
     };
   } catch (error) {
-    return { error: "An unexpected error occurred while fetching market data." };
+    return { error: `An unexpected error occurred while fetching market data for ${symbol}.` };
   }
 }
 
+// generateTradingStrategyAction input type updated to match simplified AI flow input
 export async function generateTradingStrategyAction(input: GenerateTradingStrategyInput): Promise<GenerateTradingStrategyOutput | { error: string }> {
   try {
     if (typeof input.marketData !== 'string') {
@@ -165,10 +166,10 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
         return {error: "Market data is missing or invalid. Cannot generate strategy."}
     }
 
-    const coreStrategyResult = await genCoreStrategy(input);
+    const coreStrategyResult = await genCoreStrategy(input); // input is already of the correct simplified type
 
-    const disclaimerInput: SarcasticDisclaimerInput = { riskLevel: input.riskLevel };
-    const disclaimerResult = await generateSarcasticDisclaimer(disclaimerInput);
+    // Sarcastic disclaimer no longer needs riskLevel
+    const disclaimerResult = await generateSarcasticDisclaimer({}); // Pass empty object
 
     const finalResult: GenerateTradingStrategyOutput = {
       ...coreStrategyResult,
@@ -204,6 +205,7 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
     if (typeof error === 'object' && error !== null && !error.message && !error.details && !error.cause) {
         errorMessage += ` Additional info: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`;
     }
+    console.error("Error in generateTradingStrategyAction: ", errorMessage, error);
     return { error: errorMessage };
   }
 }
@@ -228,6 +230,7 @@ export async function shadowChatAction(input: ShadowChatInput): Promise<ShadowCh
             errorMessage = `SHADOW's processing encountered an anomaly: ${error.message}`;
         }
     }
+    console.error("Error in shadowChatAction: ", errorMessage, error);
     return { error: errorMessage };
   }
 }
@@ -249,6 +252,7 @@ export async function generateDailyGreetingAction(): Promise<GenerateDailyGreeti
       }
     }
     console.error("Error in generateDailyGreetingAction:", errorMessage, error);
-    return { error: errorMessage, greeting: "The market awakens. Observe closely." }; // Provide a fallback greeting
+    return { error: errorMessage, greeting: "The market awakens. Observe closely." }; 
   }
 }
+    

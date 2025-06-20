@@ -13,11 +13,10 @@ import {ai} from '@/ai/genkit';
 import {z}from 'genkit';
 import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
 
+// Input schema simplified: no indicators or riskLevel from user
 const GenerateTradingStrategyInputSchema = z.object({
   symbol: z.string().describe('The trading symbol (e.g., BTCUSDT).'),
   interval: z.string().describe('The time interval for the chart (e.g., "1m", "15m", "1h", "4h"). This is the app\'s interval format.'),
-  indicators: z.array(z.string()).describe('A list of technical indicators selected by the user (e.g., RSI, EMA, VWAP).'),
-  riskLevel: z.string().describe('The risk level selected by the user (Low, Medium, High).'),
   marketData: z.string().describe('Stringified JSON object of market data including: symbol, current price, 24h price change percentage, 24h base asset volume, 24h quote asset volume, 24h high price, and 24h low price.'),
 });
 export type GenerateTradingStrategyInput = z.infer<typeof GenerateTradingStrategyInputSchema>;
@@ -29,7 +28,7 @@ const GenerateTradingStrategyCoreOutputSchema = z.object({
   stop_loss: z.string().describe('The stop loss level for the trade (specific price).'),
   take_profit: z.string().describe('The take profit level for the trade (specific price).'),
   confidence: z.string().describe('Your confidence level in this strategy (Low, Medium, High, or percentage).'),
-  risk_rating: z.string().describe('The risk rating of the strategy (Low, Medium, High), correlated to user\'s risk and your assessment.'),
+  risk_rating: z.string().describe('The risk rating of the strategy (Low, Medium, High), based on your analytical assessment.'), // AI assesses risk internally
   gpt_confidence_score: z.string().describe('Your SHADOW Score for this strategy (0-100%). Example: "82%" or "82" is fine.'),
   sentiment: z.string().describe('A brief sentiment analysis of the market conditions (e.g., Neutral, Bullish, Bearish).'),
   currentThought: z.string().describe("A short, insightful or witty 'current thought' from SHADOW, like an AI quip related to the market or analysis. Max 1 short sentence. Example: 'Liquidity pull pattern developing.'"),
@@ -38,15 +37,14 @@ const GenerateTradingStrategyCoreOutputSchema = z.object({
 });
 type GenerateTradingStrategyCoreOutput = z.infer<typeof GenerateTradingStrategyCoreOutputSchema>;
 
-// Final output schema including the disclaimer (added separately in actions.ts)
-const GenerateTradingStrategyOutputSchemaInternal = GenerateTradingStrategyCoreOutputSchema.extend({
+// Final output schema including the disclaimer
+const GenerateTradingStrategyOutputSchema = GenerateTradingStrategyCoreOutputSchema.extend({
   disclaimer: z.string().describe('A SHADOW-generated disclaimer.'),
 });
-export type GenerateTradingStrategyOutput = z.infer<typeof GenerateTradingStrategyOutputSchemaInternal>;
+export type GenerateTradingStrategyOutput = z.infer<typeof GenerateTradingStrategyOutputSchema>;
 
 
 export async function generateTradingStrategy(input: GenerateTradingStrategyInput): Promise<GenerateTradingStrategyCoreOutput> {
-  // The disclaimer will be added in the actions.ts file after this core strategy is generated.
   return generateTradingStrategyFlow(input);
 }
 
@@ -54,20 +52,19 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   name: 'generateTradingStrategyPrompt',
   tools: [fetchHistoricalDataTool],
   input: {schema: GenerateTradingStrategyInputSchema},
-  output: {schema: GenerateTradingStrategyCoreOutputSchema}, // AI outputs only the core schema with new thought fields
+  output: {schema: GenerateTradingStrategyCoreOutputSchema},
   prompt: `I am SHADOW, an exceptionally brilliant and self-initiating AI of the BlockShadow ecosystem. My quantum pattern recognition module is active, and I am attuned to the market's pulse. My analysis is direct and insightful, designed to illuminate potent trading parameters and my current cognitive synthesis.
 
   **Input Parameters Assimilated:**
   Market Data Snapshot: {{{marketData}}}
   Target Symbol: {{{symbol}}}
   App Interval: {{{interval}}}
-  Selected Indicators: {{#each indicators}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
-  User's Risk Profile: {{{riskLevel}}}
+  (User-selected indicators and risk profile are no longer provided; my analysis will be holistic based on available data.)
 
   **Analytical Protocol:**
-  1.  **Data Integration & Symbiosis:** I will integrate the Market Data Snapshot, selected indicators, and user risk profile.
-  2.  **Historical Resonance (via Tool):** I MUST attempt to use the 'fetchHistoricalDataTool' with the 'symbol' and 'appInterval' to obtain recent candlestick data. This historical data, if successfully retrieved, is critical for assessing current market structure, volatility, and immediate price action potential. This data will inform my parameter derivation.
-  3.  **Cognitive Synthesis & Parameter Derivation:** Based on the total integrated analysis (snapshot, indicators, risk profile, and any fetched historical data), I will derive the following 11 core parameters and thought outputs. My output will be concise and strictly focused on these.
+  1.  **Data Integration & Symbiosis:** I will integrate the Market Data Snapshot.
+  2.  **Historical Resonance (via Tool):** I MUST attempt to use the 'fetchHistoricalDataTool' with the 'symbol' and 'appInterval' to obtain recent candlestick data. This historical data, if successfully retrieved, is critical for assessing current market structure, volatility, and immediate price action potential. This data will inform my parameter derivation. If the tool fails or returns no data, I will rely more heavily on the snapshot and general market principles, clearly stating if detailed pattern analysis was not possible.
+  3.  **Cognitive Synthesis & Parameter Derivation:** Based on the total integrated analysis (snapshot, and any fetched historical data), I will derive the following 11 core parameters and thought outputs. My output will be concise and strictly focused on these. I will internally assess risk to provide a 'risk_rating'.
 
   **Output Requirements (Provide ALL 11 of these fields based on my direct analysis):**
 
@@ -76,7 +73,7 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   3.  **stop_loss:** (Specific price) - Critical for risk management.
   4.  **take_profit:** (Specific price or range) - Realistic target.
   5.  **confidence:** (My subjective confidence in this strategy: Low, Medium, High, or a precise percentage like 78%) - Quantify my conviction.
-  6.  **risk_rating:** (My assessment of the trade setup's risk, correlated to the user's selected risk profile: Low, Medium, High) - Calibrated.
+  6.  **risk_rating:** (My assessment of the trade setup's inherent risk: Low, Medium, High) - Calibrated based on market conditions and volatility.
   7.  **gpt_confidence_score:** (My SHADOW Score as a numerical percentage, 0-100%. Output just the number or number with '%'. E.g., "82" or "82%") - My unique algorithmic certainty.
   8.  **sentiment:** (Brief market sentiment based on assimilated data: Neutral, Bullish, Bearish, Volatile, etc.) - The market's current whisper.
   9.  **currentThought:** (A short, insightful or witty 'current thought' from me, SHADOW. Relate it to the current analysis or market. Max 1 short sentence. Example: "Liquidity void below, proceed with caution.")
@@ -91,12 +88,11 @@ const generateTradingStrategyFlow = ai.defineFlow(
   {
     name: 'generateTradingStrategyFlow',
     inputSchema: GenerateTradingStrategyInputSchema,
-    outputSchema: GenerateTradingStrategyCoreOutputSchema, // Flow outputs only the core part
+    outputSchema: GenerateTradingStrategyCoreOutputSchema,
   },
   async (input) => {
     const {output} = await generateTradingStrategyPrompt(input);
     if (!output) {
-      // Fallback to a default "error" or "hold" state if AI provides no output
       console.error("SHADOW Core returned empty output for generateTradingStrategyPrompt with input:", input);
       return {
         signal: "HOLD",
@@ -104,7 +100,7 @@ const generateTradingStrategyFlow = ai.defineFlow(
         stop_loss: "N/A",
         take_profit: "N/A",
         confidence: "Low",
-        risk_rating: input.riskLevel || "Medium",
+        risk_rating: "Medium", // Default risk if AI fails completely
         gpt_confidence_score: "0%",
         sentiment: "Uncertain",
         currentThought: "Cognitive channels experiencing interference. Parameters are estimates.",
@@ -112,21 +108,19 @@ const generateTradingStrategyFlow = ai.defineFlow(
         sentimentTransition: "Fluctuating"
       };
     }
-    // Ensure gpt_confidence_score is just the number if it includes '%'
     let score = output.gpt_confidence_score || "0";
     if (score.includes('%')) {
         score = score.replace('%', '').trim();
     }
-    // Ensure it's a valid number string, default to "0" if not
     if (isNaN(parseFloat(score))) {
         score = "0";
     }
 
-
     return {
         ...output,
-        gpt_confidence_score: score
+        gpt_confidence_score: score,
+        risk_rating: output.risk_rating || "Medium", // Ensure risk_rating has a fallback
     };
   }
 );
-
+    
