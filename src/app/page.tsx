@@ -442,8 +442,8 @@ export default function BlockSmithAIPage() {
               
               <Button
                 onClick={handleGenerateStrategy}
-                disabled={isButtonDisabled} 
-                className="w-full bg-accent hover:bg-primary text-accent-foreground hover:text-primary-foreground font-semibold py-3 text-base shadow-lg border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 ease-in-out glow-button"
+                disabled={isButtonDisabled}
+                className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
               >
                 {isLoadingStrategy ? (
                   <>
@@ -453,7 +453,7 @@ export default function BlockSmithAIPage() {
                 ) : (
                   <>
                     <Sparkles className="mr-2 h-5 w-5" />
-                     Invoke SHADOW's Insight
+                    Generate Signal
                   </>
                 )}
               </Button>
@@ -482,6 +482,9 @@ export default function BlockSmithAIPage() {
                     />
                  </div>
             )}
+             <p className="text-xs text-center text-muted-foreground mt-4 font-code">
+                🧠 SHADOW SEES: “Stability Decay Detected — Pulse Watch Activated”
+            </p>
 
           </main>
           <ChatbotIcon onClick={handleToggleChat} />
