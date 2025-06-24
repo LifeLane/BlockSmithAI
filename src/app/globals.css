@@ -145,7 +145,6 @@ body {
   align-items: center;
   border-bottom: 1px solid hsl(var(--primary) / 0.3);
   padding-bottom: 0.75rem;
-  margin-bottom: 1rem;
   font-size: 0.9rem;
   color: hsl(var(--primary));
 }
@@ -160,26 +159,35 @@ body {
 
 
 .shadow-mind-line {
-  margin-bottom: 0.6rem;
   display: flex;
   align-items: center;
-  white-space: pre; /* Preserve spacing and ASCII art characters */
+  gap: 0.5rem;
   font-size: 0.9rem;
 }
 
 .shadow-mind-label {
   color: hsl(var(--primary));
-  min-width: 180px; /* Adjust as needed for alignment */
-  display: inline-block;
+  white-space: pre; /* Renders the manual spacing in the JSX for alignment */
+  flex-shrink: 0; /* Prevents the label from shrinking on smaller screens */
 }
 
 .shadow-mind-value {
   color: hsl(var(--foreground));
   flex-grow: 1;
+  /* The following 3 properties ensure that long text truncates with an ellipsis */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .shadow-mind-value.accent {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     color: hsl(var(--accent));
     font-weight: bold;
+    /* Override truncation for this specific class to ensure confidence bar is always visible */
+    white-space: normal;
+    overflow: visible;
 }
 .shadow-mind-value.thought {
     font-style: italic;
@@ -196,6 +204,7 @@ body {
   display: inline-block;
   margin-left: 0.5rem;
   border: 1px solid hsl(var(--primary)/0.5);
+  vertical-align: middle; /* Aligns bar with text */
 }
 
 .confidence-bar {
@@ -211,18 +220,9 @@ body {
   border-top: 1px solid hsl(var(--primary) / 0.3);
   text-align: center;
 }
-.shadow-mind-line.footer {
+.shadow-mind-line.footer-line {
   margin-top: 1.5rem;
   padding-top: 1rem;
   border-top: 1px solid hsl(var(--primary) / 0.3);
 }
 
-.shadow-mind-line.ascii-art {
-  white-space: pre;
-  font-family: 'Space Mono', monospace;
-  font-size: 0.8rem;
-  line-height: 1;
-  color: hsl(var(--primary)/0.6);
-  text-align: center;
-  display: block;
-}

@@ -2,7 +2,6 @@
 'use client';
 
 import type { FunctionComponent } from 'react';
-import { Button } from '@/components/ui/button'; // Will use custom class for glow button
 
 interface ShadowMindInterfaceProps {
   signalConfidence?: string; // Percentage string e.g., "82" or "82%"
@@ -28,46 +27,48 @@ const ShadowMindInterface: FunctionComponent<ShadowMindInterfaceProps> = ({
         <span className="shadow-mind-terminal-header-status">[ONLINE] ┐</span>
       </div>
       
-      <div className="shadow-mind-line">
-        <span className="shadow-mind-label">│ Signal Confidence :</span>
-        <span className="shadow-mind-value accent">
-          {confidenceValue}%
-          <div className="confidence-bar-container">
-            <div 
-              className="confidence-bar" 
-              style={{ width: `${Math.min(confidenceValue, 100)}%` }}
-              aria-valuenow={confidenceValue}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              role="progressbar"
-            />
-          </div>
-        </span>
-        <span className="ml-auto">│</span>
-      </div>
+      <div className="space-y-2.5 pt-4">
+        <div className="shadow-mind-line">
+            <span className="shadow-mind-label">│ Signal Confidence :</span>
+            <span className="shadow-mind-value accent">
+                {confidenceValue}%
+                <div className="confidence-bar-container">
+                    <div 
+                    className="confidence-bar" 
+                    style={{ width: `${Math.min(confidenceValue, 100)}%` }}
+                    aria-valuenow={confidenceValue}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    role="progressbar"
+                    />
+                </div>
+            </span>
+            <span className="ml-auto">│</span>
+        </div>
 
-      <div className="shadow-mind-line">
-        <span className="shadow-mind-label">│ Current Thought   :</span>
-        <span className="shadow-mind-value thought">"{currentThought}"</span>
-        <span className="ml-auto">│</span>
-      </div>
+        <div className="shadow-mind-line">
+            <span className="shadow-mind-label">│ Current Thought   :</span>
+            <span className="shadow-mind-value thought">"{currentThought}"</span>
+            <span className="ml-auto">│</span>
+        </div>
 
-      <div className="shadow-mind-line">
-        <span className="shadow-mind-label">│ Sentiment Memory  :</span>
-        <span className="shadow-mind-value">{sentimentMemory}</span>
-        <span className="ml-auto">│</span>
-      </div>
-      
-      <div className="shadow-mind-line">
-        <span className="shadow-mind-label">│ Prediction        :</span>
-        <span className="shadow-mind-value">{prediction}</span>
-        <span className="ml-auto">│</span>
-      </div>
-      
-      <div className="shadow-mind-line">
-        <span className="shadow-mind-label">│                   </span>
-        <span className="shadow-mind-value"></span>
-        <span className="ml-auto">│</span>
+        <div className="shadow-mind-line">
+            <span className="shadow-mind-label">│ Sentiment Memory  :</span>
+            <span className="shadow-mind-value">{sentimentMemory}</span>
+            <span className="ml-auto">│</span>
+        </div>
+        
+        <div className="shadow-mind-line">
+            <span className="shadow-mind-label">│ Prediction        :</span>
+            <span className="shadow-mind-value">{prediction}</span>
+            <span className="ml-auto">│</span>
+        </div>
+        
+        <div className="shadow-mind-line">
+            <span className="shadow-mind-label">│                   </span>
+            <span className="shadow-mind-value"></span>
+            <span className="ml-auto">│</span>
+        </div>
       </div>
 
 
@@ -76,7 +77,7 @@ const ShadowMindInterface: FunctionComponent<ShadowMindInterfaceProps> = ({
         ▷ [ Synchronize Thoughts ]
         </button>
       </div>
-       <div className="shadow-mind-line mt-3">
+       <div className="shadow-mind-line footer-line">
           <span className="shadow-mind-label">└───────────────────</span>
           <span className="shadow-mind-value"></span>
           <span className="ml-auto">┘</span>
