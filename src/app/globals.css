@@ -174,7 +174,7 @@ body {
 .shadow-mind-value {
   color: hsl(var(--foreground));
   flex-grow: 1;
-  /* The following 3 properties ensure that long text truncates with an ellipsis */
+  min-width: 0; /* Allows flex item to shrink and truncate */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -185,8 +185,10 @@ body {
     gap: 0.5rem;
     color: hsl(var(--accent));
     font-weight: bold;
-    /* Override truncation for this specific class to ensure confidence bar is always visible */
-    white-space: normal;
+    /* This must also grow to push the end pipe correctly */
+    flex-grow: 1;
+    min-width: 0;
+    /* This allows the bar inside to not be truncated by overflow hidden */
     overflow: visible;
 }
 .shadow-mind-value.thought {
@@ -221,8 +223,9 @@ body {
   text-align: center;
 }
 .shadow-mind-line.footer-line {
+  display: flex;
+  justify-content: space-between;
   margin-top: 1.5rem;
   padding-top: 1rem;
   border-top: 1px solid hsl(var(--primary) / 0.3);
 }
-

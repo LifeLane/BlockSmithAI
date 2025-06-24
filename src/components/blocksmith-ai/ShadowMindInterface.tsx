@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { FunctionComponent } from 'react';
@@ -43,31 +42,31 @@ const ShadowMindInterface: FunctionComponent<ShadowMindInterfaceProps> = ({
                     />
                 </div>
             </span>
-            <span className="ml-auto">│</span>
+            <span>│</span>
         </div>
 
         <div className="shadow-mind-line">
             <span className="shadow-mind-label">│ Current Thought   :</span>
             <span className="shadow-mind-value thought">"{currentThought}"</span>
-            <span className="ml-auto">│</span>
+            <span>│</span>
         </div>
 
         <div className="shadow-mind-line">
             <span className="shadow-mind-label">│ Sentiment Memory  :</span>
             <span className="shadow-mind-value">{sentimentMemory}</span>
-            <span className="ml-auto">│</span>
+            <span>│</span>
         </div>
         
         <div className="shadow-mind-line">
             <span className="shadow-mind-label">│ Prediction        :</span>
             <span className="shadow-mind-value">{prediction}</span>
-            <span className="ml-auto">│</span>
+            <span>│</span>
         </div>
         
         <div className="shadow-mind-line">
             <span className="shadow-mind-label">│                   </span>
             <span className="shadow-mind-value"></span>
-            <span className="ml-auto">│</span>
+            <span>│</span>
         </div>
       </div>
 
@@ -78,9 +77,8 @@ const ShadowMindInterface: FunctionComponent<ShadowMindInterfaceProps> = ({
         </button>
       </div>
        <div className="shadow-mind-line footer-line">
-          <span className="shadow-mind-label">└───────────────────</span>
-          <span className="shadow-mind-value"></span>
-          <span className="ml-auto">┘</span>
+          <span>└───────────────────</span>
+          <span>┘</span>
       </div>
     </div>
   );
