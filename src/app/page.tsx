@@ -4,13 +4,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import SymbolIntervalSelectors from '@/components/blocksmith-ai/SymbolIntervalSelectors';
-import TradingViewWidget from '@/components/blocksmith-ai/TradingViewWidget';
 import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
-// IndicatorSelector, RiskSelector, and ControlsTabs are removed
 import StrategyExplanationSection from '@/components/blocksmith-ai/StrategyExplanationSection';
 import ShadowMindInterface from '@/components/blocksmith-ai/ShadowMindInterface';
 import LivePriceTicker from '@/components/blocksmith-ai/LivePriceTicker';
-// WelcomeScreen component is no longer used directly for its previous content
 import ChatbotIcon from '@/components/blocksmith-ai/ChatbotIcon';
 import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
@@ -53,10 +50,6 @@ export default function BlockSmithAIPage() {
   const [symbol, setSymbol] = useState<string>(INITIAL_WELCOME_SYMBOL); // Default symbol for welcome screen
   const [interval, setInterval] = useState<string>('15');
 
-  // Removed selectedIndicators and riskLevel states
-  // const [selectedIndicators, setSelectedIndicators] = useState<string[]>(['RSI', 'EMA']);
-  // const [riskLevel, setRiskLevel] = useState<string>('Medium');
-
   const [aiStrategy, setAiStrategy] = useState<GenerateTradingStrategyOutput | null>(null);
   const [isLoadingStrategy, setIsLoadingStrategy] = useState<boolean>(false);
   const [strategyError, setStrategyError] = useState<string | null>(null);
@@ -86,13 +79,11 @@ export default function BlockSmithAIPage() {
 
   const appHeaderRef = useRef<HTMLDivElement>(null);
   const strategyBannerRef = useRef<HTMLDivElement>(null);
-  // marketDataBannerRef is removed as MarketDataDisplay is now part of welcome or not in main view
   const shadowMindInterfaceRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
   const liveTickerRef = useRef<HTMLDivElement>(null);
   const symbolSelectorsRef = useRef<HTMLDivElement>(null);
-  const tradingViewWidgetRef = useRef<HTMLDivElement>(null);
-  const controlsContainerRef = useRef<HTMLDivElement>(null); // Will now hold selectors, CTA, ExchangeLinkCard
+  const controlsContainerRef = useRef<HTMLDivElement>(null); 
 
 
   useEffect(() => {
@@ -156,10 +147,9 @@ export default function BlockSmithAIPage() {
   useEffect(() => {
     if (!showWelcomeScreen && mainContentRef.current) {
       const elementsToAnimate = [
-        liveTickerRef.current, // Animate ticker when main app shows
+        liveTickerRef.current, 
         strategyBannerRef.current,
-        controlsContainerRef.current, // Unified controls (selectors, CTA, exchange link)
-        tradingViewWidgetRef.current,
+        controlsContainerRef.current, 
         shadowMindInterfaceRef.current,
       ].filter(Boolean);
 
@@ -190,7 +180,6 @@ export default function BlockSmithAIPage() {
         setAvailableSymbols(DEFAULT_SYMBOLS);
       } else {
         setAvailableSymbols(result);
-        // If the initial welcome symbol isn't in the fetched list, update to the first available.
         if (!result.find(s => s.value === INITIAL_WELCOME_SYMBOL) && result.length > 0) {
             setSymbol(result[0].value);
         }
@@ -200,11 +189,10 @@ export default function BlockSmithAIPage() {
     loadSymbols();
   }, [toast]);
 
-  // Removed handleIndicatorChange and handleRiskChange
 
   const fetchAndSetMarketData = useCallback(async (currentSymbolToFetch: string): Promise<LiveMarketData | null> => {
     setIsLoadingMarketData(true);
-    setMarketDataError(null); // Clear previous errors
+    setMarketDataError(null); 
     const result = await fetchMarketDataAction({ symbol: currentSymbolToFetch });
 
     if ('error' in result) {
@@ -219,15 +207,14 @@ export default function BlockSmithAIPage() {
       return null;
     } else {
       setLiveMarketData(result);
-      setMarketDataError(null); // Clear error on success
+      setMarketDataError(null); 
       setIsLoadingMarketData(false);
       return result;
     }
   }, [toast]);
 
-  // Fetch market data for welcome screen or when symbol changes in main app
   useEffect(() => {
-    if (symbol) { // Ensure symbol is set before fetching
+    if (symbol) {
         fetchAndSetMarketData(symbol);
     }
   }, [symbol, fetchAndSetMarketData]);
@@ -263,7 +250,7 @@ export default function BlockSmithAIPage() {
     let currentDataToUse = liveMarketData;
 
     if (!currentDataToUse || (currentDataToUse.symbol !== symbol && !marketDataError)) {
-        const fetchedData = await fetchAndSetMarketData(symbol); // Ensure data is for the current symbol
+        const fetchedData = await fetchAndSetMarketData(symbol); 
         if (fetchedData) {
             currentDataToUse = fetchedData;
         }
@@ -312,7 +299,6 @@ export default function BlockSmithAIPage() {
         return;
     }
 
-    // Input for AI now simplified (no indicators, no riskLevel)
     const inputForAI = {
       symbol,
       interval: `${interval}m`,
@@ -343,8 +329,6 @@ export default function BlockSmithAIPage() {
 
   const handleProceedFromWelcome = () => {
     setShowWelcomeScreen(false);
-    // Optionally, fetch data for a default main screen symbol if different from welcome
-    // or rely on user selecting a symbol. For now, 'symbol' state persists.
     window.scrollTo(0, 0);
   };
 
@@ -391,9 +375,9 @@ export default function BlockSmithAIPage() {
   }
 
   const isButtonDisabled = isLoadingStrategy ||
-                           isLoadingMarketData || // This now primarily affects the welcome screen
-                           !!marketDataError && showWelcomeScreen || // Only block CTA if error on welcome
-                           isLoadingSymbols || // Still relevant for main app selectors
+                           isLoadingMarketData || 
+                           !!marketDataError && showWelcomeScreen || 
+                           isLoadingSymbols || 
                            (!isSignedUp && analysisCount >= MAX_GUEST_ANALYSES && !showAirdropModal);
 
 
@@ -405,7 +389,7 @@ export default function BlockSmithAIPage() {
 
       {showWelcomeScreen ? (
         <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center justify-center">
-          <div className="w-full max-w-2xl"> {/* Container for MarketDataDisplay on welcome */}
+          <div className="w-full max-w-2xl"> 
             <MarketDataDisplay
                 symbolForDisplay={symbol}
                 liveMarketData={liveMarketData}
@@ -415,7 +399,7 @@ export default function BlockSmithAIPage() {
           </div>
           <Button
             onClick={handleProceedFromWelcome}
-            disabled={isLoadingMarketData || !!marketDataError} // Disable if market data fails on welcome
+            disabled={isLoadingMarketData || !!marketDataError} 
             className="mt-8 glow-button py-3 px-8 text-lg"
           >
             {isLoadingMarketData ? (
@@ -437,32 +421,28 @@ export default function BlockSmithAIPage() {
             <div ref={strategyBannerRef} className="mb-8 w-full relative">
               <StrategyExplanationSection
                 strategy={aiStrategy}
-                liveMarketData={liveMarketData} // This liveMarketData is updated by SymbolIntervalSelectors
+                liveMarketData={liveMarketData} 
                 isLoading={isLoadingStrategy}
                 error={strategyError}
                 symbol={symbol}
               />
             </div>
             
-            {/* MarketDataDisplay as a banner is REMOVED from here */}
-
-            {/* Unified Controls Container - Simplified */}
             <div ref={controlsContainerRef} className="w-full space-y-6 mb-8">
               <div ref={symbolSelectorsRef} className="w-full">
                 <SymbolIntervalSelectors
                   symbol={symbol}
-                  onSymbolChange={setSymbol} // This will trigger fetchAndSetMarketData for main view
+                  onSymbolChange={setSymbol} 
                   interval={interval}
                   onIntervalChange={setInterval}
                   symbols={availableSymbols}
                   isLoadingSymbols={isLoadingSymbols}
                 />
               </div>
-              {/* IndicatorSelector and RiskSelector are REMOVED */}
               
               <Button
                 onClick={handleGenerateStrategy}
-                disabled={isButtonDisabled} // Updated disability logic
+                disabled={isButtonDisabled} 
                 className="w-full bg-accent hover:bg-primary text-accent-foreground hover:text-primary-foreground font-semibold py-3 text-base shadow-lg border-2 border-transparent hover:border-primary hover:shadow-[0_0_25px_5px_hsl(var(--primary)/0.7)] transition-all duration-300 ease-in-out glow-button"
               >
                 {isLoadingStrategy ? (
@@ -502,13 +482,6 @@ export default function BlockSmithAIPage() {
                     />
                  </div>
             )}
-
-            <div ref={tradingViewWidgetRef} className="w-full bg-card p-1 rounded-lg shadow-xl mt-8">
-              <TradingViewWidget symbol={symbol} interval={interval} selectedIndicators={[]} /> {/* Pass empty array for indicators */}
-               <p className="text-xs text-center text-muted-foreground mt-2 p-2">
-                🧠 SHADOW SEES: “Stability Decay Detected — Pulse Watch Activated”
-               </p>
-            </div>
 
           </main>
           <ChatbotIcon onClick={handleToggleChat} />
