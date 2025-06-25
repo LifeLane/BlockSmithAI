@@ -2,7 +2,7 @@
 'use client';
 
 import type { FunctionComponent } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,25 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Mail, Send as TelegramIcon, Link as SolanaIcon, Gift, Rocket, Sparkles } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Mail, Gift, Rocket, Sparkles, Phone, User, Bot } from 'lucide-react';
+
+const TwitterIcon = () => (
+  <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary">
+    <title>X</title>
+    <path fill="currentColor" d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 7.184L18.901 1.153zm-1.61 19.99h2.136L4.259 2.145H2.022l15.269 19.001z"/>
+  </svg>
+);
+const TelegramIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4 text-primary" fill="currentColor">
+        <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-1.37.2-1.54l15.97-5.85c.73-.27 1.36.17 1.15.94l-3.22 14.22c-.21.93-1.22 1.15-1.8.56l-4.1-3.25-2.02 1.95c-.39.39-1.09.39-1.48 0z" />
+    </svg>
+);
+const YouTubeIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4 text-primary" fill="currentColor">
+        <path d="M21.582 7.696c-.246-1.34-1.28-2.37-2.62-2.616C17.043 4.5 12 4.5 12 4.5s-5.043 0-6.962.58c-1.34.246-2.374 1.276-2.62 2.616C2.5 9.615 2.5 12 2.5 12s0 2.385.418 4.304c.246 1.34 1.28 2.37 2.62 2.616C7.457 19.5 12 19.5 12 19.5s5.043 0 6.962-.58c1.34-.246 2.374-1.276 2.62-2.616C21.5 14.385 21.5 12 21.5 12s0-2.385-.418-4.304zM9.5 15.5V8.5l6 3.5-6 3.5z" />
+    </svg>
+);
 
 interface AirdropSignupModalProps {
   isOpen: boolean;
@@ -26,9 +44,30 @@ interface AirdropSignupModalProps {
 
 const signupSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
-  telegram: z.string().min(3, { message: "Telegram username must be at least 3 characters." }).regex(/^@?[a-zA-Z0-9_]{3,32}$/, "Invalid Telegram username format."),
-  solanaAddress: z.string().min(32, { message: "Solana address seems too short." }).max(44, {message: "Solana address seems too long."}).regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, "Invalid Solana address format."),
+  phone: z.string().optional(),
+  x_handle: z.string().min(1, { message: "X (Twitter) handle is required." }).regex(/^@?[a-zA-Z0-9_]{1,15}$/, "Invalid X handle format."),
+  telegram_handle: z.string().min(1, { message: "Telegram handle is required." }).regex(/^@?[a-zA-Z0-9_]{5,32}$/, "Invalid Telegram handle format."),
+  youtube_handle: z.string().optional(),
+  wallet_type: z.enum(['ETH', 'SOL', 'TON'], { required_error: "You must select a wallet type."}),
+  wallet_address: z.string().min(32, { message: "Wallet address seems too short." }),
+}).refine(data => {
+    if (data.wallet_type === 'ETH') {
+        return /^0x[a-fA-F0-9]{40}$/.test(data.wallet_address);
+    }
+    return true;
+}, {
+    message: "Invalid Ethereum address format. Must be a 42-character hex string starting with 0x.",
+    path: ["wallet_address"],
+}).refine(data => {
+    if (data.wallet_type === 'SOL') {
+        return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(data.wallet_address);
+    }
+    return true;
+}, {
+    message: "Invalid Solana address format.",
+    path: ["wallet_address"],
 });
+
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
@@ -37,10 +76,27 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
     resolver: zodResolver(signupSchema),
     defaultValues: {
       email: '',
-      telegram: '',
-      solanaAddress: '',
+      phone: '',
+      x_handle: '',
+      telegram_handle: '',
+      youtube_handle: '',
+      wallet_address: '',
     },
   });
+
+  const selectedWalletType = useWatch({
+    control: form.control,
+    name: 'wallet_type'
+  });
+
+  const getWalletPlaceholder = () => {
+    switch (selectedWalletType) {
+        case 'ETH': return "0x...";
+        case 'SOL': return "Sol...";
+        case 'TON': return "TON...";
+        default: return "Your public wallet address";
+    }
+  }
 
   const onSubmit = async (data: SignupFormData) => {
     console.log("BlockShadow Airdrop Signup Data:", data);
@@ -58,22 +114,45 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
             Join the <span className="text-orange-400 mx-1">BlockShadow</span> Initiative!
           </DialogTitle>
           <DialogDescription className="text-muted-foreground px-2">
-            Register for the <strong className="text-purple-400">BlockShadow ecosystem</strong>: secure your <strong className="text-accent">$BSAI token airdrop</strong>, gain exclusive access to our <strong className="text-primary">1st Public Offering</strong>, and unlock <strong className="text-orange-400">unlimited SHADOW analyses</strong>.
+            Complete your registration to become eligible for the <strong className="text-accent">$BSAI airdrop</strong> and future rewards.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-4 py-2">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-4 py-2 max-h-[60vh] overflow-y-auto pr-6">
+            <FormField control={form.control} name="email" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-muted-foreground"><Mail className="mr-2 h-4 w-4 text-primary" /> Email Address</FormLabel> <FormControl><Input placeholder="you@example.com" {...field} className="bg-background focus:border-accent focus:ring-accent"/></FormControl> <FormMessage /> </FormItem> )}/>
+            <FormField control={form.control} name="phone" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-muted-foreground"><Phone className="mr-2 h-4 w-4 text-primary" /> Phone Number (Optional)</FormLabel> <FormControl><Input placeholder="+1 555 123 4567" {...field} className="bg-background focus:border-accent focus:ring-accent"/></FormControl> <FormMessage /> </FormItem> )}/>
+            
+            <p className="text-sm font-medium text-primary pt-2">Social Handles (for verification)</p>
+            <FormField control={form.control} name="x_handle" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-muted-foreground"><TwitterIcon/> <span className="ml-2">X (Twitter) Handle</span></FormLabel> <FormControl><Input placeholder="@YourHandle" {...field} className="bg-background focus:border-accent focus:ring-accent"/></FormControl> <FormMessage /> </FormItem> )}/>
+            <FormField control={form.control} name="telegram_handle" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-muted-foreground"><TelegramIcon/> <span className="ml-2">Telegram Handle</span></FormLabel> <FormControl><Input placeholder="@YourHandle" {...field} className="bg-background focus:border-accent focus:ring-accent"/></FormControl> <FormMessage /> </FormItem> )}/>
+            <FormField control={form.control} name="youtube_handle" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-muted-foreground"><YouTubeIcon/> <span className="ml-2">YouTube Handle (Optional)</span></FormLabel> <FormControl><Input placeholder="Your Channel Name or Handle" {...field} className="bg-background focus:border-accent focus:ring-accent"/></FormControl> <FormMessage /> </FormItem> )}/>
+
             <FormField
               control={form.control}
-              name="email"
+              name="wallet_type"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center text-muted-foreground">
-                    <Mail className="mr-2 h-4 w-4 text-primary" /> Email Address
-                  </FormLabel>
+                <FormItem className="space-y-3 pt-2">
+                  <FormLabel className="text-sm font-medium text-primary">Airdrop Wallet Type</FormLabel>
                   <FormControl>
-                    <Input placeholder="you@example.com" {...field} className="bg-background focus:border-accent focus:ring-accent"/>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-col space-y-1"
+                    >
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl><RadioGroupItem value="ETH" /></FormControl>
+                        <FormLabel className="font-normal">Ethereum (ETH)</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl><RadioGroupItem value="SOL" /></FormControl>
+                        <FormLabel className="font-normal">Solana (SOL)</FormLabel>
+                      </FormItem>
+                       <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl><RadioGroupItem value="TON" /></FormControl>
+                        <FormLabel className="font-normal">TON</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -81,50 +160,29 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
             />
             <FormField
               control={form.control}
-              name="telegram"
+              name="wallet_address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center text-muted-foreground">
-                    <TelegramIcon className="mr-2 h-4 w-4 text-primary" /> Telegram Username
-                  </FormLabel>
+                  <FormLabel className="flex items-center text-muted-foreground">Wallet Address</FormLabel>
                   <FormControl>
-                    <Input placeholder="@your_username" {...field} className="bg-background focus:border-accent focus:ring-accent"/>
+                    <Input placeholder={getWalletPlaceholder()} {...field} className="bg-background focus:border-accent focus:ring-accent" disabled={!selectedWalletType}/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="solanaAddress"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center text-muted-foreground">
-                    <SolanaIcon className="mr-2 h-4 w-4 text-primary" /> Solana Wallet Address
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="Your Solana public key" {...field} className="bg-background focus:border-accent focus:ring-accent"/>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <DialogFooter className="pt-4">
+            <DialogFooter className="pt-4 sticky bottom-0 bg-card pb-2">
               <Button
                 type="submit"
                 className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 text-base"
                 disabled={form.formState.isSubmitting}
               >
                 <Rocket className="mr-2 h-5 w-5" />
-                Secure My Allocation & <span className="text-primary-foreground">Access SHADOW!</span>
+                Confirm Eligibility & Register
               </Button>
             </DialogFooter>
           </form>
         </Form>
-        <p className="text-xs text-muted-foreground text-center px-6 pb-4">
-            By submitting, you agree to be contacted about the <strong className="text-accent">$BSAI airdrop</strong> and <strong className="text-primary">BlockShadow public offering</strong>.
-            Holding <strong className="text-orange-400">$BSAI tokens</strong> grants <strong className="text-purple-400">unlimited SHADOW analysis access</strong>.
-        </p>
       </DialogContent>
     </Dialog>
   );

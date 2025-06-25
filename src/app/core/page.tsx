@@ -109,7 +109,7 @@ export default function CoreConsolePage() {
     localStorage.setItem('bsaiLastAnalysisDate', today);
     setAnalysisCount(newCount);
     setLastAnalysisDate(today);
-  }, [setAnalysisCount, setLastAnalysisDate]);
+  }, []);
 
   const handleSaveApiKeys = (newApiKey: string, newApiSecret: string) => {
     localStorage.setItem('bsaiApiKey', newApiKey);
@@ -152,7 +152,7 @@ export default function CoreConsolePage() {
     }
     setIsLoadingMarketData(false);
     return result;
-  }, [setMarketDataError, setIsLoadingMarketData, setLiveMarketData]);
+  }, []);
 
   useEffect(() => {
     const loadSymbols = async () => {
@@ -243,10 +243,19 @@ export default function CoreConsolePage() {
       if(!isSignedUp && analysisCount > 0) updateUsageData(analysisCount -1);
     } else {
       setAiStrategy(result);
-       toastRef.current.toast({
+      toastRef.current.toast({
         title: <span className="text-accent">SHADOW's Insight Materialized!</span>,
         description: <span className="text-foreground">New analysis for <strong className="text-primary">{result.symbol}</strong> has been generated.</span>,
       });
+
+      try {
+        const history = JSON.parse(localStorage.getItem('bsaiSignalHistory') || '[]');
+        const newEntry = { ...result, timestamp: new Date().toISOString() };
+        const updatedHistory = [newEntry, ...history].slice(0, 20); // Keep latest 20
+        localStorage.setItem('bsaiSignalHistory', JSON.stringify(updatedHistory));
+      } catch (e) {
+        console.error("Failed to save signal to history:", e);
+      }
     }
     setIsLoadingStrategy(false);
   }, [symbol, tradingMode, riskProfile, liveMarketData, isSignedUp, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData]);

@@ -6,7 +6,7 @@ import MatrixBackground from '@/components/blocksmith-ai/MatrixBackground';
 import BottomNav from '@/components/layout/BottomNav';
 
 export const metadata: Metadata = {
-  title: 'BlockShadow Mobile',
+  title: 'BlockShadow',
   description: 'AI-Powered Trading Insights from the BlockShadow Ecosystem',
 };
 
