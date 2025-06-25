@@ -9,6 +9,7 @@ import { CheckCircle, Clock, Zap, Users, ShieldCheck, Gift, Award } from 'lucide
 import { Progress } from '@/components/ui/progress';
 import { useToast } from "@/hooks/use-toast";
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
+import { Badge } from '@/components/ui/badge';
 
 const TwitterIcon = () => (
   <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary">
