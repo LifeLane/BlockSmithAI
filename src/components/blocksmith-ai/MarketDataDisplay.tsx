@@ -3,7 +3,6 @@ import { FunctionComponent } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
-  Activity, 
   AlertCircle, 
   Loader2, 
   TrendingUp, 
@@ -11,8 +10,7 @@ import {
   ArrowUpRightFromCircle, 
   ArrowDownRightFromCircle,
   DollarSign,
-  BarChartHorizontalBig, // Changed from BarChartBig for variety
-  Sigma // Using Sigma for volume representation
+  Sigma
 } from 'lucide-react';
 import type { LiveMarketData } from '@/app/actions';
 
@@ -35,6 +33,11 @@ const DataPoint: FunctionComponent<{ label: string; value: string | React.ReactN
   </div>
 );
 
+const PulseIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary mb-1">
+        <path d="M3 12h4.5l2.5-6 3 12 2.5-6L19.5 12H22" />
+    </svg>
+)
 
 const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({ 
   liveMarketData, 
@@ -49,7 +52,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
     return (
       <Card className="shadow-md transition-all duration-300 ease-in-out">
         <CardHeader className="items-center text-center">
-          <Activity className="mr-2 h-6 w-6 text-primary animate-pulse" />
+          <PulseIcon />
           <CardTitle className="text-xl font-semibold text-foreground">
             Fetching Market <span className="text-primary">Pulse...</span>
           </CardTitle>
@@ -88,7 +91,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
      return (
       <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-tertiary hover:shadow-[0_0_15px_3px_hsl(var(--accent)/0.5)]">
         <CardHeader className="items-center text-center">
-          <Activity className="mr-2 h-6 w-6 text-primary" />
+          <PulseIcon />
           <CardTitle className="text-xl font-semibold text-foreground">
             Live Market <span className="text-primary">Pulse</span>
           </CardTitle>
@@ -116,7 +119,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
   return (
     <Card className="shadow-lg transition-all duration-300 ease-in-out hover:border-primary/70 hover:shadow-[0_0_18px_4px_hsl(var(--primary)/0.5)]">
       <CardHeader className="items-center text-center pb-4">
-        <Activity className="mr-2 h-7 w-7 text-primary mb-1" />
+        <PulseIcon />
         <CardTitle className="text-xl md:text-2xl font-semibold text-foreground">
           Live Market <span className="text-primary">Pulse</span>
         </CardTitle>
@@ -157,8 +160,8 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
           <DataPoint 
             label="Volume (USDT)" 
             value={parseFloat(data.quoteVolume).toLocaleString(undefined, {maximumFractionDigits: 2})}
-            icon={<DollarSign size={16} className="text-purple-400"/>}
-            valueClassName="text-purple-400"
+            icon={<DollarSign size={16} className="text-tertiary"/>}
+            valueClassName="text-tertiary"
           />
         </div>
         

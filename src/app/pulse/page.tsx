@@ -1,22 +1,65 @@
 
 'use client';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
-import LivePriceTicker from '@/components/blocksmith-ai/LivePriceTicker';
+import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { BarChart, Users, Rss, TrendingUp, Shield, Crown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { fetchMarketDataAction, type LiveMarketData } from '@/app/actions';
+import { useToast } from "@/hooks/use-toast";
 
+const PULSE_SYMBOL = 'BTCUSDT';
 
 export default function PulsePage() {
+  const [liveMarketData, setLiveMarketData] = useState<LiveMarketData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const toastRef = useRef(useToast());
+
+  const fetchAndSetMarketData = useCallback(async (showToastOnError = true) => {
+    // No need to set loading to true every time for background refresh
+    if (isLoading === false) setIsLoading(false);
+    
+    setError(null);
+    const result = await fetchMarketDataAction({ symbol: PULSE_SYMBOL });
+
+    if ('error' in result) {
+      setError(result.error);
+      setLiveMarketData(null);
+      if (showToastOnError) {
+        toastRef.current.toast({
+          title: "Market Data Error",
+          description: result.error,
+          variant: "destructive",
+        });
+      }
+    } else {
+      setLiveMarketData(result);
+      setError(null);
+    }
+    setIsLoading(false);
+  }, [isLoading]); // Dependency on isLoading to avoid resetting on background fetch
+
+  useEffect(() => {
+    setIsLoading(true);
+    fetchAndSetMarketData(true);
+    const intervalId = setInterval(() => fetchAndSetMarketData(false), 30000);
+    return () => clearInterval(intervalId);
+  }, [fetchAndSetMarketData]);
+
+
   return (
     <>
       <AppHeader />
       <div className="container mx-auto px-4 py-8 space-y-8">
-        <div>
-          <h1 className="text-4xl font-bold text-primary mb-2 text-center">Live Pulse</h1>
-          <p className="text-muted-foreground text-center mb-6">A real-time overview of market activity and community engagement.</p>
-          <LivePriceTicker />
-        </div>
+        
+        <MarketDataDisplay
+          liveMarketData={liveMarketData}
+          isLoading={isLoading}
+          error={error}
+          symbolForDisplay={PULSE_SYMBOL}
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="hover:border-primary/70 transition-colors">
