@@ -103,13 +103,13 @@ export default function CoreConsolePage() {
     }
   }, []);
 
-  const updateUsageData = (newCount: number) => {
+  const updateUsageData = useCallback((newCount: number) => {
     const today = new Date().toISOString().split('T')[0];
     localStorage.setItem('bsaiAnalysisCount', newCount.toString());
     localStorage.setItem('bsaiLastAnalysisDate', today);
     setAnalysisCount(newCount);
     setLastAnalysisDate(today);
-  };
+  }, [setAnalysisCount, setLastAnalysisDate]);
 
   const handleSaveApiKeys = (newApiKey: string, newApiSecret: string) => {
     localStorage.setItem('bsaiApiKey', newApiKey);
@@ -152,7 +152,7 @@ export default function CoreConsolePage() {
     }
     setIsLoadingMarketData(false);
     return result;
-  }, []);
+  }, [setMarketDataError, setIsLoadingMarketData, setLiveMarketData]);
 
   useEffect(() => {
     const loadSymbols = async () => {
@@ -245,11 +245,11 @@ export default function CoreConsolePage() {
       setAiStrategy(result);
        toastRef.current.toast({
         title: <span className="text-accent">SHADOW's Insight Materialized!</span>,
-        description: <span className="text-foreground">New analysis for <strong className="text-primary">{symbol}</strong> has been generated.</span>,
+        description: <span className="text-foreground">New analysis for <strong className="text-primary">{result.symbol}</strong> has been generated.</span>,
       });
     }
     setIsLoadingStrategy(false);
-  }, [symbol, interval, liveMarketData, isSignedUp, analysisCount, lastAnalysisDate, fetchAndSetMarketData]);
+  }, [symbol, interval, liveMarketData, isSignedUp, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData]);
 
   const handleToggleChat = () => setIsChatOpen(prev => !prev);
   const handleAirdropSignupSuccess = () => {

@@ -1,3 +1,4 @@
+'use client';
 
 import { FunctionComponent, useEffect, useRef } from 'react';
 import { Zap } from 'lucide-react';
