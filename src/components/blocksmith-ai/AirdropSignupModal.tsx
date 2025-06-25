@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { FunctionComponent } from 'react';
@@ -18,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Mail, Gift, Rocket, Sparkles, Phone, User, Bot } from 'lucide-react';
-import { handleAirdropSignupAction, AirdropFormData } from '../app/actions'; // Import the action
+import { handleAirdropSignupAction, type AirdropFormData } from '@/app/actions'; // Import the action
 
 const TwitterIcon = () => (
   <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary">
@@ -99,7 +98,7 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
     }
   }
 
-  const onSubmit = async (data: SignupFormData) => {
+  const onSubmit = async (data: AirdropFormData) => {
     console.log("Submitting Airdrop Signup Data:", data);
     try {
       const result = await handleAirdropSignupAction(data);
