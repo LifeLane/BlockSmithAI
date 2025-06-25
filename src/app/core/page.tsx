@@ -308,7 +308,7 @@ export default function CoreConsolePage() {
         </div>
 
         <div className="mb-8 w-full">
-          <TradingViewWidget symbol={symbol} />
+          <TradingViewWidget symbol={symbol} interval={interval} />
         </div>
 
         <div className="w-full space-y-6 mb-8">
