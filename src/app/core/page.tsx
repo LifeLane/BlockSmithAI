@@ -3,8 +3,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
-import SymbolIntervalSelectors from '@/components/blocksmith-ai/SymbolIntervalSelectors';
-import TradingViewWidget from '@/components/blocksmith-ai/TradingViewWidget';
+import StrategySelectors from '@/components/blocksmith-ai/StrategySelectors';
 import StrategyExplanationSection from '@/components/blocksmith-ai/StrategyExplanationSection';
 import ShadowMindInterface from '@/components/blocksmith-ai/ShadowMindInterface';
 import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
@@ -45,7 +44,8 @@ const MAX_GUEST_ANALYSES = 3;
 
 export default function CoreConsolePage() {
   const [symbol, setSymbol] = useState<string>(INITIAL_DEFAULT_SYMBOL);
-  const [interval, setInterval] = useState<string>('15m');
+  const [tradingMode, setTradingMode] = useState<string>('Intraday');
+  const [riskProfile, setRiskProfile] = useState<string>('Medium');
 
   const [aiStrategy, setAiStrategy] = useState<GenerateTradingStrategyOutput | null>(null);
   const [isLoadingStrategy, setIsLoadingStrategy] = useState<boolean>(false);
@@ -228,7 +228,7 @@ export default function CoreConsolePage() {
         marketDataForAIString = JSON.stringify(currentDataToUse);
     }
 
-    const inputForAI = { symbol, interval, marketData: marketDataForAIString };
+    const inputForAI = { symbol, tradingMode, riskProfile, marketData: marketDataForAIString };
 
     const result = await generateTradingStrategyAction(inputForAI);
 
@@ -249,7 +249,7 @@ export default function CoreConsolePage() {
       });
     }
     setIsLoadingStrategy(false);
-  }, [symbol, interval, liveMarketData, isSignedUp, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData]);
+  }, [symbol, tradingMode, riskProfile, liveMarketData, isSignedUp, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData]);
 
   const handleToggleChat = () => setIsChatOpen(prev => !prev);
   const handleAirdropSignupSuccess = () => {
@@ -307,16 +307,14 @@ export default function CoreConsolePage() {
             />
         </div>
 
-        <div className="mb-8 w-full">
-          <TradingViewWidget symbol={symbol} interval={interval} />
-        </div>
-
         <div className="w-full space-y-6 mb-8">
-            <SymbolIntervalSelectors
+            <StrategySelectors
                 symbol={symbol}
                 onSymbolChange={setSymbol} 
-                interval={interval}
-                onIntervalChange={setInterval}
+                tradingMode={tradingMode}
+                onTradingModeChange={setTradingMode}
+                riskProfile={riskProfile}
+                onRiskProfileChange={setRiskProfile}
                 symbols={availableSymbols}
                 isLoadingSymbols={isLoadingSymbols}
             />

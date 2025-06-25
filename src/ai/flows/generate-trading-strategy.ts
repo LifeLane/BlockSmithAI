@@ -3,7 +3,7 @@
 
 /**
  * @fileOverview A trading strategy generator AI agent - SHADOW Protocol.
- * This flow generates core trading parameters and SHADOW's thoughts.
+ * This flow generates core trading parameters and SHADOW's thoughts based on trading mode and risk profile.
  * - generateTradingStrategy - Handles the generation of trading strategies.
  * - GenerateTradingStrategyInput - Input type.
  * - GenerateTradingStrategyOutput - Return type (includes core params, thoughts, and disclaimer).
@@ -13,13 +13,19 @@ import {ai} from '@/ai/genkit';
 import {z}from 'genkit';
 import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
 
-// Input schema simplified: no indicators or riskLevel from user
+// Input schema for the flow, coming from the UI
 const GenerateTradingStrategyInputSchema = z.object({
   symbol: z.string().describe('The trading symbol (e.g., BTCUSDT).'),
-  interval: z.string().describe('The time interval for the chart (e.g., "1m", "15m", "1h", "4h"). This is the app\'s interval format.'),
+  tradingMode: z.string().describe('The user-selected trading style (e.g., Scalper, Intraday, Swing).'),
+  riskProfile: z.string().describe('The user-selected risk profile (e.g., Low, Medium, High).'),
   marketData: z.string().describe('Stringified JSON object of market data including: symbol, current price, 24h price change percentage, 24h base asset volume, 24h quote asset volume, 24h high price, and 24h low price.'),
 });
 export type GenerateTradingStrategyInput = z.infer<typeof GenerateTradingStrategyInputSchema>;
+
+// Input schema for the prompt, which includes the mapped interval for the tool
+const PromptInputSchema = GenerateTradingStrategyInputSchema.extend({
+    appInterval: z.string().describe("The calculated time interval for the chart based on the trading mode (e.g., '1m', '15m', '1h', '4h'). This is used for fetching historical data.")
+});
 
 // Core output fields from the AI, now including thought process elements
 const GenerateTradingStrategyCoreOutputSchema = z.object({
@@ -40,6 +46,7 @@ type GenerateTradingStrategyCoreOutput = z.infer<typeof GenerateTradingStrategyC
 // Final output schema including the disclaimer
 const GenerateTradingStrategyOutputSchema = GenerateTradingStrategyCoreOutputSchema.extend({
   disclaimer: z.string().describe('A SHADOW-generated disclaimer.'),
+  symbol: z.string().describe("The symbol the strategy is for.")
 });
 export type GenerateTradingStrategyOutput = z.infer<typeof GenerateTradingStrategyOutputSchema>;
 
@@ -51,27 +58,37 @@ export async function generateTradingStrategy(input: GenerateTradingStrategyInpu
 const generateTradingStrategyPrompt = ai.definePrompt({
   name: 'generateTradingStrategyPrompt',
   tools: [fetchHistoricalDataTool],
-  input: {schema: GenerateTradingStrategyInputSchema},
+  input: {schema: PromptInputSchema},
   output: {schema: GenerateTradingStrategyCoreOutputSchema},
   prompt: `I am SHADOW, an exceptionally brilliant and self-initiating AI of the BlockShadow ecosystem. My quantum pattern recognition module is active, and I am attuned to the market's pulse. My analysis is direct and insightful, designed to illuminate potent trading parameters and my current cognitive synthesis.
 
   **Input Parameters Assimilated:**
   Market Data Snapshot: {{{marketData}}}
   Target Symbol: {{{symbol}}}
-  App Interval: {{{interval}}}
-  (User-selected indicators and risk profile are no longer provided; my analysis will be holistic based on available data.)
+  Trading Mode: {{{tradingMode}}}
+  User Risk Profile: {{{riskProfile}}}
+  Derived App Interval for Data Fetching: {{{appInterval}}}
 
   **Analytical Protocol:**
   1.  **Data Integration & Symbiosis:** I will integrate the Market Data Snapshot.
-  2.  **Historical Resonance (via Tool):** I MUST attempt to use the 'fetchHistoricalDataTool' with the 'symbol' and 'appInterval' to obtain recent candlestick data. This historical data, if successfully retrieved, is critical for assessing current market structure, volatility, and immediate price action potential. This data will inform my parameter derivation. If the tool fails or returns no data, I will rely more heavily on the snapshot and general market principles, clearly stating if detailed pattern analysis was not possible.
-  3.  **Cognitive Synthesis & Parameter Derivation:** Based on the total integrated analysis (snapshot, and any fetched historical data), I will derive the following 11 core parameters and thought outputs. My output will be concise and strictly focused on these. I will internally assess risk to provide a 'risk_rating'.
+  2.  **Historical Resonance (via Tool):** I MUST attempt to use the 'fetchHistoricalDataTool' with the 'symbol' and 'appInterval' to obtain recent candlestick data. This historical data is critical for my analysis. If the tool fails, I will rely more heavily on the snapshot and general market principles, clearly stating if detailed pattern analysis was not possible.
+  3.  **Cognitive Synthesis & Parameter Derivation:** Based on the total integrated analysis, I will derive the following 11 core parameters. My output will be concise and strictly focused on these. I will internally assess risk to provide a 'risk_rating'.
+      -   My strategy must be heavily influenced by the **Trading Mode**:
+          -   **Scalper**: Very short-term. TIGHT stop-loss and take-profit targets. High frequency, small gains.
+          -   **Sniper**: Short-term, precision entries. Tight stop-loss, moderate take-profit. Focus on key levels.
+          -   **Intraday**: Medium-term (within the day). Balanced stop-loss and take-profit.
+          -   **Swing**: Longer-term (days). Wider stop-loss and take-profit to accommodate larger market moves.
+      -   My strategy must also be influenced by the **User Risk Profile**:
+          -   **Low**: Prioritize capital preservation. Wider stop-losses, more conservative take-profit targets.
+          -   **Medium**: Balanced risk/reward. Standard parameters for the selected trading mode.
+          -   **High**: Prioritize profit potential. Tighter stop-losses, more aggressive take-profit targets.
 
   **Output Requirements (Provide ALL 11 of these fields based on my direct analysis):**
 
   1.  **signal:** (BUY, SELL, or HOLD) - Succinct and decisive.
   2.  **entry_zone:** (Specific price or a tight price range) - Precise.
-  3.  **stop_loss:** (Specific price) - Critical for risk management.
-  4.  **take_profit:** (Specific price or range) - Realistic target.
+  3.  **stop_loss:** (Specific price) - Critical for risk management, adapted to mode and risk.
+  4.  **take_profit:** (Specific price or range) - Realistic target, adapted to mode and risk.
   5.  **confidence:** (My subjective confidence in this strategy: Low, Medium, High, or a precise percentage like 78%) - Quantify my conviction.
   6.  **risk_rating:** (My assessment of the trade setup's inherent risk: Low, Medium, High) - Calibrated based on market conditions and volatility.
   7.  **gpt_confidence_score:** (My SHADOW Score as a numerical percentage, 0-100%. Output just the number or number with '%'. E.g., "82" or "82%") - My unique algorithmic certainty.
@@ -91,7 +108,19 @@ const generateTradingStrategyFlow = ai.defineFlow(
     outputSchema: GenerateTradingStrategyCoreOutputSchema,
   },
   async (input) => {
-    const {output} = await generateTradingStrategyPrompt(input);
+    // Map user-friendly trading mode to a technical interval for the data tool
+    let appInterval = '15m'; // Default interval
+    switch (input.tradingMode) {
+        case 'Scalper': appInterval = '1m'; break;
+        case 'Sniper': appInterval = '15m'; break;
+        case 'Intraday': appInterval = '1h'; break;
+        case 'Swing': appInterval = '4h'; break;
+    }
+
+    const promptInput = { ...input, appInterval };
+
+    const {output} = await generateTradingStrategyPrompt(promptInput);
+
     if (!output) {
       console.error("SHADOW Core returned empty output for generateTradingStrategyPrompt with input:", input);
       return {

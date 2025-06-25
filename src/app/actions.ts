@@ -1,7 +1,7 @@
 
 "use server";
 import { generateTradingStrategy as genCoreStrategy, type GenerateTradingStrategyInput, type GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
-import { generateSarcasticDisclaimer } from '@/ai/flows/generate-sarcastic-disclaimer'; // SarcasticDisclaimerInput type no longer needed here
+import { generateSarcasticDisclaimer } from '@/ai/flows/generate-sarcastic-disclaimer';
 import { shadowChat, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
 import { getTokenPriceFromMoralis, type TokenPrice } from '@/services/moralis-service';
@@ -157,7 +157,6 @@ export async function fetchMarketDataAction(params: { symbol: string }): Promise
   }
 }
 
-// generateTradingStrategyAction input type updated to match simplified AI flow input
 export async function generateTradingStrategyAction(input: GenerateTradingStrategyInput): Promise<GenerateTradingStrategyOutput | { error: string }> {
   try {
     if (typeof input.marketData !== 'string') {
@@ -168,13 +167,13 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
         return {error: "Market data is missing or invalid. Cannot generate strategy."}
     }
 
-    const coreStrategyResult = await genCoreStrategy(input); // input is already of the correct simplified type
+    const coreStrategyResult = await genCoreStrategy(input);
 
-    // Sarcastic disclaimer no longer needs riskLevel
-    const disclaimerResult = await generateSarcasticDisclaimer({}); // Pass empty object
+    const disclaimerResult = await generateSarcasticDisclaimer({});
 
     const finalResult: GenerateTradingStrategyOutput = {
       ...coreStrategyResult,
+      symbol: input.symbol, // Manually add symbol to the final output
       disclaimer: disclaimerResult.disclaimer,
     };
 
