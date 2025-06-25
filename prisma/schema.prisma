@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid()) @db.Uuid
+  username      String    @unique
+  status        String?   // User's status
+  shadowId      String?   @unique // Unique ShadowID
+  weeklyPoints  Int       @default(0)
+  airdropPoints Int       @default(0)
+  badges        Badge[]   @relation("UserBadges") // Relation to earned badges
+  // Add other fields as needed (e.g., email, passwordHash, etc.)
+}
+
+model Badge {
+  id    String @id @default(uuid()) @db.Uuid
+  name  String @unique // Name of the badge
+  users User[] @relation("UserBadges")// Users who have this badge
+  // Add other badge properties as needed (e.g., description, icon)
+}

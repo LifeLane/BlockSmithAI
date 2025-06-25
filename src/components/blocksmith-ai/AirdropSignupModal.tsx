@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Mail, Gift, Rocket, Sparkles, Phone, User, Bot } from 'lucide-react';
+import { handleAirdropSignupAction, AirdropFormData } from '../app/actions'; // Import the action
 
 const TwitterIcon = () => (
   <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary">
@@ -99,9 +100,31 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
   }
 
   const onSubmit = async (data: SignupFormData) => {
-    console.log("BlockShadow Airdrop Signup Data:", data);
-    onSignupSuccess();
-    form.reset();
+    console.log("Submitting Airdrop Signup Data:", data);
+    try {
+      const result = await handleAirdropSignupAction(data);
+      if (result.userId) {
+        console.log("Airdrop signup successful. User ID:", result.userId);
+        // Store user ID and ShadowID client-side
+        localStorage.setItem('currentUserId', result.userId);
+        if (result.shadowId) {
+            localStorage.setItem('currentUserShadowId', result.shadowId);
+        }
+        onSignupSuccess();
+        form.reset();
+        onOpenChange(false); // Close the modal on success
+      } else if (result.error) {
+        console.error("Airdrop signup failed:", result.error);
+        // Display error to the user (e.g., using a toast notification)
+        alert(`Signup failed: ${result.error}`); // Simple alert for now
+      } else {
+         console.error("Airdrop signup failed with unexpected response:", result);
+         alert("Signup failed with an unexpected error.");
+      }
+    } catch (error: any) {
+      console.error("An error occurred during airdrop signup submission:", error);
+      alert(`An error occurred during signup: ${error.message || "Unknown error"}`);
+    }
   };
 
   return (
