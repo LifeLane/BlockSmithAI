@@ -6,7 +6,6 @@ import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { BarChart, Users, Rss, TrendingUp, Shield, Crown, Globe } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { fetchMarketDataAction, type LiveMarketData } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 
@@ -76,30 +75,20 @@ export default function PulsePage() {
             <p className="text-muted-foreground">Real-time overview of key market metrics.</p>
         </div>
 
-        <Tabs defaultValue="btc" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="btc">BTC/USDT</TabsTrigger>
-                <TabsTrigger value="eth">ETH/USDC</TabsTrigger>
-            </TabsList>
-            <TabsContent value="btc">
-                 <MarketDataDisplay
-                    liveMarketData={btcData}
-                    isLoading={isLoading}
-                    error={error.btc}
-                    symbolForDisplay="BTCUSDT"
-                />
-            </TabsContent>
-            <TabsContent value="eth">
-                 <MarketDataDisplay
-                    liveMarketData={ethData}
-                    isLoading={isLoading}
-                    error={error.eth}
-                    symbolForDisplay="ETHUSDC"
-                />
-            </TabsContent>
-        </Tabs>
-        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <MarketDataDisplay
+                liveMarketData={btcData}
+                isLoading={isLoading}
+                error={error.btc}
+                symbolForDisplay="BTCUSDT"
+            />
+            <MarketDataDisplay
+                liveMarketData={ethData}
+                isLoading={isLoading}
+                error={error.eth}
+                symbolForDisplay="ETHUSDC"
+            />
+            
             <Card className="hover:border-primary/70 transition-colors md:col-span-2">
                 <CardHeader>
                 <CardTitle className="flex items-center">
@@ -169,22 +158,21 @@ export default function PulsePage() {
                     </div>
                 </CardContent>
             </Card>
+            <Card className="hover:border-tertiary/70 transition-colors col-span-1 md:col-span-2">
+                <CardHeader>
+                <CardTitle className="flex items-center">
+                    <Rss className="mr-3 h-6 w-6 text-tertiary" />
+                    Community Activity Feed
+                </CardTitle>
+                <CardDescription>Latest missions and achievements.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                <p><strong className="text-accent">User_42</strong> completed "The Analyst" mission.</p>
+                <p><strong className="text-accent">BlockchainBelle</strong> unlocked the <strong className="text-primary">Adept</strong> badge.</p>
+                <p><strong className="text-accent">SatoshiJr</strong> claimed reward for "First Signal".</p>
+                </CardContent>
+            </Card>
         </div>
-
-        <Card className="hover:border-tertiary/70 transition-colors col-span-1 md:col-span-2">
-            <CardHeader>
-            <CardTitle className="flex items-center">
-                <Rss className="mr-3 h-6 w-6 text-tertiary" />
-                Community Activity Feed
-            </CardTitle>
-            <CardDescription>Latest missions and achievements.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-            <p><strong className="text-accent">User_42</strong> completed "The Analyst" mission.</p>
-            <p><strong className="text-accent">BlockchainBelle</strong> unlocked the <strong className="text-primary">Adept</strong> badge.</p>
-            <p><strong className="text-accent">SatoshiJr</strong> claimed reward for "First Signal".</p>
-            </CardContent>
-        </Card>
 
       </div>
     </>
