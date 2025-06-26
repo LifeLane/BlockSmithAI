@@ -1,9 +1,138 @@
 
 {
-  "users": [],
-  "badges": [],
-  "_UserBadges": [],
-  "console_insights": [],
-  "signals": [],
-  "positions": []
+  "users": [
+    {
+      "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      "username": "CryptoGuru",
+      "status": "Active Analyst",
+      "shadowId": "SHDW-ABC-111",
+      "weeklyPoints": 1500,
+      "airdropPoints": 10000,
+      "wallet_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "wallet_type": "ETH",
+      "email": "guru@example.com",
+      "phone": null,
+      "x_handle": "@cryptoguru",
+      "telegram_handle": "@cryptoguru_tg",
+      "youtube_handle": null
+    },
+    {
+      "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12",
+      "username": "TokenMaster",
+      "status": "Passive Investor",
+      "shadowId": "SHDW-DEF-222",
+      "weeklyPoints": 800,
+      "airdropPoints": 5000,
+      "wallet_address": "Sol1234567890abcdef1234567890abcdef12345678",
+      "wallet_type": "SOL",
+      "email": "master@example.com",
+      "phone": null,
+      "x_handle": "@tokenmaster",
+      "telegram_handle": "@tokenmaster_tg",
+      "youtube_handle": null
+    },
+    {
+      "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13",
+      "username": "NFT_Ninja",
+      "status": "Exploring",
+      "shadowId": "SHDW-GHI-333",
+      "weeklyPoints": 300,
+      "airdropPoints": 2000,
+      "wallet_address": "TON1234567890abcdef1234567890abcdef12345678",
+      "wallet_type": "TON",
+      "email": "ninja@example.com",
+      "phone": null,
+      "x_handle": "@nftninja",
+      "telegram_handle": "@nftninja_tg",
+      "youtube_handle": null
+    }
+  ],
+  "badges": [
+    { "id": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b11", "name": "Early Adopter" },
+    { "id": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b12", "name": "Signal Provider Lv1" },
+    { "id": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b13", "name": "Insightful Analyst" }
+  ],
+  "_UserBadges": [
+    { "A": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "B": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b11" },
+    { "A": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "B": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b12" },
+    { "A": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12", "B": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b11" },
+    { "A": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13", "B": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b13" }
+  ],
+  "console_insights": [
+    { "id": "ci1", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "content": "Market showing bullish signs for BTC.", "timestamp": "2024-05-20T10:00:00.000Z" },
+    { "id": "ci2", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "content": "Noticed increased volume on ETH.", "timestamp": "2024-05-20T11:00:00.000Z" },
+    { "id": "ci3", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12", "content": "SOL seems to be consolidating.", "timestamp": "2024-05-20T12:00:00.000Z" }
+  ],
+  "signals": [
+    { "id": "s1", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "signalType": "buy", "symbol": "BTCUSDT", "price": 107000, "timestamp": "2024-05-20T10:30:00.000Z" },
+    { "id": "s2", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "signalType": "sell", "symbol": "ETHUSDT", "price": 2400, "timestamp": "2024-05-20T11:30:00.000Z" },
+    { "id": "s3", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12", "signalType": "hold", "symbol": "SOLUSDT", "price": 150, "timestamp": "2024-05-20T12:30:00.000Z" }
+  ],
+  "positions": [
+    {
+      "id": "p1",
+      "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      "symbol": "BTCUSDT",
+      "signalType": "BUY",
+      "entryPrice": 68000,
+      "size": 0.1,
+      "status": "OPEN",
+      "openTimestamp": "2024-05-19T12:00:00.000Z",
+      "stopLoss": 67000,
+      "takeProfit": 70000
+    }
+  ],
+  "agents": [
+    {
+      "id": "agent-001",
+      "name": "Data Scraper Drone",
+      "description": "Scans low-frequency data streams for market anomalies and sentiment shifts.",
+      "icon": "Binary",
+      "levels": [
+        { "level": 1, "deployDuration": 3600, "xpReward": 10, "bsaiReward": 20, "upgradeCost": 100 },
+        { "level": 2, "deployDuration": 3600, "xpReward": 20, "bsaiReward": 40, "upgradeCost": 250 },
+        { "level": 3, "deployDuration": 2700, "xpReward": 35, "bsaiReward": 60, "upgradeCost": 0 }
+      ]
+    },
+    {
+      "id": "agent-002",
+      "name": "Arbitrage Bot",
+      "description": "Identifies and reports potential arbitrage opportunities between exchanges.",
+      "icon": "Network",
+      "levels": [
+        { "level": 1, "deployDuration": 14400, "xpReward": 50, "bsaiReward": 100, "upgradeCost": 500 },
+        { "level": 2, "deployDuration": 10800, "xpReward": 80, "bsaiReward": 180, "upgradeCost": 1200 },
+        { "level": 3, "deployDuration": 7200, "xpReward": 120, "bsaiReward": 300, "upgradeCost": 0 }
+      ]
+    },
+    {
+      "id": "agent-003",
+      "name": "Quantum Predictor",
+      "description": "Utilizes quantum-inspired algorithms to forecast potential support and resistance zones.",
+      "icon": "Waypoints",
+      "levels": [
+        { "level": 1, "deployDuration": 86400, "xpReward": 250, "bsaiReward": 600, "upgradeCost": 2500 },
+        { "level": 2, "deployDuration": 64800, "xpReward": 400, "bsaiReward": 1000, "upgradeCost": 5000 },
+        { "level": 3, "deployDuration": 43200, "xpReward": 600, "bsaiReward": 1500, "upgradeCost": 0 }
+      ]
+    }
+  ],
+  "user_agents": [
+     {
+      "id": "ua-1",
+      "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      "agentId": "agent-001",
+      "level": 1,
+      "status": "IDLE",
+      "deploymentEndTime": null
+    },
+     {
+      "id": "ua-2",
+      "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      "agentId": "agent-002",
+      "level": 1,
+      "status": "IDLE",
+      "deploymentEndTime": null
+    }
+  ]
 }

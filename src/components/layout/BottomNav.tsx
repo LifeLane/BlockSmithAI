@@ -11,6 +11,7 @@ const navItems = [
   { href: '/pulse', icon: Briefcase, label: 'Portfolio' },
   { href: '/monitor', icon: AreaChart, label: 'Monitor' },
   { href: '/core', icon: Bot, label: 'Core' },
+  { href: '/agents', icon: Bot, label: 'Agents' },
   { href: '/profile', icon: Trophy, label: 'Profile' },
 ];
 

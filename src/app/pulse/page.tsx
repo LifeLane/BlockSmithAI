@@ -6,7 +6,7 @@ import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, TrendingUp, TrendingDown, Briefcase, X, Bot, AlertTriangle, LogOut, ShieldX, Target, LogIn } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, Briefcase, X, Bot, AlertTriangle, LogOut, ShieldX, Target, LogIn, Sparkles } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
@@ -137,11 +137,23 @@ export default function PortfolioPage() {
         setClosingPositionId(positionId);
         const result = await closePositionAction(positionId, closePrice);
         if (result.success) {
+            const pnl = result.pnl || 0;
+            const points = result.airdropPointsEarned || 0;
+            
             toast({
-                title: "Position Closed",
-                description: `Your position has been successfully closed with a PnL of $${result.pnl?.toFixed(2)}.`,
+                title: <span className="text-accent">Position Closed Successfully!</span>,
+                description: (
+                    <div className="text-foreground">
+                        Your position resulted in a PnL of <strong className={pnl >= 0 ? 'text-green-400' : 'text-red-400'}>${pnl.toFixed(2)}</strong>.
+                        {points > 0 && (
+                            <div className="flex items-center mt-1">
+                                <Sparkles className="h-4 w-4 mr-2 text-orange-400"/>
+                                You've earned <strong className="text-orange-400">{points} $BSAI</strong> airdrop points!
+                            </div>
+                        )}
+                    </div>
+                ),
             });
-            // Refresh portfolio data
             fetchPortfolioData();
         } else {
             toast({
@@ -239,5 +251,3 @@ export default function PortfolioPage() {
     </>
   );
 }
-
-    

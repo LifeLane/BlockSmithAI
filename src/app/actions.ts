@@ -21,6 +21,8 @@ interface DbData {
     console_insights: ConsoleInsight[];
     signals: SignalHistoryItem[];
     positions: Position[];
+    agents: Agent[];
+    user_agents: UserAgent[];
 }
 
 async function readDb(): Promise<DbData> {
@@ -30,7 +32,7 @@ async function readDb(): Promise<DbData> {
   } catch (error: any) {
     if (error.code === 'ENOENT') {
       // File doesn't exist, create it with a default structure
-      const defaultDb: DbData = { users: [], badges: [], _UserBadges: [], console_insights: [], signals: [], positions: [] };
+      const defaultDb: DbData = { users: [], badges: [], _UserBadges: [], console_insights: [], signals: [], positions: [], agents: [], user_agents: [] };
       await writeDb(defaultDb);
       return defaultDb;
     }
@@ -121,6 +123,36 @@ export interface Position {
     pnl?: number;
     stopLoss?: number;
     takeProfit?: number;
+}
+
+export interface AgentLevel {
+  level: number;
+  deployDuration: number; // in seconds
+  xpReward: number;
+  bsaiReward: number;
+  upgradeCost: number; // in XP
+}
+
+export interface Agent {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  levels: AgentLevel[];
+}
+
+export interface UserAgent {
+  id: string;
+  userId: string;
+  agentId: string;
+  level: number;
+  status: 'IDLE' | 'DEPLOYED';
+  deploymentEndTime: string | null;
+}
+
+// This is the combined data structure returned to the client
+export interface UserAgentData extends Agent {
+  userState: UserAgent | null;
 }
 
 
@@ -372,7 +404,60 @@ export async function populateSampleDataJson() {
               "stopLoss": 67000,
               "takeProfit": 70000
             }
-          ]
+          ],
+           "agents": [
+                {
+                "id": "agent-001",
+                "name": "Data Scraper Drone",
+                "description": "Scans low-frequency data streams for market anomalies and sentiment shifts.",
+                "icon": "Binary",
+                "levels": [
+                    { "level": 1, "deployDuration": 3600, "xpReward": 10, "bsaiReward": 20, "upgradeCost": 100 },
+                    { "level": 2, "deployDuration": 3600, "xpReward": 20, "bsaiReward": 40, "upgradeCost": 250 },
+                    { "level": 3, "deployDuration": 2700, "xpReward": 35, "bsaiReward": 60, "upgradeCost": 0 }
+                ]
+                },
+                {
+                "id": "agent-002",
+                "name": "Arbitrage Bot",
+                "description": "Identifies and reports potential arbitrage opportunities between exchanges.",
+                "icon": "Network",
+                "levels": [
+                    { "level": 1, "deployDuration": 14400, "xpReward": 50, "bsaiReward": 100, "upgradeCost": 500 },
+                    { "level": 2, "deployDuration": 10800, "xpReward": 80, "bsaiReward": 180, "upgradeCost": 1200 },
+                    { "level": 3, "deployDuration": 7200, "xpReward": 120, "bsaiReward": 300, "upgradeCost": 0 }
+                ]
+                },
+                {
+                "id": "agent-003",
+                "name": "Quantum Predictor",
+                "description": "Utilizes quantum-inspired algorithms to forecast potential support and resistance zones.",
+                "icon": "Waypoints",
+                "levels": [
+                    { "level": 1, "deployDuration": 86400, "xpReward": 250, "bsaiReward": 600, "upgradeCost": 2500 },
+                    { "level": 2, "deployDuration": 64800, "xpReward": 400, "bsaiReward": 1000, "upgradeCost": 5000 },
+                    { "level": 3, "deployDuration": 43200, "xpReward": 600, "bsaiReward": 1500, "upgradeCost": 0 }
+                ]
+                }
+            ],
+            "user_agents": [
+                {
+                "id": "ua-1",
+                "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+                "agentId": "agent-001",
+                "level": 1,
+                "status": "IDLE",
+                "deploymentEndTime": null
+                },
+                {
+                "id": "ua-2",
+                "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+                "agentId": "agent-002",
+                "level": 1,
+                "status": "IDLE",
+                "deploymentEndTime": null
+                }
+            ]
         };
         await writeDb(sampleDb);
         console.log('Sample data populated successfully.');
@@ -432,7 +517,7 @@ export async function fetchActivePositionsAction(userId: string): Promise<Positi
   }
 }
 
-export async function closePositionAction(positionId: string, closePrice: number): Promise<{ success: boolean; pnl?: number, error?: string }> {
+export async function closePositionAction(positionId: string, closePrice: number): Promise<{ success: boolean; pnl?: number; airdropPointsEarned?: number; error?: string }> {
   try {
     const db = await readDb();
     const positionIndex = db.positions.findIndex(p => p.id === positionId);
@@ -442,7 +527,6 @@ export async function closePositionAction(positionId: string, closePrice: number
     }
 
     const position = db.positions[positionIndex];
-
     if (position.status === 'CLOSED') {
       return { success: false, error: 'Position is already closed.' };
     }
@@ -455,18 +539,181 @@ export async function closePositionAction(positionId: string, closePrice: number
       pnl = (position.entryPrice - closePrice) * position.size;
     }
 
+    // Update position
     position.status = 'CLOSED';
     position.closePrice = closePrice;
     position.closeTimestamp = new Date().toISOString();
     position.pnl = pnl;
+    
+    let airdropPointsEarned = 0;
+    if (pnl > 0) {
+        // Convert PnL to airdrop points (e.g., 1 USD = 10 points)
+        airdropPointsEarned = Math.floor(pnl * 10);
+        const userIndex = db.users.findIndex(u => u.id === position.userId);
+        if (userIndex !== -1) {
+            db.users[userIndex].airdropPoints += airdropPointsEarned;
+        }
+    }
+
 
     await writeDb(db);
-    return { success: true, pnl };
+    return { success: true, pnl, airdropPointsEarned };
 
   } catch (error: any) {
     console.error('Error closing position:', error);
     return { success: false, error: `Failed to close position: ${error.message || "An unknown error occurred."}` };
   }
+}
+
+
+// --- New Agent Actions ---
+
+export async function fetchAgentDataAction(userId: string): Promise<{ agents: UserAgentData[], userXp: number } | { error: string }> {
+  try {
+    const db = await readDb();
+    const user = db.users.find(u => u.id === userId);
+    if (!user) {
+      return { error: 'User not found.' };
+    }
+
+    // Combine static agent data with user-specific agent data
+    const userAgentData: UserAgentData[] = db.agents.map(agent => {
+      let userState = db.user_agents.find(ua => ua.userId === userId && ua.agentId === agent.id);
+      
+      // If user doesn't have a state for this agent, create a default one (but don't save it yet)
+      if (!userState) {
+          userState = {
+              id: '', // Will be generated if saved
+              userId: userId,
+              agentId: agent.id,
+              level: 1,
+              status: 'IDLE',
+              deploymentEndTime: null
+          };
+      }
+      
+      return { ...agent, userState };
+    });
+
+    return { agents: userAgentData, userXp: user.weeklyPoints };
+  } catch (error: any) {
+    console.error("Error fetching agent data:", error);
+    return { error: `Failed to fetch agent data: ${error.message}` };
+  }
+}
+
+export async function deployAgentAction(userId: string, agentId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const db = await readDb();
+    const agent = db.agents.find(a => a.id === agentId);
+    if (!agent) return { success: false, error: 'Agent definition not found.' };
+
+    let userAgent = db.user_agents.find(ua => ua.userId === userId && ua.agentId === agentId);
+
+    // If no user agent exists, create one
+    if (!userAgent) {
+        userAgent = {
+            id: randomUUID(),
+            userId: userId,
+            agentId: agentId,
+            level: 1,
+            status: 'IDLE',
+            deploymentEndTime: null
+        };
+        db.user_agents.push(userAgent);
+    }
+
+    if (userAgent.status === 'DEPLOYED') {
+      return { success: false, error: 'Agent is already deployed.' };
+    }
+
+    const currentLevel = agent.levels.find(l => l.level === userAgent!.level);
+    if (!currentLevel) return { success: false, error: 'Agent level data not found.' };
+
+    const deploymentEndTime = new Date(Date.now() + currentLevel.deployDuration * 1000).toISOString();
+    userAgent.status = 'DEPLOYED';
+    userAgent.deploymentEndTime = deploymentEndTime;
+
+    await writeDb(db);
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error deploying agent:", error);
+    return { success: false, error: `Failed to deploy agent: ${error.message}` };
+  }
+}
+
+export async function claimAgentRewardsAction(userId: string, agentId: string): Promise<{ success: boolean; message: string }> {
+    try {
+        const db = await readDb();
+        const userAgentIndex = db.user_agents.findIndex(ua => ua.userId === userId && ua.agentId === agentId);
+        if (userAgentIndex === -1) return { success: false, message: 'Agent not found for this user.' };
+
+        const userAgent = db.user_agents[userAgentIndex];
+        if (userAgent.status !== 'DEPLOYED') return { success: false, message: 'Agent is not deployed.' };
+        if (!userAgent.deploymentEndTime || new Date(userAgent.deploymentEndTime) > new Date()) {
+            return { success: false, message: 'Deployment not yet complete.' };
+        }
+
+        const agent = db.agents.find(a => a.id === agentId);
+        if (!agent) return { success: false, message: 'Agent definition not found.' };
+
+        const currentLevel = agent.levels.find(l => l.level === userAgent.level);
+        if (!currentLevel) return { success: false, message: 'Agent level data not found.' };
+
+        const userIndex = db.users.findIndex(u => u.id === userId);
+        if (userIndex === -1) return { success: false, message: 'User not found.' };
+
+        // Add rewards
+        db.users[userIndex].weeklyPoints += currentLevel.xpReward;
+        db.users[userIndex].airdropPoints += currentLevel.bsaiReward;
+
+        // Reset agent
+        userAgent.status = 'IDLE';
+        userAgent.deploymentEndTime = null;
+
+        await writeDb(db);
+        return { success: true, message: `Claimed ${currentLevel.bsaiReward} BSAI and ${currentLevel.xpReward} XP!` };
+    } catch (error: any) {
+        console.error("Error claiming rewards:", error);
+        return { success: false, message: `Failed to claim rewards: ${error.message}` };
+    }
+}
+
+export async function upgradeAgentAction(userId: string, agentId: string): Promise<{ success: boolean; message: string }> {
+    try {
+        const db = await readDb();
+        const userIndex = db.users.findIndex(u => u.id === userId);
+        const userAgentIndex = db.user_agents.findIndex(ua => ua.userId === userId && ua.agentId === agentId);
+
+        if (userIndex === -1) return { success: false, message: 'User not found.' };
+        if (userAgentIndex === -1) return { success: false, message: 'Agent not found for this user.' };
+        
+        const user = db.users[userIndex];
+        const userAgent = db.user_agents[userAgentIndex];
+
+        const agent = db.agents.find(a => a.id === agentId);
+        if (!agent) return { success: false, message: 'Agent definition not found.' };
+
+        const currentLevel = agent.levels.find(l => l.level === userAgent.level);
+        const nextLevel = agent.levels.find(l => l.level === userAgent.level + 1);
+
+        if (!currentLevel) return { success: false, message: 'Current agent level data not found.' };
+        if (!nextLevel) return { success: false, message: 'Agent is already at max level.' };
+
+        if (user.weeklyPoints < currentLevel.upgradeCost) {
+            return { success: false, message: `Insufficient XP. Requires ${currentLevel.upgradeCost} XP.` };
+        }
+
+        // Deduct cost and upgrade
+        user.weeklyPoints -= currentLevel.upgradeCost;
+        userAgent.level += 1;
+
+        await writeDb(db);
+        return { success: true, message: `Agent upgraded to Level ${nextLevel.level}!` };
+    } catch (error: any) {
+        console.error("Error upgrading agent:", error);
+        return { success: false, message: `Failed to upgrade agent: ${error.message}` };
+    }
 }
 
 
