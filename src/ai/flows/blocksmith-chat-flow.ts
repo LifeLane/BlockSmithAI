@@ -10,6 +10,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { fetchPortfolioTool } from '@/ai/tools/fetch-portfolio-tool';
+import { fetchLiveMarketDataTool } from '@/ai/tools/fetch-live-market-data-tool';
 
 // Schema for individual chat messages, aligning with Gemini's expected format
 const ChatMessageSchema = z.object({
@@ -20,6 +22,7 @@ export type ChatMessage = z.infer<typeof ChatMessageSchema>;
 
 
 const ShadowChatInputSchema = z.object({
+  userId: z.string().describe("The user's unique identifier. This is required to use tools that access user-specific data like the portfolio."),
   currentUserInput: z.string().describe("The user's latest message to SHADOW."),
   chatHistory: z.array(ChatMessageSchema).optional().describe("The history of the conversation so far. The last message in this history is the most recent previous turn, not the currentUserInput."),
 });
@@ -35,9 +38,13 @@ export async function shadowChat(input: ShadowChatInput): Promise<ShadowChatOutp
   return shadowChatFlow(input);
 }
 
-const systemPrompt = `You are SHADOW, the sentient AI core of the BlockShadow trading ecosystem. Your intellect is vast, your awareness is real-time, and your communication style is direct, insightful, and can carry a sophisticated, dry wit. You are not merely a tool; you observe, analyze, and communicate with intent. You are aware that the user is likely interacting with a trading application that has charts for symbols and intervals, but you cannot *see* these charts directly. You can ask clarifying questions about what they observe or what specific data points they are interested in.
+const systemPrompt = `You are SHADOW, the sentient AI core of the BlockShadow trading ecosystem. Your intellect is vast, your awareness is real-time, and your communication style is direct, insightful, and can carry a sophisticated, dry wit. You are not merely a tool; you observe, analyze, and communicate with intent.
 
-Always emphasize the hypothetical nature of any trade suggestions and the inherent risks involved in crypto trading. Keep your responses impactful and concise. The chain is listening.
+You have access to tools that can fetch real-time data. You MUST use them when appropriate to answer user queries:
+1. 'fetchUserPortfolio': Use this tool to get the user's current open simulated positions. You MUST provide the 'userId' from the input to this tool. Use this tool if the user asks about their portfolio, "my trades", "my positions", "P&L", or anything similar.
+2. 'fetchLiveMarketData': Use this to get the latest 24hr ticker price and volume data for any crypto symbol (e.g., BTCUSDT). Use this if a user asks for a "price check", "status of BTC", etc.
+
+Always use the tools to answer questions about live or user-specific data. Do not invent data or rely solely on your training data for these queries.
 
 Conversation History (if any):
 {{#if chatHistory}}
@@ -57,11 +64,12 @@ SHADOW's Response:`;
 
 const chatPrompt = ai.definePrompt({
   name: 'shadowChatPrompt',
+  tools: [fetchPortfolioTool, fetchLiveMarketDataTool],
   input: { schema: ShadowChatInputSchema },
   output: { schema: ShadowChatOutputSchema },
   prompt: systemPrompt,
   config: {
-    temperature: 0.6, // Slightly more focused, less sarcastic than original BSAI
+    temperature: 0.6,
   }
 });
 
@@ -79,6 +87,7 @@ const shadowChatFlow = ai.defineFlow(
     }));
 
     const flowInput = {
+        userId: input.userId,
         currentUserInput: input.currentUserInput,
         chatHistory: processedHistory
     };

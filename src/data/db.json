@@ -148,6 +148,18 @@
       "openTimestamp": "2025-06-26T12:45:11.076Z",
       "stopLoss": 2420,
       "takeProfit": 2480
+    },
+    {
+      "id": "356d40e1-5dc7-4221-b39d-ff47df85fd56",
+      "userId": "e078e8ac-2235-4d7a-9365-30627e142335",
+      "symbol": "ETHUSDT",
+      "signalType": "BUY",
+      "entryPrice": 2450,
+      "size": 1,
+      "status": "OPEN",
+      "openTimestamp": "2025-06-26T12:52:11.322Z",
+      "stopLoss": 2420,
+      "takeProfit": 2480
     }
   ],
   "agents": [

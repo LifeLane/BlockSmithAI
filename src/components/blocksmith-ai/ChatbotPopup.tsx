@@ -16,6 +16,13 @@ interface ChatbotPopupProps {
   onOpenChange: (isOpen: boolean) => void;
 }
 
+const getCurrentUserIdClient = (): string | null => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('currentUserId');
+  }
+  return null;
+};
+
 const SHADOW_INITIAL_MESSAGE: ChatMessage = {
   role: 'model',
   parts: [{ text: "I am SHADOW. The market's whispers reach me. What requires my attention?" }],
@@ -47,6 +54,16 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
 
+    const userId = getCurrentUserIdClient();
+    if (!userId) {
+        toast({
+            title: "User Session Error",
+            description: "Cannot communicate with SHADOW without a user session. Please refresh.",
+            variant: "destructive"
+        });
+        return;
+    }
+
     const newUserMessage: ChatMessage = { role: 'user', parts: [{ text: userInput.trim() }] };
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
     setUserInput('');
@@ -56,6 +73,7 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
 
     try {
       const result = await shadowChatAction({
+        userId: userId,
         currentUserInput: newUserMessage.parts[0].text,
         chatHistory: historyForAI,
       });

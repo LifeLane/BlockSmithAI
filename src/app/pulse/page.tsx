@@ -3,21 +3,26 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, TrendingUp, TrendingDown, Briefcase, X, Bot, AlertTriangle, LogOut, ShieldX, Target, LogIn, Sparkles } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, Briefcase, Bot, AlertTriangle, LogOut, ShieldX, Target, LogIn, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
-import { formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 
 // Import actions and types
 import {
   fetchActivePositionsAction,
   closePositionAction,
   fetchMarketDataAction,
+  fetchTradeHistoryAction,
+  fetchPortfolioStatsAction,
   type Position,
   type LiveMarketData,
+  type PortfolioStats,
 } from '@/app/actions';
 
 const getCurrentUserId = (): string | null => {
@@ -89,49 +94,142 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
     )
 }
 
+const HistoryCard = ({ position }: { position: Position }) => {
+    const isWin = position.pnl && position.pnl > 0;
+    return (
+        <Card className="bg-card/80 backdrop-blur-sm">
+             <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div className="flex items-center gap-4">
+                    {isWin ? <CheckCircle className="h-6 w-6 text-green-400"/> : <XCircle className="h-6 w-6 text-red-400"/>}
+                    <div>
+                        <CardTitle className="text-base">{position.signalType} {position.symbol}</CardTitle>
+                        <CardDescription className="text-xs">
+                            Closed {position.closeTimestamp ? formatDistanceToNow(new Date(position.closeTimestamp)) : ''} ago
+                        </CardDescription>
+                    </div>
+                </div>
+                <div className={`font-bold ${isWin ? 'text-green-400' : 'text-red-400'}`}>
+                    PnL: ${position.pnl?.toFixed(2)}
+                </div>
+             </CardHeader>
+             <CardContent className="grid grid-cols-2 gap-2 text-xs pt-2">
+                <div className="flex justify-between p-2 bg-background/50 rounded-md">
+                    <span className="text-muted-foreground">Entry:</span>
+                    <span className="font-mono">${position.entryPrice.toFixed(2)}</span>
+                </div>
+                 <div className="flex justify-between p-2 bg-background/50 rounded-md">
+                    <span className="text-muted-foreground">Exit:</span>
+                    <span className="font-mono">${position.closePrice?.toFixed(2)}</span>
+                </div>
+             </CardContent>
+        </Card>
+    )
+}
+
+const PortfolioStatsDisplay = ({ stats }: { stats: PortfolioStats }) => {
+    return (
+        <Card className="mb-6 bg-card/90 backdrop-blur-sm">
+            <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Performance Analytics</CardTitle>
+                <CardDescription>Your all-time simulated trading statistics.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+                <div className="flex flex-col items-center p-3 bg-background/50 rounded-md">
+                    <span className="text-xs text-muted-foreground">Total Trades</span>
+                    <span className="text-lg font-bold font-mono text-primary">{stats.totalTrades}</span>
+                </div>
+                 <div className="flex flex-col items-center p-3 bg-background/50 rounded-md">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1"><Percent size={12}/>Win Rate</span>
+                    <span className="text-lg font-bold font-mono text-green-400">{stats.winRate.toFixed(1)}%</span>
+                </div>
+                 <div className="flex flex-col items-center p-3 bg-background/50 rounded-md">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1"><DollarSign size={12}/>Total PnL</span>
+                    <span className={`text-lg font-bold font-mono ${stats.totalPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        ${stats.totalPnl.toFixed(2)}
+                    </span>
+                </div>
+                <div className="flex flex-col items-center p-3 bg-background/50 rounded-md">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1"><ArrowUp size={12}/>Best Trade</span>
+                    <span className="text-lg font-bold font-mono text-green-400">
+                        ${stats.bestTradePnl.toFixed(2)}
+                    </span>
+                </div>
+                 <div className="flex flex-col items-center p-3 bg-background/50 rounded-md">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1"><ArrowDown size={12}/>Worst Trade</span>
+                    <span className="text-lg font-bold font-mono text-red-400">
+                        ${stats.worstTradePnl.toFixed(2)}
+                    </span>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
+
 export default function PortfolioPage() {
     const [positions, setPositions] = useState<Position[]>([]);
+    const [tradeHistory, setTradeHistory] = useState<Position[]>([]);
+    const [portfolioStats, setPortfolioStats] = useState<PortfolioStats | null>(null);
     const [livePrices, setLivePrices] = useState<Record<string, LiveMarketData>>({});
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [closingPositionId, setClosingPositionId] = useState<string | null>(null);
     const { toast } = useToast();
     const userId = getCurrentUserId();
+    const isFetching = useRef(false);
 
     const fetchPortfolioData = useCallback(async () => {
-        if (!userId) {
-            setError("User not identified. Please sign up or log in to view your portfolio.");
-            setIsLoading(false);
-            return;
-        }
+        if (!userId || isFetching.current) return;
 
+        isFetching.current = true;
         setIsLoading(true);
-        const userPositions = await fetchActivePositionsAction(userId);
-        setPositions(userPositions);
 
-        if (userPositions.length > 0) {
-            const symbols = [...new Set(userPositions.map(p => p.symbol))];
-            const pricePromises = symbols.map(symbol => fetchMarketDataAction({ symbol }));
-            const results = await Promise.allSettled(pricePromises);
+        try {
+            const [userPositions, history, statsResult] = await Promise.all([
+                fetchActivePositionsAction(userId),
+                fetchTradeHistoryAction(userId),
+                fetchPortfolioStatsAction(userId),
+            ]);
 
-            const newLivePrices: Record<string, LiveMarketData> = {};
-            results.forEach((result, index) => {
-                if (result.status === 'fulfilled' && !('error' in result.value)) {
-                    newLivePrices[symbols[index]] = result.value as LiveMarketData;
-                } else {
-                    console.error(`Failed to fetch price for ${symbols[index]}`);
-                }
-            });
-            setLivePrices(prev => ({...prev, ...newLivePrices}));
+            setPositions(userPositions);
+            setTradeHistory(history);
+            if (!('error' in statsResult)) {
+                setPortfolioStats(statsResult);
+            }
+
+            if (userPositions.length > 0) {
+                const symbols = [...new Set(userPositions.map(p => p.symbol))];
+                const pricePromises = symbols.map(symbol => fetchMarketDataAction({ symbol }));
+                const results = await Promise.allSettled(pricePromises);
+
+                const newLivePrices: Record<string, LiveMarketData> = {};
+                results.forEach((result, index) => {
+                    if (result.status === 'fulfilled' && !('error' in result.value)) {
+                        newLivePrices[symbols[index]] = result.value as LiveMarketData;
+                    } else {
+                        console.error(`Failed to fetch price for ${symbols[index]}`);
+                    }
+                });
+                setLivePrices(prev => ({...prev, ...newLivePrices}));
+            }
+        } catch (e: any) {
+             setError(e.message || "Failed to fetch portfolio data.");
+        } finally {
+            setIsLoading(false);
+            isFetching.current = false;
         }
-        setIsLoading(false);
     }, [userId]);
 
     useEffect(() => {
+        if (!userId) {
+            setError("User not identified. Please visit the Core Console to initialize a session.");
+            setIsLoading(false);
+            return;
+        }
         fetchPortfolioData();
         const interval = setInterval(fetchPortfolioData, 30000); // Refresh every 30 seconds
         return () => clearInterval(interval);
-    }, [fetchPortfolioData]);
+    }, [fetchPortfolioData, userId]);
 
     const handleClosePosition = async (positionId: string, closePrice: number) => {
         setClosingPositionId(positionId);
@@ -154,7 +252,7 @@ export default function PortfolioPage() {
                     </div>
                 ),
             });
-            fetchPortfolioData();
+            fetchPortfolioData(); // Refresh all data
         } else {
             toast({
                 title: "Error Closing Position",
@@ -165,8 +263,61 @@ export default function PortfolioPage() {
         setClosingPositionId(null);
     }
 
+    const renderOpenPositions = () => {
+        if (positions.length === 0) {
+             return (
+                <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4">
+                     <CardHeader>
+                        <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">
+                            <Bot className="h-10 w-10 text-primary" />
+                        </div>
+                        <CardTitle className="mt-4">No Open Positions</CardTitle>
+                        <CardDescription className="mt-2 text-base">
+                            Go to the <strong className="text-accent">Core Console</strong> to open a simulated position based on SHADOW's analysis.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <Button asChild className="glow-button">
+                             <Link href="/core">
+                                Go to Core Console
+                            </Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+            );
+        }
+        return (
+             <ScrollArea className="h-[calc(100vh-450px)] pr-4 mt-4">
+                <div className="space-y-4">
+                    {positions.map(pos => (
+                        <PositionCard
+                            key={pos.id}
+                            position={pos}
+                            currentPrice={livePrices[pos.symbol] ? parseFloat(livePrices[pos.symbol].lastPrice) : undefined}
+                            onClose={handleClosePosition}
+                            isClosing={closingPositionId === pos.id}
+                        />
+                    ))}
+                </div>
+             </ScrollArea>
+        )
+    };
+    
+    const renderTradeHistory = () => {
+        if (tradeHistory.length === 0) {
+            return <p className="text-center text-muted-foreground mt-8">No closed trades yet.</p>
+        }
+        return (
+            <ScrollArea className="h-[calc(100vh-450px)] pr-4 mt-4">
+                <div className="space-y-3">
+                    {tradeHistory.map(pos => <HistoryCard key={pos.id} position={pos} />)}
+                </div>
+            </ScrollArea>
+        )
+    };
+
     const renderContent = () => {
-        if (isLoading) {
+        if (isLoading && !portfolioStats) {
             return (
                 <div className="flex justify-center items-center h-64">
                     <Loader2 className="h-8 w-8 animate-spin text-primary"/>
@@ -186,30 +337,7 @@ export default function PortfolioPage() {
                     <CardContent>
                         <p className="text-base text-destructive-foreground">{error}</p>
                         <Button asChild className="glow-button mt-4">
-                            <Link href="/missions">Register Here</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
-            );
-        }
-
-        if (positions.length === 0) {
-            return (
-                <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm">
-                    <CardHeader>
-                        <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">
-                            <Bot className="h-10 w-10 text-primary" />
-                        </div>
-                        <CardTitle className="mt-4">No Open Positions</CardTitle>
-                        <CardDescription className="mt-2 text-base">
-                            Your portfolio is empty. Go to the <strong className="text-accent">Core Console</strong> to open a simulated position based on SHADOW's analysis.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                         <Button asChild className="glow-button">
-                             <Link href="/core">
-                                Go to Core Console
-                            </Link>
+                            <Link href="/core">Return to Core</Link>
                         </Button>
                     </CardContent>
                 </Card>
@@ -217,20 +345,23 @@ export default function PortfolioPage() {
         }
 
         return (
-            <div className="space-y-4">
-                {positions.map(pos => (
-                    <PositionCard
-                        key={pos.id}
-                        position={pos}
-                        currentPrice={livePrices[pos.symbol] ? parseFloat(livePrices[pos.symbol].lastPrice) : undefined}
-                        onClose={handleClosePosition}
-                        isClosing={closingPositionId === pos.id}
-                    />
-                ))}
-            </div>
-        );
+            <>
+                {portfolioStats && <PortfolioStatsDisplay stats={portfolioStats} />}
+                 <Tabs defaultValue="open">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="open">Open Positions</TabsTrigger>
+                        <TabsTrigger value="history">Trade History</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="open">
+                        {renderOpenPositions()}
+                    </TabsContent>
+                    <TabsContent value="history">
+                        {renderTradeHistory()}
+                    </TabsContent>
+                </Tabs>
+            </>
+        )
     }
-
 
   return (
     <>
@@ -244,9 +375,7 @@ export default function PortfolioPage() {
             <p className="text-muted-foreground">Real-time overview of your open simulated positions.</p>
         </div>
         
-        <ScrollArea className="h-[calc(100vh-300px)] pr-4">
-            {renderContent()}
-        </ScrollArea>
+        {renderContent()}
       </div>
     </>
   );

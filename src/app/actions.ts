@@ -468,7 +468,7 @@ export async function populateSampleDataJson() {
 }
 
 
-// --- New Portfolio Actions ---
+// --- Portfolio and Trade History Actions ---
 
 export async function openSimulatedPositionAction(userId: string, strategy: GenerateTradingStrategyOutput): Promise<{ position?: Position, error?: string }> {
   if (strategy.signal.toUpperCase() === 'HOLD') {
@@ -565,8 +565,58 @@ export async function closePositionAction(positionId: string, closePrice: number
   }
 }
 
+export async function fetchTradeHistoryAction(userId: string): Promise<Position[]> {
+  try {
+    const db = await readDb();
+    const positions = db.positions.filter(p => p.userId === userId && p.status === 'CLOSED')
+      .sort((a, b) => new Date(b.closeTimestamp!).getTime() - new Date(a.closeTimestamp!).getTime());
+    return positions;
+  } catch (error) {
+    console.error('Error fetching trade history:', error);
+    return [];
+  }
+}
 
-// --- New Agent Actions ---
+export interface PortfolioStats {
+    totalTrades: number;
+    winRate: number;
+    totalPnl: number;
+    bestTradePnl: number;
+    worstTradePnl: number;
+}
+
+export async function fetchPortfolioStatsAction(userId: string): Promise<PortfolioStats | { error: string }> {
+    try {
+        const db = await readDb();
+        const closedPositions = db.positions.filter(p => p.userId === userId && p.status === 'CLOSED');
+
+        if (closedPositions.length === 0) {
+            return { totalTrades: 0, winRate: 0, totalPnl: 0, bestTradePnl: 0, worstTradePnl: 0 };
+        }
+        
+        const totalTrades = closedPositions.length;
+        const winningTrades = closedPositions.filter(p => p.pnl && p.pnl > 0).length;
+        const totalPnl = closedPositions.reduce((acc, p) => acc + (p.pnl || 0), 0);
+        const bestTradePnl = Math.max(0, ...closedPositions.map(p => p.pnl || 0));
+        const worstTradePnl = Math.min(0, ...closedPositions.map(p => p.pnl || 0));
+        const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
+
+        return {
+            totalTrades,
+            winRate,
+            totalPnl,
+            bestTradePnl,
+            worstTradePnl,
+        };
+
+    } catch (error: any) {
+        console.error('Error fetching portfolio stats:', error);
+        return { error: `Failed to calculate portfolio stats: ${error.message}` };
+    }
+}
+
+
+// --- Agent Actions ---
 
 export async function fetchAgentDataAction(userId: string): Promise<{ agents: UserAgentData[], userXp: number } | { error: string }> {
   try {
@@ -928,6 +978,9 @@ export async function shadowChatAction(input: ShadowChatInput): Promise<ShadowCh
   try {
     if (!input.currentUserInput || input.currentUserInput.trim() === "") {
       return { error: "A query is required. My time is not for trivialities." };
+    }
+    if (!input.userId) {
+      return { error: "User session is required to communicate with SHADOW." };
     }
     const result = await shadowChat(input);
     return result;

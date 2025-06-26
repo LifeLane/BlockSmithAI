@@ -10,6 +10,7 @@ import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import ChatbotIcon from '@/components/blocksmith-ai/ChatbotIcon';
 import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
+import TradingChart from '@/components/blocksmith-ai/TradingChart';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -364,6 +365,10 @@ export default function CoreConsolePage() {
       <AppHeader />
       <div ref={mainContentRef} className="container mx-auto px-4 py-8 flex flex-col w-full">
         
+        <div className="mb-8 w-full relative">
+            <TradingChart symbol={symbol} tradingMode={tradingMode} strategy={aiStrategy} />
+        </div>
+
         <div className="mb-8 w-full relative">
             <StrategyExplanationSection
                 strategy={aiStrategy}
