@@ -671,10 +671,11 @@ export async function fetchPortfolioStatsAction(userId: string): Promise<Portfol
         }
         
         const totalTrades = closedPositions.length;
-        const winningTrades = closedPositions.filter(p => p.pnl && p.pnl > 0).length;
-        const totalPnl = closedPositions.reduce((acc, p) => acc + (p.pnl || 0), 0);
-        const bestTradePnl = Math.max(0, ...closedPositions.map(p => p.pnl || 0));
-        const worstTradePnl = Math.min(0, ...closedPositions.map(p => p.pnl || 0));
+        const pnls = closedPositions.map(p => p.pnl || 0);
+        const winningTrades = pnls.filter(pnl => pnl > 0).length;
+        const totalPnl = pnls.reduce((acc, pnl) => acc + pnl, 0);
+        const bestTradePnl = totalTrades > 0 ? Math.max(...pnls) : 0;
+        const worstTradePnl = totalTrades > 0 ? Math.min(...pnls) : 0;
         const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
 
         return {

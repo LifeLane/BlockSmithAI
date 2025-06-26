@@ -188,7 +188,7 @@ const PortfolioStatsDisplay = ({ stats }: { stats: PortfolioStats }) => {
             </CardHeader>
             <CardContent className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                 <StatCard title="Total Trades" value={stats.totalTrades} icon={<History size={14} />} />
-                <StatCard title="Win Rate" value={`${stats.winRate.toFixed(1)}%`} icon={<Percent size={14} />} valueClassName="text-green-400" />
+                <StatCard title="Win Rate" value={`${stats.winRate.toFixed(1)}%`} icon={<Percent size={14} />} valueClassName={stats.winRate > 50 ? 'text-green-400' : 'text-red-400'} />
                 <StatCard title="Total PnL" value={`$${stats.totalPnl.toFixed(2)}`} icon={<DollarSign size={14} />} valueClassName={stats.totalPnl >= 0 ? 'text-green-400' : 'text-red-400'} />
                 <StatCard title="Best Trade" value={`$${stats.bestTradePnl.toFixed(2)}`} icon={<ArrowUp size={14} />} valueClassName="text-green-400" />
                 <StatCard title="Worst Trade" value={`$${stats.worstTradePnl.toFixed(2)}`} icon={<ArrowDown size={14} />} valueClassName="text-red-400" />
@@ -212,17 +212,28 @@ export default function PortfolioPage() {
     const userId = getCurrentUserId();
     const isFetching = useRef(false);
 
-    const handleClosePosition = async (positionId: string, closePrice: number, reason: 'manual' | 'expired' = 'manual') => {
+    const handleClosePosition = async (positionId: string, closePrice: number, reason: 'manual' | 'expired' | 'auto-sl' | 'auto-tp' = 'manual') => {
         setClosingPositionId(positionId);
         const result = await closePositionAction(positionId, closePrice);
         
         if (result.success) {
             const pnl = result.pnl || 0;
             const points = result.airdropPointsEarned || 0;
-            const toastTitle = reason === 'expired' ? 'Position Expired' : 'Position Closed';
-            const toastDesc = reason === 'expired' 
-                ? "Position was automatically closed due to expiration."
-                : "Simulated position closed successfully.";
+            
+            let toastTitle = "Position Closed";
+            let toastDesc = "Simulated position closed successfully.";
+
+            if (reason === 'expired') {
+                toastTitle = "Position Expired";
+                toastDesc = "Position was automatically closed due to expiration.";
+            } else if (reason === 'auto-sl') {
+                toastTitle = "Stop Loss Hit";
+                toastDesc = "Position was automatically closed after hitting the stop loss.";
+            } else if (reason === 'auto-tp') {
+                toastTitle = "Take Profit Hit";
+                toastDesc = "Position was automatically closed after hitting the take profit target.";
+            }
+
 
             toast({
                 title: <span className="text-accent">{toastTitle}</span>,
@@ -279,18 +290,47 @@ export default function PortfolioPage() {
                 setLivePrices(currentLivePrices);
             }
             
-            // Auto-close logic
-            const positionsToClose = userPositions.filter(p => p.status === 'OPEN' && p.expirationTimestamp && new Date(p.expirationTimestamp) < new Date());
-            
-            if (positionsToClose.length > 0) {
-                const posToClose = positionsToClose[0];
-                const closePrice = currentLivePrices[posToClose.symbol] ? parseFloat(currentLivePrices[posToClose.symbol].lastPrice) : undefined;
+            // --- Auto-close logic ---
+            for (const pos of userPositions) {
+                if (pos.status !== 'OPEN') continue;
+
+                const livePriceData = currentLivePrices[pos.symbol];
+                if (!livePriceData) continue;
                 
-                if (closePrice && closingPositionId !== posToClose.id) {
-                    await handleClosePosition(posToClose.id, closePrice, 'expired');
-                    // Exit after dispatching close, as it will trigger a full refetch.
+                const currentPrice = parseFloat(livePriceData.lastPrice);
+                let closeReason: 'auto-sl' | 'auto-tp' | 'expired' | null = null;
+                let closePrice = 0;
+
+                // Check for SL/TP hits
+                if (pos.signalType === 'BUY') {
+                    if (pos.takeProfit && currentPrice >= pos.takeProfit) {
+                        closeReason = 'auto-tp';
+                        closePrice = pos.takeProfit;
+                    } else if (pos.stopLoss && currentPrice <= pos.stopLoss) {
+                        closeReason = 'auto-sl';
+                        closePrice = pos.stopLoss;
+                    }
+                } else { // SELL
+                    if (pos.takeProfit && currentPrice <= pos.takeProfit) {
+                        closeReason = 'auto-tp';
+                        closePrice = pos.takeProfit;
+                    } else if (pos.stopLoss && currentPrice >= pos.stopLoss) {
+                        closeReason = 'auto-sl';
+                        closePrice = pos.stopLoss;
+                    }
+                }
+
+                // Check for expiration
+                if (!closeReason && pos.expirationTimestamp && new Date(pos.expirationTimestamp) < new Date()) {
+                    closeReason = 'expired';
+                    closePrice = currentPrice;
+                }
+
+                // If a reason to close is found, close the position and stop this cycle
+                if (closeReason) {
+                    await handleClosePosition(pos.id, closePrice, closeReason);
                     isFetching.current = false;
-                    return;
+                    return; // Exit after dispatching close, it will trigger a full refetch.
                 }
             }
             
@@ -319,7 +359,7 @@ export default function PortfolioPage() {
             return;
         }
         fetchPortfolioData();
-        const interval = setInterval(() => fetchPortfolioData(), 30000); // Refresh every 30 seconds
+        const interval = setInterval(() => fetchPortfolioData(), 15000); // Refresh every 15 seconds
         return () => clearInterval(interval);
     }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
     
