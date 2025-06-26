@@ -44,6 +44,24 @@
       "x_handle": "@nftninja",
       "telegram_handle": "@nftninja_tg",
       "youtube_handle": null
+    },
+    {
+      "id": "112e913e-0f42-4500-972c-9191038e7b3c",
+      "username": "Analyst_686c7d",
+      "shadowId": "SHDW-0A0D42E",
+      "status": "Guest",
+      "weeklyPoints": 0,
+      "airdropPoints": 0,
+      "badges": []
+    },
+    {
+      "id": "7d2e780e-aa5c-47ee-8cca-f4f09a979e2e",
+      "username": "Analyst_c741ab",
+      "shadowId": "SHDW-C12F484",
+      "status": "Guest",
+      "weeklyPoints": 0,
+      "airdropPoints": 0,
+      "badges": []
     }
   ],
   "badges": [
@@ -267,6 +285,30 @@
       "level": 1,
       "status": "IDLE",
       "deploymentEndTime": null
+    },
+    {
+      "id": "dac77e1d-eefd-483d-8ba7-4fcb908b0df4",
+      "userId": "7d2e780e-aa5c-47ee-8cca-f4f09a979e2e",
+      "agentId": "agent-002",
+      "level": 1,
+      "status": "DEPLOYED",
+      "deploymentEndTime": "2025-06-26T17:27:15.249Z"
+    },
+    {
+      "id": "31b6c1cf-13a3-468e-95d6-cc000d516faf",
+      "userId": "7d2e780e-aa5c-47ee-8cca-f4f09a979e2e",
+      "agentId": "agent-001",
+      "level": 1,
+      "status": "DEPLOYED",
+      "deploymentEndTime": "2025-06-26T14:27:18.338Z"
+    },
+    {
+      "id": "cc8f13ca-91e9-427f-ae5e-646d75aa3909",
+      "userId": "7d2e780e-aa5c-47ee-8cca-f4f09a979e2e",
+      "agentId": "agent-003",
+      "level": 1,
+      "status": "DEPLOYED",
+      "deploymentEndTime": "2025-06-27T13:27:20.770Z"
     }
   ]
 }

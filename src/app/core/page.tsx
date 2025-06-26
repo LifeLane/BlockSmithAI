@@ -195,7 +195,7 @@ export default function CoreConsolePage() {
 
 
   const handleGenerateStrategy = useCallback(async () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    mainContentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     if (currentUser?.status === 'Guest') {
       const today = new Date().toISOString().split('T')[0];
@@ -363,24 +363,10 @@ export default function CoreConsolePage() {
   return (
     <>
       <AppHeader />
-      <div ref={mainContentRef} className="container mx-auto px-4 py-8 flex flex-col w-full">
+      <div ref={mainContentRef} className="container mx-auto px-4 py-8 flex flex-col w-full space-y-8">
         
-        <div className="mb-8 w-full relative">
-            <TradingChart symbol={symbol} tradingMode={tradingMode} strategy={aiStrategy} />
-        </div>
-
-        <div className="mb-8 w-full relative">
-            <StrategyExplanationSection
-                strategy={aiStrategy}
-                liveMarketData={liveMarketData} 
-                isLoading={isLoadingStrategy}
-                error={strategyError}
-                symbol={symbol}
-                onSimulate={handleSimulateTrade}
-            />
-        </div>
-
-        <div className="w-full space-y-6 mb-8">
+        {/* --- CONTROLS --- */}
+        <div className="w-full space-y-6">
             <StrategySelectors
                 symbol={symbol}
                 onSymbolChange={setSymbol} 
@@ -421,30 +407,39 @@ export default function CoreConsolePage() {
                 </p>
             )}
         </div>
-        
-        {aiStrategy && liveMarketData && (
-          <div className="mb-8">
-            <SignalTracker
-              aiStrategy={aiStrategy}
-              liveMarketData={liveMarketData}
+
+        {/* --- CHART --- */}
+        <div className="w-full relative">
+            <TradingChart symbol={symbol} tradingMode={tradingMode} strategy={aiStrategy} />
+        </div>
+
+        {/* --- RESULTS BLOCK --- */}
+        <div className="w-full relative space-y-8">
+            <StrategyExplanationSection
+                strategy={aiStrategy}
+                liveMarketData={liveMarketData} 
+                isLoading={isLoadingStrategy}
+                error={strategyError}
+                symbol={symbol}
+                onSimulate={handleSimulateTrade}
             />
-          </div>
-        )}
 
-        {aiStrategy && !isLoadingStrategy && !strategyError && (
-              <div>
-                <ShadowMindInterface 
-                    signalConfidence={aiStrategy.gpt_confidence_score}
-                    currentThought={aiStrategy.currentThought}
-                    sentimentMemory={aiStrategy.sentimentTransition || aiStrategy.sentiment}
-                    prediction={aiStrategy.shortTermPrediction}
-                />
-              </div>
-        )}
-          <p className="text-xs text-center text-muted-foreground mt-4 font-code">
-            🧠 SHADOW SEES: “Stability Decay Detected — Pulse Watch Activated”
-        </p>
+            {aiStrategy && liveMarketData && !isLoadingStrategy && !strategyError && (
+              <SignalTracker
+                aiStrategy={aiStrategy}
+                liveMarketData={liveMarketData}
+              />
+            )}
 
+            {aiStrategy && !isLoadingStrategy && !strategyError && (
+              <ShadowMindInterface 
+                  signalConfidence={aiStrategy.gpt_confidence_score}
+                  currentThought={aiStrategy.currentThought}
+                  sentimentMemory={aiStrategy.sentimentTransition || aiStrategy.sentiment}
+                  prediction={aiStrategy.shortTermPrediction}
+              />
+            )}
+        </div>
       </div>
       <ChatbotIcon onClick={handleToggleChat} />
       <ChatbotPopup isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
