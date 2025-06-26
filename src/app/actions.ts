@@ -83,7 +83,7 @@ export async function fetchCurrentUserNeon(userId: string): Promise<UserProfile 
     const userBadges = await sql`
       SELECT b.id, b.name
       FROM badges b
-      JOIN _UserBadges ub ON b.id = ub."B"
+      JOIN "_UserBadges" ub ON b.id = ub."B"
       WHERE ub."A" = ${userId};
     `;
     // Attach badges to the user object
@@ -215,12 +215,12 @@ export async function fetchSignalHistoryNeon(userId: string): Promise<SignalHist
 export async function populateSampleDataNeon() {
     console.log('Populating database with sample data...');
     try {
-        // Clear existing data (optional, for testing)
-        // await sql`DELETE FROM _UserBadges`;
-        // await sql`DELETE FROM console_insights`;
-        // await sql`DELETE FROM signals`;
-        // await sql`DELETE FROM users`;
-        // await sql`DELETE FROM badges`;
+        // Clear existing data for a clean slate on each run
+        await sql`DELETE FROM "_UserBadges"`;
+        await sql`DELETE FROM console_insights`;
+        await sql`DELETE FROM signals`;
+        await sql`DELETE FROM users`;
+        await sql`DELETE FROM badges`;
 
         // Insert sample users
         const user1Id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'; // Sample UUID
@@ -250,7 +250,7 @@ export async function populateSampleDataNeon() {
 
         // Link users and badges in the join table (_UserBadges) - replace with your actual join table name if different
          await sql`
-             INSERT INTO _UserBadges ("A", "B")
+             INSERT INTO "_UserBadges" ("A", "B")
              VALUES
              (${user1Id}, ${badge1Id}),
              (${user1Id}, ${badge2Id}),
@@ -279,6 +279,7 @@ export async function populateSampleDataNeon() {
         console.log('Sample data populated successfully.');
     } catch (error) {
         console.error('Error populating sample data:', error);
+        throw error; // Re-throw the error so the frontend can catch it
     }
 }
 

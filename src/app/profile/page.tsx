@@ -1,21 +1,25 @@
+
 'use client';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Crown, Shield, Trophy, Settings, BookOpen, GitPullRequestArrow } from 'lucide-react';
+import { Crown, Shield, Trophy, Settings, BookOpen, GitPullRequestArrow, Database, Rocket, Loader2 } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from 'react';
+import { useToast } from "@/hooks/use-toast";
+
 // Import Neon-based actions and types from app/actions.ts
 import { 
   fetchCurrentUserNeon, 
   fetchLeaderboardDataNeon, 
   updateUserSettingsNeon, 
   fetchConsoleInsightsNeon, 
-  fetchSignalHistoryNeon, 
+  fetchSignalHistoryNeon,
+  populateSampleDataNeon, 
   UserProfile, 
   LeaderboardUser,
   ConsoleInsight,
@@ -46,44 +50,52 @@ export default function ProfilePage() {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPopulating, setIsPopulating] = useState(false);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    const loadData = async () => {
+  const loadData = async () => {
       setLoading(true);
       setError(null);
       const userId = getCurrentUserId(); // Get user ID from storage
 
       if (!userId) {
-          setError("User not logged in or ID not found.");
+          setError("User not logged in or ID not found. Please sign up via the Missions tab.");
           setLoading(false);
           return;
       }
 
-      // Fetch current user data using Neon action
-      const user = await fetchCurrentUserNeon(userId);
-      setCurrentUser(user);
-      if (user) {
-        setUsername(user.username);
+      try {
+        // Fetch all data in parallel
+        const [user, leaderboard, insights, history] = await Promise.all([
+          fetchCurrentUserNeon(userId),
+          fetchLeaderboardDataNeon(),
+          fetchConsoleInsightsNeon(userId),
+          fetchSignalHistoryNeon(userId)
+        ]);
+
+        if (user) {
+            setCurrentUser(user);
+            setUsername(user.username);
+        } else {
+            setError("Could not find user profile. It may have been deleted or the ID is incorrect.");
+        }
+        
+        const rankedData = leaderboard.map((user, index) => ({ ...user, rank: index + 1 }));
+        setLeaderboardData(rankedData);
+        setConsoleInsights(insights);
+        setSignalHistory(history);
+
+      } catch (e: any) {
+          console.error("Failed to load profile data:", e);
+          setError(`An error occurred while fetching data: ${e.message}`);
+      } finally {
+          setLoading(false);
       }
-
-      // Fetch leaderboard data using Neon action
-      const leaderboard = await fetchLeaderboardDataNeon();
-      const rankedData = leaderboard.map((user, index) => ({ ...user, rank: index + 1 }));
-      setLeaderboardData(rankedData);
-
-      // Fetch console insights
-      const insights = await fetchConsoleInsightsNeon(userId);
-      setConsoleInsights(insights);
-
-      // Fetch signal history
-      const history = await fetchSignalHistoryNeon(userId);
-      setSignalHistory(history);
-
-      setLoading(false);
     };
 
+  useEffect(() => {
     loadData();
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, []);
 
   const handleSaveSettings = async () => {
     if (currentUser && username !== currentUser.username) {
@@ -101,26 +113,88 @@ export default function ProfilePage() {
       const updatedUser = await updateUserSettingsNeon(userId, { username });
       if (updatedUser) {
         setCurrentUser(updatedUser);
-        console.log('Username updated successfully!', updatedUser);
+        toast({ title: "Success", description: "Username updated successfully."});
       } else {
-        console.error('Failed to update username.');
         setError('Failed to update username.');
+         toast({ title: "Error", description: "Failed to update username.", variant: "destructive"});
       }
       setLoading(false);
     }
     setSettingsOpen(false);
   };
+  
+  const handlePopulateData = async () => {
+    setIsPopulating(true);
+    toast({
+        title: "Database Population Initiated",
+        description: "Connecting to Neon and populating sample data...",
+    });
+    try {
+        await populateSampleDataNeon();
+        toast({
+            title: "Success!",
+            description: "Database connected and sample data populated. Refreshing data now...",
+            variant: "default",
+        });
+        // Refresh data on the page after population
+        await loadData();
+    } catch (error: any) {
+        toast({
+            title: "Database Error",
+            description: `Failed to populate data: ${error.message}`,
+            variant: "destructive",
+        });
+    } finally {
+        setIsPopulating(false);
+    }
+  };
 
-  if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading profile...</div>; // Loading state
+
+  if (loading && !currentUser) {
+    return (
+        <>
+            <AppHeader />
+            <div className="flex justify-center items-center h-[calc(100vh-200px)]">
+                <Loader2 className="h-8 w-8 animate-spin text-primary"/>
+            </div>
+        </>
+    );
   }
 
   if (error) {
-      return <div className="flex justify-center items-center h-screen text-red-500">Error: {error}</div>; // Error state
+      return (
+        <>
+            <AppHeader />
+            <div className="container mx-auto px-4 py-8 text-center">
+                 <Card className="max-w-lg mx-auto border-destructive">
+                    <CardHeader>
+                        <CardTitle className="text-destructive">Profile Error</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p>{error}</p>
+                    </CardContent>
+                </Card>
+            </div>
+        </>
+      );
   }
 
   if (!currentUser) {
-      return <div className="flex justify-center items-center h-screen text-yellow-500">User not found. Please sign up or log in.</div>; // User not found state
+      return (
+         <>
+            <AppHeader />
+             <div className="container mx-auto px-4 py-8 text-center">
+                 <Card className="max-w-lg mx-auto border-primary">
+                    <CardHeader>
+                        <CardTitle className="text-primary">User Not Found</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground">Please sign up via the Missions tab to create a profile.</p>
+                    </CardContent>
+                </Card>
+            </div>
+        </>
+      );
   }
 
 
@@ -167,12 +241,13 @@ export default function ProfilePage() {
               <CardDescription>Recognitions for your achievements.</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
-              {/* Assuming a 'badges' relation on user model, and each badge has a 'name' field */}
-              {currentUser.badges && currentUser.badges.map((badge: any, index: number) => (
+              {currentUser.badges && currentUser.badges.length > 0 ? currentUser.badges.map((badge: any, index: number) => (
                 <Badge key={index} variant="secondary" className="font-semibold">
                   {badge.name}
                 </Badge>
-              ))}
+              )) : (
+                <p className="text-sm text-muted-foreground">No badges earned yet.</p>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -180,8 +255,8 @@ export default function ProfilePage() {
         {/* Leaderboard Display */}
         <Card className="mb-8">
             <CardHeader>
-                <CardTitle>Top Analysts Leaderboard</CardTitle>
-                <CardDescription>See where you stand in the global ranks.</CardDescription>
+                <CardTitle>Top 10 Analysts</CardTitle>
+                <CardDescription>See the current leaders in the weekly challenge.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Table>
@@ -189,10 +264,8 @@ export default function ProfilePage() {
                         <TableRow>
                         <TableHead className="w-[80px] text-center">Rank</TableHead>
                         <TableHead>Analyst</TableHead>
-                         {/* Assuming 'weeklyPoints' and 'airdropPoints' fields exist on your user model for leaderboard */}
                         <TableHead className="text-right">Weekly Points</TableHead>
                         <TableHead className="text-right">Airdrop Points</TableHead>
-                        <TableHead className="text-center">Badge</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -200,26 +273,12 @@ export default function ProfilePage() {
                         <TableRow key={user.id} className="hover:bg-primary/10">
                             <TableCell className="text-center">
                                 <div className="flex justify-center items-center">
-                                    <RankIcon rank={user.rank}/>
+                                    {user.rank && <RankIcon rank={user.rank}/>}
                                 </div>
                             </TableCell>
                             <TableCell className="font-medium text-foreground">{user.username}</TableCell>
                             <TableCell className="text-right font-mono text-accent">{user.weeklyPoints?.toLocaleString() || 0}</TableCell>
                             <TableCell className="text-right font-mono text-primary">{user.airdropPoints?.toLocaleString() || 0}</TableCell>
-                            <TableCell className="text-center">
-                               {/* Assuming badges relation and badge name field, or a simple badge string if not fetching relations */}
-                                {user.badge ? (
-                                  <Badge variant="secondary" className="font-semibold">
-                                    {user.badge} {/* Displaying a single badge string */}
-                                  </Badge>
-                                ) : user.badges && user.badges.length > 0 ? (
-                                   <Badge variant="secondary" className="font-semibold">
-                                    {user.badges[0].name} {/* Displaying the first badge from relation as an example */}
-                                  </Badge>
-                                ) : (
-                                  <span className="text-muted-foreground">No Badge</span>
-                                )}
-                            </TableCell>
                         </TableRow>
                         ))}
                     </TableBody>
@@ -270,7 +329,7 @@ export default function ProfilePage() {
         </Card>
 
         {/* Settings Section */}
-        <Card>
+        <Card className="mb-8">
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="space-y-1">
               <CardTitle>Settings</CardTitle>
@@ -291,6 +350,23 @@ export default function ProfilePage() {
               <Button onClick={handleSaveSettings}>Save Changes</Button>
             </CardContent>
           )}
+        </Card>
+        
+        {/* Database Management Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center"><Database className="h-5 w-5 mr-2" /> Database Management</CardTitle>
+            <CardDescription>Use these tools for database setup and testing.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between p-4 bg-background/50 rounded-lg border border-border">
+              <p className="text-sm text-muted-foreground max-w-lg">Populate database with sample users, badges, and signals. <br/><strong className="text-destructive">Warning: This will delete all existing data.</strong></p>
+              <Button onClick={handlePopulateData} disabled={isPopulating}>
+                {isPopulating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Rocket className="mr-2 h-4 w-4" />}
+                Populate Data
+              </Button>
+            </div>
+          </CardContent>
         </Card>
 
       </div>
