@@ -2,7 +2,7 @@ import { FunctionComponent } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
+import type { GenerateTradingStrategyOutput, GenerateShadowChoiceStrategyOutput } from '@/ai/flows/generate-trading-strategy';
 import type { LiveMarketData } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -23,11 +23,12 @@ import {
   Unlock,
   Loader2,
   Copy,
-  Zap
+  Zap,
+  BrainCircuit,
 } from 'lucide-react';
 
 interface StrategyExplanationSectionProps {
-  strategy: GenerateTradingStrategyOutput | null;
+  strategy: (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { id?: string } | null;
   liveMarketData: LiveMarketData | null;
   isLoading: boolean;
   error?: string | null;
@@ -73,7 +74,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
     if (!strategy) return;
 
     const currentDateTime = new Date().toLocaleString();
-    const parameters = [
+    let parameters = [
       { label: "Signal", value: strategy.signal || 'N/A' },
       { label: "Entry Zone", value: strategy.entry_zone || 'N/A' },
       { label: "Stop Loss", value: strategy.stop_loss || 'N/A' },
@@ -83,6 +84,19 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
       { label: "SHADOW Score", value: strategy.gpt_confidence_score || 'N/A' },
       { label: "Sentiment", value: strategy.sentiment || 'N/A' },
     ];
+    
+    let reasoningSection = '';
+    if ('strategyReasoning' in strategy) {
+        reasoningSection = `
+SHADOW's Autonomous Choice:
+------------------------------------
+  Chosen Mode       : ${strategy.chosenTradingMode}
+  Chosen Risk       : ${strategy.chosenRiskProfile}
+  Reasoning         : "${strategy.strategyReasoning}"
+------------------------------------
+`;
+    }
+
 
     const maxLabelLength = Math.max(...parameters.map(p => p.label.length));
 
@@ -101,7 +115,7 @@ Core Parameters:
 ------------------------------------
 ${formattedParameters}
 ------------------------------------
-
+${reasoningSection}
 SHADOW's Edict (Disclaimer):
 ------------------------------------
 ${indentedDisclaimer}
@@ -270,6 +284,31 @@ Analysis Timestamp: ${currentDateTime}
                 icon={<AlertTriangle size={20} className="text-orange-500"/>}
             />
         </div>
+        
+        {'strategyReasoning' in strategy && strategy.strategyReasoning && (
+            <Card className="bg-background/40 border-tertiary/70 shadow-inner">
+                <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center text-lg text-tertiary">
+                        <BrainCircuit className="mr-3 h-6 w-6"/>
+                        SHADOW's Autonomous Rationale
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground italic border-l-2 border-tertiary pl-3">"{strategy.strategyReasoning}"</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                        <div className="p-3 bg-secondary/50 rounded-md">
+                            <span className="font-semibold text-foreground">Chosen Mode: </span>
+                            <span className="text-tertiary font-bold">{strategy.chosenTradingMode}</span>
+                        </div>
+                        <div className="p-3 bg-secondary/50 rounded-md">
+                            <span className="font-semibold text-foreground">Chosen Risk: </span>
+                            <span className="text-tertiary font-bold">{strategy.chosenRiskProfile}</span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        )}
+
          <div className="mt-6 flex justify-center gap-4 flex-wrap">
             <Button
                 onClick={handleCopyToClipboard}

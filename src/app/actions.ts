@@ -4,6 +4,8 @@ import { generateTradingStrategy as genCoreStrategy, type GenerateTradingStrateg
 import { generateSarcasticDisclaimer } from '@/ai/flows/generate-sarcastic-disclaimer';
 import { shadowChat, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
+import { generateShadowChoiceStrategy as genShadowChoice, type ShadowChoiceStrategyInput, type ShadowChoiceStrategyCoreOutput } from '@/ai/flows/generate-shadow-choice-strategy';
+
 import { getTokenPriceFromMoralis, type TokenPrice } from '@/services/moralis-service';
 import { EvmChain } from '@moralisweb3/common-evm-utils';
 import { randomUUID } from 'crypto';
@@ -317,7 +319,7 @@ export async function handleAirdropSignupAction(formData: AirdropFormData, userI
 
     await writeDb(db);
 
-    return { userId: currentUser.id, shadowId: currentUser.shadowId };
+    return { userId: currentUser.id };
 
   } catch (error: any) {
     console.error('Error handling airdrop signup:', error);
@@ -503,7 +505,7 @@ export async function populateSampleDataJson() {
 
 // --- Portfolio and Trade History Actions ---
 
-export async function openSimulatedPositionAction(userId: string, strategy: GenerateTradingStrategyOutput): Promise<{ position?: Position, error?: string }> {
+export async function openSimulatedPositionAction(userId: string, strategy: (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput)): Promise<{ position?: Position, error?: string }> {
   if (strategy.signal.toUpperCase() === 'HOLD') {
     return { error: "Cannot open a position on a 'HOLD' signal." };
   }
@@ -839,6 +841,13 @@ export interface TickerSymbolData {
 
 export type ChatMessage = AIChatMessage;
 
+// --- Export types for SHADOW's Choice ---
+export type { ShadowChoiceStrategyInput, ShadowChoiceStrategyCoreOutput };
+export type GenerateShadowChoiceStrategyOutput = ShadowChoiceStrategyCoreOutput & {
+    disclaimer: string;
+    symbol: string;
+};
+
 
 export async function fetchAllTradingSymbolsAction(): Promise<FormattedSymbol[] | FetchDataError> {
   const apiKey = process.env.BINANCE_API_KEY;
@@ -1015,6 +1024,65 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
   }
 }
 
+export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStrategyInput): Promise<GenerateShadowChoiceStrategyOutput | { error: string }> {
+  try {
+    if (typeof input.marketData !== 'string') {
+        input.marketData = typeof input.marketData === 'object' ? JSON.stringify(input.marketData) : '{}';
+    }
+
+    if (input.marketData === '{}' || !input.marketData) {
+        return {error: "Market data is missing or invalid. SHADOW cannot make a choice without data."}
+    }
+    
+    // Generate the core strategy using SHADOW's autonomous choice
+    const coreStrategyResult = await genShadowChoice(input);
+
+    // Generate the standard disclaimer
+    const disclaimerResult = await generateSarcasticDisclaimer({});
+
+    // Combine results into the final output object
+    const finalResult: GenerateShadowChoiceStrategyOutput = {
+      ...coreStrategyResult,
+      symbol: input.symbol, // Manually add symbol to the final output
+      disclaimer: disclaimerResult.disclaimer,
+    };
+
+    return finalResult;
+
+  } catch (error: any) {
+    // Re-using the robust error handling from the other action
+    let errorMessage = "SHADOW's autonomous core failed. Please check server logs or try again.";
+
+    if (error.message) {
+        if ((error.message.includes("[500]") || error.message.includes("[503]")) && error.message.includes("GoogleGenerativeAI")) {
+            const statusCode = error.message.includes("[500]") ? "500 Internal Server Error" : "503 Service Unavailable";
+            errorMessage = `SHADOW's connection to the generative model (Gemini) reported an issue: ${statusCode}. This is likely a temporary problem on Google's side. Please try again in a few moments.`;
+        } else if (error.message.includes("Text not available. Response was blocked") || error.message.includes("SAFETY")) {
+            errorMessage = "SHADOW's autonomous analysis was blocked by safety filters. The query may have triggered a policy violation."
+        }
+         else {
+            errorMessage = `SHADOW's autonomous core failed: ${error.message}`;
+        }
+    }
+
+    if (error.details) {
+         errorMessage += ` Details: ${typeof error.details === 'object' ? JSON.stringify(error.details) : error.details}`;
+    } else if (error.cause && typeof error.cause === 'object') {
+        const causeDetails = JSON.stringify(error.cause, Object.getOwnPropertyNames(error.cause));
+        errorMessage += ` Cause: ${causeDetails}`;
+    }  else if (error.cause && typeof error.cause !== 'object') {
+        errorMessage += ` Cause: ${error.cause}`;
+    }
+
+    if (typeof error === 'object' && error !== null && !error.message && !error.details && !error.cause) {
+        errorMessage += ` Additional info: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`;
+    }
+    
+    console.error("Error in generateShadowChoiceStrategyAction: ", errorMessage, error);
+    return { error: errorMessage };
+  }
+}
+
 
 export async function shadowChatAction(input: ShadowChatInput): Promise<ShadowChatOutput | { error: string }> {
   try {
@@ -1103,5 +1171,6 @@ export async function fetchTokenPriceAction(params: { tokenAddress: string, chai
     
 
     
+
 
 

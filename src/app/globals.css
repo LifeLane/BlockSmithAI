@@ -126,6 +126,21 @@ body {
   background: linear-gradient(to right, hsl(var(--saffron-neon)), hsl(var(--yellow-neon)));
 }
 
+.shadow-choice-button {
+  background: linear-gradient(to right, hsl(var(--tertiary)), hsl(var(--accent)));
+  color: hsl(var(--tertiary-foreground));
+  border: none;
+  font-weight: bold;
+  border-radius: var(--radius);
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 0 5px hsl(var(--tertiary)), 0 0 10px hsl(var(--tertiary)/0.7), 0 0 15px hsl(var(--accent)/0.7);
+}
+.shadow-choice-button:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 10px hsl(var(--tertiary)), 0 0 20px hsl(var(--tertiary)/0.8), 0 0 30px hsl(var(--accent)/0.8), 0 0 5px hsl(var(--background)/0.5) inset;
+  background: linear-gradient(to right, hsl(var(--accent)), hsl(var(--tertiary)));
+}
+
 /* Styles for ShadowMindInterface */
 .shadow-mind-terminal {
   font-family: 'Space Mono', monospace;

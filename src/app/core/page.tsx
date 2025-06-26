@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   generateTradingStrategyAction,
+  generateShadowChoiceStrategyAction,
   fetchMarketDataAction,
   fetchAllTradingSymbolsAction,
   openSimulatedPositionAction,
@@ -31,12 +32,16 @@ import {
   type FormattedSymbol,
   type UserProfile,
   fetchCurrentUserJson,
+  type GenerateTradingStrategyOutput as AIOutputType,
+  type GenerateShadowChoiceStrategyOutput,
 } from '@/app/actions';
-import type { GenerateTradingStrategyOutput as AIOutputType } from '@/ai/flows/generate-trading-strategy';
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, ShieldQuestion, Brain } from 'lucide-react';
+import { Loader2, Sparkles, ShieldQuestion, BrainCircuit } from 'lucide-react';
 
-type GenerateTradingStrategyOutput = AIOutputType & { id?: string };
+// This combined type will now encompass both standard and SHADOW's Choice outputs.
+type AIStrategyOutput = (AIOutputType | GenerateShadowChoiceStrategyOutput) & { 
+  id?: string;
+};
 
 const DEFAULT_SYMBOLS: FormattedSymbol[] = [
   { value: "BTCUSDT", label: "BTC/USDT" },
@@ -52,8 +57,9 @@ export default function CoreConsolePage() {
   const [tradingMode, setTradingMode] = useState<string>('Intraday');
   const [riskProfile, setRiskProfile] = useState<string>('Medium');
 
-  const [aiStrategy, setAiStrategy] = useState<GenerateTradingStrategyOutput | null>(null);
+  const [aiStrategy, setAiStrategy] = useState<AIStrategyOutput | null>(null);
   const [isLoadingStrategy, setIsLoadingStrategy] = useState<boolean>(false);
+  const [isLoadingShadowChoice, setIsLoadingShadowChoice] = useState<boolean>(false);
   const [strategyError, setStrategyError] = useState<string | null>(null);
 
   const [liveMarketData, setLiveMarketData] = useState<LiveMarketData | null>(null);
@@ -89,9 +95,6 @@ export default function CoreConsolePage() {
         setCurrentUser(user);
         if (user.id !== userIdFromStorage) {
           localStorage.setItem('currentUserId', user.id);
-        }
-        if (user.shadowId) {
-            localStorage.setItem('currentUserShadowId', user.shadowId);
         }
       } catch (error) {
         console.error("Failed to initialize user:", error);
@@ -255,7 +258,7 @@ export default function CoreConsolePage() {
       });
       if(currentUser?.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount -1);
     } else {
-      const resultWithId = {
+      const resultWithId: AIStrategyOutput = {
           ...result,
           id: crypto.randomUUID(),
       };
@@ -276,6 +279,78 @@ export default function CoreConsolePage() {
     }
     setIsLoadingStrategy(false);
   }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast]);
+
+    const handleGenerateShadowChoice = useCallback(async () => {
+        setTimeout(() => {
+            document.getElementById('results-block')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+
+        if (currentUser?.status === 'Guest') {
+            const today = new Date().toISOString().split('T')[0];
+            let currentCount = analysisCount;
+            if (lastAnalysisDate !== today) {
+                currentCount = 0;
+                updateUsageData(0);
+            }
+            if (currentCount >= MAX_GUEST_ANALYSES) {
+                setShowAirdropModal(true);
+                toast({
+                    title: "Daily Limit Reached",
+                    description: "Guests are limited. Register for unlimited SHADOW's Choice analyses.",
+                });
+                return;
+            }
+            updateUsageData(currentCount + 1);
+        }
+
+        setIsLoadingShadowChoice(true);
+        setStrategyError(null);
+        setAiStrategy(null);
+
+        let marketDataForAIString = '{}';
+        let currentDataToUse = liveMarketData;
+
+        if (!currentDataToUse || (currentDataToUse.symbol !== symbol)) {
+            const result = await fetchAndSetMarketData(symbol, true);
+            if ('error' in result) {
+                setStrategyError("Market data unavailable. SHADOW's Choice aborted.");
+                setIsLoadingShadowChoice(false);
+                if (currentUser?.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
+                return;
+            }
+            currentDataToUse = result;
+        }
+
+        if (currentDataToUse) {
+            marketDataForAIString = JSON.stringify(currentDataToUse);
+        }
+
+        const result = await generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString });
+
+        if ('error' in result) {
+            setStrategyError(result.error);
+            setAiStrategy(null);
+            toast({ title: "SHADOW's Choice Failed", description: result.error, variant: "destructive" });
+            if (currentUser?.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
+        } else {
+            const resultWithId: AIStrategyOutput = { ...result, id: crypto.randomUUID() };
+            setAiStrategy(resultWithId);
+            toast({
+                title: <span className="text-tertiary">SHADOW's Choice Received!</span>,
+                description: <span className="text-foreground">Autonomous analysis for <strong className="text-primary">{result.symbol}</strong> is complete.</span>,
+            });
+             try {
+                const history = JSON.parse(localStorage.getItem('bsaiSignalHistory') || '[]');
+                const newEntry = { ...resultWithId, timestamp: new Date().toISOString() };
+                const updatedHistory = [newEntry, ...history].slice(0, 20);
+                localStorage.setItem('bsaiSignalHistory', JSON.stringify(updatedHistory));
+            } catch (e) {
+                console.error("Failed to save signal to history:", e);
+            }
+        }
+        setIsLoadingShadowChoice(false);
+    }, [symbol, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast]);
+
 
   const handleToggleChat = () => setIsChatOpen(prev => !prev);
   const handleAirdropSignupSuccess = async () => {
@@ -361,14 +436,13 @@ export default function CoreConsolePage() {
     setShowConfirmTradeDialog(false);
   };
 
-  const isButtonDisabled = isUserLoading || isLoadingStrategy || isLoadingSymbols || (currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES);
+  const isButtonDisabled = isUserLoading || isLoadingStrategy || isLoadingShadowChoice || isLoadingSymbols || (currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES);
 
   return (
     <>
       <AppHeader />
       <div ref={mainContentRef} className="container mx-auto px-4 py-8 flex flex-col w-full space-y-8 pb-24">
         
-        {/* --- CONTROLS --- */}
         <div className="w-full space-y-6">
             <MarketDataDisplay
                 liveMarketData={liveMarketData}
@@ -388,58 +462,77 @@ export default function CoreConsolePage() {
                 isLoadingSymbols={isLoadingSymbols}
             />
             
-            <Button
-                onClick={handleGenerateStrategy}
-                disabled={isButtonDisabled}
-                className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
-            >
-                {isLoadingStrategy ? (
-                    <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    SHADOW is Analyzing...
-                    </>
-                ) : isUserLoading ? (
-                    <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Initializing Analyst Profile...
-                    </>
-                ) : (
-                    <>
-                    <Sparkles className="mr-2 h-5 w-5" />
-                    Generate Signal
-                    </>
+            <div className="flex flex-col items-center gap-4">
+                <Button
+                    onClick={handleGenerateStrategy}
+                    disabled={isButtonDisabled}
+                    className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
+                >
+                    {isLoadingStrategy ? (
+                        <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        SHADOW is Analyzing...
+                        </>
+                    ) : isUserLoading ? (
+                         <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Initializing Analyst Profile...
+                        </>
+                    ) : (
+                        <>
+                        <Sparkles className="mr-2 h-5 w-5" />
+                        Generate Signal
+                        </>
+                    )}
+                </Button>
+
+                 <Button
+                    onClick={handleGenerateShadowChoice}
+                    disabled={isButtonDisabled}
+                    className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out shadow-choice-button"
+                >
+                    {isLoadingShadowChoice ? (
+                        <>
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            SHADOW is Deciding...
+                        </>
+                    ) : (
+                        <>
+                            <BrainCircuit className="mr-2 h-5 w-5" />
+                            Invoke SHADOW's Choice
+                        </>
+                    )}
+                </Button>
+                
+                {currentUser?.status === 'Guest' && (
+                    <p className="text-xs text-center text-muted-foreground mt-2">
+                    Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Register</button> for <strong className="text-orange-400">unlimited</strong>.
+                    </p>
                 )}
-            </Button>
-            
-            {currentUser?.status === 'Guest' && (
-                <p className="text-xs text-center text-muted-foreground mt-2">
-                Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Register</button> for <strong className="text-orange-400">unlimited</strong>.
-                </p>
-            )}
+            </div>
         </div>
 
-        {/* --- RESULTS BLOCK --- */}
-        {(aiStrategy || isLoadingStrategy || strategyError) && (
+        {(aiStrategy || isLoadingStrategy || isLoadingShadowChoice || strategyError) && (
             <div id="results-block" className="w-full space-y-8">
                 <div className="w-full relative space-y-8">
                     <StrategyExplanationSection
                         strategy={aiStrategy}
                         liveMarketData={liveMarketData} 
-                        isLoading={isLoadingStrategy}
+                        isLoading={isLoadingStrategy || isLoadingShadowChoice}
                         error={strategyError}
                         symbol={symbol}
                         onSimulate={handleSimulateTrade}
                         onChat={handleToggleChat}
                     />
 
-                    {aiStrategy && liveMarketData && !isLoadingStrategy && !strategyError && (
+                    {aiStrategy && liveMarketData && !(isLoadingStrategy || isLoadingShadowChoice) && !strategyError && (
                       <SignalTracker
                         aiStrategy={aiStrategy}
                         liveMarketData={liveMarketData}
                       />
                     )}
 
-                    {aiStrategy && !isLoadingStrategy && !strategyError && (
+                    {aiStrategy && !(isLoadingStrategy || isLoadingShadowChoice) && !strategyError && (
                       <ShadowMindInterface 
                           signalConfidence={aiStrategy.gpt_confidence_score}
                           currentThought={aiStrategy.currentThought}
