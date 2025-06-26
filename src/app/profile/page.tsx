@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Crown, Shield, Trophy, Settings, Award, AlertTriangle, User, BarChart2, TrendingUp, TrendingDown, Zap, ShieldCheck, Gift, Clock, CheckCircle } from 'lucide-react';
+import { Crown, Shield, Trophy, Settings, Award, AlertTriangle, User, BarChart2, TrendingUp, TrendingDown, Zap, ShieldCheck, Gift, Clock, CheckCircle, Users } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
