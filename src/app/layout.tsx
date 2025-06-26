@@ -27,7 +27,7 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <MatrixBackground />
         <ApiKeyProvider>
-          <div className="text-foreground bg-background min-h-screen flex flex-col relative z-10">
+          <div className="text-foreground bg-transparent min-h-screen flex flex-col relative z-10">
             <main className="flex-grow pb-16">
               {children}
             </main>
