@@ -130,11 +130,6 @@ export default function MonitorPage() {
     <>
       <AppHeader />
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">Signal Archive</h1>
-          <p className="text-muted-foreground">Review historical analyses from SHADOW.</p>
-        </div>
-        
         <ScrollArea className="h-[calc(100vh-250px)] pr-4">
           <div className="space-y-4">
             {signals.length > 0 ? signals.map((signal, index) => {

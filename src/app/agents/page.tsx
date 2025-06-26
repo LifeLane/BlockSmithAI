@@ -247,14 +247,6 @@ export default function AgentsPage() {
     <>
       <AppHeader />
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-            <div className="flex justify-center items-center">
-                 <Bot className="h-8 w-8 text-primary mb-1" />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-bold">Agent <span className="text-primary">Network</span></h1>
-            <p className="text-muted-foreground">Deploy autonomous agents. Earn BSAI and XP.</p>
-        </div>
-        
         <ScrollArea className="h-[calc(100vh-300px)] pr-4">
             {renderContent()}
         </ScrollArea>

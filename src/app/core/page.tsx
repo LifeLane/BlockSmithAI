@@ -363,23 +363,11 @@ export default function CoreConsolePage() {
 
   const isButtonDisabled = isUserLoading || isLoadingStrategy || isLoadingSymbols || (currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES);
 
-  const showWelcomeMessage = !aiStrategy && !isLoadingStrategy && !strategyError;
-
   return (
     <>
       <AppHeader />
       <div ref={mainContentRef} className="container mx-auto px-4 py-8 flex flex-col w-full space-y-8 pb-24">
         
-        {showWelcomeMessage && (
-            <div className="text-center space-y-2">
-                <div className="flex justify-center items-center">
-                    <Brain className="h-8 w-8 text-primary mb-1" />
-                </div>
-                <h1 className="text-2xl md:text-3xl font-bold">SHADOW Core</h1>
-                <p className="text-muted-foreground max-w-2xl mx-auto">I perceive market whispers. Provide parameters to materialize a tactical insight.</p>
-            </div>
-        )}
-
         {/* --- CONTROLS --- */}
         <div className="w-full space-y-6">
             <MarketDataDisplay

@@ -365,14 +365,6 @@ export default function PortfolioPage() {
     <>
       <AppHeader />
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-            <div className="flex justify-center items-center">
-                 <Briefcase className="h-8 w-8 text-primary mb-1" />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-bold">Portfolio</h1>
-            <p className="text-muted-foreground">Monitor your positions and performance.</p>
-        </div>
-        
         {renderContent()}
       </div>
     </>
