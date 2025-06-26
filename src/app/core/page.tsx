@@ -26,12 +26,14 @@ import {
   fetchMarketDataAction,
   fetchAllTradingSymbolsAction,
   openSimulatedPositionAction,
+  getOrCreateUserAction,
   type LiveMarketData,
-  type FormattedSymbol
+  type FormattedSymbol,
+  type UserProfile,
 } from '@/app/actions';
 import type { GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, ShieldQuestion, Zap } from 'lucide-react';
+import { Loader2, Sparkles, ShieldQuestion } from 'lucide-react';
 
 const DEFAULT_SYMBOLS: FormattedSymbol[] = [
   { value: "BTCUSDT", label: "BTC/USDT" },
@@ -40,14 +42,6 @@ const DEFAULT_SYMBOLS: FormattedSymbol[] = [
 ];
 const INITIAL_DEFAULT_SYMBOL = 'BTCUSDT';
 const MAX_GUEST_ANALYSES = 3;
-
-// Helper to get user ID from client-side storage
-const getCurrentUserId = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('currentUserId');
-  }
-  return null;
-};
 
 
 export default function CoreConsolePage() {
@@ -67,37 +61,72 @@ export default function CoreConsolePage() {
   const [isLoadingSymbols, setIsLoadingSymbols] = useState<boolean>(true);
 
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
-
+  const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
+  const [showConfirmTradeDialog, setShowConfirmTradeDialog] = useState<boolean>(false);
+  
+  // User state
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [isUserLoading, setIsUserLoading] = useState(true);
+  
+  // Guest usage tracking
   const [analysisCount, setAnalysisCount] = useState<number>(0);
   const [lastAnalysisDate, setLastAnalysisDate] = useState<string>('');
-  const [isSignedUp, setIsSignedUp] = useState<boolean>(false);
-  const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
-  
-  const [showConfirmTradeDialog, setShowConfirmTradeDialog] = useState<boolean>(false);
 
-  const toastRef = useRef(useToast());
-
+  const { toast } = useToast();
   const mainContentRef = useRef<HTMLDivElement>(null);
 
+
+  // Get or create user on initial load
   useEffect(() => {
+    const initializeUser = async () => {
+      setIsUserLoading(true);
+      const userIdFromStorage = localStorage.getItem('currentUserId');
+      try {
+        const user = await getOrCreateUserAction(userIdFromStorage);
+        setCurrentUser(user);
+        if (user.id !== userIdFromStorage) {
+          localStorage.setItem('currentUserId', user.id);
+        }
+        if (user.shadowId) {
+            localStorage.setItem('currentUserShadowId', user.shadowId);
+        }
+      } catch (error) {
+        console.error("Failed to initialize user:", error);
+        toast({
+          title: "User Session Error",
+          description: "Could not initialize your analyst profile. Some features may be limited.",
+          variant: "destructive",
+        });
+      }
+      setIsUserLoading(false);
+    };
+    initializeUser();
+  }, [toast]);
+  
+
+  // Load guest usage data from local storage
+  useEffect(() => {
+    if (!currentUser || currentUser.status !== 'Guest') {
+        // If user is registered, don't apply guest limits
+        setAnalysisCount(0);
+        return;
+    }
+
     const storedCount = localStorage.getItem('bsaiAnalysisCount');
     const storedDate = localStorage.getItem('bsaiLastAnalysisDate');
-    const storedSignupStatus = localStorage.getItem('bsaiIsSignedUp');
     const today = new Date().toISOString().split('T')[0];
 
-    if (storedSignupStatus === 'true') {
-      setIsSignedUp(true);
-    } else {
-      if (storedDate === today && storedCount) {
+    if (storedDate === today && storedCount) {
         setAnalysisCount(parseInt(storedCount, 10));
-      } else {
+    } else {
+        // Reset count for a new day or if no data exists
         localStorage.setItem('bsaiAnalysisCount', '0');
         localStorage.setItem('bsaiLastAnalysisDate', today);
         setAnalysisCount(0);
-      }
-      setLastAnalysisDate(today);
     }
-  }, []);
+    setLastAnalysisDate(today);
+
+  }, [currentUser]);
 
   const updateUsageData = useCallback((newCount: number) => {
     const today = new Date().toISOString().split('T')[0];
@@ -116,7 +145,7 @@ export default function CoreConsolePage() {
       setMarketDataError(result.error);
       setLiveMarketData(null);
       if (showToastOnError) {
-        toastRef.current.toast({
+        toast({
           title: "Market Data Error",
           description: result.error,
           variant: "destructive",
@@ -128,14 +157,14 @@ export default function CoreConsolePage() {
     }
     setIsLoadingMarketData(false);
     return result;
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     const loadSymbols = async () => {
       setIsLoadingSymbols(true);
       const result = await fetchAllTradingSymbolsAction();
       if ('error' in result) {
-        toastRef.current.toast({
+        toast({
           title: "Failed to Load Symbols",
           description: result.error + " Using default list.",
           variant: "destructive",
@@ -150,7 +179,7 @@ export default function CoreConsolePage() {
       setIsLoadingSymbols(false);
     };
     loadSymbols();
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     if (symbol) {
@@ -163,7 +192,8 @@ export default function CoreConsolePage() {
 
   const handleGenerateStrategy = useCallback(async () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (!isSignedUp) {
+
+    if (currentUser?.status === 'Guest') {
       const today = new Date().toISOString().split('T')[0];
       let currentCount = analysisCount;
       if (lastAnalysisDate !== today) {
@@ -173,9 +203,9 @@ export default function CoreConsolePage() {
 
       if (currentCount >= MAX_GUEST_ANALYSES) {
         setShowAirdropModal(true);
-        toastRef.current.toast({
+        toast({
           title: "Daily Limit Reached",
-          description: <span className="text-foreground">Guests are limited to <strong className="text-accent">3 analyses per day</strong>. <strong className="text-primary">Sign up</strong> for <strong className="text-tertiary">unlimited access</strong> & the <strong className="text-orange-400">$BSAI airdrop!</strong></span>,
+          description: <span className="text-foreground">Guests are limited to <strong className="text-accent">{MAX_GUEST_ANALYSES} analyses per day</strong>. <strong className="text-primary">Sign up</strong> for <strong className="text-tertiary">unlimited access</strong> & the <strong className="text-orange-400">$BSAI airdrop!</strong></span>,
         });
         return;
       }
@@ -194,7 +224,7 @@ export default function CoreConsolePage() {
       if ('error' in result) {
         setStrategyError("Market data unavailable. Strategy generation aborted.");
         setIsLoadingStrategy(false);
-        if(!isSignedUp && analysisCount > 0) updateUsageData(analysisCount - 1);
+        if(currentUser?.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
         return;
       }
       currentDataToUse = result;
@@ -211,15 +241,15 @@ export default function CoreConsolePage() {
     if ('error' in result) {
       setStrategyError(result.error);
       setAiStrategy(null);
-      toastRef.current.toast({
+      toast({
         title: "SHADOW's Insight Blocked",
         description: result.error,
         variant: "destructive",
       });
-      if(!isSignedUp && analysisCount > 0) updateUsageData(analysisCount -1);
+      if(currentUser?.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount -1);
     } else {
       setAiStrategy(result);
-      toastRef.current.toast({
+      toast({
         title: <span className="text-accent">SHADOW's Insight Materialized!</span>,
         description: <span className="text-foreground">New analysis for <strong className="text-primary">{result.symbol}</strong> has been generated.</span>,
       });
@@ -234,22 +264,27 @@ export default function CoreConsolePage() {
       }
     }
     setIsLoadingStrategy(false);
-  }, [symbol, tradingMode, riskProfile, liveMarketData, isSignedUp, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData]);
+  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast]);
 
   const handleToggleChat = () => setIsChatOpen(prev => !prev);
-  const handleAirdropSignupSuccess = () => {
-    setIsSignedUp(true);
-    localStorage.setItem('bsaiIsSignedUp', 'true');
+  const handleAirdropSignupSuccess = async () => {
     setShowAirdropModal(false);
-    toastRef.current.toast({
+    toast({
       title: <span className="text-accent">BlockShadow Registration Complete!</span>,
-      description: <span className="text-foreground">You're confirmed for the <strong className="text-orange-400">$BSAI airdrop</strong> & <strong className="text-purple-400">offering</strong>. <strong className="text-primary">Unlimited SHADOW analyses</strong> unlocked!</span>,
+      description: <span className="text-foreground">You're confirmed for the <strong className="text-orange-400">$BSAI airdrop</strong>. <strong className="text-primary">Unlimited SHADOW analyses</strong> unlocked!</span>,
     });
+    // Refresh user data
+     if (currentUser) {
+        const updatedUser = await fetchCurrentUserJson(currentUser.id);
+        if (updatedUser) {
+            setCurrentUser(updatedUser);
+        }
+    }
   };
 
   const handleSimulateTrade = () => {
     if (!aiStrategy) {
-         toastRef.current.toast({
+         toast({
             title: "No SHADOW Insight Available",
             description: "Please generate an analysis from SHADOW first.",
             variant: "default",
@@ -257,7 +292,7 @@ export default function CoreConsolePage() {
         return;
     }
     if (aiStrategy.signal.toUpperCase() === 'HOLD') {
-        toastRef.current.toast({
+        toast({
             title: "Cannot Simulate 'HOLD'",
             description: "A 'HOLD' signal indicates no action should be taken.",
             variant: "default",
@@ -268,11 +303,10 @@ export default function CoreConsolePage() {
   };
 
   const confirmSimulatedTrade = async () => {
-    const userId = getCurrentUserId();
-    if (!userId) {
-        toastRef.current.toast({
+    if (!currentUser) {
+        toast({
             title: "User Not Found",
-            description: "Cannot simulate trade without a user profile. Please sign up.",
+            description: "Cannot simulate trade without a user profile. Please refresh the page.",
             variant: "destructive",
         });
         setShowConfirmTradeDialog(false);
@@ -283,16 +317,16 @@ export default function CoreConsolePage() {
         return;
     }
 
-    const result = await openSimulatedPositionAction(userId, aiStrategy);
+    const result = await openSimulatedPositionAction(currentUser.id, aiStrategy);
 
     if (result.error) {
-        toastRef.current.toast({
+        toast({
             title: <span className="text-destructive">Position Open Failed!</span>,
             description: <span className="text-foreground">{result.error}</span>,
             variant: "destructive",
         });
     } else {
-        toastRef.current.toast({
+        toast({
             title: <span className="text-tertiary">Position Opened!</span>,
             description: <span>Simulated {aiStrategy?.signal} for {aiStrategy?.symbol} opened. View in your Portfolio.</span>,
             variant: "default",
@@ -301,7 +335,7 @@ export default function CoreConsolePage() {
     setShowConfirmTradeDialog(false);
   };
 
-  const isButtonDisabled = isLoadingStrategy || isLoadingMarketData || isLoadingSymbols || (!isSignedUp && analysisCount >= MAX_GUEST_ANALYSES);
+  const isButtonDisabled = isUserLoading || isLoadingStrategy || isLoadingMarketData || isLoadingSymbols || (currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES);
 
   return (
     <>
@@ -341,6 +375,11 @@ export default function CoreConsolePage() {
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     SHADOW is Analyzing...
                     </>
+                ) : isUserLoading ? (
+                    <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Initializing Analyst Profile...
+                    </>
                 ) : (
                     <>
                     <Sparkles className="mr-2 h-5 w-5" />
@@ -349,7 +388,7 @@ export default function CoreConsolePage() {
                 )}
             </Button>
             
-            {!isSignedUp && analysisCount > 0 && (
+            {currentUser?.status === 'Guest' && (
                 <p className="text-xs text-center text-muted-foreground mt-2">
                 Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Register</button> for <strong className="text-orange-400">unlimited</strong>.
                 </p>

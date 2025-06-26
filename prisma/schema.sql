@@ -1,0 +1,2 @@
+-- This file is no longer used as the database has been migrated to a local JSON file.
+-- It can be safely deleted.

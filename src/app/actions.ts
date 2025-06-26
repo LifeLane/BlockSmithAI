@@ -15,11 +15,11 @@ import path from 'path';
 const dbPath = path.join(process.cwd(), 'src', 'data', 'db.json');
 
 interface DbData {
-    users: any[];
-    badges: any[];
-    _UserBadges: any[];
-    console_insights: any[];
-    signals: any[];
+    users: UserProfile[];
+    badges: Badge[];
+    _UserBadges: { A: string; B: string }[];
+    console_insights: ConsoleInsight[];
+    signals: SignalHistoryItem[];
     positions: Position[];
 }
 
@@ -58,6 +58,13 @@ export interface UserProfile {
   weeklyPoints: number;
   airdropPoints: number;
   badges?: Badge[];
+  wallet_address?: string;
+  wallet_type?: string;
+  email?: string;
+  phone?: string;
+  x_handle?: string;
+  telegram_handle?: string;
+  youtube_handle?: string;
 }
 
 export interface LeaderboardUser {
@@ -119,6 +126,38 @@ export interface Position {
 
 // --- JSON-based Data Actions ---
 
+export async function getOrCreateUserAction(userId: string | null): Promise<UserProfile> {
+    const db = await readDb();
+
+    if (userId) {
+        const existingUser = db.users.find(u => u.id === userId);
+        if (existingUser) {
+            return existingUser;
+        }
+    }
+    
+    // Create new guest user
+    const newUserId = randomUUID();
+    const newUsername = `Analyst_${randomUUID().substring(0, 6)}`;
+    const newShadowId = `SHDW-${randomUUID().substring(0, 7).toUpperCase()}`;
+
+    const newUser: UserProfile = {
+        id: newUserId,
+        username: newUsername,
+        shadowId: newShadowId,
+        status: 'Guest',
+        weeklyPoints: 0,
+        airdropPoints: 0,
+        badges: []
+    };
+
+    db.users.push(newUser);
+    await writeDb(db);
+
+    return newUser;
+}
+
+
 export async function fetchCurrentUserJson(userId: string): Promise<UserProfile | null> {
   try {
     const db = await readDb();
@@ -171,7 +210,8 @@ export async function updateUserSettingsJson(userId: string, data: { username?: 
     }
 
     await writeDb(db);
-    return fetchCurrentUserJson(userId);
+    const updatedUser = await fetchCurrentUserJson(userId);
+    return updatedUser;
 
   } catch (error) {
     console.error('Error updating user settings in JSON DB:', error);
@@ -179,53 +219,47 @@ export async function updateUserSettingsJson(userId: string, data: { username?: 
   }
 }
 
-export async function handleAirdropSignupAction(formData: AirdropFormData): Promise<{ userId?: string; shadowId?: string; error?: string }> {
+export async function handleAirdropSignupAction(formData: AirdropFormData, userId: string): Promise<{ userId?: string; shadowId?: string; error?: string }> {
   try {
-    const { wallet_address, wallet_type, email, phone, x_handle, telegram_handle, youtube_handle } = formData;
-
+    const { wallet_address } = formData;
     if (!wallet_address) {
       return { error: "Wallet address is required for airdrop signup." };
     }
 
     const db = await readDb();
 
-    const existingUser = db.users.find(u => u.wallet_address === wallet_address);
-    if (existingUser) {
-      console.log('Existing user found:', existingUser.id);
-      return { userId: existingUser.id, shadowId: existingUser.shadowId };
+    // Check if wallet address is already used by another REGISTERED user
+    const existingWalletUser = db.users.find(u => u.wallet_address === wallet_address && u.id !== userId && u.status !== 'Guest');
+    if (existingWalletUser) {
+        return { error: "This wallet address is already registered to another analyst." };
     }
 
-    const newUsername = `User_${randomUUID().substring(0, 7)}`;
-    const newShadowId = `SHDW-${randomUUID().substring(0, 7).toUpperCase()}`;
+    const userIndex = db.users.findIndex(u => u.id === userId);
 
-    const newUser = {
-        id: randomUUID(),
-        username: newUsername,
-        shadowId: newShadowId,
-        wallet_address,
-        wallet_type,
-        email,
-        phone,
-        x_handle,
-        telegram_handle,
-        youtube_handle,
+    if (userIndex === -1) {
+        return { error: "Your guest profile could not be found. Please refresh the page and try again." };
+    }
+    
+    const currentUser = db.users[userIndex];
+    
+    // Update the user record
+    db.users[userIndex] = {
+        ...currentUser,
+        ...formData,
         status: 'Airdrop Registered',
-        weeklyPoints: 0,
-        airdropPoints: 300, // Initial points for signing up
-        badges: []
+        airdropPoints: (currentUser.airdropPoints || 0) + 300, // Award 300 points for signing up
     };
 
-    db.users.push(newUser);
     await writeDb(db);
 
-    console.log('New user created:', newUser.id);
-    return { userId: newUser.id, shadowId: newUser.shadowId };
+    return { userId: currentUser.id, shadowId: currentUser.shadowId };
 
   } catch (error: any) {
     console.error('Error handling airdrop signup:', error);
     return { error: `Failed to process airdrop signup: ${error.message || "An unknown error occurred."}` };
   }
 }
+
 
 export async function fetchConsoleInsightsJson(userId: string): Promise<ConsoleInsight[]> {
     try {
@@ -316,14 +350,14 @@ export async function populateSampleDataJson() {
             { "A": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13", "B": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b13" }
           ],
           "console_insights": [
-            { "id": "ci1", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "content": "Market showing bullish signs for BTC.", "timestamp": new Date(Date.now() - 3600000 * 2).toISOString() },
-            { "id": "ci2", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "content": "Noticed increased volume on ETH.", "timestamp": new Date(Date.now() - 3600000).toISOString() },
-            { "id": "ci3", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12", "content": "SOL seems to be consolidating.", "timestamp": new Date().toISOString() }
+            { "id": "ci1", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "content": "Market showing bullish signs for BTC.", "timestamp": new Date(Date.now() - 3600000 * 2) },
+            { "id": "ci2", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "content": "Noticed increased volume on ETH.", "timestamp": new Date(Date.now() - 3600000) },
+            { "id": "ci3", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12", "content": "SOL seems to be consolidating.", "timestamp": new Date() }
           ],
           "signals": [
-            { "id": "s1", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "signalType": "buy", "symbol": "BTCUSDT", "price": 107000, "timestamp": new Date(Date.now() - 1800000 * 3).toISOString() },
-            { "id": "s2", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "signalType": "sell", "symbol": "ETHUSDT", "price": 2400, "timestamp": new Date(Date.now() - 1800000 * 2).toISOString() },
-            { "id": "s3", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12", "signalType": "hold", "symbol": "SOLUSDT", "price": 150, "timestamp": new Date(Date.now() - 1800000).toISOString() }
+            { "id": "s1", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "signalType": "buy", "symbol": "BTCUSDT", "price": 107000, "timestamp": new Date(Date.now() - 1800000 * 3) },
+            { "id": "s2", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "signalType": "sell", "symbol": "ETHUSDT", "price": 2400, "timestamp": new Date(Date.now() - 1800000 * 2) },
+            { "id": "s3", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12", "signalType": "hold", "symbol": "SOLUSDT", "price": 150, "timestamp": new Date(Date.now() - 1800000) }
           ],
           "positions": [
             {

@@ -5,12 +5,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Crown, Shield, Trophy, Settings, BookOpen, GitPullRequestArrow, Database, Rocket, Loader2, CheckCircle, Clock, Zap, Users, ShieldCheck, Gift, Award } from 'lucide-react';
+import { Crown, Shield, Trophy, Settings, BookOpen, GitPullRequestArrow, Database, Rocket, Loader2, CheckCircle, Clock, Zap, Users, ShieldCheck, Gift, Award, AlertTriangle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
 
@@ -27,6 +27,7 @@ import {
   ConsoleInsight,
   SignalHistoryItem
 } from '../actions';
+import Link from 'next/link';
 
 // ---- Start of content copied from missions/page.tsx ----
 const TwitterIcon = () => (
@@ -56,8 +57,7 @@ const missions = [
 ];
 // ---- End of content copied from missions/page.tsx ----
 
-
-// Function to get the current user ID (replace with actual auth logic)
+// Helper to get user ID from client-side storage
 const getCurrentUserId = (): string | null => {
   if (typeof window !== 'undefined') {
     return localStorage.getItem('currentUserId');
@@ -84,13 +84,10 @@ export default function ProfilePage() {
   const [isPopulating, setIsPopulating] = useState(false);
   const { toast } = useToast();
 
-  // State from Missions page
   const [showAirdropModal, setShowAirdropModal] = useState(false);
-  const [isSignedUp, setIsSignedUp] = useState(false);
   
-  // Logic from Missions page
   // In a real app, this would come from a user state
-  const mandatoryMissionsCompleted = 1;
+  const mandatoryMissionsCompleted = currentUser?.status !== 'Guest' ? 3 : 0;
   const totalMandatoryMissions = 3;
   const progress = (mandatoryMissionsCompleted / totalMandatoryMissions) * 100;
 
@@ -102,37 +99,18 @@ export default function ProfilePage() {
       })
   }
 
-  const handleAirdropSignupSuccess = () => {
-      setIsSignedUp(true);
-      localStorage.setItem('bsaiIsSignedUp', 'true');
-      setShowAirdropModal(false);
-      toast({
-        title: <span className="text-accent">BlockShadow Airdrop Registration Complete!</span>,
-        description: <span className="text-foreground">Your eligibility is confirmed. Welcome to the Initiative.</span>,
-      });
-      // Optionally refresh user data after signup
-      loadData();
-  };
-  
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
       setLoading(true);
       setError(null);
-      const userId = getCurrentUserId(); // Get user ID from storage
-
-      // Check signup status from local storage
-      const signedUpStatus = typeof window !== 'undefined' && localStorage.getItem('bsaiIsSignedUp') === 'true';
-      if (signedUpStatus) {
-        setIsSignedUp(true);
-      }
+      const userId = getCurrentUserId();
 
       if (!userId) {
-          setError("User not logged in or ID not found. Please sign up to create a profile.");
+          setError("User profile not found. Please visit the Core Console to initialize your session.");
           setLoading(false);
           return;
       }
 
       try {
-        // Fetch all data in parallel
         const [user, leaderboard, insights, history] = await Promise.all([
           fetchCurrentUserJson(userId),
           fetchLeaderboardDataJson(),
@@ -158,11 +136,22 @@ export default function ProfilePage() {
       } finally {
           setLoading(false);
       }
-    };
+    }, []);
+
+
+  const handleAirdropSignupSuccess = useCallback(() => {
+      setShowAirdropModal(false);
+      toast({
+        title: <span className="text-accent">BlockShadow Registration Complete!</span>,
+        description: <span className="text-foreground">Your eligibility is confirmed. Welcome to the Initiative.</span>,
+      });
+      loadData();
+  }, [loadData, toast]);
+  
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const handleSaveSettings = async () => {
     if (currentUser && username !== currentUser.username) {
@@ -176,7 +165,6 @@ export default function ProfilePage() {
            return;
        }
 
-      // Update user settings using JSON action
       const updatedUser = await updateUserSettingsJson(userId, { username });
       if (updatedUser) {
         setCurrentUser(updatedUser);
@@ -203,7 +191,6 @@ export default function ProfilePage() {
             description: "Database file reset and sample data populated. Refreshing data now...",
             variant: "default",
         });
-        // Refresh data on the page after population
         await loadData();
     } catch (error: any) {
         toast({
@@ -217,7 +204,7 @@ export default function ProfilePage() {
   };
 
 
-  if (loading && !currentUser) {
+  if (loading) {
     return (
         <>
             <AppHeader />
@@ -233,14 +220,19 @@ export default function ProfilePage() {
          <>
             <AppHeader />
              <div className="container mx-auto px-4 py-8 text-center">
-                 <Card className="max-w-lg mx-auto border-primary">
+                 <Card className="max-w-lg mx-auto border-destructive">
                     <CardHeader>
-                        <CardTitle className="text-primary">{error ? 'Profile Error' : 'User Not Found'}</CardTitle>
+                         <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
+                            <AlertTriangle className="h-10 w-10 text-destructive" />
+                        </div>
+                        <CardTitle className="text-destructive mt-4">{error ? 'Profile Error' : 'User Not Found'}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-muted-foreground">{error || "Please sign up to create a profile."}</p>
-                         <Button className="mt-4 glow-button" onClick={() => setShowAirdropModal(true)}>
-                            Register for Airdrop
+                        <p className="text-muted-foreground">{error || "Please visit the Core Console to initialize your session."}</p>
+                         <Button asChild className="mt-4 glow-button">
+                             <Link href="/core">
+                                Go to Core Console
+                            </Link>
                         </Button>
                     </CardContent>
                 </Card>
@@ -272,7 +264,6 @@ export default function ProfilePage() {
             </TabsList>
 
             <TabsContent value="profile" className="mt-6">
-                 {/* User Status, ShadowID, and Badges */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <Card>
                         <CardHeader>
@@ -287,7 +278,7 @@ export default function ProfilePage() {
                         {currentUser.status && (
                             <div>
                             <p className="text-sm font-medium text-muted-foreground">Status:</p>
-                            <p className="text-lg font-semibold text-accent">{currentUser.status}</p>
+                            <p className={`text-lg font-semibold ${currentUser.status !== 'Guest' ? 'text-accent' : 'text-muted-foreground'}`}>{currentUser.status}</p>
                             </div>
                         )}
                         {currentUser.shadowId && (
@@ -316,7 +307,6 @@ export default function ProfilePage() {
                         </CardContent>
                     </Card>
                 </div>
-                 {/* Console Insights */}
                 <Card className="mb-8">
                     <CardHeader>
                         <CardTitle className="flex items-center"><BookOpen className="h-5 w-5 mr-2" /> Console Insights</CardTitle>
@@ -337,7 +327,6 @@ export default function ProfilePage() {
                     </CardContent>
                 </Card>
 
-                {/* Signal History */}
                 <Card className="mb-8">
                     <CardHeader>
                         <CardTitle className="flex items-center"><GitPullRequestArrow className="h-5 w-5 mr-2" /> Signal History</CardTitle>
@@ -358,7 +347,6 @@ export default function ProfilePage() {
                     </CardContent>
                 </Card>
 
-                {/* Settings Section */}
                 <Card className="mb-8">
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="space-y-1">
@@ -376,13 +364,11 @@ export default function ProfilePage() {
                         <Label htmlFor="username">Username</Label>
                         <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} />
                     </div>
-                    {/* Add more settings options here */}
                     <Button onClick={handleSaveSettings}>Save Changes</Button>
                     </CardContent>
                 )}
                 </Card>
                 
-                {/* Database Management Card */}
                 <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center"><Database className="h-5 w-5 mr-2" /> Database Management</CardTitle>
@@ -425,7 +411,7 @@ export default function ProfilePage() {
                     </CardContent>
                     <CardFooter>
                         <Button className="w-full glow-button" onClick={() => setShowAirdropModal(true)}>
-                            {isSignedUp ? 'Update Registration' : 'Register for Airdrop'}
+                            {currentUser.status !== 'Guest' ? 'Update Registration' : 'Register for Airdrop'}
                         </Button>
                     </CardFooter>
                 </Card>

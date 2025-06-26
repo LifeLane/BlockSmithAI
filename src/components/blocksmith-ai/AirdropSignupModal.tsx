@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { FunctionComponent } from 'react';
@@ -17,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Mail, Gift, Rocket, Sparkles, Phone, User, Bot } from 'lucide-react';
-import { handleAirdropSignupAction, type AirdropFormData } from '@/app/actions'; // Import the action
+import { handleAirdropSignupAction, type AirdropFormData } from '@/app/actions';
 
 const TwitterIcon = () => (
   <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary">
@@ -43,7 +44,7 @@ interface AirdropSignupModalProps {
 }
 
 const signupSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address." }),
+  email: z.string().email({ message: "Please enter a valid email address." }).optional().or(z.literal('')),
   phone: z.string().optional(),
   x_handle: z.string().min(1, { message: "X (Twitter) handle is required." }).regex(/^@?[a-zA-Z0-9_]{1,15}$/, "Invalid X handle format."),
   telegram_handle: z.string().min(1, { message: "Telegram handle is required." }).regex(/^@?[a-zA-Z0-9_]{5,32}$/, "Invalid Telegram handle format."),
@@ -99,23 +100,23 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
   }
 
   const onSubmit = async (data: AirdropFormData) => {
+    const userId = localStorage.getItem('currentUserId');
+    if (!userId) {
+        alert("Could not find your user session. Please refresh the page and try again.");
+        return;
+    }
+
     console.log("Submitting Airdrop Signup Data:", data);
     try {
-      const result = await handleAirdropSignupAction(data);
+      const result = await handleAirdropSignupAction(data, userId);
       if (result.userId) {
-        console.log("Airdrop signup successful. User ID:", result.userId);
-        // Store user ID and ShadowID client-side
-        localStorage.setItem('currentUserId', result.userId);
-        if (result.shadowId) {
-            localStorage.setItem('currentUserShadowId', result.shadowId);
-        }
+        console.log("Airdrop signup successful for User ID:", result.userId);
         onSignupSuccess();
         form.reset();
-        onOpenChange(false); // Close the modal on success
+        onOpenChange(false);
       } else if (result.error) {
         console.error("Airdrop signup failed:", result.error);
-        // Display error to the user (e.g., using a toast notification)
-        alert(`Signup failed: ${result.error}`); // Simple alert for now
+        alert(`Signup failed: ${result.error}`);
       } else {
          console.error("Airdrop signup failed with unexpected response:", result);
          alert("Signup failed with an unexpected error.");
@@ -142,7 +143,7 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-4 py-2 max-h-[60vh] overflow-y-auto pr-6">
-            <FormField control={form.control} name="email" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-muted-foreground"><Mail className="mr-2 h-4 w-4 text-primary" /> Email Address</FormLabel> <FormControl><Input placeholder="you@example.com" {...field} className="bg-background focus:border-accent focus:ring-accent"/></FormControl> <FormMessage /> </FormItem> )}/>
+            <FormField control={form.control} name="email" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-muted-foreground"><Mail className="mr-2 h-4 w-4 text-primary" /> Email Address (Optional)</FormLabel> <FormControl><Input placeholder="you@example.com" {...field} className="bg-background focus:border-accent focus:ring-accent"/></FormControl> <FormMessage /> </FormItem> )}/>
             <FormField control={form.control} name="phone" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-muted-foreground"><Phone className="mr-2 h-4 w-4 text-primary" /> Phone Number (Optional)</FormLabel> <FormControl><Input placeholder="+1 555 123 4567" {...field} className="bg-background focus:border-accent focus:ring-accent"/></FormControl> <FormMessage /> </FormItem> )}/>
             
             <p className="text-sm font-medium text-primary pt-2">Social Handles (for verification)</p>
