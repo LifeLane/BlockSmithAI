@@ -2,8 +2,8 @@
 -- CREATE TABLE "User" (
 --     "id" TEXT NOT NULL,
 --     "username" TEXT NOT NULL,
---     "status" TEXT,
---     "shadowId" TEXT,
+--     "shadowId" TEXT NOT NULL,
+--     "status" TEXT NOT NULL,
 --     "weeklyPoints" INTEGER NOT NULL DEFAULT 0,
 --     "airdropPoints" INTEGER NOT NULL DEFAULT 0,
 --     "wallet_address" TEXT,
@@ -13,48 +13,10 @@
 --     "x_handle" TEXT,
 --     "telegram_handle" TEXT,
 --     "youtube_handle" TEXT,
---     "claimedMissions" TEXT[] DEFAULT ARRAY[]::TEXT[],
--- 
+--     "claimedMissions" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+--     "claimedSpecialOps" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
 --     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 -- );
-
--- CreateTable
-CREATE TABLE "Badge" (
-    "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-
-    CONSTRAINT "Badge_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "UserBadge" (
-    "userId" TEXT NOT NULL,
-    "badgeId" TEXT NOT NULL,
-
-    CONSTRAINT "UserBadge_pkey" PRIMARY KEY ("userId","badgeId")
-);
-
--- CreateTable
-CREATE TABLE "ConsoleInsight" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "content" TEXT NOT NULL,
-    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "ConsoleInsight_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "SignalHistoryItem" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "signalType" TEXT NOT NULL,
-    "symbol" TEXT NOT NULL,
-    "price" DOUBLE PRECISION NOT NULL,
-    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "SignalHistoryItem_pkey" PRIMARY KEY ("id")
-);
 
 -- CreateTable
 CREATE TABLE "Position" (
@@ -65,26 +27,22 @@ CREATE TABLE "Position" (
     "entryPrice" DOUBLE PRECISION NOT NULL,
     "size" DOUBLE PRECISION NOT NULL,
     "status" TEXT NOT NULL,
-    "openTimestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "closeTimestamp" TIMESTAMP(3),
-    "closePrice" DOUBLE PRECISION,
+    "openTimestamp" TEXT NOT NULL,
+    "closeTimestamp" TEXT,
     "pnl" DOUBLE PRECISION,
     "stopLoss" DOUBLE PRECISION,
     "takeProfit" DOUBLE PRECISION,
-    "expirationTimestamp" TIMESTAMP(3),
-
+    "expirationTimestamp" TEXT,
+    "closePrice" DOUBLE PRECISION,
     CONSTRAINT "Position_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Agent" (
+CREATE TABLE "Badge" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "icon" TEXT NOT NULL,
-    "levels" JSONB NOT NULL,
-
-    CONSTRAINT "Agent_pkey" PRIMARY KEY ("id")
+    "description" TEXT,
+    CONSTRAINT "Badge_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -92,45 +50,26 @@ CREATE TABLE "UserAgent" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "agentId" TEXT NOT NULL,
-    "level" INTEGER NOT NULL DEFAULT 1,
+    "level" INTEGER NOT NULL,
     "status" TEXT NOT NULL,
-    "deploymentEndTime" TIMESTAMP(3),
-
+    "deploymentEndTime" TEXT,
     CONSTRAINT "UserAgent_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "SpecialOp" (
-    "id" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "requiredAgentId" TEXT NOT NULL,
-    "requiredAgentLevel" INTEGER NOT NULL,
-    "xpReward" INTEGER NOT NULL,
-    "bsaiReward" INTEGER NOT NULL,
-    "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "claimedBy" TEXT[] DEFAULT ARRAY[]::TEXT[],
-
-    CONSTRAINT "SpecialOp_pkey" PRIMARY KEY ("id")
+CREATE TABLE "_BadgeToUser" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
+-- CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Badge_name_key" ON "Badge"("name");
+CREATE UNIQUE INDEX "_BadgeToUser_AB_unique" ON "_BadgeToUser"("A", "B");
 
--- AddForeignKey
-ALTER TABLE "UserBadge" ADD CONSTRAINT "UserBadge_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "UserBadge" ADD CONSTRAINT "UserBadge_badgeId_fkey" FOREIGN KEY ("badgeId") REFERENCES "Badge"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ConsoleInsight" ADD CONSTRAINT "ConsoleInsight_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "SignalHistoryItem" ADD CONSTRAINT "SignalHistoryItem_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+-- CreateIndex
+CREATE INDEX "_BadgeToUser_B_index" ON "_BadgeToUser"("B");
 
 -- AddForeignKey
 ALTER TABLE "Position" ADD CONSTRAINT "Position_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -139,4 +78,7 @@ ALTER TABLE "Position" ADD CONSTRAINT "Position_userId_fkey" FOREIGN KEY ("userI
 ALTER TABLE "UserAgent" ADD CONSTRAINT "UserAgent_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserAgent" ADD CONSTRAINT "UserAgent_agentId_fkey" FOREIGN KEY ("agentId") REFERENCES "Agent"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "_BadgeToUser" ADD CONSTRAINT "_BadgeToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Badge"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_BadgeToUser" ADD CONSTRAINT "_BadgeToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
