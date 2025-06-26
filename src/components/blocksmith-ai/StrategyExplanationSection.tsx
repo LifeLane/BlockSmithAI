@@ -2,7 +2,7 @@ import { FunctionComponent } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { GenerateTradingStrategyOutput, GenerateShadowChoiceStrategyOutput } from '@/ai/flows/generate-trading-strategy';
+import type { GenerateTradingStrategyOutput, GenerateShadowChoiceStrategyOutput } from '@/app/actions';
 import type { LiveMarketData } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -380,5 +380,3 @@ Analysis Timestamp: ${currentDateTime}
 };
 
 export default StrategyExplanationSection;
-
-    
