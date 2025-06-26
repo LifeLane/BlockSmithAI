@@ -11,7 +11,7 @@ const navItems = [
   { href: '/monitor', icon: AreaChart, label: 'Monitor' },
   { href: '/core', icon: Bot, label: 'Core' },
   { href: '/missions', icon: Target, label: 'Missions' },
-  { href: '/leaderboard', icon: Trophy, label: 'Ranks' },
+  { href: '/profile', icon: Trophy, label: 'Ranks' },
 ];
 
 export default function BottomNav() {
