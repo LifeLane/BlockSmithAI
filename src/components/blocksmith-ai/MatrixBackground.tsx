@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { FunctionComponent} from 'react';
@@ -7,14 +8,14 @@ const MatrixBackground: FunctionComponent = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameIdRef = useRef<number | null>(null);
 
-  // Colors derived from the theme + some additions
+  // Colors derived from the new theme
   const matrixColors = [
-    'hsl(181, 100%, 74%)', // Primary (Electric Blue)
-    'hsl(52, 100%, 55%)',  // Accent (Bright Yellow)
-    'hsl(265, 80%, 65%)',  // Tertiary (Vibrant Purple)
-    'hsl(35, 100%, 55%)',   // Chart-4 (Saffron/Orange)
-    'hsl(200, 80%, 60%)',   // Chart-5 (Cyan/Teal)
+    'hsl(210 100% 60%)', // New Primary (Electric Blue)
+    'hsl(270 100% 65%)', // New Accent (Electric Violet)
+    'hsl(35 100% 55%)',  // New Tertiary (Saffron Gold)
     'hsl(120, 100%, 50%)',  // Classic Matrix Green
+    'hsl(200, 80%, 60%)',   // Chart-5 (Cyan/Teal)
+    'hsl(0, 70%, 55%)',    // Destructive Red
   ];
 
   useEffect(() => {
@@ -44,8 +45,7 @@ const MatrixBackground: FunctionComponent = () => {
       if (!ctx) return;
 
       // Trail effect: fill canvas with semi-transparent background color
-      // --background: 0 0% 13%; /* Dark Gray #222222 */ -> rgba(34, 34, 34, 0.10)
-      ctx.fillStyle = 'rgba(34, 34, 34, 0.10)'; 
+      ctx.fillStyle = 'hsla(220, 20%, 5%, 0.10)'; 
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       ctx.font = `${fontSize}px monospace`;

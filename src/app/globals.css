@@ -4,56 +4,54 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Orbitron', Arial, Helvetica, sans-serif;
+  font-family: 'Space Mono', Arial, Helvetica, sans-serif;
   /* Removed bg-background here to allow MatrixBackground to show */
 }
 
 @layer base {
   :root {
-    --background: 0 0% 5%; /* Terminal Base Black #0c0c0c */
-    --foreground: 180 100% 95%; /* Lighter foreground for readability on dark bg, leaning cyan */
+    --background: 220 20% 5%; /* UPDATED: Deep Space Blue */
+    --foreground: 210 20% 90%; /* UPDATED: Cool Gray */
 
-    --card: 0 0% 8%; /* Slightly lighter than bg for cards */
+    --card: 220 20% 8%; /* UPDATED */
     --card-foreground: var(--foreground);
 
-    --popover: 0 0% 8%;
+    --popover: 220 20% 8%; /* UPDATED */
     --popover-foreground: var(--foreground);
 
-    --primary: 180 100% 50%; /* Cyan Neon #00ffff */
-    --primary-foreground: 180 100% 5%; /* Darker for text on Cyan */
+    --primary: 210 100% 60%; /* UPDATED: Electric Blue */
+    --primary-foreground: 210 100% 10%; /* UPDATED */
 
-    --secondary: 0 0% 15%; /* Lighter gray for secondary elements */
-    --secondary-foreground: 180 100% 85%; 
+    --secondary: 220 20% 15%; /* UPDATED */
+    --secondary-foreground: 210 20% 85%; /* UPDATED */
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 180 100% 65%; /* Muted text */
+    --muted: 220 20% 15%; /* UPDATED */
+    --muted-foreground: 210 20% 65%; /* UPDATED */
 
-    --accent: 300 100% 50%; /* Magenta/Pink #ff00ff */
-    --accent-foreground: 300 100% 10%; /* Dark for text on Magenta */
+    --accent: 270 100% 65%; /* UPDATED: Electric Violet */
+    --accent-foreground: 270 100% 95%; /* UPDATED: Light for contrast */
 
-    /* Tertiary can be a blend or a supporting dark neon */
-    --tertiary: 270 100% 60%; /* A deep violet, complementing cyan and magenta */
-    --tertiary-foreground: 270 100% 95%; 
+    --tertiary: 35 100% 55%; /* UPDATED: Saffron Gold */
+    --tertiary-foreground: 35 100% 5%; /* UPDATED: Dark for contrast */
 
-    --destructive: 0 70% 55%; /* A suitable red for destructive actions */
+    --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 20%; /* Subtle borders */
-    --input: 0 0% 10%; /* Input background */
-    --ring: hsl(var(--accent)); /* Ring color based on new Accent (Magenta) */
+    --border: 220 20% 20%; /* UPDATED */
+    --input: 220 20% 10%; /* UPDATED */
+    --ring: hsl(var(--accent));
     
-    --yellow-neon: 52 100% 55%;
-    --saffron-neon: 35 100% 55%;
+    /* REMOVED yellow-neon and saffron-neon */
 
     --chart-1: hsl(var(--primary));
     --chart-2: hsl(var(--accent)); 
     --chart-3: hsl(var(--tertiary)); 
-    --chart-4: 35 100% 55%; /* Saffron/Orange-like - keep for variety */
-    --chart-5: 200 80% 60%; /* Cyan/Teal for variety - distinct from primary cyan */
+    --chart-4: 120 80% 60%; /* Lime Green */
+    --chart-5: 200 80% 60%;
     --radius: 0.5rem;
 
     /* Sidebar variables adjusted for new theme */
-    --sidebar-background: 0 0% 7%;
+    --sidebar-background: 220 20% 7%;
     --sidebar-foreground: var(--foreground);
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
@@ -64,26 +62,26 @@ body {
   }
 
   .dark {
-    --background: 0 0% 5%;
-    --foreground: 180 100% 95%;
-    --card: 0 0% 8%;
+    --background: 220 20% 5%;
+    --foreground: 210 20% 90%;
+    --card: 220 20% 8%;
     --card-foreground: var(--foreground);
-    --popover: 0 0% 8%;
+    --popover: 220 20% 8%;
     --popover-foreground: var(--foreground);
-    --primary: 180 100% 50%;
-    --primary-foreground: 180 100% 5%;
-    --secondary: 0 0% 15%;
-    --secondary-foreground: 180 100% 85%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 180 100% 65%;
-    --accent: 300 100% 50%; 
-    --accent-foreground: 300 100% 10%;
-    --tertiary: 270 100% 60%;
-    --tertiary-foreground: 270 100% 95%;
+    --primary: 210 100% 60%;
+    --primary-foreground: 210 100% 10%;
+    --secondary: 220 20% 15%;
+    --secondary-foreground: 210 20% 85%;
+    --muted: 220 20% 15%;
+    --muted-foreground: 210 20% 65%;
+    --accent: 270 100% 65%;
+    --accent-foreground: 270 100% 95%;
+    --tertiary: 35 100% 55%;
+    --tertiary-foreground: 35 100% 5%;
     --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 20%;
-    --input: 0 0% 10%;
+    --border: 220 20% 20%;
+    --input: 220 20% 10%;
     --ring: hsl(var(--accent));
   }
 }
@@ -96,7 +94,7 @@ body {
 
 .glow-button {
   background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
-  color: hsl(var(--background)); /* Ensure text is readable */
+  color: hsl(var(--primary-foreground));
   border: none;
   padding: 0.75rem 1.5rem;
   font-weight: bold;
@@ -105,40 +103,41 @@ body {
   box-shadow: 0 0 5px hsl(var(--primary)), 0 0 10px hsl(var(--primary)/0.7), 0 0 15px hsl(var(--accent)/0.7);
 }
 
-.glow-button:hover {
+.glow-button:hover:not(:disabled) {
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 0 10px hsl(var(--primary)), 0 0 20px hsl(var(--primary)/0.8), 0 0 30px hsl(var(--accent)/0.8), 0 0 5px hsl(var(--background)/0.5) inset;
   background: linear-gradient(to right, hsl(var(--accent)), hsl(var(--primary)));
 }
 
 .generate-signal-button {
-  background: linear-gradient(to right, hsl(var(--yellow-neon)), hsl(var(--saffron-neon)));
-  color: hsl(var(--background));
-  border: none;
-  font-weight: bold;
-  border-radius: var(--radius);
-  transition: all 0.3s ease-in-out;
-  box-shadow: 0 0 5px hsl(var(--yellow-neon)), 0 0 10px hsl(var(--yellow-neon)/0.7), 0 0 15px hsl(var(--saffron-neon)/0.7);
-}
-.generate-signal-button:hover:not(:disabled) {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 0 10px hsl(var(--yellow-neon)), 0 0 20px hsl(var(--yellow-neon)/0.8), 0 0 30px hsl(var(--saffron-neon)/0.8), 0 0 5px hsl(var(--background)/0.5) inset;
-  background: linear-gradient(to right, hsl(var(--saffron-neon)), hsl(var(--yellow-neon)));
-}
-
-.shadow-choice-button {
-  background: linear-gradient(to right, hsl(var(--tertiary)), hsl(var(--accent)));
+  background: hsl(var(--tertiary));
   color: hsl(var(--tertiary-foreground));
   border: none;
   font-weight: bold;
   border-radius: var(--radius);
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 0 5px hsl(var(--tertiary)), 0 0 10px hsl(var(--tertiary)/0.7), 0 0 15px hsl(var(--accent)/0.7);
+  box-shadow: 0 0 5px hsl(var(--tertiary)), 0 0 10px hsl(var(--tertiary)/0.7), 0 0 15px hsl(var(--tertiary)/0.7);
+}
+.generate-signal-button:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 10px hsl(var(--tertiary)), 0 0 20px hsl(var(--tertiary)/0.8), 0 0 30px hsl(var(--tertiary)/0.8), 0 0 5px hsl(var(--background)/0.5) inset;
+  filter: brightness(1.2);
+}
+
+.shadow-choice-button {
+  background: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+  border: none;
+  font-weight: bold;
+  border-radius: var(--radius);
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 0 5px hsl(var(--accent)), 0 0 10px hsl(var(--accent)/0.7), 0 0 15px hsl(var(--primary)/0.7);
 }
 .shadow-choice-button:hover:not(:disabled) {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 0 10px hsl(var(--tertiary)), 0 0 20px hsl(var(--tertiary)/0.8), 0 0 30px hsl(var(--accent)/0.8), 0 0 5px hsl(var(--background)/0.5) inset;
-  background: linear-gradient(to right, hsl(var(--accent)), hsl(var(--tertiary)));
+  box-shadow: 0 0 10px hsl(var(--accent)), 0 0 20px hsl(var(--accent)/0.8), 0 0 30px hsl(var(--primary)/0.8), 0 0 5px hsl(var(--background)/0.5) inset;
+  background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
+  color: hsl(var(--primary-foreground));
 }
 
 /* Styles for ShadowMindInterface */

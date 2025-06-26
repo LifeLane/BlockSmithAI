@@ -11,13 +11,13 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Orbitron', 'sans-serif'], // Updated
-        headline: ['Orbitron', 'sans-serif'], // Updated
-        code: ['Space Mono', 'monospace'], // Updated
+        body: ['Space Mono', 'monospace'],
+        headline: ['Orbitron', 'sans-serif'],
+        code: ['Space Mono', 'monospace'],
       },
       colors: {
-        background: 'hsl(var(--background))', // Should be 0 0% 5% (Terminal Black)
-        foreground: 'hsl(var(--foreground))', // Should be ~180 100% 95% (Cyan-ish white)
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
@@ -27,7 +27,7 @@ export default {
           foreground: 'hsl(var(--popover-foreground))',
         },
         primary: {
-          DEFAULT: 'hsl(var(--primary))', // Should be 180 100% 50% (Cyan Neon)
+          DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
         },
         secondary: {
@@ -39,11 +39,11 @@ export default {
           foreground: 'hsl(var(--muted-foreground))',
         },
         accent: {
-          DEFAULT: 'hsl(var(--accent))', // Should be 300 100% 50% (Magenta/Pink)
+          DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
         },
         tertiary: {
-          DEFAULT: 'hsl(var(--tertiary))', // A new color for Shadow Mind
+          DEFAULT: 'hsl(var(--tertiary))',
           foreground: 'hsl(var(--tertiary-foreground))',
         },
         destructive: {
