@@ -10,6 +10,7 @@ import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
 import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
+import ApiSettingsModal from '@/components/blocksmith-ai/ApiSettingsModal';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -36,6 +37,7 @@ import {
   type GenerateShadowChoiceStrategyOutput,
 } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
+import { useApiKeys } from '@/context/ApiKeyContext';
 import { Loader2, Sparkles, ShieldQuestion, BrainCircuit } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -83,6 +85,7 @@ export default function CoreConsolePage() {
   const [lastAnalysisDate, setLastAnalysisDate] = useState<string>('');
 
   const { toast } = useToast();
+  const { openModal } = useApiKeys();
   const mainContentRef = useRef<HTMLDivElement>(null);
 
 
@@ -362,7 +365,7 @@ export default function CoreConsolePage() {
     });
     // Refresh user data
      if (currentUser) {
-        const updatedUser = await fetchCurrentUserJson(currentUser.id);
+        const updatedUser = await fetchCurrentUserJson(.id);
         if (updatedUser) {
             setCurrentUser(updatedUser);
         }
@@ -442,7 +445,7 @@ export default function CoreConsolePage() {
 
   return (
     <>
-      <AppHeader />
+      <AppHeader onApiSettingsClick={openModal} />
       <div ref={mainContentRef} className="container mx-auto px-4 py-4 flex flex-col w-full min-h-[calc(100vh-140px)]">
         
         <div className={cn(
@@ -557,6 +560,7 @@ export default function CoreConsolePage() {
         onOpenChange={setShowAirdropModal}
         onSignupSuccess={handleAirdropSignupSuccess}
       />
+      <ApiSettingsModal />
       {aiStrategy && (
         <AlertDialog open={showConfirmTradeDialog} onOpenChange={setShowConfirmTradeDialog}>
           <AlertDialogContent>
@@ -570,7 +574,7 @@ export default function CoreConsolePage() {
                 for <strong className="text-primary">{symbol}</strong> based on SHADOW's parameters.
                 <br />
                 <br />
-                This position will be tracked in your Portfolio. This is <strong className="text-accent">NOT a real trade</strong>.
+                This position is <strong className="text-accent">NOT a real trade</strong> and will be tracked in your portfolio.
                 BlockShadow is not responsible for any actions taken based on this simulation.
               </AlertDialogDescription>
             </AlertDialogHeader>

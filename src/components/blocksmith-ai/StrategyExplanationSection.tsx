@@ -58,6 +58,21 @@ const StatCard: FunctionComponent<StatCardProps> = ({ title, value, icon, classN
   </div>
 );
 
+const sentimentConfig = {
+  bullish: { icon: <TrendingUp className="h-5 w-5 text-green-400" />, color: 'text-green-400 font-bold' },
+  bearish: { icon: <TrendingDown className="h-5 w-5 text-red-400" />, color: 'text-red-400 font-bold' },
+  volatile: { icon: <Brain className="h-5 w-5 text-orange-400" />, color: 'text-orange-400 font-semibold' },
+  default: { icon: <Brain className="h-5 w-5 text-purple-400" />, color: 'text-purple-400 font-semibold' },
+};
+
+const getSentimentStyle = (sentiment?: string) => {
+  const lowerSentiment = sentiment?.toLowerCase() || '';
+  if (lowerSentiment.includes('bullish')) return sentimentConfig.bullish;
+  if (lowerSentiment.includes('bearish')) return sentimentConfig.bearish;
+  if (lowerSentiment.includes('volatile')) return sentimentConfig.volatile;
+  return sentimentConfig.default;
+};
+
 
 const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionProps> = ({
   strategy,
@@ -102,10 +117,13 @@ SHADOW's Autonomous Choice:
 
     const formattedParameters = parameters
       .map(p => `  ${p.label.padEnd(maxLabelLength + 2)}: ${p.value}`)
-      .join('\n');
+      .join('
+');
 
     const indentedDisclaimer = strategy.disclaimer
-      ? strategy.disclaimer.split('\n').map(line => `  ${line.trim()}`).join('\n')
+      ? strategy.disclaimer.split('
+').map(line => `  ${line.trim()}`).join('
+')
       : "No disclaimer provided.";
 
     const textToCopy = `
@@ -185,22 +203,7 @@ Analysis Timestamp: ${currentDateTime}
 
   const currentPrice = liveMarketData?.lastPrice ? parseFloat(liveMarketData.lastPrice).toLocaleString(undefined, { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: Math.max(2, (liveMarketData.lastPrice.split('.')[1]?.length || 0)) }) : 'N/A';
 
-  let sentimentIcon, sentimentColor = 'text-foreground';
-  const lowerSentiment = strategy.sentiment?.toLowerCase();
-  if (lowerSentiment?.includes('bullish')) {
-    sentimentIcon = <TrendingUp className="h-5 w-5 text-green-400" />;
-    sentimentColor = 'text-green-400 font-bold';
-  } else if (lowerSentiment?.includes('bearish')) {
-    sentimentIcon = <TrendingDown className="h-5 w-5 text-red-400" />;
-    sentimentColor = 'text-red-400 font-bold';
-  } else if (lowerSentiment?.includes('volatile')) {
-    sentimentIcon = <Brain className="h-5 w-5 text-orange-400" />;
-    sentimentColor = 'text-orange-400 font-semibold';
-  }
-  else {
-    sentimentIcon = <Brain className="h-5 w-5 text-purple-400" />;
-    sentimentColor = 'text-purple-400 font-semibold';
-  }
+  const { icon: sentimentIcon, color: sentimentColor } = getSentimentStyle(strategy.sentiment);
 
   let signalIcon, signalColorCls, signalTextFormatted = strategy.signal?.toUpperCase() || 'N/A';
   switch (signalTextFormatted) {

@@ -1,12 +1,15 @@
 'use client';
 
 import { FunctionComponent, useEffect, useRef } from 'react';
-import { Zap } from 'lucide-react';
+import { Settings, Zap } from 'lucide-react';
 import { gsap } from 'gsap';
+import { Button } from '@/components/ui/button';
 
-interface AppHeaderProps {}
+interface AppHeaderProps {
+  onApiSettingsClick?: () => void;
+}
 
-const AppHeader: FunctionComponent<AppHeaderProps> = () => {
+const AppHeader: FunctionComponent<AppHeaderProps> = ({ onApiSettingsClick }) => {
   const logoContainerRef = useRef<HTMLDivElement>(null);
   const zapIconWrapperRef = useRef<HTMLDivElement>(null);
 
@@ -36,7 +39,7 @@ const AppHeader: FunctionComponent<AppHeaderProps> = () => {
   }, []);
 
   return (
-    <header className="py-2">
+    <header className="py-2 relative">
       <div className="container mx-auto flex flex-col items-center justify-center">
         <div className="flex items-center">
           <div className="logo-container flex items-baseline text-3xl sm:text-4xl font-bold font-headline select-none" ref={logoContainerRef}>
@@ -62,6 +65,18 @@ const AppHeader: FunctionComponent<AppHeaderProps> = () => {
         </div>
         <div className="glowing-logo-border mt-2"></div>
       </div>
+      {onApiSettingsClick && (
+        <div className="absolute top-2 right-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onApiSettingsClick}
+            aria-label="API Settings"
+          >
+            <Settings className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
+          </Button>
+        </div>
+      )}
       <style jsx>{`
         .glowing-logo-border {
           height: 2px;

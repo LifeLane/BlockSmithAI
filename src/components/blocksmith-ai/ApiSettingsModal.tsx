@@ -19,16 +19,8 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { KeyRound, Settings, Trash2, Save, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface ApiSettingsModalProps {
-  isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
-  currentApiKey: string;
-  currentApiSecret: string;
-  onSave: (apiKey: string, apiSecret: string) => void;
-  onClear: () => void;
-  apiKeysAreSet: boolean;
-}
+import { useApiKeys } from '@/context/ApiKeyContext';
+import { useEffect } from 'react';
 
 const apiSettingsSchema = z.object({
   apiKey: z.string().min(10, { message: "API Key seems too short." }).max(100, { message: "API Key seems too long."}),
@@ -37,39 +29,52 @@ const apiSettingsSchema = z.object({
 
 type ApiSettingsFormData = z.infer<typeof apiSettingsSchema>;
 
-const ApiSettingsModal: FunctionComponent<ApiSettingsModalProps> = ({
-  isOpen,
-  onOpenChange,
-  currentApiKey,
-  currentApiSecret,
-  onSave,
-  onClear,
-  apiKeysAreSet
-}) => {
+const ApiSettingsModal: FunctionComponent = () => {
   const { toast } = useToast();
+  const { apiKeys, setApiKey, removeApiKey, isModalOpen, closeModal } = useApiKeys();
+
   const form = useForm<ApiSettingsFormData>({
     resolver: zodResolver(apiSettingsSchema),
     defaultValues: {
-      apiKey: currentApiKey || '',
-      apiSecret: currentApiSecret || '',
+      apiKey: '',
+      apiSecret: '',
     },
-    values: { // Ensure form updates if props change while modal is open (e.g. cleared elsewhere)
-        apiKey: currentApiKey || '',
-        apiSecret: currentApiSecret || '',
-    }
   });
 
+  useEffect(() => {
+    if (isModalOpen) {
+      form.reset({
+        apiKey: apiKeys.binanceApiKey || '',
+        apiSecret: apiKeys.binanceApiSecret || '',
+      });
+    }
+  }, [isModalOpen, apiKeys, form]);
+
   const onSubmit = (data: ApiSettingsFormData) => {
-    onSave(data.apiKey, data.apiSecret);
+    setApiKey('binanceApiKey', data.apiKey);
+    setApiKey('binanceApiSecret', data.apiSecret);
+    toast({
+      title: "API Keys Saved",
+      description: "Your Binance API keys have been securely stored in your browser.",
+    });
+    closeModal();
   };
 
   const handleClearAndClose = () => {
-    onClear();
-    form.reset({ apiKey: '', apiSecret: '' }); // Reset form after clearing
+    removeApiKey('binanceApiKey');
+    removeApiKey('binanceApiSecret');
+    toast({
+      title: "API Keys Cleared",
+      description: "Your Binance API keys have been removed.",
+      variant: "destructive"
+    });
+    closeModal();
   }
 
+  const apiKeysAreSet = !!apiKeys.binanceApiKey && !!apiKeys.binanceApiSecret;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isModalOpen} onOpenChange={closeModal}>
       <DialogContent className="sm:max-w-md bg-card border-primary/50 shadow-xl">
         <DialogHeader className="text-center items-center">
           <Settings className="h-10 w-10 text-primary mb-2" />

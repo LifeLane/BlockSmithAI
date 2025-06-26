@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import MatrixBackground from '@/components/blocksmith-ai/MatrixBackground';
 import BottomNav from '@/components/layout/BottomNav';
+import { ApiKeyProvider } from '@/context/ApiKeyContext';
 
 export const metadata: Metadata = {
   title: 'BlockShadow',
@@ -25,13 +26,15 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <MatrixBackground />
-        <div className="text-foreground bg-background min-h-screen flex flex-col relative z-10">
-          <main className="flex-grow pb-16">
-            {children}
-          </main>
-          <BottomNav />
-        </div>
-        <Toaster />
+        <ApiKeyProvider>
+          <div className="text-foreground bg-background min-h-screen flex flex-col relative z-10">
+            <main className="flex-grow pb-16">
+              {children}
+            </main>
+            <BottomNav />
+          </div>
+          <Toaster />
+        </ApiKeyProvider>
       </body>
     </html>
   );
