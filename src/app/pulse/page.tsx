@@ -212,45 +212,63 @@ export default function PortfolioPage() {
     const userId = getCurrentUserId();
     const isFetching = useRef(false);
 
-    const handleClosePosition = async (positionId: string, closePrice: number, reason: 'manual' | 'expired' | 'auto-sl' | 'auto-tp' = 'manual') => {
+    const showCloseToast = useCallback((closedPosition: Position, airdropPoints: number, reason: 'manual' | 'expired' | 'auto-sl' | 'auto-tp') => {
+        const pnl = closedPosition.pnl || 0;
+        let toastTitle = "Position Closed";
+        let toastDesc = "Simulated position closed successfully.";
+
+        if (reason === 'expired') {
+            toastTitle = "Position Expired";
+            toastDesc = "Position was automatically closed due to expiration.";
+        } else if (reason === 'auto-sl') {
+            toastTitle = "Stop Loss Hit";
+            toastDesc = "Position was automatically closed after hitting the stop loss.";
+        } else if (reason === 'auto-tp') {
+            toastTitle = "Take Profit Hit";
+            toastDesc = "Position was automatically closed after hitting the take profit target.";
+        }
+        
+        toast({
+            title: <span className="text-accent">{toastTitle}</span>,
+            description: (
+                <div className="text-foreground">
+                    {toastDesc}
+                    <div>Your position resulted in a PnL of <strong className={pnl >= 0 ? 'text-green-400' : 'text-red-400'}>${pnl.toFixed(2)}</strong>.</div>
+                    {airdropPoints > 0 && (
+                        <div className="flex items-center mt-1">
+                            <Sparkles className="h-4 w-4 mr-2 text-orange-400"/>
+                            You've earned <strong className="text-orange-400">{airdropPoints} $BSAI</strong> airdrop points!
+                        </div>
+                    )}
+                </div>
+            ),
+        });
+    }, [toast]);
+    
+    const handleClosePosition = useCallback(async (positionId: string, closePrice: number, reason: 'manual' | 'expired' | 'auto-sl' | 'auto-tp' = 'manual') => {
         setClosingPositionId(positionId);
         const result = await closePositionAction(positionId, closePrice);
+        setClosingPositionId(null);
         
-        if (result.success) {
-            const pnl = result.pnl || 0;
+        if (result.position) {
+            const closedPosition = result.position;
             const points = result.airdropPointsEarned || 0;
             
-            let toastTitle = "Position Closed";
-            let toastDesc = "Simulated position closed successfully.";
+            showCloseToast(closedPosition, points, reason);
 
-            if (reason === 'expired') {
-                toastTitle = "Position Expired";
-                toastDesc = "Position was automatically closed due to expiration.";
-            } else if (reason === 'auto-sl') {
-                toastTitle = "Stop Loss Hit";
-                toastDesc = "Position was automatically closed after hitting the stop loss.";
-            } else if (reason === 'auto-tp') {
-                toastTitle = "Take Profit Hit";
-                toastDesc = "Position was automatically closed after hitting the take profit target.";
+            // Optimistic UI update
+            setPositions(prev => prev.filter(p => p.id !== closedPosition.id));
+            setTradeHistory(prev => [closedPosition, ...prev]);
+            
+            // Refetch stats after optimistic update
+            if (userId) {
+                fetchPortfolioStatsAction(userId).then(statsResult => {
+                    if (!('error' in statsResult)) {
+                        setPortfolioStats(statsResult);
+                    }
+                });
             }
 
-
-            toast({
-                title: <span className="text-accent">{toastTitle}</span>,
-                description: (
-                    <div className="text-foreground">
-                        {toastDesc}
-                        <div>Your position resulted in a PnL of <strong className={pnl >= 0 ? 'text-green-400' : 'text-red-400'}>${pnl.toFixed(2)}</strong>.</div>
-                        {points > 0 && (
-                            <div className="flex items-center mt-1">
-                                <Sparkles className="h-4 w-4 mr-2 text-orange-400"/>
-                                You've earned <strong className="text-orange-400">{points} $BSAI</strong> airdrop points!
-                            </div>
-                        )}
-                    </div>
-                ),
-            });
-            await fetchPortfolioData(true); // Force a full refresh
         } else {
             toast({
                 title: "Error Closing Position",
@@ -258,8 +276,7 @@ export default function PortfolioPage() {
                 variant: "destructive",
             });
         }
-        setClosingPositionId(null);
-    };
+    }, [userId, showCloseToast, toast]);
 
     const fetchPortfolioData = useCallback(async (forceRerun = false) => {
         if (!userId || (isFetching.current && !forceRerun)) return;
@@ -275,6 +292,8 @@ export default function PortfolioPage() {
             ]);
 
             let currentLivePrices = { ...livePrices };
+            let positionsToAutoClose: { pos: Position; closePrice: number; reason: 'auto-sl' | 'auto-tp' | 'expired' }[] = [];
+
             if (userPositions.length > 0) {
                 const symbols = [...new Set(userPositions.map(p => p.symbol))];
                 const pricePromises = symbols.map(symbol => fetchMarketDataAction({ symbol }));
@@ -288,59 +307,61 @@ export default function PortfolioPage() {
                     }
                 });
                 setLivePrices(currentLivePrices);
-            }
-            
-            // --- Auto-close logic ---
-            for (const pos of userPositions) {
-                if (pos.status !== 'OPEN') continue;
 
-                const livePriceData = currentLivePrices[pos.symbol];
-                if (!livePriceData) continue;
-                
-                const currentPrice = parseFloat(livePriceData.lastPrice);
-                let closeReason: 'auto-sl' | 'auto-tp' | 'expired' | null = null;
-                let closePrice = 0;
+                 // Auto-close logic
+                for (const pos of userPositions) {
+                     if (pos.status !== 'OPEN') continue;
 
-                // Check for SL/TP hits
-                if (pos.signalType === 'BUY') {
-                    if (pos.takeProfit && currentPrice >= pos.takeProfit) {
-                        closeReason = 'auto-tp';
-                        closePrice = pos.takeProfit;
-                    } else if (pos.stopLoss && currentPrice <= pos.stopLoss) {
-                        closeReason = 'auto-sl';
-                        closePrice = pos.stopLoss;
+                    const livePriceData = currentLivePrices[pos.symbol];
+                    if (!livePriceData) continue;
+                    
+                    const currentPrice = parseFloat(livePriceData.lastPrice);
+                    let closeReason: 'auto-sl' | 'auto-tp' | 'expired' | null = null;
+                    let closePrice = 0;
+
+                    if (pos.signalType === 'BUY') {
+                        if (pos.takeProfit && currentPrice >= pos.takeProfit) {
+                            closeReason = 'auto-tp';
+                            closePrice = pos.takeProfit;
+                        } else if (pos.stopLoss && currentPrice <= pos.stopLoss) {
+                            closeReason = 'auto-sl';
+                            closePrice = pos.stopLoss;
+                        }
+                    } else { // SELL
+                        if (pos.takeProfit && currentPrice <= pos.takeProfit) {
+                            closeReason = 'auto-tp';
+                            closePrice = pos.takeProfit;
+                        } else if (pos.stopLoss && currentPrice >= pos.stopLoss) {
+                            closeReason = 'auto-sl';
+                            closePrice = pos.stopLoss;
+                        }
                     }
-                } else { // SELL
-                    if (pos.takeProfit && currentPrice <= pos.takeProfit) {
-                        closeReason = 'auto-tp';
-                        closePrice = pos.takeProfit;
-                    } else if (pos.stopLoss && currentPrice >= pos.stopLoss) {
-                        closeReason = 'auto-sl';
-                        closePrice = pos.stopLoss;
+
+                    if (!closeReason && pos.expirationTimestamp && new Date(pos.expirationTimestamp) < new Date()) {
+                        closeReason = 'expired';
+                        closePrice = currentPrice;
                     }
-                }
 
-                // Check for expiration
-                if (!closeReason && pos.expirationTimestamp && new Date(pos.expirationTimestamp) < new Date()) {
-                    closeReason = 'expired';
-                    closePrice = currentPrice;
-                }
-
-                // If a reason to close is found, close the position and stop this cycle
-                if (closeReason) {
-                    await handleClosePosition(pos.id, closePrice, closeReason);
-                    isFetching.current = false;
-                    return; // Exit after dispatching close, it will trigger a full refetch.
+                    if (closeReason) {
+                        positionsToAutoClose.push({ pos, closePrice, reason: closeReason });
+                    }
                 }
             }
             
             setPositions(userPositions);
             setTradeHistory(history);
-            if (!('error' in statsResult)) {
+             if (!('error' in statsResult)) {
                 setPortfolioStats(statsResult);
             } else {
                 setError(statsResult.error);
                 setPortfolioStats(null);
+            }
+
+            // Execute auto-closures after setting state to avoid race conditions
+            if (positionsToAutoClose.length > 0) {
+                 for (const { pos, closePrice, reason } of positionsToAutoClose) {
+                    await handleClosePosition(pos.id, closePrice, reason);
+                }
             }
 
         } catch (e: any) {
@@ -349,7 +370,7 @@ export default function PortfolioPage() {
             setIsLoading(false);
             isFetching.current = false;
         }
-    }, [userId, portfolioStats, closingPositionId]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [userId, portfolioStats, handleClosePosition, livePrices]);
     
 
     useEffect(() => {
@@ -361,7 +382,7 @@ export default function PortfolioPage() {
         fetchPortfolioData();
         const interval = setInterval(() => fetchPortfolioData(), 15000); // Refresh every 15 seconds
         return () => clearInterval(interval);
-    }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [userId, fetchPortfolioData]); 
     
     // Effect to calculate and update the displayed stats including unrealized PnL
     useEffect(() => {
@@ -489,3 +510,4 @@ export default function PortfolioPage() {
 }
 
     
+

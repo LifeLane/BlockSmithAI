@@ -5,7 +5,7 @@ import { generateSarcasticDisclaimer } from '@/ai/flows/generate-sarcastic-discl
 import { shadowChat, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
 import { generateShadowChoiceStrategy as genShadowChoice, type ShadowChoiceStrategyInput, type ShadowChoiceStrategyCoreOutput } from '@/ai/flows/generate-shadow-choice-strategy';
-import { generateMissionLog } from '@/ai/flows/generate-mission-log';
+import { generateMissionLog, GenerateMissionLogInput } from '@/ai/flows/generate-mission-log';
 
 
 import { randomUUID } from 'crypto';
@@ -615,18 +615,18 @@ export async function fetchActivePositionsAction(userId: string): Promise<Positi
   }
 }
 
-export async function closePositionAction(positionId: string, closePrice: number): Promise<{ success: boolean; pnl?: number; airdropPointsEarned?: number; error?: string }> {
+export async function closePositionAction(positionId: string, closePrice: number): Promise<{ position?: Position; airdropPointsEarned?: number; error?: string }> {
   try {
     const db = await readDb();
     const positionIndex = db.positions.findIndex(p => p.id === positionId);
 
     if (positionIndex === -1) {
-      return { success: false, error: 'Position not found.' };
+      return { error: 'Position not found.' };
     }
 
     const position = db.positions[positionIndex];
     if (position.status === 'CLOSED') {
-      return { success: false, error: 'Position is already closed.' };
+      return { error: 'Position is already closed.' };
     }
 
     // Calculate PnL
@@ -653,13 +653,13 @@ export async function closePositionAction(positionId: string, closePrice: number
         }
     }
 
-
+    db.positions[positionIndex] = position;
     await writeDb(db);
-    return { success: true, pnl, airdropPointsEarned };
+    return { position, airdropPointsEarned };
 
   } catch (error: any) {
     console.error('Error closing position:', error);
-    return { success: false, error: `Failed to close position: ${error.message || "An unknown error occurred."}` };
+    return { error: `Failed to close position: ${error.message || "An unknown error occurred."}` };
   }
 }
 
@@ -1275,3 +1275,4 @@ export async function generateDailyGreetingAction(): Promise<GenerateDailyGreeti
 
 
     
+
