@@ -6,8 +6,6 @@ import { shadowChat, type ShadowChatInput, type ShadowChatOutput, type ChatMessa
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
 import { generateShadowChoiceStrategy as genShadowChoice, type ShadowChoiceStrategyInput, type ShadowChoiceStrategyCoreOutput } from '@/ai/flows/generate-shadow-choice-strategy';
 
-import { getTokenPriceFromMoralis, type TokenPrice } from '@/services/moralis-service';
-import { EvmChain } from '@moralisweb3/common-evm-utils';
 import { randomUUID } from 'crypto';
 import * as fs from 'fs/promises';
 import path from 'path';
@@ -1134,46 +1132,11 @@ export async function generateDailyGreetingAction(): Promise<GenerateDailyGreeti
     return { error: errorMessage, greeting: "The market awakens. Observe closely." }; 
   }
 }
-
-export async function fetchTokenPriceAction(params: { tokenAddress: string, chain: string }): Promise<TokenPrice | { error: string }> {
-    const { tokenAddress, chain } = params;
-
-    let evmChain: EvmChain;
-    switch(chain.toLowerCase()) {
-        case 'eth':
-        case 'ethereum':
-            evmChain = EvmChain.ETHEREUM;
-            break;
-        case 'bsc':
-        case 'binance':
-            evmChain = EvmChain.BSC;
-            break;
-        case 'polygon':
-            evmChain = EvmChain.POLYGON;
-            break;
-        case 'avalanche':
-            evmChain = EvmChain.AVALANCHE;
-            break;
-        default:
-            return { error: `Unsupported chain: ${chain}. Supported chains: ethereum, bsc, polygon, avalanche.`};
-    }
-
-    if (!tokenAddress) {
-        return { error: 'Token address is required.' };
-    }
-
-    try {
-        const result = await getTokenPriceFromMoralis(tokenAddress, evmChain);
-        return result;
-    } catch (error: any) {
-        const errorMessage = `Failed to fetch token price from Moralis: ${error.message || "An unknown error occurred."}`;
-        console.error(errorMessage, error);
-        return { error: errorMessage };
-    }
-}
     
 
     
+
+
 
 
 

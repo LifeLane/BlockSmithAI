@@ -96,7 +96,7 @@
       "shadowId": "SHDW-AB8F91B",
       "status": "Guest",
       "weeklyPoints": 0,
-      "airdropPoints": 100,
+      "airdropPoints": 400,
       "badges": []
     },
     {
@@ -413,6 +413,14 @@
       "level": 1,
       "status": "DEPLOYED",
       "deploymentEndTime": "2025-06-26T15:12:45.544Z"
+    },
+    {
+      "id": "ffa5b117-670c-4c90-bb7e-d98617ce464a",
+      "userId": "36faa36f-b1ff-4c47-963d-6a8aeeb40e3e",
+      "agentId": "agent-002",
+      "level": 1,
+      "status": "DEPLOYED",
+      "deploymentEndTime": "2025-06-26T23:40:49.767Z"
     }
   ]
 }
