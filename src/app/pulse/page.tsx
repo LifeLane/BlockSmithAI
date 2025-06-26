@@ -6,7 +6,7 @@ import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, TrendingUp, TrendingDown, Briefcase, X, Bot, AlertTriangle, LogOut } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, Briefcase, X, Bot, AlertTriangle, LogOut, ShieldX, Target, LogIn } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
@@ -37,7 +37,9 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
         } else {
             pnl = (position.entryPrice - currentPrice) * position.size;
         }
-        pnlPercent = (pnl / (position.entryPrice * position.size)) * 100;
+        if (position.entryPrice > 0) {
+            pnlPercent = (pnl / (position.entryPrice * position.size)) * 100;
+        }
     }
 
     const pnlColor = pnl >= 0 ? 'text-green-400' : 'text-red-400';
@@ -57,14 +59,22 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
                     Close
                 </Button>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+            <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
-                    <span className="text-xs text-muted-foreground">Entry Price</span>
+                    <span className="text-xs text-muted-foreground flex items-center gap-1"><LogIn size={12}/>Entry Price</span>
                     <span className="font-mono font-semibold text-primary">${position.entryPrice.toLocaleString()}</span>
                 </div>
                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-xs text-muted-foreground">Current Price</span>
                     <span className="font-mono font-semibold text-primary">{currentPrice ? `$${currentPrice.toLocaleString()}`: <Loader2 className="h-4 w-4 animate-spin"/>}</span>
+                </div>
+                <div className="flex flex-col p-2 bg-background/50 rounded-md">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1"><ShieldX size={12}/>Stop Loss</span>
+                    <span className="font-mono font-semibold text-red-400">{position.stopLoss ? `$${position.stopLoss.toLocaleString()}` : 'N/A'}</span>
+                </div>
+                <div className="flex flex-col p-2 bg-background/50 rounded-md">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1"><Target size={12}/>Take Profit</span>
+                    <span className="font-mono font-semibold text-green-400">{position.takeProfit ? `$${position.takeProfit.toLocaleString()}`: 'N/A'}</span>
                 </div>
                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-xs text-muted-foreground">Unrealized PnL</span>
@@ -229,3 +239,5 @@ export default function PortfolioPage() {
     </>
   );
 }
+
+    

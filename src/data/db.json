@@ -1,3 +1,4 @@
+
 {
   "users": [
     {
@@ -133,7 +134,9 @@
       "entryPrice": 68000,
       "size": 0.1,
       "status": "OPEN",
-      "openTimestamp": "2025-06-25T12:30:39.694Z"
+      "openTimestamp": "2025-06-25T12:30:39.694Z",
+      "stopLoss": 67000,
+      "takeProfit": 70000
     },
     {
       "id": "b2c82d3f-7171-4eb3-b41e-0e2688ffd69e",
@@ -143,7 +146,11 @@
       "entryPrice": 2450,
       "size": 1,
       "status": "OPEN",
-      "openTimestamp": "2025-06-26T12:31:30.764Z"
+      "openTimestamp": "2025-06-26T12:31:30.764Z",
+      "stopLoss": 2400,
+      "takeProfit": 2550
     }
   ]
 }
+
+    

@@ -112,6 +112,8 @@ export interface Position {
     closeTimestamp?: string;
     closePrice?: number;
     pnl?: number;
+    stopLoss?: number;
+    takeProfit?: number;
 }
 
 
@@ -332,7 +334,9 @@ export async function populateSampleDataJson() {
               "entryPrice": 68000,
               "size": 0.1,
               "status": "OPEN",
-              "openTimestamp": new Date(Date.now() - 86400000).toISOString()
+              "openTimestamp": new Date(Date.now() - 86400000).toISOString(),
+              "stopLoss": 67000,
+              "takeProfit": 70000
             }
           ]
         };
@@ -366,7 +370,9 @@ export async function openSimulatedPositionAction(userId: string, strategy: Gene
       entryPrice: parseFloat(strategy.entry_zone),
       size: 1, // Assume a fixed size of 1 unit of the base asset for now
       status: 'OPEN',
-      openTimestamp: new Date().toISOString()
+      openTimestamp: new Date().toISOString(),
+      stopLoss: parseFloat(strategy.stop_loss) || undefined,
+      takeProfit: parseFloat(strategy.take_profit) || undefined
     };
 
     db.positions.push(newPosition);
@@ -718,4 +724,6 @@ export async function fetchTokenPriceAction(params: { tokenAddress: string, chai
         return { error: errorMessage };
     }
 }
+    
+
     
