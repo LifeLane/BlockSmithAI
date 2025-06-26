@@ -1,0 +1,70 @@
+{
+  "users": [
+    {
+      "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      "username": "CryptoGuru",
+      "status": "Active Analyst",
+      "shadowId": "SHDW-ABC-111",
+      "weeklyPoints": 1500,
+      "airdropPoints": 10000,
+      "wallet_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "wallet_type": "ETH",
+      "email": "guru@example.com",
+      "phone": null,
+      "x_handle": "@cryptoguru",
+      "telegram_handle": "@cryptoguru_tg",
+      "youtube_handle": null
+    },
+    {
+      "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12",
+      "username": "TokenMaster",
+      "status": "Passive Investor",
+      "shadowId": "SHDW-DEF-222",
+      "weeklyPoints": 800,
+      "airdropPoints": 5000,
+      "wallet_address": "Sol1234567890abcdef1234567890abcdef12345678",
+      "wallet_type": "SOL",
+      "email": "master@example.com",
+      "phone": null,
+      "x_handle": "@tokenmaster",
+      "telegram_handle": "@tokenmaster_tg",
+      "youtube_handle": null
+    },
+    {
+      "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13",
+      "username": "NFT_Ninja",
+      "status": "Exploring",
+      "shadowId": "SHDW-GHI-333",
+      "weeklyPoints": 300,
+      "airdropPoints": 2000,
+      "wallet_address": "TON1234567890abcdef1234567890abcdef12345678",
+      "wallet_type": "TON",
+      "email": "ninja@example.com",
+      "phone": null,
+      "x_handle": "@nftninja",
+      "telegram_handle": "@nftninja_tg",
+      "youtube_handle": null
+    }
+  ],
+  "badges": [
+    { "id": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b11", "name": "Early Adopter" },
+    { "id": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b12", "name": "Signal Provider Lv1" },
+    { "id": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b13", "name": "Insightful Analyst" }
+  ],
+  "_UserBadges": [
+    { "A": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "B": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b11" },
+    { "A": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "B": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b12" },
+    { "A": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12", "B": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b11" },
+    { "A": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13", "B": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b13" }
+  ],
+  "console_insights": [
+    { "id": "ci1", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "content": "Market showing bullish signs for BTC.", "timestamp": "2024-05-21T10:00:00.000Z" },
+    { "id": "ci2", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "content": "Noticed increased volume on ETH.", "timestamp": "2024-05-21T09:00:00.000Z" },
+    { "id": "ci3", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12", "content": "SOL seems to be consolidating.", "timestamp": "2024-05-21T08:00:00.000Z" }
+  ],
+  "signals": [
+    { "id": "s1", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "signalType": "buy", "symbol": "BTCUSDT", "price": 107000, "timestamp": "2024-05-21T10:00:00.000Z" },
+    { "id": "s2", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "signalType": "sell", "symbol": "ETHUSDT", "price": 2400, "timestamp": "2024-05-21T09:30:00.000Z" },
+    { "id": "s3", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12", "signalType": "hold", "symbol": "SOLUSDT", "price": 150, "timestamp": "2024-05-21T08:30:00.000Z" }
+  ]
+}

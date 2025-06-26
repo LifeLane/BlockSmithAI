@@ -6,10 +6,49 @@ import { shadowChat, type ShadowChatInput, type ShadowChatOutput, type ChatMessa
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
 import { getTokenPriceFromMoralis, type TokenPrice } from '@/services/moralis-service';
 import { EvmChain } from '@moralisweb3/common-evm-utils';
+import { randomUUID } from 'crypto';
+import * as fs from 'fs/promises';
+import path from 'path';
 
-import { neon, NeonQueryCapable } from "@neondatabase/serverless";
 
-// Define types for the data we expect
+// --- JSON Database setup ---
+const dbPath = path.join(process.cwd(), 'src', 'data', 'db.json');
+
+interface DbData {
+    users: any[];
+    badges: any[];
+    _UserBadges: any[];
+    console_insights: any[];
+    signals: any[];
+}
+
+async function readDb(): Promise<DbData> {
+  try {
+    const data = await fs.readFile(dbPath, 'utf-8');
+    return JSON.parse(data);
+  } catch (error: any) {
+    if (error.code === 'ENOENT') {
+      // File doesn't exist, create it with a default structure
+      const defaultDb: DbData = { users: [], badges: [], _UserBadges: [], console_insights: [], signals: [] };
+      await writeDb(defaultDb);
+      return defaultDb;
+    }
+    console.error('Error reading database file:', error);
+    throw new Error('Could not read from database.');
+  }
+}
+
+async function writeDb(data: DbData): Promise<void> {
+  try {
+    await fs.writeFile(dbPath, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (error) {
+    console.error('Error writing to database file:', error);
+    throw new Error('Could not write to database.');
+  }
+}
+
+
+// --- Type definitions ---
 export interface UserProfile {
   id: string;
   username: string;
@@ -17,7 +56,7 @@ export interface UserProfile {
   shadowId?: string;
   weeklyPoints: number;
   airdropPoints: number;
-  badges?: Badge[]; // Assuming we can fetch badges along or separately
+  badges?: Badge[];
 }
 
 export interface LeaderboardUser {
@@ -25,8 +64,8 @@ export interface LeaderboardUser {
   username: string;
   weeklyPoints: number;
   airdropPoints: number;
-  rank?: number; // Will be added on the frontend
-  badge?: string; // Displaying one badge for simplicity in the table
+  rank?: number;
+  badge?: string;
 }
 
 export interface Badge {
@@ -49,85 +88,76 @@ export interface ConsoleInsight {
     userId: string;
     content: string;
     timestamp: Date;
-    // Add other insight-specific fields
 }
 
 export interface SignalHistoryItem {
     id: string;
     userId: string;
-    signalType: string; // e.g., 'buy', 'sell', 'hold'
+    signalType: string;
     symbol: string;
     price: number;
     timestamp: Date;
-    // Add other signal-specific fields
 }
 
-const sql: NeonQueryCapable = neon(process.env.DATABASE_URL!);
 
-export async function fetchCurrentUserNeon(userId: string): Promise<UserProfile | null> {
+// --- JSON-based Data Actions ---
+
+export async function fetchCurrentUserJson(userId: string): Promise<UserProfile | null> {
   try {
-    const users = await sql`
-      SELECT id, username, status, "shadowId", "weeklyPoints", "airdropPoints"
-      FROM users
-      WHERE id = ${userId}
-      LIMIT 1;
-    `;
+    const db = await readDb();
+    const user = db.users.find(u => u.id === userId);
 
-    if (users.length === 0) {
+    if (!user) {
       return null;
     }
 
-    const user = users[0];
+    const userBadgeLinks = db._UserBadges.filter(ub => ub.A === userId);
+    const userBadgeIds = userBadgeLinks.map(ubl => ubl.B);
+    const userBadges = db.badges.filter(b => userBadgeIds.includes(b.id));
 
-    // Fetch badges for the user
-    const userBadges = await sql`
-      SELECT b.id, b.name
-      FROM badges b
-      JOIN "_UserBadges" ub ON b.id = ub."B"
-      WHERE ub."A" = ${userId};
-    `;
-    // Attach badges to the user object
     user.badges = userBadges;
 
     return user as UserProfile;
 
   } catch (error) {
-    console.error('Error fetching current user from Neon:', error);
+    console.error('Error fetching current user from JSON DB:', error);
     return null;
   }
 }
 
-export async function fetchLeaderboardDataNeon(): Promise<LeaderboardUser[]> {
+export async function fetchLeaderboardDataJson(): Promise<LeaderboardUser[]> {
   try {
-    const leaderboard = await sql`
-      SELECT id, username, "weeklyPoints", "airdropPoints"
-      FROM users
-      ORDER BY "weeklyPoints" DESC
-      LIMIT 10;
-    `;
-    // For simplicity, we are not fetching badges for the entire leaderboard here.
-    // If needed, you would perform a similar join or separate query for each user.
-    return leaderboard as LeaderboardUser[];
-
+    const db = await readDb();
+    const sortedUsers = db.users.sort((a, b) => b.weeklyPoints - a.weeklyPoints);
+    return sortedUsers.slice(0, 10) as LeaderboardUser[];
   } catch (error) {
-    console.error('Error fetching leaderboard data from Neon:', error);
+    console.error('Error fetching leaderboard data from JSON DB:', error);
     return [];
   }
 }
 
-export async function updateUserSettingsNeon(userId: string, data: { username?: string }): Promise<UserProfile | null> {
+export async function updateUserSettingsJson(userId: string, data: { username?: string }): Promise<UserProfile | null> {
   try {
-    if (data.username) {
-       await sql`
-        UPDATE users
-        SET username = ${data.username}
-        WHERE id = ${userId};
-      `;
+    const db = await readDb();
+    const userIndex = db.users.findIndex(u => u.id === userId);
+
+    if (userIndex === -1) {
+        return null;
     }
-    return fetchCurrentUserNeon(userId);
+
+    if (data.username) {
+        // Check for username uniqueness
+        if (db.users.some(u => u.username === data.username && u.id !== userId)) {
+            throw new Error("Username is already taken.");
+        }
+       db.users[userIndex].username = data.username;
+    }
+
+    await writeDb(db);
+    return fetchCurrentUserJson(userId);
 
   } catch (error) {
-    console.error('Error updating user settings in Neon:', error);
+    console.error('Error updating user settings in JSON DB:', error);
     return null;
   }
 }
@@ -140,55 +170,52 @@ export async function handleAirdropSignupAction(formData: AirdropFormData): Prom
       return { error: "Wallet address is required for airdrop signup." };
     }
 
-    // Check if user already exists with this wallet address
-    const existingUsers = await sql`
-      SELECT id, "shadowId" FROM users WHERE wallet_address = ${wallet_address} LIMIT 1;
-    `;
+    const db = await readDb();
 
-    if (existingUsers.length > 0) {
-      const existingUser = existingUsers[0];
+    const existingUser = db.users.find(u => u.wallet_address === wallet_address);
+    if (existingUser) {
       console.log('Existing user found:', existingUser.id);
-      return { userId: existingUser.id as string, shadowId: existingUser.shadowId as string };
+      return { userId: existingUser.id, shadowId: existingUser.shadowId };
     }
 
-    // If user does not exist, create a new one
-    // Generate a simple unique username and shadowId (you might want more sophisticated generation)
-    const newUsername = `User_${Math.random().toString(36).substring(7)}`;
-    const newShadowId = `SHDW-${Math.random().toString(36).substring(7).toUpperCase()}`;
+    const newUsername = `User_${randomUUID().substring(0, 7)}`;
+    const newShadowId = `SHDW-${randomUUID().substring(0, 7).toUpperCase()}`;
 
-    const newUser = await sql`
-      INSERT INTO users (username, "shadowId", wallet_address, wallet_type, email, phone, x_handle, telegram_handle, youtube_handle)
-      VALUES (${newUsername}, ${newShadowId}, ${wallet_address}, ${wallet_type}, ${email}, ${phone}, ${x_handle}, ${telegram_handle}, ${youtube_handle})
-      RETURNING id, "shadowId";
-    `;
+    const newUser = {
+        id: randomUUID(),
+        username: newUsername,
+        shadowId: newShadowId,
+        wallet_address,
+        wallet_type,
+        email,
+        phone,
+        x_handle,
+        telegram_handle,
+        youtube_handle,
+        status: 'Airdrop Registered',
+        weeklyPoints: 0,
+        airdropPoints: 300, // Initial points for signing up
+        badges: []
+    };
 
-    console.log('New user created:', newUser[0].id);
-    return { userId: newUser[0].id as string, shadowId: newUser[0].shadowId as string };
+    db.users.push(newUser);
+    await writeDb(db);
+
+    console.log('New user created:', newUser.id);
+    return { userId: newUser.id, shadowId: newUser.shadowId };
 
   } catch (error: any) {
     console.error('Error handling airdrop signup:', error);
-    // Check for unique constraint violation on wallet_address or username
-    if (error.message && error.message.includes('duplicate key value violates unique constraint')) {
-         if (error.message.includes('users_wallet_address_key')){
-             return { error: "A user with this wallet address already exists." };
-         }
-          if (error.message.includes('users_username_key')){
-             // This might happen with the random username generation, though less likely with a good generator
-             return { error: "Could not generate a unique username. Please try again." };
-         }
-    }
     return { error: `Failed to process airdrop signup: ${error.message || "An unknown error occurred."}` };
   }
 }
 
-export async function fetchConsoleInsightsNeon(userId: string): Promise<ConsoleInsight[]> {
+export async function fetchConsoleInsightsJson(userId: string): Promise<ConsoleInsight[]> {
     try {
-        const insights = await sql`
-            SELECT id, "userId", content, timestamp
-            FROM console_insights
-            WHERE "userId" = ${userId}
-            ORDER BY timestamp DESC;
-        `;
+        const db = await readDb();
+        const insights = db.console_insights
+            .filter(i => i.userId === userId)
+            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         return insights as ConsoleInsight[];
     } catch (error) {
         console.error('Error fetching console insights:', error);
@@ -196,14 +223,12 @@ export async function fetchConsoleInsightsNeon(userId: string): Promise<ConsoleI
     }
 }
 
-export async function fetchSignalHistoryNeon(userId: string): Promise<SignalHistoryItem[]> {
+export async function fetchSignalHistoryJson(userId: string): Promise<SignalHistoryItem[]> {
     try {
-        const signals = await sql`
-            SELECT id, "userId", "signalType", symbol, price, timestamp
-            FROM signals
-            WHERE "userId" = ${userId}
-            ORDER BY timestamp DESC;
-        `;
+        const db = await readDb();
+        const signals = db.signals
+            .filter(s => s.userId === userId)
+            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         return signals as SignalHistoryItem[];
     } catch (error) {
         console.error('Error fetching signal history:', error);
@@ -212,77 +237,91 @@ export async function fetchSignalHistoryNeon(userId: string): Promise<SignalHist
 }
 
 // Function to populate the database with sample data (DEVELOPMENT ONLY)
-export async function populateSampleDataNeon() {
-    console.log('Populating database with sample data...');
+export async function populateSampleDataJson() {
+    console.log('Populating JSON database with sample data...');
     try {
-        // Clear existing data for a clean slate on each run
-        await sql`DELETE FROM "_UserBadges"`;
-        await sql`DELETE FROM console_insights`;
-        await sql`DELETE FROM signals`;
-        await sql`DELETE FROM users`;
-        await sql`DELETE FROM badges`;
+        const sampleDb: DbData = {
+          "users": [
+            {
+              "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+              "username": "CryptoGuru",
+              "status": "Active Analyst",
+              "shadowId": "SHDW-ABC-111",
+              "weeklyPoints": 1500,
+              "airdropPoints": 10000,
+              "wallet_address": "0x1234567890abcdef1234567890abcdef12345678",
+              "wallet_type": "ETH",
+              "email": "guru@example.com",
+              "phone": null,
+              "x_handle": "@cryptoguru",
+              "telegram_handle": "@cryptoguru_tg",
+              "youtube_handle": null
+            },
+            {
+              "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12",
+              "username": "TokenMaster",
+              "status": "Passive Investor",
+              "shadowId": "SHDW-DEF-222",
+              "weeklyPoints": 800,
+              "airdropPoints": 5000,
+              "wallet_address": "Sol1234567890abcdef1234567890abcdef12345678",
+              "wallet_type": "SOL",
+              "email": "master@example.com",
+              "phone": null,
+              "x_handle": "@tokenmaster",
+              "telegram_handle": "@tokenmaster_tg",
+              "youtube_handle": null
+            },
+            {
+              "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13",
+              "username": "NFT_Ninja",
+              "status": "Exploring",
+              "shadowId": "SHDW-GHI-333",
+              "weeklyPoints": 300,
+              "airdropPoints": 2000,
+              "wallet_address": "TON1234567890abcdef1234567890abcdef12345678",
+              "wallet_type": "TON",
+              "email": "ninja@example.com",
+              "phone": null,
+              "x_handle": "@nftninja",
+              "telegram_handle": "@nftninja_tg",
+              "youtube_handle": null
+            }
+          ],
+          "badges": [
+            { "id": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b11", "name": "Early Adopter" },
+            { "id": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b12", "name": "Signal Provider Lv1" },
+            { "id": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b13", "name": "Insightful Analyst" }
+          ],
+          "_UserBadges": [
+            { "A": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "B": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b11" },
+            { "A": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "B": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b12" },
+            { "A": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12", "B": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b11" },
+            { "A": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13", "B": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b13" }
+          ],
+          "console_insights": [
+            { "id": "ci1", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "content": "Market showing bullish signs for BTC.", "timestamp": new Date(Date.now() - 3600000 * 2).toISOString() },
+            { "id": "ci2", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "content": "Noticed increased volume on ETH.", "timestamp": new Date(Date.now() - 3600000).toISOString() },
+            { "id": "ci3", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12", "content": "SOL seems to be consolidating.", "timestamp": new Date().toISOString() }
+          ],
+          "signals": [
+            { "id": "s1", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "signalType": "buy", "symbol": "BTCUSDT", "price": 107000, "timestamp": new Date(Date.now() - 1800000 * 3).toISOString() },
+            { "id": "s2", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "signalType": "sell", "symbol": "ETHUSDT", "price": 2400, "timestamp": new Date(Date.now() - 1800000 * 2).toISOString() },
+            { "id": "s3", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12", "signalType": "hold", "symbol": "SOLUSDT", "price": 150, "timestamp": new Date(Date.now() - 1800000).toISOString() }
+          ]
+        };
 
-        // Insert sample users
-        const user1Id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'; // Sample UUID
-        const user2Id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12'; // Sample UUID
-        const user3Id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13'; // Sample UUID
-
-        await sql`
-            INSERT INTO users (id, username, status, "shadowId", "weeklyPoints", "airdropPoints", wallet_address, wallet_type)
-            VALUES
-            (${user1Id}, 'CryptoGuru', 'Active Analyst', 'SHDW-ABC-111', 1500, 10000, '0x1234567890abcdef1234567890abcdef12345678', 'ETH'),
-            (${user2Id}, 'TokenMaster', 'Passive Investor', 'SHDW-DEF-222', 800, 5000, 'Sol1234567890abcdef1234567890abcdef12345678', 'SOL'),
-            (${user3Id}, 'NFT_Ninja', 'Exploring', 'SHDW-GHI-333', 300, 2000, 'TON1234567890abcdef1234567890abcdef12345678', 'TON');
-        `;
-
-        // Insert sample badges
-        const badge1Id = 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b11'; // Sample UUID
-        const badge2Id = 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b12'; // Sample UUID
-        const badge3Id = 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b13'; // Sample UUID
-
-        await sql`
-            INSERT INTO badges (id, name)
-            VALUES
-            (${badge1Id}, 'Early Adopter'),
-            (${badge2Id}, 'Signal Provider Lv1'),
-            (${badge3Id}, 'Insightful Analyst');
-        `;
-
-        // Link users and badges in the join table (_UserBadges) - replace with your actual join table name if different
-         await sql`
-             INSERT INTO "_UserBadges" ("A", "B")
-             VALUES
-             (${user1Id}, ${badge1Id}),
-             (${user1Id}, ${badge2Id}),
-             (${user2Id}, ${badge1Id}),
-             (${user3Id}, ${badge3Id});
-         `;
-
-        // Insert sample console insights
-        await sql`
-            INSERT INTO console_insights ("userId", content, timestamp)
-            VALUES
-            (${user1Id}, 'Market showing bullish signs for BTC.', NOW()),
-            (${user1Id}, 'Noticed increased volume on ETH.', NOW() - INTERVAL '1 hour'),
-            (${user2Id}, 'SOL seems to be consolidating.', NOW() - INTERVAL '2 hours');
-        `;
-
-        // Insert sample signal history
-        await sql`
-            INSERT INTO signals ("userId", "signalType", symbol, price, timestamp)
-            VALUES
-            (${user1Id}, 'buy', 'BTCUSDT', 107000, NOW()),
-            (${user1Id}, 'sell', 'ETHUSDT', 2400, NOW() - INTERVAL '30 minutes'),
-            (${user2Id}, 'hold', 'SOLUSDT', 150, NOW() - INTERVAL '1 hour 30 minutes');
-        `;
-
+        await writeDb(sampleDb);
         console.log('Sample data populated successfully.');
+
     } catch (error) {
         console.error('Error populating sample data:', error);
-        throw error; // Re-throw the error so the frontend can catch it
+        throw error;
     }
 }
 
+
+// --- Existing Untouched Actions ---
 
 export interface LiveMarketData {
   symbol: string;

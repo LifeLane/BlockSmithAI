@@ -12,14 +12,14 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 
-// Import Neon-based actions and types from app/actions.ts
+// Import JSON-based actions and types from app/actions.ts
 import { 
-  fetchCurrentUserNeon, 
-  fetchLeaderboardDataNeon, 
-  updateUserSettingsNeon, 
-  fetchConsoleInsightsNeon, 
-  fetchSignalHistoryNeon,
-  populateSampleDataNeon, 
+  fetchCurrentUserJson, 
+  fetchLeaderboardDataJson, 
+  updateUserSettingsJson, 
+  fetchConsoleInsightsJson, 
+  fetchSignalHistoryJson,
+  populateSampleDataJson, 
   UserProfile, 
   LeaderboardUser,
   ConsoleInsight,
@@ -31,7 +31,10 @@ const getCurrentUserId = (): string | null => {
   // This is a placeholder. In a real app, you would get this from
   // a secure authentication context, cookie, or local storage after login.
   // For now, we'll try to get it from local storage where the airdrop signup might store it.
-  return localStorage.getItem('currentUserId');
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('currentUserId');
+  }
+  return null;
 };
 
 const RankIcon = ({ rank }: { rank: number }) => {
@@ -67,10 +70,10 @@ export default function ProfilePage() {
       try {
         // Fetch all data in parallel
         const [user, leaderboard, insights, history] = await Promise.all([
-          fetchCurrentUserNeon(userId),
-          fetchLeaderboardDataNeon(),
-          fetchConsoleInsightsNeon(userId),
-          fetchSignalHistoryNeon(userId)
+          fetchCurrentUserJson(userId),
+          fetchLeaderboardDataJson(),
+          fetchConsoleInsightsJson(userId),
+          fetchSignalHistoryJson(userId)
         ]);
 
         if (user) {
@@ -109,8 +112,8 @@ export default function ProfilePage() {
            return;
        }
 
-      // Update user settings using Neon action
-      const updatedUser = await updateUserSettingsNeon(userId, { username });
+      // Update user settings using JSON action
+      const updatedUser = await updateUserSettingsJson(userId, { username });
       if (updatedUser) {
         setCurrentUser(updatedUser);
         toast({ title: "Success", description: "Username updated successfully."});
@@ -127,13 +130,13 @@ export default function ProfilePage() {
     setIsPopulating(true);
     toast({
         title: "Database Population Initiated",
-        description: "Connecting to Neon and populating sample data...",
+        description: "Resetting JSON file with sample data...",
     });
     try {
-        await populateSampleDataNeon();
+        await populateSampleDataJson();
         toast({
             title: "Success!",
-            description: "Database connected and sample data populated. Refreshing data now...",
+            description: "Database file reset and sample data populated. Refreshing data now...",
             variant: "default",
         });
         // Refresh data on the page after population
@@ -360,7 +363,7 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between p-4 bg-background/50 rounded-lg border border-border">
-              <p className="text-sm text-muted-foreground max-w-lg">Populate database with sample users, badges, and signals. <br/><strong className="text-destructive">Warning: This will delete all existing data.</strong></p>
+              <p className="text-sm text-muted-foreground max-w-lg">Reset the local JSON database with sample users, badges, and signals. <br/><strong className="text-destructive">Warning: This will overwrite all existing data in the JSON file.</strong></p>
               <Button onClick={handlePopulateData} disabled={isPopulating}>
                 {isPopulating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Rocket className="mr-2 h-4 w-4" />}
                 Populate Data
