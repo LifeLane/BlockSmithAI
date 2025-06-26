@@ -284,7 +284,7 @@ export async function updateUserSettingsJson(userId: string, data: { username?: 
   }
 }
 
-export async function handleAirdropSignupAction(formData: AirdropFormData, userId: string): Promise<{ userId?: string; shadowId?: string; error?: string }> {
+export async function handleAirdropSignupAction(formData: AirdropFormData, userId: string): Promise<{ userId?: string; error?: string }> {
   try {
     const { wallet_address } = formData;
     if (!wallet_address) {
@@ -616,15 +616,23 @@ export interface PortfolioStats {
     totalPnl: number;
     bestTradePnl: number;
     worstTradePnl: number;
+    lifetimeRewards: number;
 }
 
 export async function fetchPortfolioStatsAction(userId: string): Promise<PortfolioStats | { error: string }> {
     try {
         const db = await readDb();
         const closedPositions = db.positions.filter(p => p.userId === userId && p.status === 'CLOSED');
+        const user = db.users.find(u => u.id === userId);
+
+        if (!user) {
+            return { error: "User not found when calculating stats." };
+        }
+
+        const lifetimeRewards = user.airdropPoints || 0;
 
         if (closedPositions.length === 0) {
-            return { totalTrades: 0, winRate: 0, totalPnl: 0, bestTradePnl: 0, worstTradePnl: 0 };
+            return { totalTrades: 0, winRate: 0, totalPnl: 0, bestTradePnl: 0, worstTradePnl: 0, lifetimeRewards };
         }
         
         const totalTrades = closedPositions.length;
@@ -640,6 +648,7 @@ export async function fetchPortfolioStatsAction(userId: string): Promise<Portfol
             totalPnl,
             bestTradePnl,
             worstTradePnl,
+            lifetimeRewards,
         };
 
     } catch (error: any) {
@@ -1094,4 +1103,5 @@ export async function fetchTokenPriceAction(params: { tokenAddress: string, chai
     
 
     
+
 
