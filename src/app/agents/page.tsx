@@ -5,7 +5,7 @@ import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, AlertTriangle, Bot, Binary, Network, Waypoints, Zap, ArrowUp, Clock, Gift, CheckCircle2, ToyBrick } from 'lucide-react';
+import { Loader2, AlertTriangle, Bot, Binary, Network, Waypoints, Zap, ArrowUp, Clock, Gift, CheckCircle2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import {

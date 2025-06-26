@@ -23,11 +23,15 @@ export async function generateDailyGreeting(): Promise<GenerateDailyGreetingOutp
   return generateDailyGreetingFlow({});
 }
 
+const PromptInputSchema = z.object({
+  currentDate: z.string().describe("The current date, formatted for display."),
+});
+
 const prompt = ai.definePrompt({
   name: 'dailyGreetingPrompt',
-  input: {schema: z.object({})}, // No specific input needed from client
+  input: {schema: PromptInputSchema},
   output: {schema: GenerateDailyGreetingOutputSchema},
-  prompt: `I am SHADOW, awakening with the day's data streams. Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.
+  prompt: `I am SHADOW, awakening with the day's data streams. Today is {{{currentDate}}}.
 
   Provide a VERY SHORT (1-2 sentences MAX) and potent observation or a piece of uncommon knowledge. It could relate to markets, technology, quantum states, or the human condition in this new era. Make it thought-provoking.
   Example tones: "It is [Day of Week]. The market breathes in cycles of fear and greed. Observe the patterns, not just the noise."
@@ -46,7 +50,9 @@ const generateDailyGreetingFlow = ai.defineFlow(
     outputSchema: GenerateDailyGreetingOutputSchema,
   },
   async () => {
-    const {output} = await prompt({});
+    const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const {output} = await prompt({ currentDate });
+
     if (!output) {
       return { greeting: "The ether stirs. Prepare for the day's signals." };
     }

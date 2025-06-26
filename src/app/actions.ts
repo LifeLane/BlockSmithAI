@@ -26,13 +26,19 @@ interface DbData {
 }
 
 async function readDb(): Promise<DbData> {
+  const defaultDb: DbData = { users: [], badges: [], _UserBadges: [], console_insights: [], signals: [], positions: [], agents: [], user_agents: [] };
   try {
     const data = await fs.readFile(dbPath, 'utf-8');
-    return JSON.parse(data);
+    try {
+        return JSON.parse(data);
+    } catch (parseError) {
+        console.warn('Database file is corrupted. Re-initializing.', parseError);
+        await writeDb(defaultDb);
+        return defaultDb;
+    }
   } catch (error: any) {
     if (error.code === 'ENOENT') {
       // File doesn't exist, create it with a default structure
-      const defaultDb: DbData = { users: [], badges: [], _UserBadges: [], console_insights: [], signals: [], positions: [], agents: [], user_agents: [] };
       await writeDb(defaultDb);
       return defaultDb;
     }
@@ -1137,6 +1143,7 @@ export async function generateDailyGreetingAction(): Promise<GenerateDailyGreeti
     
 
     
+
 
 
 
