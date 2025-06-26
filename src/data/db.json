@@ -282,10 +282,13 @@
       "signalType": "SELL",
       "entryPrice": 107500,
       "size": 1,
-      "status": "OPEN",
+      "status": "CLOSED",
       "openTimestamp": "2025-06-26T20:22:25.721Z",
       "stopLoss": 107600,
-      "takeProfit": 107000
+      "takeProfit": 107000,
+      "closePrice": 107600,
+      "closeTimestamp": "2025-06-26T20:56:58.713Z",
+      "pnl": -100
     }
   ],
   "agents": [
@@ -433,6 +436,22 @@
       "level": 1,
       "status": "DEPLOYED",
       "deploymentEndTime": "2025-06-26T23:40:49.767Z"
+    },
+    {
+      "id": "6a94ef0a-55c9-4152-9c2d-be2555ea7e72",
+      "userId": "36faa36f-b1ff-4c47-963d-6a8aeeb40e3e",
+      "agentId": "agent-003",
+      "level": 1,
+      "status": "DEPLOYED",
+      "deploymentEndTime": "2025-06-27T20:52:48.796Z"
+    },
+    {
+      "id": "e01c6aec-e9bc-48cd-9b30-89819d767f16",
+      "userId": "36faa36f-b1ff-4c47-963d-6a8aeeb40e3e",
+      "agentId": "agent-001",
+      "level": 1,
+      "status": "DEPLOYED",
+      "deploymentEndTime": "2025-06-26T21:52:49.626Z"
     }
   ]
 }

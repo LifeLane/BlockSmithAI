@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -10,7 +9,7 @@ const navItems = [
   { href: '/pulse', icon: Briefcase, label: 'Portfolio' },
   { href: '/monitor', icon: AreaChart, label: 'Monitor' },
   { href: '/core', icon: Bot, label: 'Core' },
-  { href: '/agents', icon: Cpu, label: 'Agents' },
+  { href: '/agents', icon: Cpu, label: 'Field Ops' },
   { href: '/profile', icon: Trophy, label: 'Profile' },
 ];
 
