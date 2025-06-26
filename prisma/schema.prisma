@@ -1,97 +1,57 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("POSTGRES_URL") // Use the detailed URL for direct connection
-  // or url      = env("PRISMA_DATABASE_URL") // Use this if you are connecting via Prisma Accelerate proxy
-}
-
 model User {
-  id              String    @id @default(uuid())
-  username        String    @unique
-  status          String?
-  shadowId        String?
-  weeklyPoints    Int       @default(0)
-  airdropPoints   Int       @default(0)
-  wallet_address  String?
-  wallet_type     String?
-  email           String?
-  phone           String?
-  x_handle        String?
-  telegram_handle String?
-  youtube_handle  String?
-  claimedMissions String[]  @default([])
-  badges          UserBadge[] // Relation to UserBadge for many-to-many
-  console_insights ConsoleInsight[]
-  signals         SignalHistoryItem[]
-  positions       Position[]
-  user_agents     UserAgent[]
+  id                  String     @id @default(uuid())
+  username            String     @unique
+  shadowId            String     @unique
+  status              String     @default("Guest")
+  weeklyPoints        Int        @default(0)
+  airdropPoints       Int        @default(0)
+  wallet_address      String?
+  wallet_type         String?
+  email               String?    @unique
+  phone               String?
+  x_handle            String?
+  telegram_handle     String?
+  youtube_handle      String?
+  claimedMissions     String[]
+  claimedSpecialOps   String[]
+  badges              Badge[]    @relation("UserBadges")
+  positions           Position[]
+  userAgents          UserAgent[]
 }
 
 model Badge {
-  id      String      @id @default(uuid())
-  name    String      @unique
-  users   UserBadge[] // Relation to UserBadge for many-to-many
-}
-
-// Junction table for User and Badge (many-to-many relationship)
-model UserBadge {
-  user      User    @relation(fields: [userId], references: [id])
-  userId    String // foreign key
-  badge     Badge   @relation(fields: [badgeId], references: [id])
-  badgeId   String // foreign key
-
-  @@id([userId, badgeId]) // Composite primary key
-}
-
-model ConsoleInsight {
-    id        String    @id @default(uuid())
-    userId    String
-    user      User      @relation(fields: [userId], references: [id])
-    content   String
-    timestamp DateTime  @default(now())
-}
-
-model SignalHistoryItem {
-    id        String    @id @default(uuid())
-    userId    String
-    user      User      @relation(fields: [userId], references: [id])
-    signalType String
-    symbol    String
-    price     Float
-    timestamp DateTime  @default(now())
+  id    String @id @default(uuid())
+  name  String @unique
+  users User[] @relation("UserBadges")
 }
 
 model Position {
-    id                 String    @id @default(uuid())
-    userId             String
-    user               User      @relation(fields: [userId], references: [id])
-    symbol             String
-    signalType         String // 'BUY' or 'SELL'
-    entryPrice         Float
-    size               Float
-    status             String // 'OPEN' or 'CLOSED'
-    openTimestamp      DateTime  @default(now())
-    closeTimestamp     DateTime?
-    closePrice         Float?
-    pnl                Float?
-    stopLoss           Float?
-    takeProfit         Float?
-    expirationTimestamp DateTime?
-}
-
-model Agent {
-  id          String  @id @default(uuid())
-  name        String
-  description String
-  icon        String
-  levels      Json // Store levels as JSON as it's a complex, nested structure
-  user_agents UserAgent[]
+  id                  String    @id @default(uuid())
+  userId              String
+  user                User      @relation(fields: [userId], references: [id])
+  symbol              String
+  signalType          SignalType
+  entryPrice          Float
+  size                Float
+  status              PositionStatus
+  openTimestamp       DateTime  @default(now())
+  closeTimestamp      DateTime?
+  pnl                 Float?
+  stopLoss            Float?
+  takeProfit          Float?
+  expirationTimestamp DateTime?
 }
 
 model UserAgent {
@@ -99,20 +59,24 @@ model UserAgent {
   userId            String
   user              User      @relation(fields: [userId], references: [id])
   agentId           String
-  agent             Agent     @relation(fields: [agentId], references: [id])
   level             Int       @default(1)
-  status            String // 'IDLE' or 'DEPLOYED'
+  status            AgentStatus @default(IDLE)
   deploymentEndTime DateTime?
+  
+  @@unique([userId, agentId])
 }
 
-model SpecialOp {
-  id                  String    @id @default(uuid())
-  title               String
-  description         String
-  requiredAgentId     String
-  requiredAgentLevel  Int
-  xpReward            Int
-  bsaiReward          Int
-  isActive            Boolean   @default(true)
-  claimedBy           String[]  @default([]) // Array of user IDs who have claimed it
+enum SignalType {
+  BUY
+  SELL
+}
+
+enum PositionStatus {
+  OPEN
+  CLOSED
+}
+
+enum AgentStatus {
+    IDLE
+    DEPLOYED
 }
