@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
+import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 
 // Import JSON-based actions and types from app/actions.ts
 import { 
@@ -23,10 +25,8 @@ import {
   UserProfile, 
   LeaderboardUser,
 } from '../actions';
-import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
 
-// ---- Start of content copied from missions/page.tsx ----
+// ---- Mission and Rank Data ----
 const TwitterIcon = () => (
   <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary">
     <title>X</title>
@@ -40,21 +40,20 @@ const TelegramIcon = () => (
 );
 const YouTubeIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-8 w-8 text-primary" fill="currentColor">
-        <path d="M21.582 7.696c-.246-1.34-1.28-2.37-2.62-2.616C17.043 4.5 12 4.5 12 4.5s-5.043 0-6.962.58c-1.34.246-2.374 1.276-2.62 2.616C2.5 9.615 2.5 12 2.5 12s0 2.385.418 4.304c.246 1.34 1.28 2.37 2.62 2.616C7.457 19.5 12 19.5 12 19.5s5.043 0 6.962-.58c1.34-.246 2.374-1.276 2.62-2.616C21.5 14.385 21.5 12 21.5 12s0-2.385-.418-4.304zM9.5 15.5V8.5l6 3.5-6 3.5z" />
+        <path d="M21.582 7.696c-.246-1.34-1.28-2.37-2.62-2.616C17.043 4.5 12 4.5 12 4.5s-5.043 0-6.962.58c-1.34.246-2.374 1.276-2.62 2.616C2.5 9.615 2.5 12 2.5 12s0 2.385.418 4.304c.246 1.34 1.28 2.37 2.62 2.616C7.457 19.5 12 19.5 12 19.5s5.043 0 6.962-.58c1.34-.246 2.374-1.276-2.62-2.616C21.5 14.385 21.5 12 21.5 12s0-2.385-.418-4.304zM9.5 15.5V8.5l6 3.5-6 3.5z" />
     </svg>
 );
 
-
-const initialMissions = [
-  { id: 'mission_x', title: 'Follow on X', description: 'Follow BlockShadow on X to unlock airdrop.', reward: '100 Airdrop Points', icon: <TwitterIcon />, status: 'mandatory' },
-  { id: 'mission_telegram', title: 'Join Telegram', description: 'Join the official Telegram community.', reward: '100 Airdrop Points', icon: <TelegramIcon />, status: 'mandatory' },
-  { id: 'mission_youtube', title: 'Subscribe on YouTube', description: 'Subscribe to the BlockShadow channel.', reward: '100 Airdrop Points', icon: <YouTubeIcon />, status: 'mandatory' },
-  { id: 'mission_first_signal', title: 'First Signal', description: 'Generate your first trading signal using the Core Console.', reward: '100 XP & 500 Airdrop Points', icon: <Zap className="h-8 w-8 text-primary"/>, status: 'available' },
-  { id: 'mission_analyst', title: 'The Analyst', description: 'Generate signals for 3 different assets (e.g., BTC, ETH, SOL).', reward: '250 XP & 1000 Airdrop Points', icon: <ShieldCheck className="h-8 w-8 text-tertiary"/>, status: 'available' },
-  { id: 'mission_prolific_trader', title: 'Prolific Trader', description: 'Execute 10 simulated trades (open or close).', reward: '150 XP & 750 Airdrop Points', icon: <Repeat className="h-8 w-8 text-primary"/>, status: 'available' },
-  { id: 'mission_winning_streak', title: 'Winning Streak', description: 'Close 3 profitable trades in a row.', reward: '300 XP & 1500 Airdrop Points', icon: <TrendingUp className="h-8 w-8 text-green-400"/>, status: 'available' },
-  { id: 'mission_top_trader', title: 'Top Trader', description: 'Achieve Rank #1 on the weekly XP leaderboard.', reward: '2000 XP & 10000 Airdrop Points', icon: <Crown className="h-8 w-8 text-yellow-400"/>, status: 'locked' },
-  { id: 'mission_streak', title: 'Weekly Streak', description: 'Generate at least one signal every day for 7 consecutive days.', reward: '1000 XP & 5000 Airdrop Points', icon: <Gift className="h-8 w-8 text-orange-400"/>, status: 'locked' },
+const missionsList = [
+  { id: 'mission_x', title: 'Follow on X', description: 'Follow BlockShadow on X to unlock airdrop.', reward: '100 Airdrop Points', icon: <TwitterIcon />, type: 'social', url: 'https://x.com/Firebase' },
+  { id: 'mission_telegram', title: 'Join Telegram', description: 'Join the official Telegram community.', reward: '100 Airdrop Points', icon: <TelegramIcon />, type: 'social', url: 'https://t.me/firebase' },
+  { id: 'mission_youtube', title: 'Subscribe on YouTube', description: 'Subscribe to the BlockShadow channel.', reward: '100 Airdrop Points', icon: <YouTubeIcon />, type: 'social', url: 'https://youtube.com/firebase' },
+  { id: 'mission_first_signal', title: 'First Signal', description: 'Generate your first trading signal using the Core Console.', reward: '100 XP & 500 Airdrop Points', icon: <Zap className="h-8 w-8 text-primary"/>, type: 'action' },
+  { id: 'mission_analyst', title: 'The Analyst', description: 'Generate signals for 3 different assets (e.g., BTC, ETH, SOL).', reward: '250 XP & 1000 Airdrop Points', icon: <ShieldCheck className="h-8 w-8 text-tertiary"/>, type: 'action' },
+  { id: 'mission_prolific_trader', title: 'Prolific Trader', description: 'Execute 10 simulated trades (open or close).', reward: '150 XP & 750 Airdrop Points', icon: <Repeat className="h-8 w-8 text-primary"/>, type: 'action' },
+  { id: 'mission_winning_streak', title: 'Winning Streak', description: 'Close 3 profitable trades in a row.', reward: '300 XP & 1500 Airdrop Points', icon: <TrendingUp className="h-8 w-8 text-green-400"/>, type: 'action' },
+  { id: 'mission_top_trader', title: 'Top Trader', description: 'Achieve Rank #1 on the weekly XP leaderboard.', reward: '2000 XP & 10000 Airdrop Points', icon: <Crown className="h-8 w-8 text-yellow-400"/>, type: 'locked' },
+  { id: 'mission_streak', title: 'Weekly Streak', description: 'Generate at least one signal every day for 7 consecutive days.', reward: '1000 XP & 5000 Airdrop Points', icon: <Gift className="h-8 w-8 text-orange-400"/>, type: 'locked' },
 ];
 
 const ranks = [
@@ -86,7 +85,6 @@ const getRankDetails = (xp: number) => {
   };
 };
 
-// Helper to get user ID from client-side storage
 const getCurrentUserId = (): string | null => {
   if (typeof window !== 'undefined') {
     return localStorage.getItem('currentUserId');
@@ -101,6 +99,57 @@ const RankIcon = ({ rank }: { rank: number }) => {
     return <span className="font-bold text-lg text-muted-foreground">{rank}</span>;
 }
 
+// ---- Helper Components ----
+const MissionCard = ({ mission, onClaim, isClaimed, isLocked }: { mission: typeof missionsList[0], onClaim: (id: string) => void, isClaimed: boolean, isLocked: boolean }) => {
+    const cardContent = (
+        <Card className={`bg-card/80 backdrop-blur-sm transition-all duration-300 flex flex-col h-full ${isLocked ? 'opacity-60' : 'hover:border-primary/50'} ${mission.type === 'social' ? 'border-primary' : ''}`}>
+            <CardHeader className="flex flex-row items-start gap-4">
+                <div className={`p-2 bg-background rounded-lg ${mission.type === 'social' ? 'border border-primary/50' : ''}`}>{mission.icon}</div>
+                <div>
+                    <CardTitle className="flex items-center text-base">
+                        {mission.title} 
+                        {mission.type === 'social' && <Badge variant="outline" className="ml-2 border-primary text-primary text-xs">Mandatory</Badge>}
+                    </CardTitle>
+                    <CardDescription className="text-sm">{mission.description}</CardDescription>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="text-sm font-semibold text-green-400 bg-green-900/30 border border-green-500/30 rounded-md p-2 text-center">
+                    Reward: {mission.reward}
+                </div>
+            </CardContent>
+            <CardFooter className="mt-auto">
+                {isClaimed ? (
+                    <Button disabled className="w-full bg-secondary text-muted-foreground">
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Completed
+                    </Button>
+                ) : isLocked ? (
+                    <Button disabled className="w-full">
+                        <Clock className="mr-2 h-4 w-4" />
+                        Locked
+                    </Button>
+                ) : (
+                    <Button onClick={() => onClaim(mission.id)} className="w-full glow-button">
+                        {mission.type === 'social' ? 'Verify & Claim' : 'Claim Reward'}
+                    </Button>
+                )}
+            </CardFooter>
+        </Card>
+    );
+
+    if (mission.type === 'social') {
+        return (
+            <a href={mission.url} target="_blank" rel="noopener noreferrer" className="h-full">
+                {cardContent}
+            </a>
+        );
+    }
+    return cardContent;
+};
+
+
+// ---- Main Page Component ----
 export default function ProfilePage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -109,15 +158,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-
-  const [missions, setMissions] = useState(initialMissions);
-
   const [showAirdropModal, setShowAirdropModal] = useState(false);
   
-  const mandatoryMissionsCompleted = currentUser?.status !== 'Guest' ? 3 : 0;
-  const totalMandatoryMissions = 3;
-  const progress = (mandatoryMissionsCompleted / totalMandatoryMissions) * 100;
-
   const loadData = useCallback(async () => {
       setLoading(true);
       setError(null);
@@ -154,14 +196,8 @@ export default function ProfilePage() {
     }, []);
 
   const handleClaim = async (missionId: string) => {
-      const mission = missions.find(m => m.id === missionId);
-      if (!mission || !currentUser) return;
-
-      // To prevent multiple claims, check local state first.
-      if (mission.status === 'completed') {
-          toast({ title: "Mission Already Completed", description: "You have already claimed the reward for this mission." });
-          return;
-      }
+      const mission = missionsList.find(m => m.id === missionId);
+      if (!mission || !currentUser || currentUser.claimedMissions?.includes(missionId)) return;
 
       const result = await claimMissionRewardAction(currentUser.id, missionId);
       
@@ -170,15 +206,7 @@ export default function ProfilePage() {
               title: <span className="text-accent">{`Reward Claimed for "${mission.title}"!`}</span>,
               description: <span className="text-foreground">{result.message}</span>,
           });
-
-          // Mark mission as completed in local state to update button
-          setMissions(prevMissions => prevMissions.map(m => 
-            m.id === missionId ? { ...m, status: 'completed' } : m
-          ));
-          
-          // Refetch all user data to update balances
           loadData(); 
-
       } else {
            toast({
               title: "Claim Failed",
@@ -188,7 +216,6 @@ export default function ProfilePage() {
       }
   };
 
-
   const handleAirdropSignupSuccess = useCallback(() => {
       setShowAirdropModal(false);
       toast({
@@ -197,7 +224,6 @@ export default function ProfilePage() {
       });
       loadData();
   }, [loadData, toast]);
-  
 
   useEffect(() => {
     loadData();
@@ -271,6 +297,9 @@ export default function ProfilePage() {
   }
   
   const rankDetails = getRankDetails(currentUser.weeklyPoints);
+  const mandatoryMissionsCompleted = missionsList.filter(m => m.type === 'social' && currentUser.claimedMissions?.includes(m.id)).length;
+  const totalMandatoryMissions = missionsList.filter(m => m.type === 'social').length;
+  const progress = (mandatoryMissionsCompleted / totalMandatoryMissions) * 100;
 
   return (
     <>
@@ -296,7 +325,6 @@ export default function ProfilePage() {
                 </p>
             </CardContent>
         </Card>
-
 
         <Tabs defaultValue="missions" className="w-full">
             <div className="flex justify-center">
@@ -449,48 +477,14 @@ export default function ProfilePage() {
                 </Card>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {missions.map(mission => (
-                        <Card key={mission.id} className={`bg-card/80 backdrop-blur-sm transition-all duration-300 flex flex-col ${mission.status === 'locked' ? 'opacity-60' : 'hover:border-primary/50'} ${mission.status === 'mandatory' ? 'border-primary' : ''}`}>
-                            <CardHeader className="flex flex-row items-start gap-4">
-                                <div className={`p-2 bg-background rounded-lg ${mission.status === 'mandatory' ? 'border border-primary/50' : ''}`}>{mission.icon}</div>
-                                <div>
-                                    <CardTitle className="flex items-center text-base">
-                                        {mission.title} 
-                                        {mission.status === 'mandatory' && <Badge variant="outline" className="ml-2 border-primary text-primary text-xs">Mandatory</Badge>}
-                                    </CardTitle>
-                                    <CardDescription className="text-sm">{mission.description}</CardDescription>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-sm font-semibold text-green-400 bg-green-900/30 border border-green-500/30 rounded-md p-2 text-center">
-                                    Reward: {mission.reward}
-                                </div>
-                            </CardContent>
-                            <CardFooter className="mt-auto">
-                                {mission.status === 'completed' && (
-                                    <Button disabled className="w-full bg-secondary text-muted-foreground">
-                                        <CheckCircle className="mr-2 h-4 w-4" />
-                                        Completed
-                                    </Button>
-                                )}
-                                 {mission.status === 'available' && (
-                                    <Button onClick={() => handleClaim(mission.id)} className="w-full glow-button">
-                                        Claim Reward
-                                    </Button>
-                                )}
-                                {mission.status === 'locked' && (
-                                    <Button disabled className="w-full">
-                                        <Clock className="mr-2 h-4 w-4" />
-                                        Locked
-                                    </Button>
-                                )}
-                                {mission.status === 'mandatory' && (
-                                    <Button onClick={() => handleClaim(mission.id)} className="w-full generate-signal-button">
-                                        Verify & Claim
-                                    </Button>
-                                )}
-                            </CardFooter>
-                        </Card>
+                    {missionsList.map(mission => (
+                        <MissionCard 
+                            key={mission.id}
+                            mission={mission}
+                            onClaim={handleClaim}
+                            isClaimed={currentUser.claimedMissions?.includes(mission.id) || false}
+                            isLocked={mission.type === 'locked'}
+                        />
                     ))}
                 </div>
             </TabsContent>

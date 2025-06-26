@@ -11,10 +11,12 @@ import { generateMissionLog, GenerateMissionLogInput } from '@/ai/flows/generate
 import { randomUUID } from 'crypto';
 import * as fs from 'fs/promises';
 import path from 'path';
+import { lock, unlock } from 'proper-lockfile';
 
 
 // --- JSON Database setup ---
 const dbPath = path.join(process.cwd(), 'src', 'data', 'db.json');
+const lockPath = path.join(process.cwd(), 'src', 'data', 'db.json.lock');
 
 interface DbData {
     users: UserProfile[];
@@ -30,36 +32,44 @@ interface DbData {
 
 async function readDb(): Promise<DbData> {
   const defaultDb: DbData = { users: [], badges: [], _UserBadges: [], console_insights: [], signals: [], positions: [], agents: [], user_agents: [], special_ops: [] };
+  
+  // Ensure the lock directory exists
+  await fs.mkdir(path.dirname(lockPath), { recursive: true });
+
+  await lock(dbPath, { lockfilePath: lockPath, retries: 5 });
   try {
     const data = await fs.readFile(dbPath, 'utf-8');
     try {
         const parsedData = JSON.parse(data);
-        // Ensure all top-level keys exist
         return { ...defaultDb, ...parsedData };
     } catch (parseError) {
         console.warn('Database file is corrupted. Re-initializing.', parseError);
-        await writeDb(defaultDb);
+        await fs.writeFile(dbPath, JSON.stringify(defaultDb, null, 2), 'utf-8');
         return defaultDb;
     }
   } catch (error: any) {
     if (error.code === 'ENOENT') {
-      // File doesn't exist, create it with a default structure
-      await writeDb(defaultDb);
+      await fs.writeFile(dbPath, JSON.stringify(defaultDb, null, 2), 'utf-8');
       return defaultDb;
     }
     console.error('Error reading database file:', error);
     throw new Error('Could not read from database.');
+  } finally {
+      await unlock(dbPath, { lockfilePath: lockPath });
   }
 }
 
 async function writeDb(data: DbData): Promise<void> {
+  await fs.mkdir(path.dirname(lockPath), { recursive: true });
+  await lock(dbPath, { lockfilePath: lockPath, retries: 5 });
   try {
-    // Ensure the directory exists before writing the file
     await fs.mkdir(path.dirname(dbPath), { recursive: true });
     await fs.writeFile(dbPath, JSON.stringify(data, null, 2), 'utf-8');
   } catch (error) {
     console.error('Error writing to database file:', error);
     throw new Error('Could not write to database.');
+  } finally {
+      await unlock(dbPath, { lockfilePath: lockPath });
   }
 }
 
@@ -80,6 +90,7 @@ export interface UserProfile {
   x_handle?: string;
   telegram_handle?: string;
   youtube_handle?: string;
+  claimedMissions?: string[];
 }
 
 export interface LeaderboardUser {
@@ -204,11 +215,17 @@ export async function claimMissionRewardAction(userId: string, missionId: string
     const reward = missionRewards[missionId];
     if (!reward) return { success: false, message: 'Invalid mission ID.' };
 
-    // NOTE: In a real app, we'd check if the mission was already claimed.
-    // The current frontend state management handles the disabled button, which is sufficient for this prototype.
+    if (db.users[userIndex].claimedMissions?.includes(missionId)) {
+        return { success: false, message: 'Mission reward already claimed.' };
+    }
 
     db.users[userIndex].weeklyPoints += reward.xp;
     db.users[userIndex].airdropPoints += reward.airdrop;
+    
+    if (!db.users[userIndex].claimedMissions) {
+        db.users[userIndex].claimedMissions = [];
+    }
+    db.users[userIndex].claimedMissions!.push(missionId);
 
     await writeDb(db);
     return { success: true, message: `Claimed ${reward.airdrop} $BSAI and ${reward.xp} XP!` };
@@ -242,7 +259,8 @@ export async function getOrCreateUserAction(userId: string | null): Promise<User
         status: 'Guest',
         weeklyPoints: 0,
         airdropPoints: 0,
-        badges: []
+        badges: [],
+        claimedMissions: [],
     };
 
     db.users.push(newUser);
@@ -399,7 +417,8 @@ export async function populateSampleDataJson() {
               "phone": null,
               "x_handle": "@cryptoguru",
               "telegram_handle": "@cryptoguru_tg",
-              "youtube_handle": null
+              "youtube_handle": null,
+              "claimedMissions": ["mission_x", "mission_telegram"]
             },
             {
               "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12",
@@ -414,7 +433,8 @@ export async function populateSampleDataJson() {
               "phone": null,
               "x_handle": "@tokenmaster",
               "telegram_handle": "@tokenmaster_tg",
-              "youtube_handle": null
+              "youtube_handle": null,
+              "claimedMissions": []
             },
             {
               "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13",
@@ -429,7 +449,8 @@ export async function populateSampleDataJson() {
               "phone": null,
               "x_handle": "@nftninja",
               "telegram_handle": "@nftninja_tg",
-              "youtube_handle": null
+              "youtube_handle": null,
+              "claimedMissions": []
             }
           ],
           "badges": [
@@ -1275,5 +1296,6 @@ export async function generateDailyGreetingAction(): Promise<GenerateDailyGreeti
 
 
     
+
 
 
