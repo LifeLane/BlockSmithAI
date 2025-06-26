@@ -1,5 +1,4 @@
 
-'use server';
 /**
  * @fileOverview A Genkit tool to fetch the user's current open portfolio positions.
  */

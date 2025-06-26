@@ -5,6 +5,8 @@ import { generateSarcasticDisclaimer } from '@/ai/flows/generate-sarcastic-discl
 import { shadowChat, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
 import { generateShadowChoiceStrategy as genShadowChoice, type ShadowChoiceStrategyInput, type ShadowChoiceStrategyCoreOutput } from '@/ai/flows/generate-shadow-choice-strategy';
+import { generateMissionLog } from '@/ai/flows/generate-mission-log';
+
 
 import { randomUUID } from 'crypto';
 import * as fs from 'fs/promises';
@@ -23,14 +25,17 @@ interface DbData {
     positions: Position[];
     agents: Agent[];
     user_agents: UserAgent[];
+    special_ops: SpecialOp[];
 }
 
 async function readDb(): Promise<DbData> {
-  const defaultDb: DbData = { users: [], badges: [], _UserBadges: [], console_insights: [], signals: [], positions: [], agents: [], user_agents: [] };
+  const defaultDb: DbData = { users: [], badges: [], _UserBadges: [], console_insights: [], signals: [], positions: [], agents: [], user_agents: [], special_ops: [] };
   try {
     const data = await fs.readFile(dbPath, 'utf-8');
     try {
-        return JSON.parse(data);
+        const parsedData = JSON.parse(data);
+        // Ensure all top-level keys exist
+        return { ...defaultDb, ...parsedData };
     } catch (parseError) {
         console.warn('Database file is corrupted. Re-initializing.', parseError);
         await writeDb(defaultDb);
@@ -162,6 +167,18 @@ export interface UserAgent {
 // This is the combined data structure returned to the client
 export interface UserAgentData extends Agent {
   userState: UserAgent | null;
+}
+
+export interface SpecialOp {
+    id: string;
+    title: string;
+    description: string;
+    requiredAgentId: string;
+    requiredAgentLevel: number;
+    xpReward: number;
+    bsaiReward: number;
+    isActive: boolean;
+    claimedBy: string[]; // Array of user IDs who have claimed it
 }
 
 
@@ -502,6 +519,19 @@ export async function populateSampleDataJson() {
                 "status": "IDLE",
                 "deploymentEndTime": null
                 }
+            ],
+            "special_ops": [
+                {
+                  "id": "so-001",
+                  "title": "Quantum Entanglement",
+                  "description": "The Quantum Predictor has detected a rare market resonance. Claim this reward if your agent is sufficiently advanced to interpret the data.",
+                  "requiredAgentId": "agent-003",
+                  "requiredAgentLevel": 2,
+                  "xpReward": 1000,
+                  "bsaiReward": 2500,
+                  "isActive": true,
+                  "claimedBy": []
+                }
             ]
         };
         await writeDb(sampleDb);
@@ -674,8 +704,8 @@ export async function fetchPortfolioStatsAction(userId: string): Promise<Portfol
         const pnls = closedPositions.map(p => p.pnl || 0);
         const winningTrades = pnls.filter(pnl => pnl > 0).length;
         const totalPnl = pnls.reduce((acc, pnl) => acc + pnl, 0);
-        const bestTradePnl = totalTrades > 0 ? Math.max(...pnls) : 0;
-        const worstTradePnl = totalTrades > 0 ? Math.min(...pnls) : 0;
+        const bestTradePnl = pnls.length > 0 ? Math.max(0, ...pnls) : 0;
+        const worstTradePnl = pnls.length > 0 ? Math.min(0, ...pnls) : 0;
         const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
 
         return {
@@ -770,26 +800,26 @@ export async function deployAgentAction(userId: string, agentId: string): Promis
   }
 }
 
-export async function claimAgentRewardsAction(userId: string, agentId: string): Promise<{ success: boolean; message: string }> {
+export async function claimAgentRewardsAction(userId: string, agentId: string): Promise<{ success: boolean; message: string; log: string }> {
     try {
         const db = await readDb();
         const userAgentIndex = db.user_agents.findIndex(ua => ua.userId === userId && ua.agentId === agentId);
-        if (userAgentIndex === -1) return { success: false, message: 'Agent not found for this user.' };
+        if (userAgentIndex === -1) return { success: false, message: 'Agent not found for this user.', log: '' };
 
         const userAgent = db.user_agents[userAgentIndex];
-        if (userAgent.status !== 'DEPLOYED') return { success: false, message: 'Agent is not deployed.' };
+        if (userAgent.status !== 'DEPLOYED') return { success: false, message: 'Agent is not deployed.', log: '' };
         if (!userAgent.deploymentEndTime || new Date(userAgent.deploymentEndTime) > new Date()) {
-            return { success: false, message: 'Deployment not yet complete.' };
+            return { success: false, message: 'Deployment not yet complete.', log: '' };
         }
 
         const agent = db.agents.find(a => a.id === agentId);
-        if (!agent) return { success: false, message: 'Agent definition not found.' };
+        if (!agent) return { success: false, message: 'Agent definition not found.', log: '' };
 
         const currentLevel = agent.levels.find(l => l.level === userAgent.level);
-        if (!currentLevel) return { success: false, message: 'Agent level data not found.' };
+        if (!currentLevel) return { success: false, message: 'Agent level data not found.', log: '' };
 
         const userIndex = db.users.findIndex(u => u.id === userId);
-        if (userIndex === -1) return { success: false, message: 'User not found.' };
+        if (userIndex === -1) return { success: false, message: 'User not found.', log: '' };
 
         // Add rewards
         db.users[userIndex].weeklyPoints += currentLevel.xpReward;
@@ -799,11 +829,15 @@ export async function claimAgentRewardsAction(userId: string, agentId: string): 
         userAgent.status = 'IDLE';
         userAgent.deploymentEndTime = null;
 
+        // Generate narrative log
+        const logResult = await generateMissionLog({ agentName: agent.name, agentLevel: userAgent.level });
+        const log = logResult.log || "Deployment log corrupted. Standard reward issued.";
+
         await writeDb(db);
-        return { success: true, message: `Claimed ${currentLevel.bsaiReward} BSAI and ${currentLevel.xpReward} XP!` };
+        return { success: true, message: `Claimed ${currentLevel.bsaiReward} BSAI and ${currentLevel.xpReward} XP!`, log };
     } catch (error: any) {
         console.error("Error claiming rewards:", error);
-        return { success: false, message: `Failed to claim rewards: ${error.message}` };
+        return { success: false, message: `Failed to claim rewards: ${error.message}`, log: '' };
     }
 }
 
@@ -814,10 +848,22 @@ export async function upgradeAgentAction(userId: string, agentId: string): Promi
         const userAgentIndex = db.user_agents.findIndex(ua => ua.userId === userId && ua.agentId === agentId);
 
         if (userIndex === -1) return { success: false, message: 'User not found.' };
-        if (userAgentIndex === -1) return { success: false, message: 'Agent not found for this user.' };
+        
+        let userAgent = db.user_agents[userAgentIndex];
+        // If user agent doesn't exist, create it at level 1 to check for upgrade
+        if (!userAgent) {
+             userAgent = {
+                id: randomUUID(),
+                userId: userId,
+                agentId: agentId,
+                level: 1,
+                status: 'IDLE',
+                deploymentEndTime: null
+            };
+            db.user_agents.push(userAgent);
+        }
         
         const user = db.users[userIndex];
-        const userAgent = db.user_agents[userAgentIndex];
 
         const agent = db.agents.find(a => a.id === agentId);
         if (!agent) return { success: false, message: 'Agent definition not found.' };
@@ -841,6 +887,56 @@ export async function upgradeAgentAction(userId: string, agentId: string): Promi
     } catch (error: any) {
         console.error("Error upgrading agent:", error);
         return { success: false, message: `Failed to upgrade agent: ${error.message}` };
+    }
+}
+
+
+// --- Special Ops Actions ---
+export async function fetchSpecialOpsAction(userId: string): Promise<SpecialOp[]> {
+  try {
+    const db = await readDb();
+    if (!db.special_ops) return [];
+    
+    // Return active ops that the user has NOT claimed
+    return db.special_ops.filter(op => op.isActive && !op.claimedBy.includes(userId));
+  } catch (error) {
+    console.error('Error fetching special ops:', error);
+    return [];
+  }
+}
+
+export async function claimSpecialOpAction(userId: string, opId: string): Promise<{ success: boolean; message: string }> {
+    try {
+        const db = await readDb();
+        const opIndex = db.special_ops.findIndex(op => op.id === opId);
+        if (opIndex === -1) return { success: false, message: "Special Op not found." };
+        
+        const op = db.special_ops[opIndex];
+        if (!op.isActive) return { success: false, message: "This Special Op is no longer active." };
+        if (op.claimedBy.includes(userId)) return { success: false, message: "You have already claimed this reward." };
+        
+        const userIndex = db.users.findIndex(u => u.id === userId);
+        if (userIndex === -1) return { success: false, message: "User not found." };
+        
+        // Check if user has the required agent at the required level
+        const userAgent = db.user_agents.find(ua => ua.userId === userId && ua.agentId === op.requiredAgentId);
+        if (!userAgent || userAgent.level < op.requiredAgentLevel) {
+            return { success: false, message: `Requires Agent Level ${op.requiredAgentLevel}. Your level is ${userAgent?.level || 0}.` };
+        }
+        
+        // Grant rewards
+        db.users[userIndex].weeklyPoints += op.xpReward;
+        db.users[userIndex].airdropPoints += op.bsaiReward;
+        
+        // Mark as claimed for this user
+        op.claimedBy.push(userId);
+        
+        await writeDb(db);
+        return { success: true, message: `Claimed ${op.bsaiReward} BSAI and ${op.xpReward} XP!` };
+        
+    } catch (error: any) {
+        console.error("Error claiming special op:", error);
+        return { success: false, message: `Failed to claim special op: ${error.message}` };
     }
 }
 

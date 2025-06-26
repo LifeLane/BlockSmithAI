@@ -1,5 +1,4 @@
 
-'use server';
 /**
  * @fileOverview A Genkit tool to fetch historical candlestick data using Polygon.io.
  */

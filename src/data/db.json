@@ -1,3 +1,4 @@
+
 {
   "users": [
     {
@@ -452,6 +453,19 @@
       "level": 1,
       "status": "DEPLOYED",
       "deploymentEndTime": "2025-06-26T21:52:49.626Z"
+    }
+  ],
+  "special_ops": [
+    {
+      "id": "so-001",
+      "title": "Quantum Entanglement",
+      "description": "The Quantum Predictor has detected a rare market resonance. Claim this reward if your agent is sufficiently advanced to interpret the data.",
+      "requiredAgentId": "agent-003",
+      "requiredAgentLevel": 2,
+      "xpReward": 1000,
+      "bsaiReward": 2500,
+      "isActive": true,
+      "claimedBy": []
     }
   ]
 }

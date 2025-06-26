@@ -5,7 +5,7 @@ import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, AlertTriangle, Bot, Binary, Network, Waypoints, Zap, ArrowUp, Clock, Gift, CheckCircle2 } from 'lucide-react';
+import { Loader2, AlertTriangle, Bot, Binary, Network, Waypoints, Zap, ArrowUp, Clock, Gift, CheckCircle2, Star, Trophy } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import {
@@ -13,10 +13,11 @@ import {
   deployAgentAction,
   claimAgentRewardsAction,
   upgradeAgentAction,
+  fetchSpecialOpsAction,
+  claimSpecialOpAction,
   type UserAgentData,
-  type AgentLevel
+  type SpecialOp
 } from '@/app/actions';
-import { Progress } from '@/components/ui/progress';
 
 const getCurrentUserId = (): string | null => {
   if (typeof window !== 'undefined') {
@@ -93,7 +94,10 @@ const AgentCard = ({ agentData, userXp, onAction }: { agentData: UserAgentData, 
         setIsProcessing(true);
         const result = await claimAgentRewardsAction(userId, agentData.id);
          if (result.success) {
-            toast({ title: <span className="text-accent">Rewards Claimed!</span>, description: result.message });
+            toast({ 
+                title: <span className="text-accent">Rewards Claimed!</span>, 
+                description: <span className="text-foreground italic">"{result.log}"</span> 
+            });
             onAction();
         } else {
             toast({ title: "Claim Failed", description: result.message, variant: "destructive" });
@@ -114,7 +118,7 @@ const AgentCard = ({ agentData, userXp, onAction }: { agentData: UserAgentData, 
     };
     
     const isDeployed = agentData.userState?.status === 'DEPLOYED';
-    const isComplete = isDeployed && new Date(agentData.userState.deploymentEndTime!) <= new Date();
+    const isComplete = isDeployed && agentData.userState.deploymentEndTime && new Date(agentData.userState.deploymentEndTime) <= new Date();
     const canUpgrade = userXp >= currentLevelData.upgradeCost;
 
     return (
@@ -163,7 +167,7 @@ const AgentCard = ({ agentData, userXp, onAction }: { agentData: UserAgentData, 
                          </Button>
                     ) : (
                         <Button className="w-full" disabled>
-                            <Clock className="h-4 w-4 mr-2 animate-pulse"/> Deployed (<Countdown endTime={agentData.userState!.deploymentEndTime!} />)
+                            <Clock className="h-4 w-4 mr-2 animate-pulse"/> Deployed ({agentData.userState?.deploymentEndTime && <Countdown endTime={agentData.userState.deploymentEndTime} />})
                         </Button>
                     )
                 ) : (
@@ -176,35 +180,112 @@ const AgentCard = ({ agentData, userXp, onAction }: { agentData: UserAgentData, 
     );
 };
 
+const SpecialOpCard = ({ op, agents, onClaim }: { op: SpecialOp, agents: UserAgentData[], onClaim: (opId: string) => void }) => {
+    const [isProcessing, setIsProcessing] = useState(false);
+    const { toast } = useToast();
+
+    const requiredAgent = agents.find(a => a.id === op.requiredAgentId);
+    const userAgentLevel = requiredAgent?.userState?.level || 0;
+    const canClaim = userAgentLevel >= op.requiredAgentLevel;
+
+    const handleClaim = async () => {
+        setIsProcessing(true);
+        await onClaim(op.id);
+        setIsProcessing(false);
+    };
+
+    const Icon = AGENT_ICONS[requiredAgent?.icon || 'Default'] || AGENT_ICONS.Default;
+
+    return (
+        <Card className="bg-gradient-to-br from-tertiary/20 via-card to-accent/20 border-tertiary shadow-lg shadow-tertiary/20 mb-8">
+            <CardHeader>
+                <div className="flex justify-between items-center">
+                    <CardTitle className="flex items-center text-tertiary text-xl">
+                        <Star className="mr-3 h-6 w-6"/> Special Operation
+                    </CardTitle>
+                    <Trophy className="h-8 w-8 text-orange-400"/>
+                </div>
+                <CardDescription className="text-lg font-semibold text-foreground pt-1">{op.title}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">{op.description}</p>
+                <div className="flex flex-wrap gap-4 text-sm">
+                    <div className="flex-1 min-w-[150px] p-3 bg-background/70 rounded-md">
+                        <div className="font-semibold text-muted-foreground mb-1">Requirement:</div>
+                        <div className="flex items-center gap-2">
+                             <Icon className="h-5 w-5 text-tertiary"/>
+                             <span className="font-bold text-foreground">{requiredAgent?.name || op.requiredAgentId} (Lvl {op.requiredAgentLevel}+)</span>
+                        </div>
+                        <div className={`text-xs mt-1 ${canClaim ? 'text-green-400' : 'text-red-400'}`}>
+                            Your Level: {userAgentLevel}
+                        </div>
+                    </div>
+                     <div className="flex-1 min-w-[150px] p-3 bg-background/70 rounded-md">
+                        <div className="font-semibold text-muted-foreground mb-1">Reward:</div>
+                        <div className="font-bold text-orange-400">{op.bsaiReward.toLocaleString()} BSAI</div>
+                        <div className="font-bold text-tertiary">{op.xpReward.toLocaleString()} XP</div>
+                    </div>
+                </div>
+            </CardContent>
+            <CardFooter>
+                <Button className="w-full bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground font-bold text-base py-3" onClick={handleClaim} disabled={!canClaim || isProcessing}>
+                    {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trophy className="mr-2 h-5 w-5"/>}
+                    {canClaim ? "Claim Special Reward" : "Requirement Not Met"}
+                </Button>
+            </CardFooter>
+        </Card>
+    );
+}
+
 export default function AgentsPage() {
     const [agentData, setAgentData] = useState<UserAgentData[]>([]);
     const [userXp, setUserXp] = useState(0);
+    const [specialOps, setSpecialOps] = useState<SpecialOp[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const { toast } = useToast();
     const userId = getCurrentUserId();
     
-    const fetchAgents = useCallback(async () => {
+    const fetchData = useCallback(async () => {
         if (!userId) {
             setError("User session not found. Please return to the Core Console to initialize.");
             setIsLoading(false);
             return;
         }
         setIsLoading(true);
-        const result = await fetchAgentDataAction(userId);
-        if ('error' in result) {
-            setError(result.error);
-            toast({ title: "Data Error", description: result.error, variant: "destructive" });
+        
+        const [agentResult, opsResult] = await Promise.all([
+            fetchAgentDataAction(userId),
+            fetchSpecialOpsAction(userId)
+        ]);
+
+        if ('error' in agentResult) {
+            setError(agentResult.error);
+            toast({ title: "Data Error", description: agentResult.error, variant: "destructive" });
         } else {
-            setAgentData(result.agents);
-            setUserXp(result.userXp);
+            setAgentData(agentResult.agents);
+            setUserXp(agentResult.userXp);
         }
+        
+        setSpecialOps(opsResult); // No error handling for ops, can fail gracefully
+
         setIsLoading(false);
     }, [userId, toast]);
 
     useEffect(() => {
-        fetchAgents();
-    }, [fetchAgents]);
+        fetchData();
+    }, [fetchData]);
+    
+    const handleClaimSpecialOp = async (opId: string) => {
+        if (!userId) return;
+        const result = await claimSpecialOpAction(userId, opId);
+        if (result.success) {
+            toast({ title: "Special Op Reward Claimed!", description: result.message, variant: 'default' });
+            fetchData(); // Refresh all data
+        } else {
+            toast({ title: "Claim Failed", description: result.message, variant: 'destructive' });
+        }
+    };
 
     const renderContent = () => {
         if (isLoading) {
@@ -235,11 +316,16 @@ export default function AgentsPage() {
         }
 
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {agentData.map(agent => (
-                    <AgentCard key={agent.id} agentData={agent} userXp={userXp} onAction={fetchAgents} />
+            <>
+                {specialOps.map(op => (
+                    <SpecialOpCard key={op.id} op={op} agents={agentData} onClaim={handleClaimSpecialOp} />
                 ))}
-            </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {agentData.map(agent => (
+                        <AgentCard key={agent.id} agentData={agent} userXp={userXp} onAction={fetchData} />
+                    ))}
+                </div>
+            </>
         );
     }
 
@@ -247,7 +333,7 @@ export default function AgentsPage() {
     <>
       <AppHeader />
       <div className="container mx-auto px-4 py-8">
-        <ScrollArea className="h-[calc(100vh-300px)] pr-4">
+        <ScrollArea className="h-[calc(100vh-160px)] pr-4">
             {renderContent()}
         </ScrollArea>
       </div>

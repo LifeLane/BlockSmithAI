@@ -1,5 +1,4 @@
 
-'use server';
 /**
  * @fileOverview A Genkit tool to fetch live market data for a symbol.
  */
