@@ -117,13 +117,10 @@ SHADOW's Autonomous Choice:
 
     const formattedParameters = parameters
       .map(p => `  ${p.label.padEnd(maxLabelLength + 2)}: ${p.value}`)
-      .join('
-');
+      .join('\n');
 
     const indentedDisclaimer = strategy.disclaimer
-      ? strategy.disclaimer.split('
-').map(line => `  ${line.trim()}`).join('
-')
+      ? strategy.disclaimer.split('\n').map(line => `  ${line.trim()}`).join('\n')
       : "No disclaimer provided.";
 
     const textToCopy = `
