@@ -60,6 +60,15 @@
       "shadowId": "SHDW-C12F484",
       "status": "Guest",
       "weeklyPoints": 0,
+      "airdropPoints": 308,
+      "badges": []
+    },
+    {
+      "id": "2a500095-c5c5-435a-a1fc-b4e5d3749c02",
+      "username": "Analyst_63ba6b",
+      "shadowId": "SHDW-B63A043",
+      "status": "Guest",
+      "weeklyPoints": 0,
       "airdropPoints": 0,
       "badges": []
     }
@@ -198,10 +207,13 @@
       "signalType": "SELL",
       "entryPrice": 107100,
       "size": 1,
-      "status": "OPEN",
+      "status": "CLOSED",
       "openTimestamp": "2025-06-26T13:40:49.867Z",
       "stopLoss": 107200,
-      "takeProfit": 106800
+      "takeProfit": 106800,
+      "closePrice": 107069.16,
+      "closeTimestamp": "2025-06-26T14:03:52.500Z",
+      "pnl": 30.839999999996508
     }
   ],
   "agents": [

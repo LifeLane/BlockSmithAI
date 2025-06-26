@@ -19,6 +19,7 @@ import {
   fetchCurrentUserJson, 
   fetchLeaderboardDataJson, 
   updateUserSettingsJson, 
+  claimMissionRewardAction,
   UserProfile, 
   LeaderboardUser,
 } from '../actions';
@@ -85,25 +86,6 @@ export default function ProfilePage() {
   const totalMandatoryMissions = 3;
   const progress = (mandatoryMissionsCompleted / totalMandatoryMissions) * 100;
 
-  const handleClaim = (missionId: string) => {
-      const mission = missions.find(m => m.id === missionId);
-      if (!mission) return;
-
-      toast({
-          title: `Reward Claimed for "${mission.title}"!`,
-          description: "Your XP and Airdrop Points have been added to your profile.",
-          variant: "default",
-      })
-
-      // Simulate state change
-      setMissions(prevMissions => prevMissions.map(m => 
-        m.id === missionId ? { ...m, status: 'completed' } : m
-      ));
-      // In a real app, you would also make an API call here to update the backend
-      // and then refetch the user data to update points.
-      // For this prototype, we'll just show the visual change.
-  }
-
   const loadData = useCallback(async () => {
       setLoading(true);
       setError(null);
@@ -138,6 +120,41 @@ export default function ProfilePage() {
           setLoading(false);
       }
     }, []);
+
+  const handleClaim = async (missionId: string) => {
+      const mission = missions.find(m => m.id === missionId);
+      if (!mission || !currentUser) return;
+
+      // To prevent multiple claims, check local state first.
+      if (mission.status === 'completed') {
+          toast({ title: "Mission Already Completed", description: "You have already claimed the reward for this mission." });
+          return;
+      }
+
+      const result = await claimMissionRewardAction(currentUser.id, missionId);
+      
+      if (result.success) {
+          toast({
+              title: <span className="text-accent">{`Reward Claimed for "${mission.title}"!`}</span>,
+              description: <span className="text-foreground">{result.message}</span>,
+          });
+
+          // Mark mission as completed in local state to update button
+          setMissions(prevMissions => prevMissions.map(m => 
+            m.id === missionId ? { ...m, status: 'completed' } : m
+          ));
+          
+          // Refetch all user data to update balances
+          loadData(); 
+
+      } else {
+           toast({
+              title: "Claim Failed",
+              description: result.message,
+              variant: "destructive",
+          });
+      }
+  };
 
 
   const handleAirdropSignupSuccess = useCallback(() => {
@@ -224,7 +241,7 @@ export default function ProfilePage() {
   return (
     <>
       <AppHeader />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pb-24">
         <div className="text-center mb-8">
             <h1 className="text-2xl md:text-3xl font-bold">Analyst <span className="text-primary">HQ</span></h1>
             <p className="text-muted-foreground">Your central hub for profile, missions, and rankings.</p>
@@ -254,7 +271,7 @@ export default function ProfilePage() {
 
         <Tabs defaultValue="missions" className="w-full">
             <div className="flex justify-center">
-                <TabsList className="bg-card/80">
+                <TabsList className="bg-card/80 grid w-full max-w-md grid-cols-3">
                     <TabsTrigger value="profile">Profile</TabsTrigger>
                     <TabsTrigger value="missions">Missions</TabsTrigger>
                     <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
