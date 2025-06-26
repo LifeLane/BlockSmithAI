@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,6 +42,13 @@ export default function MissionsPage() {
     const [showAirdropModal, setShowAirdropModal] = useState(false);
     const [isSignedUp, setIsSignedUp] = useState(false);
     
+    useEffect(() => {
+        const signedUpStatus = localStorage.getItem('bsaiIsSignedUp') === 'true';
+        if (signedUpStatus) {
+            setIsSignedUp(true);
+        }
+    }, []);
+
     // In a real app, this would come from a user state
     const mandatoryMissionsCompleted = 1;
     const totalMandatoryMissions = 3;
