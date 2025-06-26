@@ -1,4 +1,3 @@
-
 {
   "users": [
     {
@@ -117,6 +116,16 @@
       "weeklyPoints": 0,
       "airdropPoints": 0,
       "badges": []
+    },
+    {
+      "id": "2a0bbe23-fdfa-4dbb-98a1-ab4b95c3824b",
+      "username": "Analyst_38fc4e",
+      "shadowId": "SHDW-E055DE4",
+      "status": "Guest",
+      "weeklyPoints": 0,
+      "airdropPoints": 0,
+      "badges": [],
+      "claimedMissions": []
     }
   ],
   "badges": [
