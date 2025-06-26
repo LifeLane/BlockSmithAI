@@ -1,6 +1,6 @@
 
 import { FunctionComponent } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
@@ -24,7 +24,8 @@ import {
   Sparkles,
   Unlock,
   Loader2,
-  Copy
+  Copy,
+  Zap
 } from 'lucide-react';
 
 interface StrategyExplanationSectionProps {
@@ -33,6 +34,7 @@ interface StrategyExplanationSectionProps {
   isLoading: boolean;
   error?: string | null;
   symbol: string;
+  onSimulate?: () => void;
 }
 
 interface StatCardProps {
@@ -63,6 +65,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   isLoading,
   error,
   symbol,
+  onSimulate,
 }) => {
   const { toast } = useToast();
 
@@ -303,6 +306,21 @@ Analysis Timestamp: ${currentDateTime}
           </div>
         )}
       </CardContent>
+       <CardFooter className="flex-col gap-4 pt-2">
+            {onSimulate && (
+                <Button
+                    onClick={onSimulate}
+                    className="w-full max-w-sm bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground font-semibold py-3 text-base shadow-lg"
+                    disabled={strategy.signal?.toUpperCase() === 'HOLD'}
+                >
+                    <Zap className="mr-2 h-5 w-5"/>
+                    Simulate This Insight
+                </Button>
+            )}
+             {strategy.signal?.toUpperCase() === 'HOLD' && (
+                <p className="text-xs text-center text-muted-foreground">A 'HOLD' signal indicates no action. Simulation is disabled.</p>
+            )}
+       </CardFooter>
     </Card>
   );
 };

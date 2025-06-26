@@ -44,22 +44,6 @@
       "x_handle": "@nftninja",
       "telegram_handle": "@nftninja_tg",
       "youtube_handle": null
-    },
-    {
-      "id": "8d3c875c-bf67-489e-9be2-073ce45ce5b1",
-      "username": "User_d9ed539",
-      "shadowId": "SHDW-73FE61D",
-      "wallet_address": "0x1483967a568C822723a8eDA3217314754BbD1708",
-      "wallet_type": "ETH",
-      "email": "connectedtorajib@gmail.com",
-      "phone": "+917998300083",
-      "x_handle": "RajibSinghX",
-      "telegram_handle": "BlockShadow",
-      "youtube_handle": "",
-      "status": "Airdrop Registered",
-      "weeklyPoints": 0,
-      "airdropPoints": 300,
-      "badges": []
     }
   ],
   "badges": [
@@ -99,19 +83,19 @@
       "id": "ci1",
       "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
       "content": "Market showing bullish signs for BTC.",
-      "timestamp": "2024-05-23T10:15:13.337Z"
+      "timestamp": "2025-06-26T10:30:39.694Z"
     },
     {
       "id": "ci2",
       "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
       "content": "Noticed increased volume on ETH.",
-      "timestamp": "2024-05-23T11:15:13.337Z"
+      "timestamp": "2025-06-26T11:30:39.694Z"
     },
     {
       "id": "ci3",
       "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12",
       "content": "SOL seems to be consolidating.",
-      "timestamp": "2024-05-23T12:15:13.337Z"
+      "timestamp": "2025-06-26T12:30:39.694Z"
     }
   ],
   "signals": [
@@ -121,7 +105,7 @@
       "signalType": "buy",
       "symbol": "BTCUSDT",
       "price": 107000,
-      "timestamp": "2024-05-23T11:45:13.337Z"
+      "timestamp": "2025-06-26T11:00:39.694Z"
     },
     {
       "id": "s2",
@@ -129,7 +113,7 @@
       "signalType": "sell",
       "symbol": "ETHUSDT",
       "price": 2400,
-      "timestamp": "2024-05-23T12:00:13.337Z"
+      "timestamp": "2025-06-26T11:30:39.694Z"
     },
     {
       "id": "s3",
@@ -137,29 +121,29 @@
       "signalType": "hold",
       "symbol": "SOLUSDT",
       "price": 150,
-      "timestamp": "2024-05-23T12:15:13.337Z"
+      "timestamp": "2025-06-26T12:00:39.694Z"
     }
   ],
   "positions": [
     {
-      "id": "p1_sample",
+      "id": "p1",
       "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
       "symbol": "BTCUSDT",
       "signalType": "BUY",
-      "entryPrice": 68500,
-      "size": 1,
+      "entryPrice": 68000,
+      "size": 0.1,
       "status": "OPEN",
-      "openTimestamp": "2024-05-22T10:00:00.000Z"
+      "openTimestamp": "2025-06-25T12:30:39.694Z"
     },
     {
-      "id": "p2_sample",
-      "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      "id": "b2c82d3f-7171-4eb3-b41e-0e2688ffd69e",
+      "userId": "8d3c875c-bf67-489e-9be2-073ce45ce5b1",
       "symbol": "ETHUSDT",
-      "signalType": "SELL",
-      "entryPrice": 3800,
+      "signalType": "BUY",
+      "entryPrice": 2450,
       "size": 1,
       "status": "OPEN",
-      "openTimestamp": "2024-05-23T11:00:00.000Z"
+      "openTimestamp": "2025-06-26T12:31:30.764Z"
     }
   ]
 }

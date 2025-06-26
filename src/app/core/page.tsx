@@ -10,8 +10,6 @@ import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import ChatbotIcon from '@/components/blocksmith-ai/ChatbotIcon';
 import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
-import ApiSettingsModal from '@/components/blocksmith-ai/ApiSettingsModal';
-import ExchangeLinkCard from '@/components/blocksmith-ai/ExchangeLinkCard';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -27,13 +25,13 @@ import {
   generateTradingStrategyAction,
   fetchMarketDataAction,
   fetchAllTradingSymbolsAction,
-  openSimulatedPositionAction, // New action import
+  openSimulatedPositionAction,
   type LiveMarketData,
   type FormattedSymbol
 } from '@/app/actions';
 import type { GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, ShieldQuestion } from 'lucide-react';
+import { Loader2, Sparkles, ShieldQuestion, Zap } from 'lucide-react';
 
 const DEFAULT_SYMBOLS: FormattedSymbol[] = [
   { value: "BTCUSDT", label: "BTC/USDT" },
@@ -74,11 +72,7 @@ export default function CoreConsolePage() {
   const [lastAnalysisDate, setLastAnalysisDate] = useState<string>('');
   const [isSignedUp, setIsSignedUp] = useState<boolean>(false);
   const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
-
-  const [apiKey, setApiKey] = useState<string>('');
-  const [apiSecret, setApiSecret] = useState<string>('');
-  const [apiKeysSet, setApiKeysSet] = useState<boolean>(false);
-  const [showApiSettingsModal, setShowApiSettingsModal] = useState<boolean>(false);
+  
   const [showConfirmTradeDialog, setShowConfirmTradeDialog] = useState<boolean>(false);
 
   const toastRef = useRef(useToast());
@@ -103,14 +97,6 @@ export default function CoreConsolePage() {
       }
       setLastAnalysisDate(today);
     }
-
-    const storedApiKey = localStorage.getItem('bsaiApiKey');
-    const storedApiSecret = localStorage.getItem('bsaiApiSecret');
-    if (storedApiKey && storedApiSecret) {
-      setApiKey(storedApiKey);
-      setApiSecret(storedApiSecret);
-      setApiKeysSet(true);
-    }
   }, []);
 
   const updateUsageData = useCallback((newCount: number) => {
@@ -120,26 +106,6 @@ export default function CoreConsolePage() {
     setAnalysisCount(newCount);
     setLastAnalysisDate(today);
   }, []);
-
-  const handleSaveApiKeys = (newApiKey: string, newApiSecret: string) => {
-    localStorage.setItem('bsaiApiKey', newApiKey);
-    localStorage.setItem('bsaiApiSecret', newApiSecret);
-    setApiKey(newApiKey);
-    setApiSecret(newApiSecret);
-    setApiKeysSet(true);
-    setShowApiSettingsModal(false);
-    toastRef.current.toast({ title: "API Keys Saved", description: "Your Binance API keys have been saved locally." });
-  };
-
-  const handleClearApiKeys = () => {
-    localStorage.removeItem('bsaiApiKey');
-    localStorage.removeItem('bsaiApiSecret');
-    setApiKey('');
-    setApiSecret('');
-    setApiKeysSet(false);
-    setShowApiSettingsModal(false);
-    toastRef.current.toast({ title: "API Keys Cleared", description: "Your Binance API keys have been cleared from local storage." });
-  };
 
   const fetchAndSetMarketData = useCallback(async (currentSymbolToFetch: string, showToastOnError = true) => {
     setIsLoadingMarketData(true);
@@ -281,23 +247,24 @@ export default function CoreConsolePage() {
     });
   };
 
-  const handleAttemptSimulatedTrade = () => {
-    if (apiKeysSet && aiStrategy) {
-      setShowConfirmTradeDialog(true);
-    } else if (!apiKeysSet) {
-      toastRef.current.toast({
-        title: "API Keys Required",
-        description: "Please configure your Binance API keys to simulate trades.",
-        variant: "destructive",
-      });
-      setShowApiSettingsModal(true);
-    } else if (!aiStrategy) {
+  const handleSimulateTrade = () => {
+    if (!aiStrategy) {
          toastRef.current.toast({
             title: "No SHADOW Insight Available",
             description: "Please generate an analysis from SHADOW first.",
             variant: "default",
         });
+        return;
     }
+    if (aiStrategy.signal.toUpperCase() === 'HOLD') {
+        toastRef.current.toast({
+            title: "Cannot Simulate 'HOLD'",
+            description: "A 'HOLD' signal indicates no action should be taken.",
+            variant: "default",
+        });
+        return;
+    }
+    setShowConfirmTradeDialog(true);
   };
 
   const confirmSimulatedTrade = async () => {
@@ -343,11 +310,12 @@ export default function CoreConsolePage() {
         
         <div className="mb-8 w-full relative">
             <StrategyExplanationSection
-            strategy={aiStrategy}
-            liveMarketData={liveMarketData} 
-            isLoading={isLoadingStrategy}
-            error={strategyError}
-            symbol={symbol}
+                strategy={aiStrategy}
+                liveMarketData={liveMarketData} 
+                isLoading={isLoadingStrategy}
+                error={strategyError}
+                symbol={symbol}
+                onSimulate={handleSimulateTrade}
             />
         </div>
 
@@ -364,30 +332,23 @@ export default function CoreConsolePage() {
             />
             
             <Button
-            onClick={handleGenerateStrategy}
-            disabled={isButtonDisabled}
-            className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
+                onClick={handleGenerateStrategy}
+                disabled={isButtonDisabled}
+                className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
             >
-            {isLoadingStrategy ? (
-                <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                SHADOW is Analyzing...
-                </>
-            ) : (
-                <>
-                <Sparkles className="mr-2 h-5 w-5" />
-                Generate Signal
-                </>
-            )}
+                {isLoadingStrategy ? (
+                    <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    SHADOW is Analyzing...
+                    </>
+                ) : (
+                    <>
+                    <Sparkles className="mr-2 h-5 w-5" />
+                    Generate Signal
+                    </>
+                )}
             </Button>
             
-            <ExchangeLinkCard
-            apiKeysSet={apiKeysSet}
-            onConfigureKeys={() => setShowApiSettingsModal(true)}
-            onPlaceTrade={handleAttemptSimulatedTrade}
-            strategyAvailable={!!aiStrategy}
-            />
-
             {!isSignedUp && analysisCount > 0 && (
                 <p className="text-xs text-center text-muted-foreground mt-2">
                 Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Register</button> for <strong className="text-orange-400">unlimited</strong>.
@@ -425,15 +386,6 @@ export default function CoreConsolePage() {
         isOpen={showAirdropModal}
         onOpenChange={setShowAirdropModal}
         onSignupSuccess={handleAirdropSignupSuccess}
-      />
-      <ApiSettingsModal
-        isOpen={showApiSettingsModal}
-        onOpenChange={setShowApiSettingsModal}
-        currentApiKey={apiKey}
-        currentApiSecret={apiSecret}
-        onSave={handleSaveApiKeys}
-        onClear={handleClearApiKeys}
-        apiKeysAreSet={apiKeysSet}
       />
       {aiStrategy && (
         <AlertDialog open={showConfirmTradeDialog} onOpenChange={setShowConfirmTradeDialog}>
