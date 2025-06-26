@@ -3,11 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Space Mono', Arial, Helvetica, sans-serif;
-  /* Removed bg-background here to allow MatrixBackground to show */
-}
-
 @layer base {
   :root {
     --background: 220 20% 5%; /* UPDATED: Deep Space Blue */
@@ -89,6 +84,10 @@ body {
 @layer base {
   * {
     @apply border-border;
+  }
+  body {
+    @apply bg-transparent text-foreground;
+    font-family: 'Space Mono', Arial, Helvetica, sans-serif;
   }
 }
 
