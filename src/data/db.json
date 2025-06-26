@@ -178,6 +178,30 @@
       "openTimestamp": "2025-06-26T12:52:11.322Z",
       "stopLoss": 2420,
       "takeProfit": 2480
+    },
+    {
+      "id": "e59a1b26-715b-4bad-96aa-789c4ae8d098",
+      "userId": "7d2e780e-aa5c-47ee-8cca-f4f09a979e2e",
+      "symbol": "ETHUSDT",
+      "signalType": "BUY",
+      "entryPrice": 2440,
+      "size": 1,
+      "status": "OPEN",
+      "openTimestamp": "2025-06-26T13:39:22.893Z",
+      "stopLoss": 2430,
+      "takeProfit": 2460
+    },
+    {
+      "id": "9619be3d-98b5-4966-b036-69980ad3b681",
+      "userId": "7d2e780e-aa5c-47ee-8cca-f4f09a979e2e",
+      "symbol": "BTCUSDT",
+      "signalType": "SELL",
+      "entryPrice": 107100,
+      "size": 1,
+      "status": "OPEN",
+      "openTimestamp": "2025-06-26T13:40:49.867Z",
+      "stopLoss": 107200,
+      "takeProfit": 106800
     }
   ],
   "agents": [

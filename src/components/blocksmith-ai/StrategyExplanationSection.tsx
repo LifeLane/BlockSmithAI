@@ -1,6 +1,5 @@
-
 import { FunctionComponent } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
@@ -21,7 +20,6 @@ import {
   ShieldCheck,
   Percent,
   MessageSquareHeart,
-  Sparkles,
   Unlock,
   Loader2,
   Copy,
@@ -166,24 +164,7 @@ Analysis Timestamp: ${currentDateTime}
   }
 
   if (!strategy) {
-    return (
-      <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_25px_7px_hsl(var(--tertiary)/0.5)]">
-        <CardHeader className="items-center text-center pt-6 pb-4">
-          <CardTitle className="flex items-center justify-center flex-wrap text-xl sm:text-2xl md:text-3xl font-bold font-headline text-foreground break-words">
-            <Sparkles className="mr-1.5 sm:mr-3 h-7 w-7 sm:h-8 sm:w-8 text-primary animate-pulse shrink-0" />
-            SHADOW's <span className="text-primary mx-1 sm:mx-1.5">Core</span> is <span className="text-accent mx-1 sm:mx-1.5">Online</span>. Patterns <span className="text-orange-400 ml-1 sm:ml-1.5">Emerging</span>...
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-center px-6 pb-6 space-y-3">
-           <p className="text-base text-muted-foreground">
-             ...my processors await your command for <strong className="text-accent font-semibold">{symbol}</strong>. The <strong className="text-purple-400">BlockShadow network</strong> is ready.
-           </p>
-           <p className="text-sm text-muted-foreground/80">
-            Initiate the <strong className="text-accent">analysis sequence</strong>. Uncover the <strong className="text-primary">market's hidden variables</strong>. The chain is listening.
-          </p>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   const currentPrice = liveMarketData?.lastPrice ? parseFloat(liveMarketData.lastPrice).toLocaleString(undefined, { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: Math.max(2, (liveMarketData.lastPrice.split('.')[1]?.length || 0)) }) : 'N/A';
