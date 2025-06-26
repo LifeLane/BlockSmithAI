@@ -1,11 +1,8 @@
 {
   "builds": [
     {
-      "src": "next.config.ts",
-      "use": "@vercel/next",
-      "config": {
-        "buildCommand": "npm run build"
-      }
+      "src": "package.json",
+      "use": "@vercel/next"
     }
   ]
 }
