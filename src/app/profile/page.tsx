@@ -42,7 +42,7 @@ const TelegramIcon = () => (
 );
 const YouTubeIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6 text-primary" fill="currentColor">
-        <path d="M21.582 7.696c-.246-1.34-1.28-2.37-2.62-2.616C17.043 4.5 12 4.5 12 4.5s-5.043 0-6.962.58c-1.34.246-2.374 1.276-2.62 2.616C2.5 9.615 2.5 12 2.5 12s0 2.385.418 4.304c.246 1.34 1.28 2.37 2.62 2.616C7.457 19.5 12 19.5 12 19.5s5.043 0 6.962-.58c1.34-.246 2.374-1.276-2.62-2.616C21.5 14.385 21.5 12 21.5 12s0-2.385-.418-4.304zM9.5 15.5V8.5l6 3.5-6 3.5z" />
+        <path d="M21.582 7.696c-.246-1.34-1.28-2.37-2.62-2.616C17.043 4.5 12 4.5 12 4.5s-5.043 0-6.962.58c-1.34.246-2.374 1.276-2.62-2.616C2.5 9.615 2.5 12 2.5 12s0 2.385.418 4.304c.246 1.34 1.28 2.37 2.62 2.616C7.457 19.5 12 19.5 12 19.5s5.043 0 6.962-.58c1.34-.246 2.374-1.276-2.62-2.616C21.5 14.385 21.5 12 21.5 12s0-2.385-.418-4.304zM9.5 15.5V8.5l6 3.5-6 3.5z" />
     </svg>
 );
 
@@ -177,32 +177,6 @@ export default function ProfilePage() {
     setSettingsOpen(false);
   };
   
-  const handlePopulateData = async () => {
-    setIsPopulating(true);
-    toast({
-        title: "Database Population Initiated",
-        description: "Resetting JSON file with sample data...",
-    });
-    try {
-        await populateSampleDataJson();
-        toast({
-            title: "Success!",
-            description: "Database file reset and sample data populated. Refreshing data now...",
-            variant: "default",
-        });
-        await loadData();
-    } catch (error: any) {
-        toast({
-            title: "Database Error",
-            description: `Failed to populate data: ${error.message}`,
-            variant: "destructive",
-        });
-    } finally {
-        setIsPopulating(false);
-    }
-  };
-
-
   if (loading) {
     return (
         <>
@@ -277,11 +251,13 @@ export default function ProfilePage() {
 
 
         <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="profile">Profile</TabsTrigger>
-                <TabsTrigger value="missions">Missions</TabsTrigger>
-                <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
-            </TabsList>
+            <div className="flex justify-center">
+                <TabsList>
+                    <TabsTrigger value="profile">Profile</TabsTrigger>
+                    <TabsTrigger value="missions">Missions</TabsTrigger>
+                    <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+                </TabsList>
+            </div>
 
             <TabsContent value="profile" className="mt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
