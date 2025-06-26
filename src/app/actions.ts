@@ -131,6 +131,7 @@ export interface Position {
     pnl?: number;
     stopLoss?: number;
     takeProfit?: number;
+    expirationTimestamp?: string;
 }
 
 export interface AgentLevel {
@@ -524,6 +525,28 @@ export async function openSimulatedPositionAction(userId: string, strategy: (Gen
 
   try {
     const db = await readDb();
+
+    // Calculate expiration timestamp
+    let expirationTimestamp: string;
+    const now = new Date();
+    const tradingMode = 'tradingMode' in strategy ? strategy.tradingMode : ('chosenTradingMode' in strategy ? strategy.chosenTradingMode : 'Intraday');
+
+    switch (tradingMode) {
+        case 'Scalper':
+            expirationTimestamp = new Date(now.getTime() + 15 * 60 * 1000).toISOString(); // 15 minutes
+            break;
+        case 'Sniper':
+            expirationTimestamp = new Date(now.getTime() + 60 * 60 * 1000).toISOString(); // 1 hour
+            break;
+        case 'Intraday':
+            expirationTimestamp = new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString(); // 8 hours
+            break;
+        case 'Swing':
+            expirationTimestamp = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(); // 3 days
+            break;
+        default:
+             expirationTimestamp = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(); // Default to 24 hours
+    }
     
     const newPosition: Position = {
       id: randomUUID(),
@@ -535,7 +558,8 @@ export async function openSimulatedPositionAction(userId: string, strategy: (Gen
       status: 'OPEN',
       openTimestamp: new Date().toISOString(),
       stopLoss: parseFloat(strategy.stop_loss) || undefined,
-      takeProfit: parseFloat(strategy.take_profit) || undefined
+      takeProfit: parseFloat(strategy.take_profit) || undefined,
+      expirationTimestamp: expirationTimestamp,
     };
 
     db.positions.push(newPosition);
@@ -1151,3 +1175,6 @@ export async function generateDailyGreetingAction(): Promise<GenerateDailyGreeti
 
 
 
+
+
+    

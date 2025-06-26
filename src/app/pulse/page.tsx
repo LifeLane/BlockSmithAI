@@ -5,7 +5,7 @@ import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, TrendingUp, TrendingDown, Briefcase, Bot, AlertTriangle, LogOut, ShieldX, Target, LogIn, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, CheckCircle, XCircle, Gift } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, Briefcase, Bot, AlertTriangle, LogOut, ShieldX, Target, LogIn, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, CheckCircle, XCircle, Gift, Clock } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
@@ -30,6 +30,49 @@ const getCurrentUserId = (): string | null => {
   }
   return null;
 };
+
+const TimeLeft = ({ expiration, className }: { expiration: string, className?: string }) => {
+    const [timeLeft, setTimeLeft] = useState('');
+
+    useEffect(() => {
+        const calculateTimeLeft = () => {
+            const now = new Date();
+            const end = new Date(expiration);
+            const distance = end.getTime() - now.getTime();
+
+            if (distance < 0) {
+                setTimeLeft('Expired');
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            
+            let timeLeftString = '';
+            if (days > 0) timeLeftString += `${days}d `;
+            if (hours > 0) timeLeftString += `${hours}h `;
+            if (minutes > 0 && days === 0) timeLeftString += `${minutes}m`;
+            
+            setTimeLeft(timeLeftString.trim() || '< 1m');
+        };
+
+        calculateTimeLeft(); // Initial calculation
+        const intervalId = setInterval(calculateTimeLeft, 60000); // Update every minute
+
+        return () => clearInterval(intervalId);
+    }, [expiration]);
+
+    if (!timeLeft) return null;
+
+    return (
+        <span className={className}>
+            <Clock size={12} className="inline mr-1"/>
+            {timeLeft}
+        </span>
+    );
+};
+
 
 const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position: Position, currentPrice?: number, onClose: (positionId: string, closePrice: number) => void, isClosing: boolean }) => {
     let pnl = 0;
@@ -58,10 +101,15 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
                     </CardTitle>
                     <CardDescription className="text-xs">Opened: {formatDistanceToNow(new Date(position.openTimestamp))} ago</CardDescription>
                 </div>
-                <Button size="sm" variant="destructive" onClick={() => currentPrice && onClose(position.id, currentPrice)} disabled={isClosing || !currentPrice}>
-                    {isClosing ? <Loader2 className="h-4 w-4 animate-spin"/> : <LogOut className="h-4 w-4 mr-1"/>}
-                    Close
-                </Button>
+                 <div className="flex flex-col items-end">
+                    <Button size="sm" variant="destructive" onClick={() => currentPrice && onClose(position.id, currentPrice)} disabled={isClosing || !currentPrice}>
+                        {isClosing ? <Loader2 className="h-4 w-4 animate-spin"/> : <LogOut className="h-4 w-4 mr-1"/>}
+                        Close
+                    </Button>
+                    {position.expirationTimestamp && (
+                        <TimeLeft expiration={position.expirationTimestamp} className="text-xs text-muted-foreground mt-2"/>
+                    )}
+                </div>
             </CardHeader>
             <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
@@ -164,14 +212,49 @@ export default function PortfolioPage() {
     const userId = getCurrentUserId();
     const isFetching = useRef(false);
 
-    const fetchPortfolioData = useCallback(async () => {
-        if (!userId || isFetching.current) return;
+    const handleClosePosition = async (positionId: string, closePrice: number, reason: 'manual' | 'expired' = 'manual') => {
+        setClosingPositionId(positionId);
+        const result = await closePositionAction(positionId, closePrice);
+        
+        if (result.success) {
+            const pnl = result.pnl || 0;
+            const points = result.airdropPointsEarned || 0;
+            const toastTitle = reason === 'expired' ? 'Position Expired' : 'Position Closed';
+            const toastDesc = reason === 'expired' 
+                ? "Position was automatically closed due to expiration."
+                : "Simulated position closed successfully.";
+
+            toast({
+                title: <span className="text-accent">{toastTitle}</span>,
+                description: (
+                    <div className="text-foreground">
+                        {toastDesc}
+                        <div>Your position resulted in a PnL of <strong className={pnl >= 0 ? 'text-green-400' : 'text-red-400'}>${pnl.toFixed(2)}</strong>.</div>
+                        {points > 0 && (
+                            <div className="flex items-center mt-1">
+                                <Sparkles className="h-4 w-4 mr-2 text-orange-400"/>
+                                You've earned <strong className="text-orange-400">{points} $BSAI</strong> airdrop points!
+                            </div>
+                        )}
+                    </div>
+                ),
+            });
+            await fetchPortfolioData(true); // Force a full refresh
+        } else {
+            toast({
+                title: "Error Closing Position",
+                description: result.error || "An unknown error occurred.",
+                variant: "destructive",
+            });
+        }
+        setClosingPositionId(null);
+    };
+
+    const fetchPortfolioData = useCallback(async (forceRerun = false) => {
+        if (!userId || (isFetching.current && !forceRerun)) return;
 
         isFetching.current = true;
-        // Don't set loading to true on interval fetches, only initial
-        if (!portfolioStats) {
-            setIsLoading(true);
-        }
+        if (!portfolioStats) setIsLoading(true);
 
         try {
             const [userPositions, history, statsResult] = await Promise.all([
@@ -180,37 +263,54 @@ export default function PortfolioPage() {
                 fetchPortfolioStatsAction(userId),
             ]);
 
+            let currentLivePrices = { ...livePrices };
+            if (userPositions.length > 0) {
+                const symbols = [...new Set(userPositions.map(p => p.symbol))];
+                const pricePromises = symbols.map(symbol => fetchMarketDataAction({ symbol }));
+                const results = await Promise.allSettled(pricePromises);
+
+                results.forEach((result, index) => {
+                    if (result.status === 'fulfilled' && !('error' in result.value)) {
+                        currentLivePrices[symbols[index]] = result.value as LiveMarketData;
+                    } else {
+                        console.error(`Failed to fetch price for ${symbols[index]}`);
+                    }
+                });
+                setLivePrices(currentLivePrices);
+            }
+            
+            // Auto-close logic
+            const positionsToClose = userPositions.filter(p => p.status === 'OPEN' && p.expirationTimestamp && new Date(p.expirationTimestamp) < new Date());
+            
+            if (positionsToClose.length > 0) {
+                const posToClose = positionsToClose[0];
+                const closePrice = currentLivePrices[posToClose.symbol] ? parseFloat(currentLivePrices[posToClose.symbol].lastPrice) : undefined;
+                
+                if (closePrice && closingPositionId !== posToClose.id) {
+                    await handleClosePosition(posToClose.id, closePrice, 'expired');
+                    // Exit after dispatching close, as it will trigger a full refetch.
+                    isFetching.current = false;
+                    return;
+                }
+            }
+            
             setPositions(userPositions);
             setTradeHistory(history);
             if (!('error' in statsResult)) {
                 setPortfolioStats(statsResult);
             } else {
                 setError(statsResult.error);
-                setPortfolioStats(null); // Clear old stats on error
+                setPortfolioStats(null);
             }
 
-            if (userPositions.length > 0) {
-                const symbols = [...new Set(userPositions.map(p => p.symbol))];
-                const pricePromises = symbols.map(symbol => fetchMarketDataAction({ symbol }));
-                const results = await Promise.allSettled(pricePromises);
-
-                const newLivePrices: Record<string, LiveMarketData> = {};
-                results.forEach((result, index) => {
-                    if (result.status === 'fulfilled' && !('error' in result.value)) {
-                        newLivePrices[symbols[index]] = result.value as LiveMarketData;
-                    } else {
-                        console.error(`Failed to fetch price for ${symbols[index]}`);
-                    }
-                });
-                setLivePrices(prev => ({...prev, ...newLivePrices}));
-            }
         } catch (e: any) {
              setError(e.message || "Failed to fetch portfolio data.");
         } finally {
             setIsLoading(false);
             isFetching.current = false;
         }
-    }, [userId, portfolioStats]);
+    }, [userId, portfolioStats, closingPositionId]); // eslint-disable-line react-hooks/exhaustive-deps
+    
 
     useEffect(() => {
         if (!userId) {
@@ -219,9 +319,9 @@ export default function PortfolioPage() {
             return;
         }
         fetchPortfolioData();
-        const interval = setInterval(fetchPortfolioData, 30000); // Refresh every 30 seconds
+        const interval = setInterval(() => fetchPortfolioData(), 30000); // Refresh every 30 seconds
         return () => clearInterval(interval);
-    }, [fetchPortfolioData, userId]);
+    }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
     
     // Effect to calculate and update the displayed stats including unrealized PnL
     useEffect(() => {
@@ -250,38 +350,6 @@ export default function PortfolioPage() {
 
     }, [portfolioStats, positions, livePrices]);
 
-    const handleClosePosition = async (positionId: string, closePrice: number) => {
-        setClosingPositionId(positionId);
-        const result = await closePositionAction(positionId, closePrice);
-        if (result.success) {
-            const pnl = result.pnl || 0;
-            const points = result.airdropPointsEarned || 0;
-            
-            toast({
-                title: <span className="text-accent">Position Closed Successfully!</span>,
-                description: (
-                    <div className="text-foreground">
-                        Your position resulted in a PnL of <strong className={pnl >= 0 ? 'text-green-400' : 'text-red-400'}>${pnl.toFixed(2)}</strong>.
-                        {points > 0 && (
-                            <div className="flex items-center mt-1">
-                                <Sparkles className="h-4 w-4 mr-2 text-orange-400"/>
-                                You've earned <strong className="text-orange-400">{points} $BSAI</strong> airdrop points!
-                            </div>
-                        )}
-                    </div>
-                ),
-            });
-            fetchPortfolioData(); // Refresh all data
-        } else {
-            toast({
-                title: "Error Closing Position",
-                description: result.error || "An unknown error occurred.",
-                variant: "destructive",
-            });
-        }
-        setClosingPositionId(null);
-    }
-    
     const renderOpenPositions = () => {
         if (positions.length === 0) {
              return (
@@ -312,7 +380,7 @@ export default function PortfolioPage() {
                         key={pos.id}
                         position={pos}
                         currentPrice={livePrices[pos.symbol] ? parseFloat(livePrices[pos.symbol].lastPrice) : undefined}
-                        onClose={handleClosePosition}
+                        onClose={(positionId, closePrice) => handleClosePosition(positionId, closePrice, 'manual')}
                         isClosing={closingPositionId === pos.id}
                     />
                 ))}
@@ -379,3 +447,5 @@ export default function PortfolioPage() {
     </>
   );
 }
+
+    

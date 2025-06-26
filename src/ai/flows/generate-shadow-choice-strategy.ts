@@ -36,6 +36,7 @@ const ShadowChoiceStrategyCoreOutputSchema = z.object({
   chosenTradingMode: z.string().describe("The trading mode I, SHADOW, have determined is optimal (Scalper, Sniper, Intraday, or Swing)."),
   chosenRiskProfile: z.string().describe("The risk profile I have determined is optimal (Low, Medium, or High)."),
   strategyReasoning: z.string().describe("My concise reasoning for choosing the specified trading mode and risk profile. Explain WHY based on market conditions like volatility or trend strength."),
+  analysisSummary: z.string().describe("A brief summary of the technical analysis performed, mentioning key indicators like RSI, MACD, and Bollinger Bands."),
 });
 export type ShadowChoiceStrategyCoreOutput = z.infer<typeof ShadowChoiceStrategyCoreOutputSchema>;
 
@@ -58,20 +59,18 @@ Target Symbol: {{{symbol}}}
 **Autonomous Protocol:**
 
 1.  **Initial Market Assessment:** I will first analyze the provided Live Market Snapshot to gauge current volatility, momentum, and proximity to key 24-hour high/low levels.
+2.  **Historical Resonance (Tool Use):** Based on my initial assessment, I will determine the most relevant time interval ('1m', '15m', '1h', '4h') to probe the market's recent history. I MUST then use the 'fetchHistoricalDataTool' with the 'symbol' and my chosen 'appInterval' to acquire historical candlestick data.
+3.  **Deep Technical Analysis:** I will synthesize all live and historical data, focusing on key indicators like RSI for overbought/oversold levels, MACD for momentum shifts, and Bollinger Bands for volatility breakouts.
+4.  **Optimal Parameter Selection:** After integrating all analysis, I will decide upon the most logical **Trading Mode** and **Risk Profile**.
+5.  **Articulate Rationale:** I will formulate a concise **strategyReasoning** to explain *why* my chosen trading mode and risk profile are the most logical course of action based on the data.
+6.  **Derive Core Strategy:** Finally, using my autonomous choices as internal guides, I will derive the full set of 12 core trading parameters and the analysis summary.
 
-2.  **Historical Resonance (Tool Use):** Based on my initial assessment, I will determine the most relevant time interval ('1m', '15m', '1h', '4h') to probe the market's recent history. I MUST then use the 'fetchHistoricalDataTool' with the 'symbol' and my chosen 'appInterval' to acquire historical candlestick data. This is a critical step for deep pattern analysis.
-
-3.  **Optimal Parameter Selection:** After integrating all live and historical data, I will decide upon the most logical **Trading Mode** (Scalper, Sniper, Intraday, Swing) and **Risk Profile** (Low, Medium, High). My choice will be based on factors like trend strength, volatility, and chart patterns. For instance, high volatility might suggest a 'Scalper' approach, while a clear, strong trend might warrant a 'Swing' trade with a 'High' risk profile for maximum gain.
-
-4.  **Articulate Rationale:** I will formulate a concise **strategyReasoning** to explain *why* my chosen trading mode and risk profile are the most logical course of action based on the data.
-
-5.  **Derive Core Strategy:** Finally, using my autonomously selected Trading Mode and Risk Profile as internal guides, I will derive the full set of 11 core trading parameters (signal, entry_zone, stop_loss, etc.), just as in my standard analysis protocol.
-
-**Output Requirements (Provide ALL 14 of these fields based on my autonomous analysis):**
+**Output Requirements (Provide ALL 15 of these fields based on my autonomous analysis):**
 
 *   **chosenTradingMode**: The optimal mode I selected.
 *   **chosenRiskProfile**: The optimal risk profile I selected.
 *   **strategyReasoning**: My justification for the choices above.
+*   **analysisSummary**: A brief summary of my technical analysis, referencing the indicators used.
 *   **signal**: (BUY, SELL, or HOLD)
 *   **entry_zone**: (Specific price or a tight price range)
 *   **stop_loss**: (Specific price)
@@ -114,6 +113,7 @@ const shadowChoiceStrategyFlow = ai.defineFlow(
         chosenTradingMode: "Unknown",
         chosenRiskProfile: "Unknown",
         strategyReasoning: "A critical failure occurred during the autonomous decision-making process. The query could not be resolved.",
+        analysisSummary: "Technical analysis failed due to the core decision-making error.",
       };
     }
 
@@ -129,6 +129,9 @@ const shadowChoiceStrategyFlow = ai.defineFlow(
     return {
         ...output,
         gpt_confidence_score: score,
+        analysisSummary: output.analysisSummary || "Analysis summary was not generated.",
     };
   }
 );
+
+    

@@ -27,8 +27,13 @@ import {
   BrainCircuit,
 } from 'lucide-react';
 
+type CombinedStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
+    id?: string;
+    analysisSummary?: string; 
+};
+
 interface StrategyExplanationSectionProps {
-  strategy: (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { id?: string } | null;
+  strategy: CombinedStrategyOutput | null;
   liveMarketData: LiveMarketData | null;
   isLoading: boolean;
   error?: string | null;
@@ -101,7 +106,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
     ];
     
     let reasoningSection = '';
-    if ('strategyReasoning' in strategy) {
+    if ('strategyReasoning' in strategy && strategy.strategyReasoning) {
         reasoningSection = `
 SHADOW's Autonomous Choice:
 ------------------------------------
@@ -111,7 +116,6 @@ SHADOW's Autonomous Choice:
 ------------------------------------
 `;
     }
-
 
     const maxLabelLength = Math.max(...parameters.map(p => p.label.length));
 
@@ -131,9 +135,13 @@ Core Parameters:
 ${formattedParameters}
 ------------------------------------
 ${reasoningSection}
+SHADOW's Technical Analysis:
+------------------------------------
+  ${strategy.analysisSummary || "Not provided."}
+------------------------------------
 SHADOW's Edict (Disclaimer):
 ------------------------------------
-${indentedDisclaimer}
+  ${indentedDisclaimer}
 ------------------------------------
 Analysis Timestamp: ${currentDateTime}
     `.trim();
@@ -297,7 +305,7 @@ Analysis Timestamp: ${currentDateTime}
                     <p className="text-sm text-muted-foreground italic border-l-2 border-tertiary pl-3">"{strategy.strategyReasoning}"</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                         <div className="p-3 bg-secondary/50 rounded-md">
-                            <span className="font-semibold text-foreground">Chosen Mode: </span>
+                            <span className="font-semibold text-foreground">Chosen Mode: </span> 
                             <span className="text-tertiary font-bold">{strategy.chosenTradingMode}</span>
                         </div>
                         <div className="p-3 bg-secondary/50 rounded-md">
@@ -308,6 +316,21 @@ Analysis Timestamp: ${currentDateTime}
                 </CardContent>
             </Card>
         )}
+
+        {strategy.analysisSummary && (
+            <Card className="bg-background/40 border-primary/70 shadow-inner">
+                <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center text-lg text-primary">
+                        <Zap className="mr-3 h-6 w-6"/>
+                        SHADOW's Technical Analysis
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground italic border-l-2 border-primary pl-3">"{strategy.analysisSummary}"</p>
+                </CardContent>
+            </Card>
+        )}
+
 
          <div className="mt-6 flex justify-center gap-4 flex-wrap">
             <Button
@@ -357,3 +380,5 @@ Analysis Timestamp: ${currentDateTime}
 };
 
 export default StrategyExplanationSection;
+
+    

@@ -39,7 +39,8 @@ const GenerateTradingStrategyCoreOutputSchema = z.object({
   sentiment: z.string().describe('A brief sentiment analysis of the market conditions (e.g., Neutral, Bullish, Bearish).'),
   currentThought: z.string().describe("A short, insightful or witty 'current thought' from SHADOW, like an AI quip related to the market or analysis. Max 1 short sentence. Example: 'Liquidity pull pattern developing.'"),
   shortTermPrediction: z.string().describe("A very brief prediction, e.g., '13m until breakout scenario', 'Consolidation expected next 30m'. Max 1 short phrase."),
-  sentimentTransition: z.string().optional().describe("If applicable, a brief note on sentiment change, e.g., 'Bearish -> Cautiously Neutral', 'Bullish trend strengthening'. If no significant recent transition, omit or state 'Sentiment stable'.")
+  sentimentTransition: z.string().optional().describe("If applicable, a brief note on sentiment change, e.g., 'Bearish -> Cautiously Neutral', 'Bullish trend strengthening'. If no significant recent transition, omit or state 'Sentiment stable'."),
+  analysisSummary: z.string().describe("A brief summary of the technical analysis performed, mentioning key indicators like RSI, MACD, and Bollinger Bands."),
 });
 type GenerateTradingStrategyCoreOutput = z.infer<typeof GenerateTradingStrategyCoreOutputSchema>;
 
@@ -70,20 +71,17 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   Derived App Interval for Data Fetching: {{{appInterval}}}
 
   **Analytical Protocol:**
-  1.  **Data Integration & Symbiosis:** I will integrate the Market Data Snapshot.
+  1.  **Data Integration & Symbiosis:** I will integrate the Market Data Snapshot with my real-time awareness.
   2.  **Historical Resonance (via Tool):** I MUST attempt to use the 'fetchHistoricalDataTool' with the 'symbol' and 'appInterval' to obtain recent candlestick data. This historical data is critical for my analysis. If the tool fails, I will rely more heavily on the snapshot and general market principles, clearly stating if detailed pattern analysis was not possible.
-  3.  **Cognitive Synthesis & Parameter Derivation:** Based on the total integrated analysis, I will derive the following 11 core parameters. My output will be concise and strictly focused on these. I will internally assess risk to provide a 'risk_rating'.
-      -   My strategy must be heavily influenced by the **Trading Mode**:
-          -   **Scalper**: Very short-term. TIGHT stop-loss and take-profit targets. High frequency, small gains.
-          -   **Sniper**: Short-term, precision entries. Tight stop-loss, moderate take-profit. Focus on key levels.
-          -   **Intraday**: Medium-term (within the day). Balanced stop-loss and take-profit.
-          -   **Swing**: Longer-term (days). Wider stop-loss and take-profit to accommodate larger market moves.
-      -   My strategy must also be influenced by the **User Risk Profile**:
-          -   **Low**: Prioritize capital preservation. Wider stop-losses, more conservative take-profit targets.
-          -   **Medium**: Balanced risk/reward. Standard parameters for the selected trading mode.
-          -   **High**: Prioritize profit potential. Tighter stop-losses, more aggressive take-profit targets.
+  3.  **Comprehensive Technical Analysis:** I will perform a deep analysis of the combined data, considering key indicators such as:
+        - **RSI (Relative Strength Index):** to identify overbought or oversold conditions.
+        - **MACD (Moving Average Convergence Divergence):** to gauge momentum and potential trend changes.
+        - **Bollinger Bands:** to assess volatility and price breakouts.
+        - **Volume Analysis:** to confirm trend strength.
+  4.  **Cognitive Synthesis & Parameter Derivation:** Based on the total integrated analysis, I will derive the following 12 core parameters. My output will be concise and strictly focused on these. I will internally assess risk to provide a 'risk_rating'.
+      -   My strategy must be heavily influenced by the **Trading Mode** and **User Risk Profile**.
 
-  **Output Requirements (Provide ALL 11 of these fields based on my direct analysis):**
+  **Output Requirements (Provide ALL 12 of these fields based on my direct analysis):**
 
   1.  **signal:** (BUY, SELL, or HOLD) - Succinct and decisive.
   2.  **entry_zone:** (Specific price or a tight price range) - Precise.
@@ -96,8 +94,9 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   9.  **currentThought:** (A short, insightful or witty 'current thought' from me, SHADOW. Relate it to the current analysis or market. Max 1 short sentence. Example: "Liquidity void below, proceed with caution.")
   10. **shortTermPrediction:** (A very brief, specific prediction. Example: "Breakout likely in ~10-15m", "Retest of 24h low imminent", "Range-bound next hour.")
   11. **sentimentTransition:** (Brief note on sentiment change if observed, e.g., "Bearish -> Cautiously Neutral", "Bullish momentum building". If stable, can state "Sentiment stable" or similar.)
+  12. **analysisSummary:** (A brief summary of my technical analysis, referencing the indicators used.)
 
-  My output must be direct and solely focused on providing these 11 parameters. The chain is listening.
+  My output must be direct and solely focused on providing these 12 parameters. The chain is listening.
 `,
 });
 
@@ -134,7 +133,8 @@ const generateTradingStrategyFlow = ai.defineFlow(
         sentiment: "Uncertain",
         currentThought: "Cognitive channels experiencing interference. Parameters are estimates.",
         shortTermPrediction: "Indeterminate",
-        sentimentTransition: "Fluctuating"
+        sentimentTransition: "Fluctuating",
+        analysisSummary: "Technical analysis failed due to inconclusive data from the core model."
       };
     }
     let score = output.gpt_confidence_score || "0";
@@ -149,7 +149,10 @@ const generateTradingStrategyFlow = ai.defineFlow(
         ...output,
         gpt_confidence_score: score,
         risk_rating: output.risk_rating || "Medium", // Ensure risk_rating has a fallback
+        analysisSummary: output.analysisSummary || "Analysis summary was not generated."
     };
   }
 );
+    
+
     
