@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Briefcase, AreaChart, Bot, Target, Trophy } from 'lucide-react';
+import { Briefcase, AreaChart, Bot, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
@@ -11,8 +11,7 @@ const navItems = [
   { href: '/pulse', icon: Briefcase, label: 'Portfolio' },
   { href: '/monitor', icon: AreaChart, label: 'Monitor' },
   { href: '/core', icon: Bot, label: 'Core' },
-  { href: '/missions', icon: Target, label: 'Missions' },
-  { href: '/profile', icon: Trophy, label: 'Ranks' },
+  { href: '/profile', icon: Trophy, label: 'Profile' },
 ];
 
 export default function BottomNav() {
