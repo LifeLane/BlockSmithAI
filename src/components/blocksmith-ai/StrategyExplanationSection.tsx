@@ -33,6 +33,7 @@ interface StrategyExplanationSectionProps {
   error?: string | null;
   symbol: string;
   onSimulate?: () => void;
+  onChat?: () => void;
 }
 
 interface StatCardProps {
@@ -64,6 +65,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   error,
   symbol,
   onSimulate,
+  onChat,
 }) => {
   const { toast } = useToast();
 
@@ -268,14 +270,23 @@ Analysis Timestamp: ${currentDateTime}
                 icon={<AlertTriangle size={20} className="text-orange-500"/>}
             />
         </div>
-         <div className="mt-6 flex justify-center">
+         <div className="mt-6 flex justify-center gap-4 flex-wrap">
             <Button
                 onClick={handleCopyToClipboard}
                 variant="outline"
                 className="border-accent text-accent hover:bg-accent/10 hover:text-accent font-semibold"
             >
-                <Copy className="mr-2 h-4 w-4" /> Copy SHADOW's Parameters
+                <Copy className="mr-2 h-4 w-4" /> Copy Parameters
             </Button>
+            {onChat && (
+                <Button
+                    onClick={onChat}
+                    variant="outline"
+                    className="border-primary text-primary hover:bg-primary/10 hover:text-primary-foreground font-semibold"
+                >
+                    <MessageSquareHeart className="mr-2 h-4 w-4" /> Chat with SHADOW
+                </Button>
+            )}
         </div>
 
         {strategy.disclaimer && (

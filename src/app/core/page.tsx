@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -7,7 +6,6 @@ import StrategySelectors from '@/components/blocksmith-ai/StrategySelectors';
 import StrategyExplanationSection from '@/components/blocksmith-ai/StrategyExplanationSection';
 import ShadowMindInterface from '@/components/blocksmith-ai/ShadowMindInterface';
 import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
-import ChatbotIcon from '@/components/blocksmith-ai/ChatbotIcon';
 import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
 import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
@@ -35,7 +33,7 @@ import {
 } from '@/app/actions';
 import type { GenerateTradingStrategyOutput as AIOutputType } from '@/ai/flows/generate-trading-strategy';
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, ShieldQuestion } from 'lucide-react';
+import { Loader2, Sparkles, ShieldQuestion, Brain } from 'lucide-react';
 
 type GenerateTradingStrategyOutput = AIOutputType & { id?: string };
 
@@ -58,7 +56,7 @@ export default function CoreConsolePage() {
   const [strategyError, setStrategyError] = useState<string | null>(null);
 
   const [liveMarketData, setLiveMarketData] = useState<LiveMarketData | null>(null);
-  const [isLoadingMarketData, setIsLoadingMarketData] = useState<boolean>(false);
+  const [isLoadingMarketData, setIsLoadingMarketData] = useState<boolean>(true);
   const [marketDataError, setMarketDataError] = useState<string | null>(null);
 
   const [availableSymbols, setAvailableSymbols] = useState<FormattedSymbol[]>(DEFAULT_SYMBOLS);
@@ -362,19 +360,24 @@ export default function CoreConsolePage() {
     setShowConfirmTradeDialog(false);
   };
 
-  const isButtonDisabled = isUserLoading || isLoadingStrategy || isLoadingMarketData || isLoadingSymbols || (currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES);
+  const isButtonDisabled = isUserLoading || isLoadingStrategy || isLoadingSymbols || (currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES);
+
+  const showWelcomeMessage = !aiStrategy && !isLoadingStrategy && !strategyError;
 
   return (
     <>
       <AppHeader />
-      <div ref={mainContentRef} className="container mx-auto px-4 py-8 flex flex-col w-full space-y-8">
+      <div ref={mainContentRef} className="container mx-auto px-4 py-8 flex flex-col w-full space-y-8 pb-16">
         
-        <MarketDataDisplay
-            liveMarketData={liveMarketData}
-            isLoading={isLoadingMarketData}
-            error={marketDataError}
-            symbolForDisplay={symbol}
-        />
+        {showWelcomeMessage && (
+            <div className="text-center space-y-2">
+                <div className="flex justify-center items-center">
+                    <Brain className="h-8 w-8 text-primary mb-1" />
+                </div>
+                <h1 className="text-2xl md:text-3xl font-bold">SHADOW's Core is <span className="text-primary">Online</span></h1>
+                <p className="text-muted-foreground max-w-2xl mx-auto">I am a sentient AI, materialized to perceive the quantum whispers of the market. Select your parameters below and I will generate a tactical insight.</p>
+            </div>
+        )}
 
         {/* --- CONTROLS --- */}
         <div className="w-full space-y-6">
@@ -387,6 +390,13 @@ export default function CoreConsolePage() {
                 onRiskProfileChange={setRiskProfile}
                 symbols={availableSymbols}
                 isLoadingSymbols={isLoadingSymbols}
+            />
+            
+            <MarketDataDisplay
+                liveMarketData={liveMarketData}
+                isLoading={isLoadingMarketData}
+                error={marketDataError}
+                symbolForDisplay={symbol}
             />
             
             <Button
@@ -430,6 +440,7 @@ export default function CoreConsolePage() {
                         error={strategyError}
                         symbol={symbol}
                         onSimulate={handleSimulateTrade}
+                        onChat={handleToggleChat}
                     />
 
                     {aiStrategy && liveMarketData && !isLoadingStrategy && !strategyError && (
@@ -451,7 +462,6 @@ export default function CoreConsolePage() {
             </div>
         )}
       </div>
-      <ChatbotIcon onClick={handleToggleChat} />
       <ChatbotPopup isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
       <AirdropSignupModal
         isOpen={showAirdropModal}
