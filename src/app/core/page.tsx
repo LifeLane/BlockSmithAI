@@ -37,6 +37,7 @@ import {
 } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, ShieldQuestion, BrainCircuit } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // This combined type will now encompass both standard and SHADOW's Choice outputs.
 type AIStrategyOutput = (AIOutputType | GenerateShadowChoiceStrategyOutput) & { 
@@ -437,84 +438,90 @@ export default function CoreConsolePage() {
   };
 
   const isButtonDisabled = isUserLoading || isLoadingStrategy || isLoadingShadowChoice || isLoadingSymbols || (currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES);
+  const showResults = aiStrategy || isLoadingStrategy || isLoadingShadowChoice || strategyError;
 
   return (
     <>
       <AppHeader />
-      <div ref={mainContentRef} className="container mx-auto px-4 py-8 flex flex-col w-full space-y-8 pb-24">
+      <div ref={mainContentRef} className="container mx-auto px-4 py-4 flex flex-col w-full min-h-[calc(100vh-140px)]">
         
-        <div className="w-full space-y-6">
-            <MarketDataDisplay
-                liveMarketData={liveMarketData}
-                isLoading={isLoadingMarketData}
-                error={marketDataError}
-                symbolForDisplay={symbol}
-            />
-        
-            <StrategySelectors
-                symbol={symbol}
-                onSymbolChange={setSymbol} 
-                tradingMode={tradingMode}
-                onTradingModeChange={setTradingMode}
-                riskProfile={riskProfile}
-                onRiskProfileChange={setRiskProfile}
-                symbols={availableSymbols}
-                isLoadingSymbols={isLoadingSymbols}
-            />
+        <div className={cn(
+            "w-full space-y-4 transition-all duration-500",
+            !showResults ? 'flex-grow flex flex-col justify-center' : ''
+        )}>
+            <div className="space-y-4">
+                <MarketDataDisplay
+                    liveMarketData={liveMarketData}
+                    isLoading={isLoadingMarketData}
+                    error={marketDataError}
+                    symbolForDisplay={symbol}
+                />
             
-            <div className="flex flex-col items-center gap-4">
-                <Button
-                    onClick={handleGenerateStrategy}
-                    disabled={isButtonDisabled}
-                    className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
-                >
-                    {isLoadingStrategy ? (
-                        <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        SHADOW is Analyzing...
-                        </>
-                    ) : isUserLoading ? (
-                         <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Initializing Analyst Profile...
-                        </>
-                    ) : (
-                        <>
-                        <Sparkles className="mr-2 h-5 w-5" />
-                        Generate Signal
-                        </>
-                    )}
-                </Button>
-
-                 <Button
-                    onClick={handleGenerateShadowChoice}
-                    disabled={isButtonDisabled}
-                    className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out shadow-choice-button"
-                >
-                    {isLoadingShadowChoice ? (
-                        <>
-                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                            SHADOW is Deciding...
-                        </>
-                    ) : (
-                        <>
-                            <BrainCircuit className="mr-2 h-5 w-5" />
-                            Invoke SHADOW's Choice
-                        </>
-                    )}
-                </Button>
+                <StrategySelectors
+                    symbol={symbol}
+                    onSymbolChange={setSymbol} 
+                    tradingMode={tradingMode}
+                    onTradingModeChange={setTradingMode}
+                    riskProfile={riskProfile}
+                    onRiskProfileChange={setRiskProfile}
+                    symbols={availableSymbols}
+                    isLoadingSymbols={isLoadingSymbols}
+                />
                 
-                {currentUser?.status === 'Guest' && (
-                    <p className="text-xs text-center text-muted-foreground mt-2">
-                    Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Register</button> for <strong className="text-orange-400">unlimited</strong>.
-                    </p>
-                )}
+                <div className="flex flex-col items-center gap-4 pt-2">
+                    <Button
+                        onClick={handleGenerateStrategy}
+                        disabled={isButtonDisabled}
+                        className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
+                    >
+                        {isLoadingStrategy ? (
+                            <>
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            SHADOW is Analyzing...
+                            </>
+                        ) : isUserLoading ? (
+                             <>
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            Initializing Analyst Profile...
+                            </>
+                        ) : (
+                            <>
+                            <Sparkles className="mr-2 h-5 w-5" />
+                            Generate Signal
+                            </>
+                        )}
+                    </Button>
+
+                     <Button
+                        onClick={handleGenerateShadowChoice}
+                        disabled={isButtonDisabled}
+                        className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out shadow-choice-button"
+                    >
+                        {isLoadingShadowChoice ? (
+                            <>
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                SHADOW is Deciding...
+                            </>
+                        ) : (
+                            <>
+                                <BrainCircuit className="mr-2 h-5 w-5" />
+                                Invoke SHADOW's Choice
+                            </>
+                        )}
+                    </Button>
+                    
+                    {currentUser?.status === 'Guest' && (
+                        <p className="text-xs text-center text-muted-foreground mt-2">
+                        Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Register</button> for <strong className="text-orange-400">unlimited</strong>.
+                        </p>
+                    )}
+                </div>
             </div>
         </div>
 
-        {(aiStrategy || isLoadingStrategy || isLoadingShadowChoice || strategyError) && (
-            <div id="results-block" className="w-full space-y-8">
-                <div className="w-full relative space-y-8">
+        {showResults && (
+            <div id="results-block" className="w-full space-y-6 mt-8">
+                <div className="w-full relative space-y-6">
                     <StrategyExplanationSection
                         strategy={aiStrategy}
                         liveMarketData={liveMarketData} 
