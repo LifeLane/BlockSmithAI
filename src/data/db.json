@@ -274,6 +274,18 @@
       "closePrice": 106922.57,
       "closeTimestamp": "2025-06-26T14:11:57.753Z",
       "pnl": -170.2100000000064
+    },
+    {
+      "id": "295719ec-7b36-4dda-a08b-f22a52ed2ef9",
+      "userId": "36faa36f-b1ff-4c47-963d-6a8aeeb40e3e",
+      "symbol": "BTCUSDT",
+      "signalType": "SELL",
+      "entryPrice": 107500,
+      "size": 1,
+      "status": "OPEN",
+      "openTimestamp": "2025-06-26T20:22:25.721Z",
+      "stopLoss": 107600,
+      "takeProfit": 107000
     }
   ],
   "agents": [

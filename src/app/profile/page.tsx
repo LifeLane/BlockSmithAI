@@ -40,7 +40,7 @@ const TelegramIcon = () => (
 );
 const YouTubeIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-8 w-8 text-primary" fill="currentColor">
-        <path d="M21.582 7.696c-.246-1.34-1.28-2.37-2.62-2.616C17.043 4.5 12 4.5 12 4.5s-5.043 0-6.962.58c-1.34.246-2.374 1.276-2.62 2.616C2.5 9.615 2.5 12 2.5 12s0 2.385.418 4.304c.246 1.34 1.28 2.37 2.62 2.616C7.457 19.5 12 19.5 12 19.5s5.043 0 6.962-.58c1.34-.246 2.374 1.276-2.62-2.616C21.5 14.385 21.5 12 21.5 12s0-2.385-.418-4.304zM9.5 15.5V8.5l6 3.5-6 3.5z" />
+        <path d="M21.582 7.696c-.246-1.34-1.28-2.37-2.62-2.616C17.043 4.5 12 4.5 12 4.5s-5.043 0-6.962.58c-1.34.246-2.374 1.276-2.62 2.616C2.5 9.615 2.5 12 2.5 12s0 2.385.418 4.304c.246 1.34 1.28 2.37 2.62 2.616C7.457 19.5 12 19.5 12 19.5s5.043 0 6.962-.58c1.34-.246 2.374-1.276 2.62-2.616C21.5 14.385 21.5 12 21.5 12s0-2.385-.418-4.304zM9.5 15.5V8.5l6 3.5-6 3.5z" />
     </svg>
 );
 
@@ -56,6 +56,35 @@ const initialMissions = [
   { id: 'mission_top_trader', title: 'Top Trader', description: 'Achieve Rank #1 on the weekly XP leaderboard.', reward: '2000 XP & 10000 Airdrop Points', icon: <Crown className="h-8 w-8 text-yellow-400"/>, status: 'locked' },
   { id: 'mission_streak', title: 'Weekly Streak', description: 'Generate at least one signal every day for 7 consecutive days.', reward: '1000 XP & 5000 Airdrop Points', icon: <Gift className="h-8 w-8 text-orange-400"/>, status: 'locked' },
 ];
+
+const ranks = [
+    { level: 1, name: "Analyst", xpThreshold: 0, icon: <User className="h-5 w-5"/> },
+    { level: 2, name: "Senior Analyst", xpThreshold: 1000, icon: <BarChart2 className="h-5 w-5"/> },
+    { level: 3, name: "Lead Analyst", xpThreshold: 2500, icon: <ShieldCheck className="h-5 w-5"/> },
+    { level: 4, name: "Principal Analyst", xpThreshold: 5000, icon: <Trophy className="h-5 w-5"/> },
+    { level: 5, name: "Master Analyst", xpThreshold: 10000, icon: <Crown className="h-5 w-5"/> },
+];
+
+const getRankDetails = (xp: number) => {
+  const currentRank = [...ranks].reverse().find(rank => xp >= rank.xpThreshold) || ranks[0];
+  const nextRank = ranks.find(rank => rank.level === currentRank.level + 1);
+
+  const xpForCurrentLevel = currentRank.xpThreshold;
+  const xpForNextLevel = nextRank ? nextRank.xpThreshold : currentRank.xpThreshold;
+  
+  const xpInCurrentLevel = xp - xpForCurrentLevel;
+  const xpNeededForNextLevel = xpForNextLevel - xpForCurrentLevel;
+  
+  const progress = nextRank && xpNeededForNextLevel > 0 ? (xpInCurrentLevel / xpNeededForNextLevel) * 100 : 100;
+
+  return {
+    ...currentRank,
+    nextRank,
+    progress: Math.min(progress, 100),
+    xpInCurrentLevel: xpInCurrentLevel.toLocaleString(),
+    xpNeededForNextLevel: xpNeededForNextLevel.toLocaleString(),
+  };
+};
 
 // Helper to get user ID from client-side storage
 const getCurrentUserId = (): string | null => {
@@ -240,6 +269,8 @@ export default function ProfilePage() {
         </>
       );
   }
+  
+  const rankDetails = getRankDetails(currentUser.weeklyPoints);
 
   return (
     <>
@@ -318,6 +349,35 @@ export default function ProfilePage() {
                             </div>
                         </CardContent>
                     </Card>
+                    
+                    <Card className="md:col-span-2">
+                        <CardHeader>
+                            <CardTitle className="flex items-center text-tertiary">
+                                {rankDetails.icon}
+                                <span className="ml-2">Analyst Rank: {rankDetails.name}</span>
+                            </CardTitle>
+                             <CardDescription>
+                                Level {rankDetails.level} - Based on your Weekly XP.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Progress value={rankDetails.progress} className="w-full h-3 bg-background [&>*]:bg-tertiary" />
+                            <div className="flex justify-between items-center mt-2 text-sm text-muted-foreground">
+                            <span>Progress</span>
+                            {rankDetails.nextRank ? (
+                                <span className="font-mono text-tertiary font-bold">{rankDetails.xpInCurrentLevel} / {rankDetails.xpNeededForNextLevel} XP</span>
+                            ) : (
+                                <span className="font-mono text-tertiary font-bold">Max Level Reached</span>
+                            )}
+                            </div>
+                            {rankDetails.nextRank && (
+                                <p className="text-center text-xs text-muted-foreground mt-3">
+                                    You are <strong className="text-tertiary">{(parseInt(rankDetails.xpNeededForNextLevel.replace(/,/g,'')) - parseInt(rankDetails.xpInCurrentLevel.replace(/,/g,''))).toLocaleString()} XP</strong> away from becoming a <strong className="text-tertiary">{rankDetails.nextRank.name}</strong>.
+                                </p>
+                            )}
+                        </CardContent>
+                    </Card>
+
 
                      <Card className="md:col-span-2">
                         <CardHeader>

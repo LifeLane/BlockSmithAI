@@ -3,14 +3,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Briefcase, AreaChart, Bot, Trophy } from 'lucide-react';
+import { Briefcase, AreaChart, Bot, Trophy, Cpu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/pulse', icon: Briefcase, label: 'Portfolio' },
   { href: '/monitor', icon: AreaChart, label: 'Monitor' },
   { href: '/core', icon: Bot, label: 'Core' },
-  { href: '/agents', icon: Bot, label: 'Agents' },
+  { href: '/agents', icon: Cpu, label: 'Agents' },
   { href: '/profile', icon: Trophy, label: 'Profile' },
 ];
 
