@@ -1,22 +1,22 @@
 -- CreateTable
-CREATE TABLE "User" (
-    "id" TEXT NOT NULL,
-    "username" TEXT NOT NULL,
-    "status" TEXT,
-    "shadowId" TEXT,
-    "weeklyPoints" INTEGER NOT NULL DEFAULT 0,
-    "airdropPoints" INTEGER NOT NULL DEFAULT 0,
-    "wallet_address" TEXT,
-    "wallet_type" TEXT,
-    "email" TEXT,
-    "phone" TEXT,
-    "x_handle" TEXT,
-    "telegram_handle" TEXT,
-    "youtube_handle" TEXT,
-    "claimedMissions" TEXT[] DEFAULT ARRAY[]::TEXT[],
-
-    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
-);
+-- CREATE TABLE "User" (
+--     "id" TEXT NOT NULL,
+--     "username" TEXT NOT NULL,
+--     "status" TEXT,
+--     "shadowId" TEXT,
+--     "weeklyPoints" INTEGER NOT NULL DEFAULT 0,
+--     "airdropPoints" INTEGER NOT NULL DEFAULT 0,
+--     "wallet_address" TEXT,
+--     "wallet_type" TEXT,
+--     "email" TEXT,
+--     "phone" TEXT,
+--     "x_handle" TEXT,
+--     "telegram_handle" TEXT,
+--     "youtube_handle" TEXT,
+--     "claimedMissions" TEXT[] DEFAULT ARRAY[]::TEXT[],
+-- 
+--     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+-- );
 
 -- CreateTable
 CREATE TABLE "Badge" (
