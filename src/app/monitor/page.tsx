@@ -22,8 +22,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { openSimulatedPositionAction } from '@/app/actions';
+import { cn } from '@/lib/utils';
 
-type SignalWithTimestamp = GenerateTradingStrategyOutput & { timestamp: string };
+type SignalWithTimestamp = GenerateTradingStrategyOutput & { id: string; timestamp: string; status?: 'EXECUTED' };
 
 const getCurrentUserId = (): string | null => {
   if (typeof window !== 'undefined') {
@@ -95,6 +96,19 @@ export default function MonitorPage() {
             description: <span>Simulated {selectedSignal?.signal} for {selectedSignal?.symbol} opened. View in your Portfolio.</span>,
             variant: "default",
         });
+         try {
+            const history: SignalWithTimestamp[] = JSON.parse(localStorage.getItem('bsaiSignalHistory') || '[]');
+            const updatedHistory = history.map(signal => {
+                if (signal.id === selectedSignal.id) {
+                    return { ...signal, status: 'EXECUTED' };
+                }
+                return signal;
+            });
+            localStorage.setItem('bsaiSignalHistory', JSON.stringify(updatedHistory));
+            setSignals(updatedHistory); // Refresh the component state
+        } catch (e) {
+            console.error("Failed to update signal status in history:", e);
+        }
     }
     setShowConfirmDialog(false);
     setSelectedSignal(null);
@@ -123,8 +137,10 @@ export default function MonitorPage() {
         
         <ScrollArea className="h-[calc(100vh-250px)] pr-4">
           <div className="space-y-4">
-            {signals.length > 0 ? signals.map((signal, index) => (
-              <Card key={`${signal.symbol}-${index}`} className="bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 flex flex-col">
+            {signals.length > 0 ? signals.map((signal, index) => {
+                const isExecuted = signal.status === 'EXECUTED';
+                return (
+              <Card key={signal.id || `${signal.symbol}-${index}`} className="bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 flex flex-col">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <div className="flex items-center gap-4">
                      <div className="p-2 bg-background rounded-md">
@@ -140,7 +156,13 @@ export default function MonitorPage() {
                       </CardDescription>
                     </div>
                   </div>
-                   <Badge variant="secondary">{signal.risk_rating} Risk</Badge>
+                   <Badge variant={isExecuted ? "default" : "secondary"} className={cn(
+                        "transition-colors",
+                        isExecuted ? "bg-green-900/60 text-green-300 border-green-500/50" : "bg-background"
+                    )}>
+                        {isExecuted ? <CheckCircle2 className="h-3 w-3 mr-1.5"/> : <Hourglass className="h-3 w-3 mr-1.5"/>}
+                        {isExecuted ? 'Executed' : 'Pending'} | {signal.risk_rating} Risk
+                    </Badge>
                 </CardHeader>
                 <CardContent className="grid grid-cols-3 gap-2 text-sm pt-4">
                    <div className="flex flex-col items-center p-2 bg-background/50 rounded-md">
@@ -164,16 +186,20 @@ export default function MonitorPage() {
                 </CardContent>
                 <CardFooter className="mt-auto pt-4">
                     <Button 
-                        className="w-full bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground"
+                        className={cn(
+                            "w-full",
+                            isExecuted ? "bg-secondary hover:bg-secondary/80 cursor-not-allowed" : "bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground"
+                        )}
                         onClick={() => handleSimulateClick(signal)}
-                        disabled={signal.signal.toUpperCase() === 'HOLD'}
+                        disabled={isExecuted || signal.signal.toUpperCase() === 'HOLD'}
                     >
-                        <Zap className="h-4 w-4 mr-2"/>
-                        Simulate This Trade
+                        {isExecuted ? <CheckCircle2 className="h-4 w-4 mr-2"/> : <Zap className="h-4 w-4 mr-2"/>}
+                        {isExecuted ? 'Trade Executed' : 'Simulate This Trade'}
                     </Button>
                 </CardFooter>
               </Card>
-            )) : (
+            );
+            }) : (
                 <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm">
                     <CardHeader>
                         <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">

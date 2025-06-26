@@ -30,10 +30,13 @@ import {
   type LiveMarketData,
   type FormattedSymbol,
   type UserProfile,
+  fetchCurrentUserJson,
 } from '@/app/actions';
-import type { GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
+import type { GenerateTradingStrategyOutput as AIOutputType } from '@/ai/flows/generate-trading-strategy';
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, ShieldQuestion } from 'lucide-react';
+
+type GenerateTradingStrategyOutput = AIOutputType & { id?: string };
 
 const DEFAULT_SYMBOLS: FormattedSymbol[] = [
   { value: "BTCUSDT", label: "BTC/USDT" },
@@ -248,7 +251,11 @@ export default function CoreConsolePage() {
       });
       if(currentUser?.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount -1);
     } else {
-      setAiStrategy(result);
+      const resultWithId = {
+          ...result,
+          id: crypto.randomUUID(),
+      };
+      setAiStrategy(resultWithId);
       toast({
         title: <span className="text-accent">SHADOW's Insight Materialized!</span>,
         description: <span className="text-foreground">New analysis for <strong className="text-primary">{result.symbol}</strong> has been generated.</span>,
@@ -256,7 +263,7 @@ export default function CoreConsolePage() {
 
       try {
         const history = JSON.parse(localStorage.getItem('bsaiSignalHistory') || '[]');
-        const newEntry = { ...result, timestamp: new Date().toISOString() };
+        const newEntry = { ...resultWithId, timestamp: new Date().toISOString() };
         const updatedHistory = [newEntry, ...history].slice(0, 20); // Keep latest 20
         localStorage.setItem('bsaiSignalHistory', JSON.stringify(updatedHistory));
       } catch (e) {
@@ -331,6 +338,21 @@ export default function CoreConsolePage() {
             description: <span>Simulated {aiStrategy?.signal} for {aiStrategy?.symbol} opened. View in your Portfolio.</span>,
             variant: "default",
         });
+        // Mark the signal as executed in history
+        if (aiStrategy?.id) {
+            try {
+                const history = JSON.parse(localStorage.getItem('bsaiSignalHistory') || '[]');
+                const updatedHistory = history.map((signal: any) => {
+                    if (signal.id === aiStrategy.id) {
+                        return { ...signal, status: 'EXECUTED' };
+                    }
+                    return signal;
+                });
+                localStorage.setItem('bsaiSignalHistory', JSON.stringify(updatedHistory));
+            } catch (e) {
+                console.error("Failed to update signal status in history:", e);
+            }
+        }
     }
     setShowConfirmTradeDialog(false);
   };
