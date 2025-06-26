@@ -23,10 +23,28 @@ export default function BottomNav() {
     setIsMounted(true);
   }, []);
 
+  // During server render or until mounted on client, render a non-interactive skeleton
+  // to prevent a hydration mismatch.
+  if (!isMounted) {
+    return (
+        <nav className="fixed bottom-0 left-0 right-0 h-16 bg-card border-t border-border/50 shadow-lg z-50 flex justify-around items-center">
+        {navItems.map((item) => (
+            <div key={item.href} className="flex flex-col items-center justify-center w-full h-full text-muted-foreground">
+                <item.icon className="h-6 w-6 mb-1" />
+                <span className="text-xs font-medium">
+                    {item.label}
+                </span>
+            </div>
+        ))}
+        </nav>
+    );
+  }
+
+  // After mounting on client, render the real links with active state
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-16 bg-card border-t border-border/50 shadow-lg z-50 flex justify-around items-center">
       {navItems.map((item) => {
-        const isActive = isMounted && pathname === item.href;
+        const isActive = pathname === item.href;
         return (
           <Link href={item.href} key={item.href} className="flex flex-col items-center justify-center w-full h-full text-muted-foreground hover:text-primary transition-colors">
             <item.icon className={cn('h-6 w-6 mb-1', isActive ? 'text-primary' : '')} />
