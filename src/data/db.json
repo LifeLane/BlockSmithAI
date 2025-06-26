@@ -96,6 +96,15 @@
       "shadowId": "SHDW-AB8F91B",
       "status": "Guest",
       "weeklyPoints": 0,
+      "airdropPoints": 100,
+      "badges": []
+    },
+    {
+      "id": "a177f7c2-c8a1-4f6f-ada6-79da1878d2b7",
+      "username": "Analyst_d1eaa0",
+      "shadowId": "SHDW-71CC4DE",
+      "status": "Guest",
+      "weeklyPoints": 0,
       "airdropPoints": 0,
       "badges": []
     }
