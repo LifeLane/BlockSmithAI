@@ -1,4 +1,3 @@
-
 import { FunctionComponent } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -6,11 +5,7 @@ import {
   AlertCircle, 
   Loader2, 
   TrendingUp, 
-  TrendingDown, 
-  ArrowUpRightFromCircle, 
-  ArrowDownRightFromCircle,
-  DollarSign,
-  Sigma
+  TrendingDown
 } from 'lucide-react';
 import type { LiveMarketData } from '@/app/actions';
 
@@ -20,18 +15,6 @@ interface MarketDataDisplayProps {
   error: string | null;
   symbolForDisplay: string;
 }
-
-const DataPoint: FunctionComponent<{ label: string; value: string | React.ReactNode; icon?: React.ReactNode; valueClassName?: string }> = ({ label, value, icon, valueClassName }) => (
-  <div className="p-3 bg-background/30 rounded-md shadow-sm border border-border/50 flex flex-col items-start space-y-1 hover:bg-background/50 transition-colors">
-    <div className="flex items-center text-xs text-muted-foreground">
-      {icon && <span className="mr-1.5 opacity-70">{icon}</span>}
-      {label}
-    </div>
-    <div className={`text-sm font-semibold ${valueClassName || 'text-foreground'}`}>
-      {value}
-    </div>
-  </div>
-);
 
 const PulseIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary mb-1">
@@ -53,15 +36,15 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
       <Card className="shadow-md transition-all duration-300 ease-in-out">
         <CardHeader className="items-center text-center">
           <PulseIcon />
-          <CardTitle className="text-xl font-semibold text-foreground">
+          <CardTitle className="text-2xl font-headline text-foreground">
             Fetching Market <span className="text-primary">Pulse...</span>
           </CardTitle>
-          <CardDescription className="font-headline text-accent">{displaySymbol}</CardDescription>
+          <CardDescription className="font-headline text-accent font-bold text-lg">{displaySymbol}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center p-8 space-y-3">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <Skeleton className="h-4 w-3/4 bg-muted" />
-          <Skeleton className="h-4 w-1/2 bg-muted" />
+          <Skeleton className="h-12 w-3/4 bg-muted" />
+          <Skeleton className="h-6 w-1/2 bg-muted" />
         </CardContent>
       </Card>
     );
@@ -75,7 +58,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
           <CardTitle className="text-xl font-semibold text-destructive">
             Market Pulse <span className="text-red-400">Error</span>
           </CardTitle>
-           <CardDescription className="font-headline text-accent">{displaySymbol}</CardDescription>
+           <CardDescription className="font-headline text-accent font-bold text-lg">{displaySymbol}</CardDescription>
         </CardHeader>
         <CardContent className="text-center p-4"> 
           <p className="text-destructive-foreground text-sm">{error}</p>
@@ -92,10 +75,10 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
       <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-tertiary hover:shadow-[0_0_15px_3px_hsl(var(--accent)/0.5)]">
         <CardHeader className="items-center text-center">
           <PulseIcon />
-          <CardTitle className="text-xl font-semibold text-foreground">
+          <CardTitle className="text-2xl font-headline text-foreground">
             Live Market <span className="text-primary">Pulse</span>
           </CardTitle>
-           <CardDescription className="font-headline text-accent">{displaySymbol}</CardDescription>
+           <CardDescription className="font-headline text-accent font-bold text-lg">{displaySymbol}</CardDescription>
         </CardHeader>
         <CardContent className="text-center p-4"> 
           <p className="text-sm text-muted-foreground">No market data for <strong className="text-accent">{displaySymbol}</strong>. Select asset or refresh.</p>
@@ -120,51 +103,20 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
     <Card className="shadow-lg transition-all duration-300 ease-in-out hover:border-primary/70 hover:shadow-[0_0_18px_4px_hsl(var(--primary)/0.5)]">
       <CardHeader className="items-center text-center pb-4">
         <PulseIcon />
-        <CardTitle className="text-xl md:text-2xl font-semibold text-foreground">
+        <CardTitle className="text-2xl font-headline text-foreground">
           Live Market <span className="text-primary">Pulse</span>
         </CardTitle>
-        <CardDescription className="font-headline text-accent font-bold text-base">{actualBaseSymbol}/USDT</CardDescription>
+        <CardDescription className="font-headline text-accent font-bold text-lg">{actualBaseSymbol}/USDT</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4 px-4 pb-5">
-        <div className="text-center p-4 bg-card/80 rounded-lg shadow-inner border border-border/60">
-          <p className="text-xs text-muted-foreground mb-0.5">Current Price (USDT)</p>
-          <p className="text-3xl font-bold text-primary">${lastPriceFormatted}</p>
-          <div className={`flex items-center justify-center text-sm font-semibold mt-1 ${isPositiveChange ? "text-green-400" : "text-red-400"}`}>
-            {isPositiveChange ? <TrendingUp className="h-4 w-4 mr-1" /> : <TrendingDown className="h-4 w-4 mr-1" />}
+      <CardContent className="px-4 py-8">
+        <div className="text-center p-6 bg-card/80 rounded-lg shadow-inner border border-border/60">
+          <p className="text-sm text-muted-foreground mb-1">Current Price (USDT)</p>
+          <p className="text-5xl font-bold font-mono text-primary">${lastPriceFormatted}</p>
+          <div className={`flex items-center justify-center text-base font-semibold mt-2 ${isPositiveChange ? "text-green-400" : "text-red-400"}`}>
+            {isPositiveChange ? <TrendingUp className="h-5 w-5 mr-1.5" /> : <TrendingDown className="h-5 w-5 mr-1.5" />}
             {formattedPriceChange} (24h)
           </div>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <DataPoint 
-            label="24h High" 
-            value={`$${parseFloat(data.highPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
-            icon={<ArrowUpRightFromCircle size={16} className="text-green-400"/>}
-            valueClassName="text-green-400"
-          />
-          <DataPoint 
-            label="24h Low" 
-            value={`$${parseFloat(data.lowPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
-            icon={<ArrowDownRightFromCircle size={16} className="text-red-400"/>}
-            valueClassName="text-red-400"
-          />
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <DataPoint 
-            label={`Volume (${actualBaseSymbol})`} 
-            value={parseFloat(data.volume).toLocaleString(undefined, {maximumFractionDigits: 3})}
-            icon={<Sigma size={16} className="text-tertiary"/>}
-            valueClassName="text-tertiary"
-          />
-          <DataPoint 
-            label="Volume (USDT)" 
-            value={parseFloat(data.quoteVolume).toLocaleString(undefined, {maximumFractionDigits: 2})}
-            icon={<DollarSign size={16} className="text-tertiary"/>}
-            valueClassName="text-tertiary"
-          />
-        </div>
-        
       </CardContent>
     </Card>
   );
