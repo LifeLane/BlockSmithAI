@@ -20,6 +20,7 @@ interface DbData {
     _UserBadges: any[];
     console_insights: any[];
     signals: any[];
+    positions: Position[];
 }
 
 async function readDb(): Promise<DbData> {
@@ -29,7 +30,7 @@ async function readDb(): Promise<DbData> {
   } catch (error: any) {
     if (error.code === 'ENOENT') {
       // File doesn't exist, create it with a default structure
-      const defaultDb: DbData = { users: [], badges: [], _UserBadges: [], console_insights: [], signals: [] };
+      const defaultDb: DbData = { users: [], badges: [], _UserBadges: [], console_insights: [], signals: [], positions: [] };
       await writeDb(defaultDb);
       return defaultDb;
     }
@@ -97,6 +98,20 @@ export interface SignalHistoryItem {
     symbol: string;
     price: number;
     timestamp: Date;
+}
+
+export interface Position {
+    id: string;
+    userId: string;
+    symbol: string;
+    signalType: 'BUY' | 'SELL';
+    entryPrice: number;
+    size: number;
+    status: 'OPEN' | 'CLOSED';
+    openTimestamp: string;
+    closeTimestamp?: string;
+    closePrice?: number;
+    pnl?: number;
 }
 
 
@@ -236,7 +251,6 @@ export async function fetchSignalHistoryJson(userId: string): Promise<SignalHist
     }
 }
 
-// Function to populate the database with sample data (DEVELOPMENT ONLY)
 export async function populateSampleDataJson() {
     console.log('Populating JSON database with sample data...');
     try {
@@ -308,16 +322,111 @@ export async function populateSampleDataJson() {
             { "id": "s1", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "signalType": "buy", "symbol": "BTCUSDT", "price": 107000, "timestamp": new Date(Date.now() - 1800000 * 3).toISOString() },
             { "id": "s2", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "signalType": "sell", "symbol": "ETHUSDT", "price": 2400, "timestamp": new Date(Date.now() - 1800000 * 2).toISOString() },
             { "id": "s3", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12", "signalType": "hold", "symbol": "SOLUSDT", "price": 150, "timestamp": new Date(Date.now() - 1800000).toISOString() }
+          ],
+          "positions": [
+            {
+              "id": "p1",
+              "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+              "symbol": "BTCUSDT",
+              "signalType": "BUY",
+              "entryPrice": 68000,
+              "size": 0.1,
+              "status": "OPEN",
+              "openTimestamp": new Date(Date.now() - 86400000).toISOString()
+            }
           ]
         };
-
         await writeDb(sampleDb);
         console.log('Sample data populated successfully.');
-
     } catch (error) {
         console.error('Error populating sample data:', error);
         throw error;
     }
+}
+
+
+// --- New Portfolio Actions ---
+
+export async function openSimulatedPositionAction(userId: string, strategy: GenerateTradingStrategyOutput): Promise<{ position?: Position, error?: string }> {
+  if (strategy.signal.toUpperCase() === 'HOLD') {
+    return { error: "Cannot open a position on a 'HOLD' signal." };
+  }
+  if (!strategy.entry_zone || isNaN(parseFloat(strategy.entry_zone))) {
+    return { error: "Invalid entry price in the strategy. Cannot open position."}
+  }
+
+  try {
+    const db = await readDb();
+    
+    const newPosition: Position = {
+      id: randomUUID(),
+      userId: userId,
+      symbol: strategy.symbol,
+      signalType: strategy.signal.toUpperCase() as 'BUY' | 'SELL',
+      entryPrice: parseFloat(strategy.entry_zone),
+      size: 1, // Assume a fixed size of 1 unit of the base asset for now
+      status: 'OPEN',
+      openTimestamp: new Date().toISOString()
+    };
+
+    db.positions.push(newPosition);
+    await writeDb(db);
+
+    return { position: newPosition };
+
+  } catch (error: any) {
+    console.error('Error opening simulated position:', error);
+    return { error: `Failed to open position: ${error.message || "An unknown error occurred."}` };
+  }
+}
+
+export async function fetchActivePositionsAction(userId: string): Promise<Position[]> {
+  try {
+    const db = await readDb();
+    const positions = db.positions.filter(p => p.userId === userId && p.status === 'OPEN')
+      .sort((a, b) => new Date(b.openTimestamp).getTime() - new Date(a.openTimestamp).getTime());
+    return positions;
+  } catch (error) {
+    console.error('Error fetching active positions:', error);
+    return [];
+  }
+}
+
+export async function closePositionAction(positionId: string, closePrice: number): Promise<{ success: boolean; pnl?: number, error?: string }> {
+  try {
+    const db = await readDb();
+    const positionIndex = db.positions.findIndex(p => p.id === positionId);
+
+    if (positionIndex === -1) {
+      return { success: false, error: 'Position not found.' };
+    }
+
+    const position = db.positions[positionIndex];
+
+    if (position.status === 'CLOSED') {
+      return { success: false, error: 'Position is already closed.' };
+    }
+
+    // Calculate PnL
+    let pnl = 0;
+    if (position.signalType === 'BUY') {
+      pnl = (closePrice - position.entryPrice) * position.size;
+    } else { // SELL
+      pnl = (position.entryPrice - closePrice) * position.size;
+    }
+
+    position.status = 'CLOSED';
+    position.closePrice = closePrice;
+    position.closeTimestamp = new Date().toISOString();
+    position.pnl = pnl;
+
+    await writeDb(db);
+    return { success: true, pnl };
+
+  } catch (error: any) {
+    console.error('Error closing position:', error);
+    return { success: false, error: `Failed to close position: ${error.message || "An unknown error occurred."}` };
+  }
 }
 
 

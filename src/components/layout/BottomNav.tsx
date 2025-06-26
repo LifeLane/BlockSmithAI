@@ -3,12 +3,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Zap, AreaChart, Bot, Target, Trophy } from 'lucide-react';
+import { Briefcase, AreaChart, Bot, Target, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
 const navItems = [
-  { href: '/pulse', icon: Zap, label: 'Live Pulse' },
+  { href: '/pulse', icon: Briefcase, label: 'Portfolio' },
   { href: '/monitor', icon: AreaChart, label: 'Monitor' },
   { href: '/core', icon: Bot, label: 'Core' },
   { href: '/missions', icon: Target, label: 'Missions' },
@@ -31,7 +31,7 @@ export default function BottomNav() {
         {navItems.map((item) => (
             // Use an `a` tag to match the <Link> component's output.
             // Add all non-dynamic classes that the final component will have.
-            <a key={item.href} className="flex flex-col items-center justify-center w-full h-full text-muted-foreground hover:text-primary transition-colors">
+            <a key={item.href} href={item.href} className="flex flex-col items-center justify-center w-full h-full text-muted-foreground hover:text-primary transition-colors">
                 <item.icon className="h-6 w-6 mb-1" />
                 <span className="text-xs font-medium">
                     {item.label}

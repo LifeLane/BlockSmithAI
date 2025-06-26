@@ -27,6 +27,7 @@ import {
   generateTradingStrategyAction,
   fetchMarketDataAction,
   fetchAllTradingSymbolsAction,
+  openSimulatedPositionAction, // New action import
   type LiveMarketData,
   type FormattedSymbol
 } from '@/app/actions';
@@ -41,6 +42,15 @@ const DEFAULT_SYMBOLS: FormattedSymbol[] = [
 ];
 const INITIAL_DEFAULT_SYMBOL = 'BTCUSDT';
 const MAX_GUEST_ANALYSES = 3;
+
+// Helper to get user ID from client-side storage
+const getCurrentUserId = (): string | null => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('currentUserId');
+  }
+  return null;
+};
+
 
 export default function CoreConsolePage() {
   const [symbol, setSymbol] = useState<string>(INITIAL_DEFAULT_SYMBOL);
@@ -290,14 +300,39 @@ export default function CoreConsolePage() {
     }
   };
 
-  const confirmSimulatedTrade = () => {
-     toastRef.current.toast({
-        title: <span className="text-tertiary">Trade Simulation Initiated!</span>,
-        description: <span className="text-foreground">Simulating <strong className={aiStrategy?.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{aiStrategy?.signal}</strong> for <strong className="text-primary">{aiStrategy?.symbol || symbol}</strong>. This is for dev/demo.</span>,
-        variant: "default",
-      });
-      setShowConfirmTradeDialog(false);
-  }
+  const confirmSimulatedTrade = async () => {
+    const userId = getCurrentUserId();
+    if (!userId) {
+        toastRef.current.toast({
+            title: "User Not Found",
+            description: "Cannot simulate trade without a user profile. Please sign up.",
+            variant: "destructive",
+        });
+        setShowConfirmTradeDialog(false);
+        return;
+    }
+    if (!aiStrategy) {
+        setShowConfirmTradeDialog(false);
+        return;
+    }
+
+    const result = await openSimulatedPositionAction(userId, aiStrategy);
+
+    if (result.error) {
+        toastRef.current.toast({
+            title: <span className="text-destructive">Position Open Failed!</span>,
+            description: <span className="text-foreground">{result.error}</span>,
+            variant: "destructive",
+        });
+    } else {
+        toastRef.current.toast({
+            title: <span className="text-tertiary">Position Opened!</span>,
+            description: <span>Simulated {aiStrategy?.signal} for {aiStrategy?.symbol} opened. View in your Portfolio.</span>,
+            variant: "default",
+        });
+    }
+    setShowConfirmTradeDialog(false);
+  };
 
   const isButtonDisabled = isLoadingStrategy || isLoadingMarketData || isLoadingSymbols || (!isSignedUp && analysisCount >= MAX_GUEST_ANALYSES);
 
@@ -409,11 +444,11 @@ export default function CoreConsolePage() {
                 Confirm Simulated Trade
               </AlertDialogTitle>
               <AlertDialogDescription>
-                You are about to simulate placing a <strong className={aiStrategy.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{aiStrategy.signal}</strong> order
-                for <strong className="text-primary">{symbol}</strong>.
+                You are about to open a simulated <strong className={aiStrategy.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{aiStrategy.signal}</strong> position
+                for <strong className="text-primary">{symbol}</strong> based on SHADOW's parameters.
                 <br />
                 <br />
-                This is <strong className="text-accent">NOT a real trade</strong> and is for demonstration purposes only.
+                This position will be tracked in your Portfolio. This is <strong className="text-accent">NOT a real trade</strong>.
                 BlockShadow is not responsible for any actions taken based on this simulation.
               </AlertDialogDescription>
             </AlertDialogHeader>
@@ -423,7 +458,7 @@ export default function CoreConsolePage() {
                 onClick={confirmSimulatedTrade}
                 className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground"
               >
-                Proceed with Simulation
+                Open Simulated Position
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

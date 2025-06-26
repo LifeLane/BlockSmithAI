@@ -67,5 +67,27 @@
     { "id": "s1", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "signalType": "buy", "symbol": "BTCUSDT", "price": 107000, "timestamp": "2024-05-23T11:45:13.337Z" },
     { "id": "s2", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "signalType": "sell", "symbol": "ETHUSDT", "price": 2400, "timestamp": "2024-05-23T12:00:13.337Z" },
     { "id": "s3", "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12", "signalType": "hold", "symbol": "SOLUSDT", "price": 150, "timestamp": "2024-05-23T12:15:13.337Z" }
+  ],
+  "positions": [
+    {
+      "id": "p1_sample",
+      "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      "symbol": "BTCUSDT",
+      "signalType": "BUY",
+      "entryPrice": 68500.00,
+      "size": 1,
+      "status": "OPEN",
+      "openTimestamp": "2024-05-22T10:00:00.000Z"
+    },
+    {
+      "id": "p2_sample",
+      "userId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      "symbol": "ETHUSDT",
+      "signalType": "SELL",
+      "entryPrice": 3800.00,
+      "size": 1,
+      "status": "OPEN",
+      "openTimestamp": "2024-05-23T11:00:00.000Z"
+    }
   ]
 }
