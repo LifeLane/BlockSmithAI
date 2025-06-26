@@ -1,11 +1,10 @@
-
 'use client';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Crown, Shield, Trophy, Settings, BookOpen, GitPullRequestArrow, Database, Rocket, Loader2, CheckCircle, Clock, Zap, Users, ShieldCheck, Gift, Award, AlertTriangle } from 'lucide-react';
+import { Crown, Shield, Trophy, Settings, BookOpen, GitPullRequestArrow, Database, Rocket, Loader2, CheckCircle, Clock, Zap, Users, ShieldCheck, Gift, Award, AlertTriangle, User, BarChart2, TrendingUp, TrendingDown } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,7 +42,7 @@ const TelegramIcon = () => (
 );
 const YouTubeIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6 text-primary" fill="currentColor">
-        <path d="M21.582 7.696c-.246-1.34-1.28-2.37-2.62-2.616C17.043 4.5 12 4.5 12 4.5s-5.043 0-6.962.58c-1.34.246-2.374 1.276-2.62 2.616C2.5 9.615 2.5 12 2.5 12s0 2.385.418 4.304c.246 1.34 1.28 2.37 2.62 2.616C7.457 19.5 12 19.5 12 19.5s5.043 0 6.962-.58c1.34-.246 2.374-1.276 2.62-2.616C21.5 14.385 21.5 12 21.5 12s0-2.385-.418-4.304zM9.5 15.5V8.5l6 3.5-6 3.5z" />
+        <path d="M21.582 7.696c-.246-1.34-1.28-2.37-2.62-2.616C17.043 4.5 12 4.5 12 4.5s-5.043 0-6.962.58c-1.34.246-2.374 1.276-2.62 2.616C2.5 9.615 2.5 12 2.5 12s0 2.385.418 4.304c.246 1.34 1.28 2.37 2.62 2.616C7.457 19.5 12 19.5 12 19.5s5.043 0 6.962-.58c1.34-.246 2.374-1.276-2.62-2.616C21.5 14.385 21.5 12 21.5 12s0-2.385-.418-4.304zM9.5 15.5V8.5l6 3.5-6 3.5z" />
     </svg>
 );
 
@@ -66,10 +65,10 @@ const getCurrentUserId = (): string | null => {
 };
 
 const RankIcon = ({ rank }: { rank: number }) => {
-    if (rank === 1) return <Crown className="h-5 w-5 text-yellow-400" />;
-    if (rank === 2) return <Trophy className="h-5 w-5 text-gray-400" />;
-    if (rank === 3) return <Shield className="h-5 w-5 text-orange-600" />;
-    return <span className="font-bold text-muted-foreground">{rank}</span>;
+    if (rank === 1) return <Crown className="h-6 w-6 text-yellow-400" />;
+    if (rank === 2) return <Trophy className="h-6 w-6 text-gray-400" />;
+    if (rank === 3) return <Shield className="h-6 w-6 text-orange-600" />;
+    return <span className="font-bold text-lg text-muted-foreground">{rank}</span>;
 }
 
 export default function ProfilePage() {
@@ -246,7 +245,6 @@ export default function ProfilePage() {
       );
   }
 
-
   return (
     <>
       <AppHeader />
@@ -255,6 +253,28 @@ export default function ProfilePage() {
             <h1 className="text-4xl font-bold text-primary mb-2">Analyst HQ</h1>
             <p className="text-muted-foreground">Your central hub for profile, missions, and rankings.</p>
         </div>
+        
+        {/* Airdrop Balance Card */}
+        <Card className="mb-8 bg-card/80 backdrop-blur-sm border-accent shadow-lg shadow-accent/20">
+            <CardHeader>
+                <CardTitle className="flex items-center text-xl text-accent">
+                    <Gift className="mr-3 h-6 w-6"/>
+                    Eligible Airdrop Balance
+                </CardTitle>
+                <CardDescription>
+                    Your accumulated <strong className="text-orange-400">$BSAI</strong> points from all activities.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p className="text-4xl lg:text-5xl font-bold text-orange-400 font-mono tracking-wider">
+                    {currentUser.airdropPoints?.toLocaleString() || 0}
+                </p>
+                 <p className="text-xs text-muted-foreground mt-1">
+                    Points are updated from portfolio P&L and mission rewards.
+                </p>
+            </CardContent>
+        </Card>
+
 
         <Tabs defaultValue="profile" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
@@ -265,10 +285,11 @@ export default function ProfilePage() {
 
             <TabsContent value="profile" className="mt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    {/* Analyst Status Card */}
                     <Card>
                         <CardHeader>
-                        <CardTitle>Analyst Status</CardTitle>
-                        <CardDescription>Your current standing and unique identifier.</CardDescription>
+                            <CardTitle className="flex items-center"><User className="mr-2 h-5 w-5"/>Analyst Status</CardTitle>
+                            <CardDescription>Your current standing and unique identifier.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                         <div>
@@ -290,62 +311,42 @@ export default function ProfilePage() {
 
                         </CardContent>
                     </Card>
-
+                    
+                    {/* Points Overview Card */}
                     <Card>
                         <CardHeader>
-                        <CardTitle>Earned Badges</CardTitle>
-                        <CardDescription>Recognitions for your achievements.</CardDescription>
+                            <CardTitle className="flex items-center"><BarChart2 className="mr-2 h-5 w-5"/>Points Overview</CardTitle>
+                             <CardDescription>Your performance metrics.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                             <div>
+                                <p className="text-sm font-medium text-muted-foreground flex items-center"><TrendingUp className="mr-1.5 h-4 w-4"/>Weekly XP (for Agent Upgrades):</p>
+                                <p className="text-lg font-semibold text-tertiary">{currentUser.weeklyPoints?.toLocaleString() || 0}</p>
+                            </div>
+                             <div>
+                                <p className="text-sm font-medium text-muted-foreground flex items-center"><TrendingDown className="mr-1.5 h-4 w-4"/>Total Airdrop Points:</p>
+                                <p className="text-lg font-semibold text-orange-400">{currentUser.airdropPoints?.toLocaleString() || 0}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Earned Badges Card - Spanning full width */}
+                     <Card className="md:col-span-2">
+                        <CardHeader>
+                            <CardTitle className="flex items-center"><Award className="mr-2 h-5 w-5"/>Earned Badges</CardTitle>
+                            <CardDescription>Recognitions for your achievements.</CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-wrap gap-2">
                         {currentUser.badges && currentUser.badges.length > 0 ? currentUser.badges.map((badge: any, index: number) => (
-                            <Badge key={index} variant="secondary" className="font-semibold">
+                            <Badge key={index} variant="secondary" className="font-semibold text-base py-1 px-3">
                             {badge.name}
                             </Badge>
                         )) : (
-                            <p className="text-sm text-muted-foreground">No badges earned yet.</p>
+                            <p className="text-sm text-muted-foreground">No badges earned yet. Complete missions to earn them.</p>
                         )}
                         </CardContent>
                     </Card>
                 </div>
-                <Card className="mb-8">
-                    <CardHeader>
-                        <CardTitle className="flex items-center"><BookOpen className="h-5 w-5 mr-2" /> Console Insights</CardTitle>
-                        <CardDescription>Recent insights generated by your analysis.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {consoleInsights.length > 0 ? (
-                            <ul className="list-disc list-inside space-y-2">
-                                {consoleInsights.map((insight) => (
-                                    <li key={insight.id} className="text-sm text-muted-foreground">
-                                        <span className="font-medium text-foreground">{new Date(insight.timestamp).toLocaleString()}:</span> {insight.content}
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-muted-foreground">No console insights available yet.</p>
-                        )}
-                    </CardContent>
-                </Card>
-
-                <Card className="mb-8">
-                    <CardHeader>
-                        <CardTitle className="flex items-center"><GitPullRequestArrow className="h-5 w-5 mr-2" /> Signal History</CardTitle>
-                        <CardDescription>A log of trading signals you have generated or acted upon.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {signalHistory.length > 0 ? (
-                            <ul className="list-disc list-inside space-y-2">
-                                {signalHistory.map((signal) => (
-                                    <li key={signal.id} className="text-sm text-muted-foreground">
-                                        <span className="font-medium text-foreground">{new Date(signal.timestamp).toLocaleString()}:</span> {signal.signalType.toUpperCase()} signal for {signal.symbol} at {signal.price}
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-muted-foreground">No signal history available yet.</p>
-                        )}
-                    </CardContent>
-                </Card>
 
                 <Card className="mb-8">
                 <CardHeader className="flex flex-row items-center justify-between">
@@ -367,22 +368,6 @@ export default function ProfilePage() {
                     <Button onClick={handleSaveSettings}>Save Changes</Button>
                     </CardContent>
                 )}
-                </Card>
-                
-                <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center"><Database className="h-5 w-5 mr-2" /> Database Management</CardTitle>
-                    <CardDescription>Use these tools for database setup and testing.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex items-center justify-between p-4 bg-background/50 rounded-lg border border-border">
-                    <p className="text-sm text-muted-foreground max-w-lg">Reset the local JSON database with sample users, badges, and signals. <br/><strong className="text-destructive">Warning: This will overwrite all existing data in the JSON file.</strong></p>
-                    <Button onClick={handlePopulateData} disabled={isPopulating}>
-                        {isPopulating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Rocket className="mr-2 h-4 w-4" />}
-                        Populate Data
-                    </Button>
-                    </div>
-                </CardContent>
                 </Card>
             </TabsContent>
 
@@ -466,8 +451,8 @@ export default function ProfilePage() {
             <TabsContent value="leaderboard" className="mt-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Top 10 Analysts</CardTitle>
-                        <CardDescription>See the current leaders in the weekly challenge.</CardDescription>
+                        <CardTitle className="flex items-center"><Users className="mr-2 h-5 w-5"/>Top 10 Analysts</CardTitle>
+                        <CardDescription>Current leaders in the weekly challenge based on XP.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
@@ -475,21 +460,21 @@ export default function ProfilePage() {
                                 <TableRow>
                                 <TableHead className="w-[80px] text-center">Rank</TableHead>
                                 <TableHead>Analyst</TableHead>
-                                <TableHead className="text-right">Weekly Points</TableHead>
+                                <TableHead className="text-right">Weekly XP</TableHead>
                                 <TableHead className="text-right">Airdrop Points</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {leaderboardData.map((user) => (
                                 <TableRow key={user.id} className="hover:bg-primary/10">
-                                    <TableCell className="text-center">
-                                        <div className="flex justify-center items-center">
+                                    <TableCell className="text-center font-bold">
+                                        <div className="flex justify-center items-center h-full">
                                             {user.rank && <RankIcon rank={user.rank}/>}
                                         </div>
                                     </TableCell>
                                     <TableCell className="font-medium text-foreground">{user.username}</TableCell>
-                                    <TableCell className="text-right font-mono text-accent">{user.weeklyPoints?.toLocaleString() || 0}</TableCell>
-                                    <TableCell className="text-right font-mono text-primary">{user.airdropPoints?.toLocaleString() || 0}</TableCell>
+                                    <TableCell className="text-right font-mono text-tertiary">{user.weeklyPoints?.toLocaleString() || 0}</TableCell>
+                                    <TableCell className="text-right font-mono text-orange-400">{user.airdropPoints?.toLocaleString() || 0}</TableCell>
                                 </TableRow>
                                 ))}
                             </TableBody>
