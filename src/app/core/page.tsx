@@ -365,7 +365,7 @@ export default function CoreConsolePage() {
     });
     // Refresh user data
      if (currentUser) {
-        const updatedUser = await fetchCurrentUserJson(.id);
+        const updatedUser = await fetchCurrentUserJson(currentUser.id);
         if (updatedUser) {
             setCurrentUser(updatedUser);
         }
