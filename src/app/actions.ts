@@ -166,6 +166,9 @@ const missionRewards: { [key: string]: { xp: number; airdrop: number } } = {
   mission_first_signal: { xp: 100, airdrop: 500 },
   mission_analyst: { xp: 250, airdrop: 1000 },
   mission_streak: { xp: 1000, airdrop: 5000 },
+  mission_prolific_trader: { xp: 150, airdrop: 750 },
+  mission_winning_streak: { xp: 300, airdrop: 1500 },
+  mission_top_trader: { xp: 2000, airdrop: 10000 },
 };
 
 export async function claimMissionRewardAction(userId: string, missionId: string): Promise<{ success: boolean; message: string }> {
@@ -1171,6 +1174,7 @@ export async function fetchTokenPriceAction(params: { tokenAddress: string, chai
     
 
     
+
 
 
 
