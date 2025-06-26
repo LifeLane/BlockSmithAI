@@ -43,6 +43,8 @@ async function readDb(): Promise<DbData> {
 
 async function writeDb(data: DbData): Promise<void> {
   try {
+    // Ensure the directory exists before writing the file
+    await fs.mkdir(path.dirname(dbPath), { recursive: true });
     await fs.writeFile(dbPath, JSON.stringify(data, null, 2), 'utf-8');
   } catch (error) {
     console.error('Error writing to database file:', error);
@@ -1135,6 +1137,7 @@ export async function generateDailyGreetingAction(): Promise<GenerateDailyGreeti
     
 
     
+
 
 
 
