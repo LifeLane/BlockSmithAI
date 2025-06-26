@@ -155,6 +155,7 @@ export default function PortfolioPage() {
     const [positions, setPositions] = useState<Position[]>([]);
     const [tradeHistory, setTradeHistory] = useState<Position[]>([]);
     const [portfolioStats, setPortfolioStats] = useState<PortfolioStats | null>(null);
+    const [displayStats, setDisplayStats] = useState<PortfolioStats | null>(null);
     const [livePrices, setLivePrices] = useState<Record<string, LiveMarketData>>({});
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -185,6 +186,7 @@ export default function PortfolioPage() {
                 setPortfolioStats(statsResult);
             } else {
                 setError(statsResult.error);
+                setPortfolioStats(null); // Clear old stats on error
             }
 
             if (userPositions.length > 0) {
@@ -220,6 +222,33 @@ export default function PortfolioPage() {
         const interval = setInterval(fetchPortfolioData, 30000); // Refresh every 30 seconds
         return () => clearInterval(interval);
     }, [fetchPortfolioData, userId]);
+    
+    // Effect to calculate and update the displayed stats including unrealized PnL
+    useEffect(() => {
+        if (!portfolioStats) {
+            setDisplayStats(null);
+            return;
+        }
+
+        const unrealizedPnl = positions.reduce((acc, pos) => {
+            const livePriceData = livePrices[pos.symbol];
+            if (livePriceData) {
+                const currentPrice = parseFloat(livePriceData.lastPrice);
+                if (pos.signalType === 'BUY') {
+                    return acc + (currentPrice - pos.entryPrice) * pos.size;
+                } else { // SELL
+                    return acc + (pos.entryPrice - currentPrice) * pos.size;
+                }
+            }
+            return acc;
+        }, 0);
+
+        setDisplayStats({
+            ...portfolioStats,
+            totalPnl: portfolioStats.totalPnl + unrealizedPnl,
+        });
+
+    }, [portfolioStats, positions, livePrices]);
 
     const handleClosePosition = async (positionId: string, closePrice: number) => {
         setClosingPositionId(positionId);
@@ -306,7 +335,7 @@ export default function PortfolioPage() {
     <>
       <AppHeader />
       <div className="container mx-auto px-4 py-8 flex flex-col h-[calc(100vh-8rem)]">
-        {isLoading && !portfolioStats ? (
+        {isLoading && !displayStats ? (
             <div className="flex justify-center items-center h-full">
                 <Loader2 className="h-8 w-8 animate-spin text-primary"/>
             </div>
@@ -327,7 +356,7 @@ export default function PortfolioPage() {
             </Card>
         ) : (
              <>
-                {portfolioStats && <PortfolioStatsDisplay stats={portfolioStats} />}
+                {displayStats && <PortfolioStatsDisplay stats={displayStats} />}
                  <Tabs defaultValue="open" className="flex-grow flex flex-col mt-2 min-h-0">
                     <TabsList className="grid w-full grid-cols-2 shrink-0">
                         <TabsTrigger value="open">Open Positions</TabsTrigger>
