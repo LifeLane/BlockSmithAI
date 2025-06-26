@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -9,7 +10,7 @@ import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import ChatbotIcon from '@/components/blocksmith-ai/ChatbotIcon';
 import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
-import TradingChart from '@/components/blocksmith-ai/TradingChart';
+import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -35,7 +36,6 @@ import {
 import type { GenerateTradingStrategyOutput as AIOutputType } from '@/ai/flows/generate-trading-strategy';
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, ShieldQuestion } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 type GenerateTradingStrategyOutput = AIOutputType & { id?: string };
 
@@ -369,24 +369,12 @@ export default function CoreConsolePage() {
       <AppHeader />
       <div ref={mainContentRef} className="container mx-auto px-4 py-8 flex flex-col w-full space-y-8">
         
-        {!aiStrategy && !isLoadingStrategy && !strategyError && (
-          <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out hover:border-accent hover:shadow-[0_0_25px_7px_hsl(var(--tertiary)/0.5)]">
-            <CardHeader className="items-center text-center pt-6 pb-4">
-              <CardTitle className="flex items-center justify-center flex-wrap text-xl sm:text-2xl md:text-3xl font-bold font-headline text-foreground break-words">
-                <Sparkles className="mr-1.5 sm:mr-3 h-7 w-7 sm:h-8 sm:w-8 text-primary animate-pulse shrink-0" />
-                SHADOW's <span className="text-primary mx-1 sm:mx-1.5">Core</span> is <span className="text-accent mx-1 sm:mx-1.5">Online</span>. Patterns <span className="text-orange-400 ml-1 sm:ml-1.5">Emerging</span>...
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-center px-6 pb-6 space-y-3">
-               <p className="text-base text-muted-foreground">
-                 ...my processors await your command for <strong className="text-accent font-semibold">{symbol}</strong>. The <strong className="text-purple-400">BlockShadow network</strong> is ready.
-               </p>
-               <p className="text-sm text-muted-foreground/80">
-                Initiate the <strong className="text-accent">analysis sequence</strong>. Uncover the <strong className="text-primary">market's hidden variables</strong>. The chain is listening.
-              </p>
-            </CardContent>
-          </Card>
-        )}
+        <MarketDataDisplay
+            liveMarketData={liveMarketData}
+            isLoading={isLoadingMarketData}
+            error={marketDataError}
+            symbolForDisplay={symbol}
+        />
 
         {/* --- CONTROLS --- */}
         <div className="w-full space-y-6">
@@ -431,13 +419,9 @@ export default function CoreConsolePage() {
             )}
         </div>
 
-        {/* --- CHART & RESULTS BLOCK --- */}
+        {/* --- RESULTS BLOCK --- */}
         {(aiStrategy || isLoadingStrategy || strategyError) && (
             <div id="results-block" className="w-full space-y-8">
-                <div className="w-full relative">
-                    <TradingChart symbol={symbol} tradingMode={tradingMode} strategy={aiStrategy} />
-                </div>
-
                 <div className="w-full relative space-y-8">
                     <StrategyExplanationSection
                         strategy={aiStrategy}
