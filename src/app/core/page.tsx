@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -367,7 +368,7 @@ export default function CoreConsolePage() {
   return (
     <>
       <AppHeader />
-      <div ref={mainContentRef} className="container mx-auto px-4 py-8 flex flex-col w-full space-y-8 pb-16">
+      <div ref={mainContentRef} className="container mx-auto px-4 py-8 flex flex-col w-full space-y-8 pb-24">
         
         {showWelcomeMessage && (
             <div className="text-center space-y-2">
@@ -381,6 +382,13 @@ export default function CoreConsolePage() {
 
         {/* --- CONTROLS --- */}
         <div className="w-full space-y-6">
+            <MarketDataDisplay
+                liveMarketData={liveMarketData}
+                isLoading={isLoadingMarketData}
+                error={marketDataError}
+                symbolForDisplay={symbol}
+            />
+        
             <StrategySelectors
                 symbol={symbol}
                 onSymbolChange={setSymbol} 
@@ -390,13 +398,6 @@ export default function CoreConsolePage() {
                 onRiskProfileChange={setRiskProfile}
                 symbols={availableSymbols}
                 isLoadingSymbols={isLoadingSymbols}
-            />
-            
-            <MarketDataDisplay
-                liveMarketData={liveMarketData}
-                isLoading={isLoadingMarketData}
-                error={marketDataError}
-                symbolForDisplay={symbol}
             />
             
             <Button

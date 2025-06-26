@@ -1,15 +1,16 @@
 import { FunctionComponent } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   AlertCircle, 
-  Loader2, 
   TrendingUp, 
   TrendingDown,
   ArrowUp,
   ArrowDown,
   Activity,
-  DollarSign
+  DollarSign,
+  BarChart2,
+  Percent
 } from 'lucide-react';
 import type { LiveMarketData } from '@/app/actions';
 
@@ -34,6 +35,15 @@ const formatNumber = (numStr: string) => {
     return num.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
 
+// A small component for each stat to avoid repetition
+const StatBox = ({ title, value, icon }: { title: string; value: React.ReactNode; icon: React.ReactNode }) => (
+    <div className="flex flex-col items-center p-3 bg-background/50 rounded-md border border-border/50">
+        <span className="text-xs text-muted-foreground flex items-center gap-1.5">{icon} {title}</span>
+        <span className="text-lg font-bold font-mono text-primary mt-1">{value}</span>
+    </div>
+);
+
+
 const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({ 
   liveMarketData, 
   isLoading, 
@@ -46,21 +56,14 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
   if (isLoading) {
     return (
       <Card className="shadow-md transition-all duration-300 ease-in-out">
-        <CardHeader className="items-center text-center">
+        <CardHeader className="items-center text-center pb-4">
           <PulseIcon />
-          <CardTitle className="text-2xl font-headline text-foreground">
+          <CardTitle className="text-xl font-headline text-foreground">
             Fetching Market <span className="text-primary">Pulse...</span>
           </CardTitle>
-          <CardDescription className="font-headline text-accent font-bold text-lg">{displaySymbol}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4 p-6">
-          <Skeleton className="h-16 w-3/4 mx-auto bg-muted" />
-          <div className="grid grid-cols-2 gap-3 mt-4">
-              <Skeleton className="h-12 w-full bg-muted" />
-              <Skeleton className="h-12 w-full bg-muted" />
-              <Skeleton className="h-12 w-full bg-muted" />
-              <Skeleton className="h-12 w-full bg-muted" />
-          </div>
+        <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-3 p-4">
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-20 w-full bg-muted" />)}
         </CardContent>
       </Card>
     );
@@ -74,7 +77,6 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
           <CardTitle className="text-xl font-semibold text-destructive">
             Market Pulse <span className="text-red-400">Error</span>
           </CardTitle>
-           <CardDescription className="font-headline text-accent font-bold text-lg">{displaySymbol}</CardDescription>
         </CardHeader>
         <CardContent className="text-center p-4"> 
           <p className="text-destructive-foreground text-sm">{error}</p>
@@ -91,13 +93,12 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
       <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-tertiary hover:shadow-[0_0_15px_3px_hsl(var(--accent)/0.5)]">
         <CardHeader className="items-center text-center">
           <PulseIcon />
-          <CardTitle className="text-2xl font-headline text-foreground">
+          <CardTitle className="text-xl font-headline text-foreground">
             Live Market <span className="text-primary">Pulse</span>
           </CardTitle>
-           <CardDescription className="font-headline text-accent font-bold text-lg">{displaySymbol}</CardDescription>
         </CardHeader>
         <CardContent className="text-center p-4"> 
-          <p className="text-sm text-muted-foreground">No market data for <strong className="text-accent">{displaySymbol}</strong>. Select asset or refresh.</p>
+          <p className="text-sm text-muted-foreground">No market data for <strong className="text-accent">{displaySymbol}</strong>. Select an asset or refresh.</p>
         </CardContent>
       </Card>
     );
@@ -119,39 +120,45 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
     <Card className="shadow-lg transition-all duration-300 ease-in-out hover:border-primary/70 hover:shadow-[0_0_18px_4px_hsl(var(--primary)/0.5)]">
       <CardHeader className="items-center text-center pb-4">
         <PulseIcon />
-        <CardTitle className="text-2xl font-headline text-foreground">
-          Live Market <span className="text-primary">Pulse</span>
+        <CardTitle className="text-xl font-headline text-foreground">
+          Live Market <span className="text-primary">Pulse</span>: <span className="text-accent">{actualBaseSymbol}/USDT</span>
         </CardTitle>
-        <CardDescription className="font-headline text-accent font-bold text-lg">{actualBaseSymbol}/USDT</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6 px-4 py-6">
-        <div className="text-center p-4 bg-card/80 rounded-lg shadow-inner border border-border/60">
-          <p className="text-sm text-muted-foreground mb-1">Current Price (USDT)</p>
-          <p className="text-4xl lg:text-5xl font-bold font-mono text-primary">${lastPriceFormatted}</p>
-          <div className={`flex items-center justify-center text-base font-semibold mt-2 ${isPositiveChange ? "text-green-400" : "text-red-400"}`}>
-            {isPositiveChange ? <TrendingUp className="h-5 w-5 mr-1.5" /> : <TrendingDown className="h-5 w-5 mr-1.5" />}
-            {formattedPriceChange} (24h)
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="flex flex-col items-center p-2 bg-background/50 rounded-md">
-                <span className="text-xs text-muted-foreground flex items-center gap-1"><ArrowUp size={12}/>24h High</span>
-                <span className="font-mono font-semibold text-primary">${parseFloat(data.highPrice).toLocaleString()}</span>
-            </div>
-             <div className="flex flex-col items-center p-2 bg-background/50 rounded-md">
-                <span className="text-xs text-muted-foreground flex items-center gap-1"><ArrowDown size={12}/>24h Low</span>
-                <span className="font-mono font-semibold text-primary">${parseFloat(data.lowPrice).toLocaleString()}</span>
-            </div>
-             <div className="flex flex-col items-center p-2 bg-background/50 rounded-md">
-                <span className="text-xs text-muted-foreground flex items-center gap-1"><Activity size={12}/>24h Volume ({baseSymbol})</span>
-                <span className="font-mono font-semibold text-primary">{formatNumber(data.volume)}</span>
-            </div>
-             <div className="flex flex-col items-center p-2 bg-background/50 rounded-md">
-                <span className="text-xs text-muted-foreground flex items-center gap-1"><DollarSign size={12}/>24h Volume (USDT)</span>
-                <span className="font-mono font-semibold text-primary">{formatNumber(data.quoteVolume)}</span>
-            </div>
-        </div>
+      <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-3 p-4">
+        <StatBox 
+          title="Current Price"
+          icon={<DollarSign size={14} />}
+          value={`$${lastPriceFormatted}`}
+        />
+        <StatBox
+          title="24h Change"
+          icon={<Percent size={14} />}
+          value={
+            <span className={isPositiveChange ? "text-green-400" : "text-red-400"}>
+              {formattedPriceChange}
+            </span>
+          }
+        />
+        <StatBox
+          title="24h High"
+          icon={<ArrowUp size={14} />}
+          value={`$${parseFloat(data.highPrice).toLocaleString()}`}
+        />
+        <StatBox
+          title="24h Low"
+          icon={<ArrowDown size={14} />}
+          value={`$${parseFloat(data.lowPrice).toLocaleString()}`}
+        />
+        <StatBox
+          title={`Volume (${baseSymbol})`}
+          icon={<BarChart2 size={14} />}
+          value={formatNumber(data.volume)}
+        />
+        <StatBox
+          title="Volume (USDT)"
+          icon={<Activity size={14} />}
+          value={`$${formatNumber(data.quoteVolume)}`}
+        />
       </CardContent>
     </Card>
   );
