@@ -150,7 +150,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
           />
         </div>
         
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <DataPoint 
             label={`Volume (${actualBaseSymbol})`} 
             value={parseFloat(data.volume).toLocaleString(undefined, {maximumFractionDigits: 3})}
