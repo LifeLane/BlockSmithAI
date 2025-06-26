@@ -5,7 +5,11 @@ import {
   AlertCircle, 
   Loader2, 
   TrendingUp, 
-  TrendingDown
+  TrendingDown,
+  ArrowUp,
+  ArrowDown,
+  Activity,
+  DollarSign
 } from 'lucide-react';
 import type { LiveMarketData } from '@/app/actions';
 
@@ -21,6 +25,14 @@ const PulseIcon = () => (
         <path d="M3 12h4.5l2.5-6 3 12 2.5-6L19.5 12H22" />
     </svg>
 )
+
+const formatNumber = (numStr: string) => {
+    const num = parseFloat(numStr);
+    if (num > 1_000_000_000) return `${(num / 1_000_000_000).toFixed(2)}B`;
+    if (num > 1_000_000) return `${(num / 1_000_000).toFixed(2)}M`;
+    if (num > 1_000) return `${(num / 1_000).toFixed(2)}K`;
+    return num.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
 
 const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({ 
   liveMarketData, 
@@ -41,10 +53,14 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
           </CardTitle>
           <CardDescription className="font-headline text-accent font-bold text-lg">{displaySymbol}</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col items-center justify-center p-8 space-y-3">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <Skeleton className="h-12 w-3/4 bg-muted" />
-          <Skeleton className="h-6 w-1/2 bg-muted" />
+        <CardContent className="space-y-4 p-6">
+          <Skeleton className="h-16 w-3/4 mx-auto bg-muted" />
+          <div className="grid grid-cols-2 gap-3 mt-4">
+              <Skeleton className="h-12 w-full bg-muted" />
+              <Skeleton className="h-12 w-full bg-muted" />
+              <Skeleton className="h-12 w-full bg-muted" />
+              <Skeleton className="h-12 w-full bg-muted" />
+          </div>
         </CardContent>
       </Card>
     );
@@ -108,14 +124,33 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
         </CardTitle>
         <CardDescription className="font-headline text-accent font-bold text-lg">{actualBaseSymbol}/USDT</CardDescription>
       </CardHeader>
-      <CardContent className="px-4 py-8">
-        <div className="text-center p-6 bg-card/80 rounded-lg shadow-inner border border-border/60">
+      <CardContent className="space-y-6 px-4 py-6">
+        <div className="text-center p-4 bg-card/80 rounded-lg shadow-inner border border-border/60">
           <p className="text-sm text-muted-foreground mb-1">Current Price (USDT)</p>
-          <p className="text-5xl font-bold font-mono text-primary">${lastPriceFormatted}</p>
+          <p className="text-4xl lg:text-5xl font-bold font-mono text-primary">${lastPriceFormatted}</p>
           <div className={`flex items-center justify-center text-base font-semibold mt-2 ${isPositiveChange ? "text-green-400" : "text-red-400"}`}>
             {isPositiveChange ? <TrendingUp className="h-5 w-5 mr-1.5" /> : <TrendingDown className="h-5 w-5 mr-1.5" />}
             {formattedPriceChange} (24h)
           </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="flex flex-col items-center p-2 bg-background/50 rounded-md">
+                <span className="text-xs text-muted-foreground flex items-center gap-1"><ArrowUp size={12}/>24h High</span>
+                <span className="font-mono font-semibold text-primary">${parseFloat(data.highPrice).toLocaleString()}</span>
+            </div>
+             <div className="flex flex-col items-center p-2 bg-background/50 rounded-md">
+                <span className="text-xs text-muted-foreground flex items-center gap-1"><ArrowDown size={12}/>24h Low</span>
+                <span className="font-mono font-semibold text-primary">${parseFloat(data.lowPrice).toLocaleString()}</span>
+            </div>
+             <div className="flex flex-col items-center p-2 bg-background/50 rounded-md">
+                <span className="text-xs text-muted-foreground flex items-center gap-1"><Activity size={12}/>24h Volume ({baseSymbol})</span>
+                <span className="font-mono font-semibold text-primary">{formatNumber(data.volume)}</span>
+            </div>
+             <div className="flex flex-col items-center p-2 bg-background/50 rounded-md">
+                <span className="text-xs text-muted-foreground flex items-center gap-1"><DollarSign size={12}/>24h Volume (USDT)</span>
+                <span className="font-mono font-semibold text-primary">{formatNumber(data.quoteVolume)}</span>
+            </div>
         </div>
       </CardContent>
     </Card>
