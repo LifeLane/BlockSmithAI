@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, TrendingUp, TrendingDown, Briefcase, Bot, AlertTriangle, LogOut, ShieldX, Target, LogIn, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
@@ -125,39 +125,25 @@ const HistoryCard = ({ position }: { position: Position }) => {
     )
 }
 
+const StatCard = ({ title, value, icon, valueClassName }: { title: string; value: React.ReactNode; icon: React.ReactNode; valueClassName?: string }) => (
+    <div className="flex flex-col items-center justify-center p-3 bg-background/50 rounded-lg border border-border/50 text-center">
+        <span className="text-xs text-muted-foreground flex items-center gap-1.5">{icon} {title}</span>
+        <span className={`text-xl font-bold font-mono mt-1 ${valueClassName || 'text-primary'}`}>{value}</span>
+    </div>
+);
+
 const PortfolioStatsDisplay = ({ stats }: { stats: PortfolioStats }) => {
     return (
-        <Card className="mb-6 bg-card/90 backdrop-blur-sm">
-            <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Performance Matrix</CardTitle>
+        <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30 shrink-0">
+            <CardHeader className="pb-4">
+                <CardTitle className="text-lg flex items-center gap-2 text-accent"><Briefcase /> Performance Matrix</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
-                <div className="flex flex-col items-center p-3 bg-background/50 rounded-md">
-                    <span className="text-xs text-muted-foreground">Total Trades</span>
-                    <span className="text-lg font-bold font-mono text-primary">{stats.totalTrades}</span>
-                </div>
-                 <div className="flex flex-col items-center p-3 bg-background/50 rounded-md">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1"><Percent size={12}/>Win Rate</span>
-                    <span className="text-lg font-bold font-mono text-green-400">{stats.winRate.toFixed(1)}%</span>
-                </div>
-                 <div className="flex flex-col items-center p-3 bg-background/50 rounded-md">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1"><DollarSign size={12}/>Total PnL</span>
-                    <span className={`text-lg font-bold font-mono ${stats.totalPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        ${stats.totalPnl.toFixed(2)}
-                    </span>
-                </div>
-                <div className="flex flex-col items-center p-3 bg-background/50 rounded-md">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1"><ArrowUp size={12}/>Best Trade</span>
-                    <span className="text-lg font-bold font-mono text-green-400">
-                        ${stats.bestTradePnl.toFixed(2)}
-                    </span>
-                </div>
-                 <div className="flex flex-col items-center p-3 bg-background/50 rounded-md">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1"><ArrowDown size={12}/>Worst Trade</span>
-                    <span className="text-lg font-bold font-mono text-red-400">
-                        ${stats.worstTradePnl.toFixed(2)}
-                    </span>
-                </div>
+            <CardContent className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                <StatCard title="Total Trades" value={stats.totalTrades} icon={<History size={14} />} />
+                <StatCard title="Win Rate" value={`${stats.winRate.toFixed(1)}%`} icon={<Percent size={14} />} valueClassName="text-green-400" />
+                <StatCard title="Total PnL" value={`$${stats.totalPnl.toFixed(2)}`} icon={<DollarSign size={14} />} valueClassName={stats.totalPnl >= 0 ? 'text-green-400' : 'text-red-400'} />
+                <StatCard title="Best Trade" value={`$${stats.bestTradePnl.toFixed(2)}`} icon={<ArrowUp size={14} />} valueClassName="text-green-400" />
+                <StatCard title="Worst Trade" value={`$${stats.worstTradePnl.toFixed(2)}`} icon={<ArrowDown size={14} />} valueClassName="text-red-400" />
             </CardContent>
         </Card>
     );
@@ -180,7 +166,10 @@ export default function PortfolioPage() {
         if (!userId || isFetching.current) return;
 
         isFetching.current = true;
-        setIsLoading(true);
+        // Don't set loading to true on interval fetches, only initial
+        if (!portfolioStats) {
+            setIsLoading(true);
+        }
 
         try {
             const [userPositions, history, statsResult] = await Promise.all([
@@ -216,7 +205,7 @@ export default function PortfolioPage() {
             setIsLoading(false);
             isFetching.current = false;
         }
-    }, [userId]);
+    }, [userId, portfolioStats]);
 
     useEffect(() => {
         if (!userId) {
@@ -260,7 +249,7 @@ export default function PortfolioPage() {
         }
         setClosingPositionId(null);
     }
-
+    
     const renderOpenPositions = () => {
         if (positions.length === 0) {
              return (
@@ -285,19 +274,17 @@ export default function PortfolioPage() {
             );
         }
         return (
-             <ScrollArea className="h-[calc(100vh-450px)] pr-4 mt-4">
-                <div className="space-y-4">
-                    {positions.map(pos => (
-                        <PositionCard
-                            key={pos.id}
-                            position={pos}
-                            currentPrice={livePrices[pos.symbol] ? parseFloat(livePrices[pos.symbol].lastPrice) : undefined}
-                            onClose={handleClosePosition}
-                            isClosing={closingPositionId === pos.id}
-                        />
-                    ))}
-                </div>
-             </ScrollArea>
+            <div className="space-y-4">
+                {positions.map(pos => (
+                    <PositionCard
+                        key={pos.id}
+                        position={pos}
+                        currentPrice={livePrices[pos.symbol] ? parseFloat(livePrices[pos.symbol].lastPrice) : undefined}
+                        onClose={handleClosePosition}
+                        isClosing={closingPositionId === pos.id}
+                    />
+                ))}
+            </div>
         )
     };
     
@@ -306,66 +293,56 @@ export default function PortfolioPage() {
             return <p className="text-center text-muted-foreground mt-8">No closed trades yet.</p>
         }
         return (
-            <ScrollArea className="h-[calc(100vh-450px)] pr-4 mt-4">
-                <div className="space-y-3">
-                    {tradeHistory.map(pos => <HistoryCard key={pos.id} position={pos} />)}
-                </div>
-            </ScrollArea>
+            <div className="space-y-3">
+                {tradeHistory.map(pos => <HistoryCard key={pos.id} position={pos} />)}
+            </div>
         )
     };
 
-    const renderContent = () => {
-        if (isLoading && !portfolioStats) {
-            return (
-                <div className="flex justify-center items-center h-64">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary"/>
-                </div>
-            );
-        }
-
-        if (error) {
-            return (
-                <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm border-destructive">
-                    <CardHeader>
-                        <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
-                            <AlertTriangle className="h-10 w-10 text-destructive" />
-                        </div>
-                        <CardTitle className="mt-4 text-destructive">Access Denied</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-base text-destructive-foreground">{error}</p>
-                        <Button asChild className="glow-button mt-4">
-                            <Link href="/core">Return to Core</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
-            );
-        }
-
-        return (
-            <>
+    return (
+    <>
+      <AppHeader />
+      <div className="container mx-auto px-4 py-8 flex flex-col h-[calc(100vh-8rem)]">
+        {isLoading && !portfolioStats ? (
+            <div className="flex justify-center items-center h-full">
+                <Loader2 className="h-8 w-8 animate-spin text-primary"/>
+            </div>
+        ) : error ? (
+            <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm border-destructive">
+                <CardHeader>
+                    <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
+                        <AlertTriangle className="h-10 w-10 text-destructive" />
+                    </div>
+                    <CardTitle className="mt-4 text-destructive">Access Denied</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-base text-destructive-foreground">{error}</p>
+                    <Button asChild className="glow-button mt-4">
+                        <Link href="/core">Return to Core</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        ) : (
+             <>
                 {portfolioStats && <PortfolioStatsDisplay stats={portfolioStats} />}
-                 <Tabs defaultValue="open">
-                    <TabsList className="grid w-full grid-cols-2">
+                 <Tabs defaultValue="open" className="flex-grow flex flex-col mt-2 min-h-0">
+                    <TabsList className="grid w-full grid-cols-2 shrink-0">
                         <TabsTrigger value="open">Open Positions</TabsTrigger>
                         <TabsTrigger value="history">Trade History</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="open">
-                        {renderOpenPositions()}
+                    <TabsContent value="open" className="flex-grow mt-4 overflow-hidden">
+                        <ScrollArea className="h-full pr-4">
+                            {renderOpenPositions()}
+                        </ScrollArea>
                     </TabsContent>
-                    <TabsContent value="history">
-                        {renderTradeHistory()}
+                    <TabsContent value="history" className="flex-grow mt-4 overflow-hidden">
+                        <ScrollArea className="h-full pr-4">
+                            {renderTradeHistory()}
+                        </ScrollArea>
                     </TabsContent>
                 </Tabs>
             </>
-        )
-    }
-
-  return (
-    <>
-      <AppHeader />
-      <div className="container mx-auto px-4 py-8">
-        {renderContent()}
+        )}
       </div>
     </>
   );
