@@ -71,6 +71,24 @@
       "weeklyPoints": 0,
       "airdropPoints": 0,
       "badges": []
+    },
+    {
+      "id": "e7c364a8-bb7d-43ab-a7c9-48ec69f2d29a",
+      "username": "Analyst_0eb24b",
+      "shadowId": "SHDW-DA5BF9E",
+      "status": "Guest",
+      "weeklyPoints": 0,
+      "airdropPoints": 0,
+      "badges": []
+    },
+    {
+      "id": "3b3e2d99-ab62-46fb-acab-8f829781efdf",
+      "username": "Analyst_c0978e",
+      "shadowId": "SHDW-8AD0AE4",
+      "status": "Guest",
+      "weeklyPoints": 0,
+      "airdropPoints": 100,
+      "badges": []
     }
   ],
   "badges": [
@@ -214,6 +232,21 @@
       "closePrice": 107069.16,
       "closeTimestamp": "2025-06-26T14:03:52.500Z",
       "pnl": 30.839999999996508
+    },
+    {
+      "id": "64f00fe6-2df0-4126-8c5e-5b4c759b5a7b",
+      "userId": "3b3e2d99-ab62-46fb-acab-8f829781efdf",
+      "symbol": "BTCUSDT",
+      "signalType": "SELL",
+      "entryPrice": 106752.36,
+      "size": 1,
+      "status": "CLOSED",
+      "openTimestamp": "2025-06-26T14:11:41.667Z",
+      "stopLoss": 107000,
+      "takeProfit": 106500,
+      "closePrice": 106922.57,
+      "closeTimestamp": "2025-06-26T14:11:57.753Z",
+      "pnl": -170.2100000000064
     }
   ],
   "agents": [
@@ -345,6 +378,14 @@
       "level": 1,
       "status": "DEPLOYED",
       "deploymentEndTime": "2025-06-27T13:27:20.770Z"
+    },
+    {
+      "id": "289233bc-814c-456f-9bc8-a0ac7e394c0e",
+      "userId": "3b3e2d99-ab62-46fb-acab-8f829781efdf",
+      "agentId": "agent-001",
+      "level": 1,
+      "status": "DEPLOYED",
+      "deploymentEndTime": "2025-06-26T15:12:45.544Z"
     }
   ]
 }

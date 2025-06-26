@@ -131,8 +131,8 @@ export default function MonitorPage() {
       <AppHeader />
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">Signal Monitor</h1>
-          <p className="text-muted-foreground">Review and act upon your historical SHADOW analyses.</p>
+          <h1 className="text-4xl font-bold text-primary mb-2">Signal Archive</h1>
+          <p className="text-muted-foreground">Review historical analyses from SHADOW.</p>
         </div>
         
         <ScrollArea className="h-[calc(100vh-250px)] pr-4">
@@ -205,9 +205,9 @@ export default function MonitorPage() {
                         <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">
                             <Bot className="h-10 w-10 text-primary" />
                         </div>
-                        <CardTitle className="mt-4">No Signals Generated</CardTitle>
+                        <CardTitle className="mt-4">Signal History is Empty</CardTitle>
                         <CardDescription className="mt-2 text-base">
-                            Your signal history is empty. Go to the <strong className="text-accent">Core Console</strong> to generate your first analysis from SHADOW.
+                            Generate an analysis on the Core Console to populate your history.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>

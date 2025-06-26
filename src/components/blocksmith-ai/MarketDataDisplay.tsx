@@ -3,8 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   AlertCircle, 
-  TrendingUp, 
-  TrendingDown,
   ArrowUp,
   ArrowDown,
   Activity,
@@ -20,12 +18,6 @@ interface MarketDataDisplayProps {
   error: string | null;
   symbolForDisplay: string;
 }
-
-const PulseIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary mb-1">
-        <path d="M3 12h4.5l2.5-6 3 12 2.5-6L19.5 12H22" />
-    </svg>
-)
 
 const formatNumber = (numStr: string) => {
     const num = parseFloat(numStr);
@@ -57,7 +49,6 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
     return (
       <Card className="shadow-md transition-all duration-300 ease-in-out">
         <CardHeader className="items-center text-center pb-4">
-          <PulseIcon />
           <CardTitle className="text-xl font-headline text-foreground">
             Fetching Market <span className="text-primary">Pulse...</span>
           </CardTitle>
@@ -92,9 +83,8 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
      return (
       <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-tertiary hover:shadow-[0_0_15px_3px_hsl(var(--accent)/0.5)]">
         <CardHeader className="items-center text-center">
-          <PulseIcon />
           <CardTitle className="text-xl font-headline text-foreground">
-            Live Market <span className="text-primary">Pulse</span>
+            Market <span className="text-primary">Pulse</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center p-4"> 
@@ -119,9 +109,8 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
   return (
     <Card className="shadow-lg transition-all duration-300 ease-in-out hover:border-primary/70 hover:shadow-[0_0_18px_4px_hsl(var(--primary)/0.5)]">
       <CardHeader className="items-center text-center pb-4">
-        <PulseIcon />
         <CardTitle className="text-xl font-headline text-foreground">
-          Live Market <span className="text-primary">Pulse</span>: <span className="text-accent">{actualBaseSymbol}/USDT</span>
+          Market Pulse: <span className="text-accent">{actualBaseSymbol}/USDT</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-3 p-4">

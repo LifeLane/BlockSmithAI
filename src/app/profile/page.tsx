@@ -40,7 +40,7 @@ const TelegramIcon = () => (
 );
 const YouTubeIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-8 w-8 text-primary" fill="currentColor">
-        <path d="M21.582 7.696c-.246-1.34-1.28-2.37-2.62-2.616C17.043 4.5 12 4.5 12 4.5s-5.043 0-6.962.58c-1.34.246-2.374 1.276-2.62-2.616C2.5 9.615 2.5 12 2.5 12s0 2.385.418 4.304c.246 1.34 1.28 2.37 2.62 2.616C7.457 19.5 12 19.5 12 19.5s5.043 0 6.962-.58c1.34-.246 2.374-1.276-2.62-2.616C21.5 14.385 21.5 12 21.5 12s0-2.385-.418-4.304zM9.5 15.5V8.5l6 3.5-6 3.5z" />
+        <path d="M21.582 7.696c-.246-1.34-1.28-2.37-2.62-2.616C17.043 4.5 12 4.5 12 4.5s-5.043 0-6.962.58c-1.34.246-2.374 1.276-2.62 2.616C2.5 9.615 2.5 12 2.5 12s0 2.385.418 4.304c.246 1.34 1.28 2.37 2.62 2.616C7.457 19.5 12 19.5 12 19.5s5.043 0 6.962-.58c1.34-.246 2.374-1.276-2.62-2.616C21.5 14.385 21.5 12 21.5 12s0-2.385-.418-4.304zM9.5 15.5V8.5l6 3.5-6 3.5z" />
     </svg>
 );
 
@@ -244,10 +244,9 @@ export default function ProfilePage() {
       <div className="container mx-auto px-4 py-8 pb-24">
         <div className="text-center mb-8">
             <h1 className="text-2xl md:text-3xl font-bold">Analyst <span className="text-primary">HQ</span></h1>
-            <p className="text-muted-foreground">Your central hub for profile, missions, and rankings.</p>
+            <p className="text-muted-foreground">Your hub for profile, missions, and rankings.</p>
         </div>
         
-        {/* Airdrop Balance Card */}
         <Card className="mb-8 bg-card/80 backdrop-blur-sm border-accent/50 shadow-lg shadow-accent/10">
             <CardHeader>
                 <CardTitle className="flex items-center text-lg text-accent">
@@ -280,11 +279,9 @@ export default function ProfilePage() {
 
             <TabsContent value="profile" className="mt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    {/* Analyst Status Card */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center"><User className="mr-2 h-5 w-5"/>Analyst Status</CardTitle>
-                            <CardDescription>Your current standing and unique identifier.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                         <div>
@@ -307,11 +304,9 @@ export default function ProfilePage() {
                         </CardContent>
                     </Card>
                     
-                    {/* Points Overview Card */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center"><BarChart2 className="mr-2 h-5 w-5"/>Points Overview</CardTitle>
-                             <CardDescription>Your performance metrics.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                              <div>
@@ -325,11 +320,9 @@ export default function ProfilePage() {
                         </CardContent>
                     </Card>
 
-                    {/* Earned Badges Card - Spanning full width */}
                      <Card className="md:col-span-2">
                         <CardHeader>
                             <CardTitle className="flex items-center"><Award className="mr-2 h-5 w-5"/>Earned Badges</CardTitle>
-                            <CardDescription>Recognitions for your achievements.</CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-wrap gap-2">
                         {currentUser.badges && currentUser.badges.length > 0 ? currentUser.badges.map((badge: any, index: number) => (
@@ -374,7 +367,7 @@ export default function ProfilePage() {
                             Airdrop Initiative Dashboard
                         </CardTitle>
                         <CardDescription>
-                            Complete mandatory missions to secure your <strong className="text-orange-400">$BSAI</strong> allocation.
+                            Complete missions to secure your <strong className="text-orange-400">$BSAI</strong> allocation.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -447,7 +440,7 @@ export default function ProfilePage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center"><Users className="mr-2 h-5 w-5"/>Top 10 Analysts</CardTitle>
-                        <CardDescription>Current leaders in the weekly challenge based on XP.</CardDescription>
+                        <CardDescription>Weekly leaders based on XP.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>

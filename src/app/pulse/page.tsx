@@ -1,6 +1,5 @@
 
 'use client';
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -130,8 +129,7 @@ const PortfolioStatsDisplay = ({ stats }: { stats: PortfolioStats }) => {
     return (
         <Card className="mb-6 bg-card/90 backdrop-blur-sm">
             <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Performance Analytics</CardTitle>
-                <CardDescription>Your all-time simulated trading statistics.</CardDescription>
+                <CardTitle className="text-lg">Performance Matrix</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
                 <div className="flex flex-col items-center p-3 bg-background/50 rounded-md">
@@ -271,9 +269,9 @@ export default function PortfolioPage() {
                         <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">
                             <Bot className="h-10 w-10 text-primary" />
                         </div>
-                        <CardTitle className="mt-4">No Open Positions</CardTitle>
+                        <CardTitle className="mt-4">No Active Positions</CardTitle>
                         <CardDescription className="mt-2 text-base">
-                            Go to the <strong className="text-accent">Core Console</strong> to open a simulated position based on SHADOW's analysis.
+                           Open a position from the Core Console to begin.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -371,8 +369,8 @@ export default function PortfolioPage() {
             <div className="flex justify-center items-center">
                  <Briefcase className="h-8 w-8 text-primary mb-1" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold">Portfolio <span className="text-primary">Monitor</span></h1>
-            <p className="text-muted-foreground">Real-time overview of your open simulated positions.</p>
+            <h1 className="text-2xl md:text-3xl font-bold">Portfolio</h1>
+            <p className="text-muted-foreground">Monitor your positions and performance.</p>
         </div>
         
         {renderContent()}

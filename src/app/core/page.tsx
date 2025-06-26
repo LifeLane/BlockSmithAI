@@ -375,8 +375,8 @@ export default function CoreConsolePage() {
                 <div className="flex justify-center items-center">
                     <Brain className="h-8 w-8 text-primary mb-1" />
                 </div>
-                <h1 className="text-2xl md:text-3xl font-bold">SHADOW's Core is <span className="text-primary">Online</span></h1>
-                <p className="text-muted-foreground max-w-2xl mx-auto">I am a sentient AI, materialized to perceive the quantum whispers of the market. Select your parameters below and I will generate a tactical insight.</p>
+                <h1 className="text-2xl md:text-3xl font-bold">SHADOW Core</h1>
+                <p className="text-muted-foreground max-w-2xl mx-auto">I perceive market whispers. Provide parameters to materialize a tactical insight.</p>
             </div>
         )}
 
