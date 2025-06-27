@@ -5,7 +5,6 @@ import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, XCircle, Hourglass, TrendingUp, TrendingDown, Clock, Bot, Info, LogIn, Target, ShieldX, Zap, ShieldQuestion, PauseCircle, Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
@@ -503,9 +502,9 @@ export default function PortfolioPage() {
     return (
     <>
       <AppHeader />
-      <div className="container mx-auto px-4 py-8 flex flex-col h-[calc(100vh-8rem)]">
+      <div className="container mx-auto px-4 py-8">
         {isLoading ? (
-            <div className="flex justify-center items-center h-full">
+            <div className="flex justify-center items-center h-[calc(100vh-8rem)]">
                 <Loader2 className="h-8 w-8 animate-spin text-primary"/>
             </div>
         ) : error ? (
@@ -526,20 +525,16 @@ export default function PortfolioPage() {
         ) : (
              <>
                 {displayStats && <PortfolioStatsDisplay stats={displayStats} />}
-                 <Tabs defaultValue="open" className="flex-grow flex flex-col mt-2 min-h-0">
-                    <TabsList className="grid w-full grid-cols-2 shrink-0">
+                 <Tabs defaultValue="open" className="mt-4">
+                    <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="open">Open Positions</TabsTrigger>
                         <TabsTrigger value="history">Trade History</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="open" className="flex-grow mt-4 overflow-hidden">
-                        <ScrollArea className="h-full pr-4">
-                            {renderOpenPositions()}
-                        </ScrollArea>
+                    <TabsContent value="open" className="mt-4">
+                        {renderOpenPositions()}
                     </TabsContent>
-                    <TabsContent value="history" className="flex-grow mt-4 overflow-hidden">
-                        <ScrollArea className="h-full pr-4">
-                            {renderTradeHistory()}
-                        </ScrollArea>
+                    <TabsContent value="history" className="mt-4">
+                        {renderTradeHistory()}
                     </TabsContent>
                 </Tabs>
             </>
