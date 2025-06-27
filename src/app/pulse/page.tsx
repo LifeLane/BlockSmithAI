@@ -200,7 +200,7 @@ const StatCard = ({ title, value, icon, valueClassName }: { title: string; value
 
 const PortfolioStatsDisplay = ({ stats }: { stats: PortfolioStats }) => {
     return (
-        <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30 shrink-0">
+        <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30">
             <CardHeader className="pb-4">
                 <CardTitle className="text-lg flex items-center gap-2 text-accent"><Briefcase /> Performance Matrix</CardTitle>
             </CardHeader>
