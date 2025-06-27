@@ -1,3 +1,4 @@
+
 import { FunctionComponent } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,7 +40,6 @@ interface StrategyExplanationSectionProps {
   isLoading: boolean;
   error?: string | null;
   symbol: string;
-  onSimulate?: () => void;
   onChat?: () => void;
 }
 
@@ -86,7 +86,6 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   isLoading,
   error,
   symbol,
-  onSimulate,
   onChat,
 }) => {
   const { toast } = useToast();
@@ -384,16 +383,16 @@ Analysis Timestamp: ${currentDateTime}
           </div>
         )}
       </CardContent>
-       <CardFooter className="flex-col gap-4 pt-2">
-            {onSimulate && (
-                <Button
-                    onClick={onSimulate}
-                    className="w-full max-w-sm bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground font-semibold py-3 text-base shadow-lg"
-                >
-                    <Zap className="mr-2 h-5 w-5"/>
-                    Log Signal for Simulation
-                </Button>
-            )}
+       <CardFooter className="flex-col gap-2 pt-4">
+        <div className="text-center w-full">
+            <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
+                <Zap className="h-4 w-4 text-tertiary" />
+                {isHoldSignal 
+                  ? "HOLD signal acknowledged. No position logged." 
+                  : "Signal automatically logged for simulation."
+                }
+            </p>
+        </div>
        </CardFooter>
     </Card>
   );

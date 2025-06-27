@@ -13,16 +13,6 @@ import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
 import ApiSettingsModal from '@/components/blocksmith-ai/ApiSettingsModal';
 import { Button } from '@/components/ui/button';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   generateTradingStrategyAction,
   generateShadowChoiceStrategyAction,
   fetchMarketDataAction,
@@ -35,7 +25,7 @@ import {
 } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Sparkles, ShieldQuestion, BrainCircuit } from 'lucide-react';
+import { Loader2, Sparkles, BrainCircuit } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type AIStrategyOutput = (AIOutputType | GenerateShadowChoiceStrategyOutput) & { 
@@ -70,7 +60,6 @@ export default function CoreConsolePage() {
 
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
-  const [showConfirmLogDialog, setShowConfirmLogDialog] = useState<boolean>(false);
   
   const { user: currentUser, isLoading: isUserLoading, refetch: refetchUser } = useCurrentUser();
   
@@ -224,19 +213,38 @@ export default function CoreConsolePage() {
         description: result.error,
         variant: "destructive",
       });
-      if(currentUser?.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount -1);
+      if(currentUser?.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
     } else {
       const resultWithId: AIStrategyOutput = { ...result, id: crypto.randomUUID() };
       setAiStrategy(resultWithId);
+      
+      let toastDescription;
+      const isHold = result.signal?.toUpperCase() === 'HOLD';
+
+      if (currentUser && !isUserLoading) {
+        if (!isHold) {
+          const logResult = await logSimulatedPositionAction(currentUser.id, resultWithId);
+          if (logResult.error) {
+            toastDescription = <span className="text-foreground">Analysis generated, but <strong className="text-destructive">auto-logging failed:</strong> {logResult.error}</span>;
+          } else {
+            toastDescription = <span className="text-foreground">Analysis for <strong className="text-primary">{result.symbol}</strong> generated and <strong className="text-tertiary">auto-logged</strong> for simulation.</span>;
+          }
+        } else {
+          toastDescription = <span className="text-foreground">HOLD signal for <strong className="text-primary">{result.symbol}</strong> generated. No position logged.</span>;
+        }
+      } else {
+        toastDescription = <span className="text-foreground">New analysis for <strong className="text-primary">{result.symbol}</strong> has been generated.</span>;
+      }
+
       toast({
         title: <span className="text-accent">SHADOW's Insight Materialized!</span>,
-        description: <span className="text-foreground">New analysis for <strong className="text-primary">{result.symbol}</strong> has been generated.</span>,
+        description: toastDescription,
       });
     }
     
     if (isShadowChoice) setIsLoadingShadowChoice(false);
     else setIsLoadingStrategy(false);
-  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast]);
+  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, isUserLoading, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast]);
 
 
   const handleToggleChat = () => setIsChatOpen(prev => !prev);
@@ -247,51 +255,6 @@ export default function CoreConsolePage() {
       description: <span className="text-foreground">You're confirmed for the <strong className="text-orange-400">$BSAI airdrop</strong>. <strong className="text-primary">Unlimited SHADOW analyses</strong> unlocked!</span>,
     });
     await refetchUser();
-  };
-
-  const handleLogSignal = () => {
-    if (!aiStrategy) {
-         toast({
-            title: "No SHADOW Insight Available",
-            description: "Please generate an analysis from SHADOW first.",
-            variant: "default",
-        });
-        return;
-    }
-    setShowConfirmLogDialog(true);
-  };
-
-  const confirmLogSignal = async () => {
-    if (!currentUser) {
-        toast({ title: "User Not Found", description: "Cannot log signal. Please refresh the page.", variant: "destructive" });
-        return setShowConfirmLogDialog(false);
-    }
-    if (!aiStrategy) return setShowConfirmLogDialog(false);
-
-    const result = await logSimulatedPositionAction(currentUser.id, aiStrategy);
-
-    if (result.error) {
-        toast({
-            title: <span className="text-destructive">Action Failed!</span>,
-            description: <span className="text-foreground">{result.error}</span>,
-            variant: "destructive",
-        });
-    } else {
-        const isHoldSignal = aiStrategy.signal.toUpperCase() === 'HOLD';
-        const toastTitle = isHoldSignal
-            ? <span className="text-primary">HOLD Signal Acknowledged</span>
-            : <span className="text-tertiary">Position Opened</span>;
-        
-        const toastDescription = isHoldSignal
-            ? <span>The HOLD signal for {aiStrategy?.symbol} has been logged.</span>
-            : <span>An OPEN position for {aiStrategy?.symbol} has been logged and is now being monitored.</span>;
-
-        toast({
-            title: toastTitle,
-            description: toastDescription,
-        });
-    }
-    setShowConfirmLogDialog(false);
   };
 
   const isButtonDisabled = isUserLoading || isLoadingStrategy || isLoadingShadowChoice || isLoadingSymbols || (currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES);
@@ -364,7 +327,6 @@ export default function CoreConsolePage() {
                         isLoading={isLoadingStrategy || isLoadingShadowChoice}
                         error={strategyError}
                         symbol={symbol}
-                        onSimulate={handleLogSignal}
                         onChat={handleToggleChat}
                     />
 
@@ -394,37 +356,6 @@ export default function CoreConsolePage() {
         onSignupSuccess={handleAirdropSignupSuccess}
       />
       <ApiSettingsModal />
-      {aiStrategy && (
-        <AlertDialog open={showConfirmLogDialog} onOpenChange={setShowConfirmLogDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle className="flex items-center">
-                <ShieldQuestion className="mr-2 h-6 w-6 text-tertiary"/>
-                Confirm Action
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {aiStrategy.signal.toUpperCase() === 'HOLD'
-                  ? <>You are about to acknowledge and log a <strong className="text-primary">HOLD</strong> signal for <strong className="text-primary">{symbol}</strong>. This action will be recorded but will not create a pending trade.</>
-                  : <>You are about to log a <strong className={aiStrategy.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{aiStrategy.signal}</strong> signal
-                    for <strong className="text-primary">{symbol}</strong> based on SHADOW's parameters.</>
-                }
-                <br />
-                <br />
-                The signal will be executed immediately as an <strong className="text-accent">OPEN</strong> position and will be monitored by the Portfolio.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={confirmLogSignal}
-                className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground"
-              >
-                {aiStrategy.signal.toUpperCase() === 'HOLD' ? 'Acknowledge HOLD' : 'Log Open Position'}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
     </>
   );
 }
