@@ -24,7 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { openSimulatedPositionAction } from '@/app/actions';
 import { cn } from '@/lib/utils';
 
-type SignalWithTimestamp = GenerateTradingStrategyOutput & { id: string; timestamp: string; status?: 'EXECUTED' };
+type SignalWithTimestamp = GenerateTradingStrategyOutput & { id: string; timestamp: string; status?: 'EXECUTED' | 'SIMULATED' };
 
 const getCurrentUserId = (): string | null => {
   if (typeof window !== 'undefined') {
@@ -45,6 +45,13 @@ const SignalIcon = ({ signal }: { signal: string }) => {
             return <Bot className="h-6 w-6 text-primary"/>;
     }
 }
+
+const formatPrice = (priceStr?: string) => {
+    if (!priceStr) return 'N/A';
+    const price = parseFloat(priceStr);
+    if (isNaN(price)) return 'N/A';
+    return price.toFixed(2);
+};
 
 
 export default function MonitorPage() {
@@ -147,7 +154,7 @@ export default function MonitorPage() {
         <ScrollArea className="h-[calc(100vh-250px)] pr-4">
           <div className="space-y-4">
             {signals.length > 0 ? signals.map((signal, index) => {
-                const isExecuted = signal.status === 'EXECUTED';
+                const isActionTaken = signal.status === 'EXECUTED' || signal.status === 'SIMULATED';
                 const signalType = signal.signal.toUpperCase();
                 let signalColor = 'text-foreground';
                 if (signalType === 'BUY') signalColor = 'text-green-400';
@@ -156,9 +163,9 @@ export default function MonitorPage() {
                 
                 return (
               <Card key={signal.id || `${signal.symbol}-${index}`} className="bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 flex flex-col">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2 gap-2">
                   <div className="flex items-center gap-4">
-                     <div className="p-2 bg-background rounded-md">
+                     <div className="p-2 bg-background rounded-md shrink-0">
                         <SignalIcon signal={signal.signal} />
                     </div>
                     <div>
@@ -171,26 +178,26 @@ export default function MonitorPage() {
                       </CardDescription>
                     </div>
                   </div>
-                   <Badge variant={isExecuted ? "default" : "secondary"} className={cn(
-                        "transition-colors",
-                        isExecuted ? "bg-green-900/60 text-green-300 border-green-500/50" : "bg-background"
+                   <Badge variant={isActionTaken ? "default" : "secondary"} className={cn(
+                        "transition-colors self-start sm:self-center",
+                        isActionTaken ? "bg-green-900/60 text-green-300 border-green-500/50" : "bg-background"
                     )}>
-                        {isExecuted ? <CheckCircle2 className="h-3 w-3 mr-1.5"/> : <Hourglass className="h-3 w-3 mr-1.5"/>}
-                        {isExecuted ? 'Executed' : 'Pending'} | {signal.risk_rating} Risk
+                        {isActionTaken ? <CheckCircle2 className="h-3 w-3 mr-1.5"/> : <Hourglass className="h-3 w-3 mr-1.5"/>}
+                        {isActionTaken ? 'Executed' : 'Pending'} | {signal.risk_rating} Risk
                     </Badge>
                 </CardHeader>
-                <CardContent className="grid grid-cols-3 gap-2 text-sm pt-4">
+                <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm pt-4">
                    <div className="flex flex-col items-center p-2 bg-background/50 rounded-md">
                     <span className="text-muted-foreground text-xs flex items-center gap-1"><LogIn size={12}/>Entry</span>
-                    <span className="font-mono font-semibold text-primary">{signal.entry_zone}</span>
+                    <span className="font-mono font-semibold text-primary">{formatPrice(signal.entry_zone)}</span>
                   </div>
                   <div className="flex flex-col items-center p-2 bg-background/50 rounded-md">
                     <span className="text-muted-foreground text-xs flex items-center gap-1"><ShieldX size={12}/>Stop Loss</span>
-                    <span className="font-mono font-semibold text-red-400">{signal.stop_loss}</span>
+                    <span className="font-mono font-semibold text-red-400">{formatPrice(signal.stop_loss)}</span>
                   </div>
                   <div className="flex flex-col items-center p-2 bg-background/50 rounded-md">
                     <span className="text-muted-foreground text-xs flex items-center gap-1"><Target size={12}/>Take Profit</span>
-                    <span className="font-mono font-semibold text-green-400">{signal.take_profit}</span>
+                    <span className="font-mono font-semibold text-green-400">{formatPrice(signal.take_profit)}</span>
                   </div>
                 </CardContent>
                 <CardContent className="pt-2">
@@ -203,13 +210,13 @@ export default function MonitorPage() {
                     <Button 
                         className={cn(
                             "w-full",
-                            isExecuted ? "bg-secondary hover:bg-secondary/80 cursor-not-allowed" : "bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground"
+                            isActionTaken ? "bg-secondary hover:bg-secondary/80 cursor-not-allowed" : "bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground"
                         )}
                         onClick={() => handleSimulateClick(signal)}
-                        disabled={isExecuted}
+                        disabled={isActionTaken}
                     >
-                        {isExecuted ? <CheckCircle2 className="h-4 w-4 mr-2"/> : <Zap className="h-4 w-4 mr-2"/>}
-                        {isExecuted ? 'Action Executed' : `Acknowledge & Log ${signal.signal}`}
+                        {isActionTaken ? <CheckCircle2 className="h-4 w-4 mr-2"/> : <Zap className="h-4 w-4 mr-2"/>}
+                        {isActionTaken ? 'Action Executed' : `Acknowledge & Log ${signal.signal}`}
                     </Button>
                 </CardFooter>
               </Card>
