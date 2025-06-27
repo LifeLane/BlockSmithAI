@@ -3,13 +3,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle2, XCircle, Hourglass, TrendingUp, TrendingDown, Clock, Bot, Info, LogIn, Target, ShieldX, Zap, ShieldQuestion, PauseCircle, Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, TrendingUp, TrendingDown, Briefcase, Bot, AlertTriangle, LogOut, ShieldX, Target, LogIn, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, CheckCircle, XCircle, Gift, Clock, PauseCircle } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 
 
 // Import actions and types
@@ -19,9 +20,11 @@ import {
   fetchMarketDataAction,
   fetchTradeHistoryAction,
   fetchPortfolioStatsAction,
+  getOrCreateUserAction, // <-- Add import
   type Position,
   type LiveMarketData,
   type PortfolioStats,
+  type UserProfile, // <-- Add import
 } from '@/app/actions';
 
 const getCurrentUserId = (): string | null => {
@@ -220,12 +223,35 @@ export default function PortfolioPage() {
     const [portfolioStats, setPortfolioStats] = useState<PortfolioStats | null>(null);
     const [displayStats, setDisplayStats] = useState<PortfolioStats | null>(null);
     const [livePrices, setLivePrices] = useState<Record<string, LiveMarketData>>({});
+    const [closingPositionId, setClosingPositionId] = useState<string | null>(null);
+
+    const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [closingPositionId, setClosingPositionId] = useState<string | null>(null);
+    
     const { toast } = useToast();
-    const userId = getCurrentUserId();
     const isFetching = useRef(false);
+
+    useEffect(() => {
+      const initializeUser = async () => {
+        setIsLoading(true);
+        const userIdFromStorage = getCurrentUserId();
+        try {
+          const user = await getOrCreateUserAction(userIdFromStorage);
+          setCurrentUser(user);
+          if (user.id !== userIdFromStorage) {
+            localStorage.setItem('currentUserId', user.id);
+          }
+          setError(null);
+        } catch (e: any) {
+          console.error("Failed to initialize user on portfolio page:", e);
+          setError("Could not establish a user session. Please try again.");
+          setCurrentUser(null);
+          setIsLoading(false);
+        }
+      };
+      initializeUser();
+    }, []);
 
     const showCloseToast = useCallback((closedPosition: Position, airdropPoints: number, reason: 'manual' | 'expired' | 'auto-sl' | 'auto-tp') => {
         const pnl = closedPosition.pnl || 0;
@@ -275,9 +301,8 @@ export default function PortfolioPage() {
             setPositions(prev => prev.filter(p => p.id !== closedPosition.id));
             setTradeHistory(prev => [closedPosition, ...prev]);
             
-            // Refetch stats after optimistic update
-            if (userId) {
-                fetchPortfolioStatsAction(userId).then(statsResult => {
+            if (currentUser) {
+                fetchPortfolioStatsAction(currentUser.id).then(statsResult => {
                     if (!('error' in statsResult)) {
                         setPortfolioStats(statsResult);
                     }
@@ -291,19 +316,19 @@ export default function PortfolioPage() {
                 variant: "destructive",
             });
         }
-    }, [userId, showCloseToast, toast]);
+    }, [currentUser, showCloseToast, toast]);
 
-    const fetchPortfolioData = useCallback(async (forceRerun = false) => {
+    const fetchPortfolioData = useCallback(async (userId: string, forceRerun = false) => {
         if (!userId || (isFetching.current && !forceRerun)) return;
 
         isFetching.current = true;
-        if (!portfolioStats) setIsLoading(true);
-
+        
         try {
-            const userPositions = await fetchActivePositionsAction(userId);
-            const history = await fetchTradeHistoryAction(userId);
-            const statsResult = await fetchPortfolioStatsAction(userId);
-
+            const [userPositions, history, statsResult] = await Promise.all([
+                fetchActivePositionsAction(userId),
+                fetchTradeHistoryAction(userId),
+                fetchPortfolioStatsAction(userId),
+            ]);
 
             let currentLivePrices = { ...livePrices };
             let positionsToAutoClose: { pos: Position; closePrice: number; reason: 'auto-sl' | 'auto-tp' | 'expired' }[] = [];
@@ -362,15 +387,12 @@ export default function PortfolioPage() {
                 }
             }
             
-            // Execute auto-closures right away
             if (positionsToAutoClose.length > 0) {
                  for (const { pos, closePrice, reason } of positionsToAutoClose) {
-                    // Make sure we're not trying to close it again if it's already being processed
                     if(closingPositionId !== pos.id) {
                         await handleClosePosition(pos.id, closePrice, reason);
                     }
                 }
-                 // After auto-closing, we need to refilter the positions list for the UI
                 const remainingPositions = activePositions.filter(p => !positionsToAutoClose.some(closed => closed.pos.id === p.id));
                 setPositions(remainingPositions);
             } else {
@@ -391,19 +413,16 @@ export default function PortfolioPage() {
             setIsLoading(false);
             isFetching.current = false;
         }
-    }, [userId, portfolioStats, handleClosePosition, livePrices, closingPositionId]);
+    }, [handleClosePosition, livePrices, closingPositionId]);
     
 
     useEffect(() => {
-        if (!userId) {
-            setError("User not identified. Please visit the Core Console to initialize a session.");
-            setIsLoading(false);
-            return;
+        if (currentUser?.id) {
+            fetchPortfolioData(currentUser.id);
+            const interval = setInterval(() => fetchPortfolioData(currentUser.id), 15000); // Refresh every 15 seconds
+            return () => clearInterval(interval);
         }
-        fetchPortfolioData();
-        const interval = setInterval(() => fetchPortfolioData(), 15000); // Refresh every 15 seconds
-        return () => clearInterval(interval);
-    }, [userId, fetchPortfolioData]); 
+    }, [currentUser, fetchPortfolioData]); 
     
     // Effect to calculate and update the displayed stats including unrealized PnL
     useEffect(() => {
@@ -485,7 +504,7 @@ export default function PortfolioPage() {
     <>
       <AppHeader />
       <div className="container mx-auto px-4 py-8 flex flex-col h-[calc(100vh-8rem)]">
-        {isLoading && !displayStats ? (
+        {isLoading ? (
             <div className="flex justify-center items-center h-full">
                 <Loader2 className="h-8 w-8 animate-spin text-primary"/>
             </div>

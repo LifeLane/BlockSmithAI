@@ -22,8 +22,9 @@ import {
   fetchLeaderboardDataJson, 
   updateUserSettingsJson, 
   claimMissionRewardAction,
-  UserProfile, 
-  LeaderboardUser,
+  getOrCreateUserAction, // Add import
+  type UserProfile, 
+  type LeaderboardUser,
 } from '../actions';
 
 // ---- Mission and Rank Data ----
@@ -40,7 +41,7 @@ const TelegramIcon = () => (
 );
 const YouTubeIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-8 w-8 text-primary" fill="currentColor">
-        <path d="M21.582 7.696c-.246-1.34-1.28-2.37-2.62-2.616C17.043 4.5 12 4.5 12 4.5s-5.043 0-6.962.58c-1.34.246-2.374 1.276-2.62 2.616C2.5 9.615 2.5 12 2.5 12s0 2.385.418 4.304c.246 1.34 1.28 2.37 2.62 2.616C7.457 19.5 12 19.5 12 19.5s5.043 0 6.962-.58c1.34-.246 2.374-1.276-2.62-2.616C21.5 14.385 21.5 12 21.5 12s0-2.385-.418-4.304zM9.5 15.5V8.5l6 3.5-6 3.5z" />
+        <path d="M21.582 7.696c-.246-1.34-1.28-2.37-2.62-2.616C17.043 4.5 12 4.5 12 4.5s-5.043 0-6.962.58c-1.34.246-2.374 1.276-2.62-2.616C2.5 9.615 2.5 12 2.5 12s0 2.385.418 4.304c.246 1.34 1.28 2.37 2.62 2.616C7.457 19.5 12 19.5 12 19.5s5.043 0 6.962-.58c1.34-.246 2.374-1.276-2.62-2.616C21.5 14.385 21.5 12 21.5 12s0-2.385-.418-4.304zM9.5 15.5V8.5l6 3.5-6 3.5z" />
     </svg>
 );
 
@@ -160,17 +161,10 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const [showAirdropModal, setShowAirdropModal] = useState(false);
   
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (userId: string) => {
       setLoading(true);
       setError(null);
-      const userId = getCurrentUserId();
-
-      if (!userId) {
-          setError("User profile not found. Please visit the Core Console to initialize your session.");
-          setLoading(false);
-          return;
-      }
-
+      
       try {
         const [user, leaderboard] = await Promise.all([
           fetchCurrentUserJson(userId),
@@ -195,9 +189,37 @@ export default function ProfilePage() {
       }
     }, []);
 
+    useEffect(() => {
+        const initializeUser = async () => {
+            setLoading(true);
+            const userIdFromStorage = getCurrentUserId();
+            try {
+                const user = await getOrCreateUserAction(userIdFromStorage);
+                setCurrentUser(user);
+                 if (user.id !== userIdFromStorage) {
+                    localStorage.setItem('currentUserId', user.id);
+                }
+            } catch (e: any) {
+                console.error("Failed to initialize user on profile page:", e);
+                setError(`An error occurred while fetching user data: ${e.message}`);
+                setLoading(false);
+            }
+        };
+        initializeUser();
+    }, []);
+
+    useEffect(() => {
+        if (currentUser) {
+            loadData(currentUser.id);
+        }
+    }, [currentUser, loadData]);
+
+
   const handleClaim = async (missionId: string) => {
+      if (!currentUser) return;
+
       const mission = missionsList.find(m => m.id === missionId);
-      if (!mission || !currentUser || currentUser.claimedMissions?.includes(missionId)) return;
+      if (!mission || currentUser.claimedMissions?.includes(missionId)) return;
 
       const result = await claimMissionRewardAction(currentUser.id, missionId);
       
@@ -206,7 +228,7 @@ export default function ProfilePage() {
               title: <span className="text-accent">{`Reward Claimed for "${mission.title}"!`}</span>,
               description: <span className="text-foreground">{result.message}</span>,
           });
-          loadData(); 
+          if (currentUser) loadData(currentUser.id); 
       } else {
            toast({
               title: "Claim Failed",
@@ -222,26 +244,16 @@ export default function ProfilePage() {
         title: <span className="text-accent">BlockShadow Registration Complete!</span>,
         description: <span className="text-foreground">Your eligibility is confirmed. Welcome to the Initiative.</span>,
       });
-      loadData();
-  }, [loadData, toast]);
+      if (currentUser) loadData(currentUser.id);
+  }, [currentUser, loadData, toast]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
 
   const handleSaveSettings = async () => {
     if (currentUser && username !== currentUser.username) {
       setLoading(true);
       setError(null);
-       const userId = getCurrentUserId();
-       if (!userId) {
-           setError("User ID not found. Cannot save settings.");
-           setLoading(false);
-           setSettingsOpen(false);
-           return;
-       }
 
-      const updatedUser = await updateUserSettingsJson(userId, { username });
+      const updatedUser = await updateUserSettingsJson(currentUser.id, { username });
       if (updatedUser) {
         setCurrentUser(updatedUser);
         toast({ title: "Success", description: "Username updated successfully."});

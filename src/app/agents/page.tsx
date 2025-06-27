@@ -15,8 +15,10 @@ import {
   upgradeAgentAction,
   fetchSpecialOpsAction,
   claimSpecialOpAction,
+  getOrCreateUserAction, // Add import
   type UserAgentData,
-  type SpecialOp
+  type SpecialOp,
+  type UserProfile, // Add import
 } from '@/app/actions';
 
 const getCurrentUserId = (): string | null => {
@@ -62,13 +64,10 @@ const Countdown = ({ endTime }: { endTime: string }) => {
 };
 
 
-const AgentCard = ({ agentData, userXp, onAction }: { agentData: UserAgentData, userXp: number, onAction: () => void }) => {
+const AgentCard = ({ agentData, userXp, onAction, userId }: { agentData: UserAgentData, userXp: number, onAction: () => void, userId: string }) => {
     const { toast } = useToast();
     const [isProcessing, setIsProcessing] = useState(false);
     
-    const userId = getCurrentUserId();
-    if (!userId) return null;
-
     const level = agentData.userState?.level || 1;
     const currentLevelData = agentData.levels.find(l => l.level === level);
     const nextLevelData = agentData.levels.find(l => l.level === level + 1);
@@ -182,7 +181,6 @@ const AgentCard = ({ agentData, userXp, onAction }: { agentData: UserAgentData, 
 
 const SpecialOpCard = ({ op, agents, onClaim }: { op: SpecialOp, agents: UserAgentData[], onClaim: (opId: string) => void }) => {
     const [isProcessing, setIsProcessing] = useState(false);
-    const { toast } = useToast();
 
     const requiredAgent = agents.find(a => a.id === op.requiredAgentId);
     const userAgentLevel = requiredAgent?.userState?.level || 0;
@@ -241,17 +239,12 @@ export default function AgentsPage() {
     const [agentData, setAgentData] = useState<UserAgentData[]>([]);
     const [userXp, setUserXp] = useState(0);
     const [specialOps, setSpecialOps] = useState<SpecialOp[]>([]);
+    const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const { toast } = useToast();
-    const userId = getCurrentUserId();
     
-    const fetchData = useCallback(async () => {
-        if (!userId) {
-            setError("User session not found. Please return to the Core Console to initialize.");
-            setIsLoading(false);
-            return;
-        }
+    const fetchData = useCallback(async (userId: string) => {
         setIsLoading(true);
         
         const [agentResult, opsResult] = await Promise.all([
@@ -270,18 +263,39 @@ export default function AgentsPage() {
         setSpecialOps(opsResult); // No error handling for ops, can fail gracefully
 
         setIsLoading(false);
-    }, [userId, toast]);
+    }, [toast]);
 
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+      const initializeUser = async () => {
+        setIsLoading(true);
+        const userIdFromStorage = getCurrentUserId();
+        try {
+          const user = await getOrCreateUserAction(userIdFromStorage);
+          setCurrentUser(user);
+          if (user.id !== userIdFromStorage) {
+            localStorage.setItem('currentUserId', user.id);
+          }
+        } catch (e: any) {
+          console.error("Failed to init user on agents page", e);
+          setError("Could not establish a user session.");
+          setIsLoading(false);
+        }
+      };
+      initializeUser();
+    }, []);
+
+    useEffect(() => {
+        if (currentUser) {
+            fetchData(currentUser.id);
+        }
+    }, [currentUser, fetchData]);
     
     const handleClaimSpecialOp = async (opId: string) => {
-        if (!userId) return;
-        const result = await claimSpecialOpAction(userId, opId);
+        if (!currentUser) return;
+        const result = await claimSpecialOpAction(currentUser.id, opId);
         if (result.success) {
             toast({ title: "Special Op Reward Claimed!", description: result.message, variant: 'default' });
-            fetchData(); // Refresh all data
+            fetchData(currentUser.id); // Refresh all data
         } else {
             toast({ title: "Claim Failed", description: result.message, variant: 'destructive' });
         }
@@ -321,8 +335,8 @@ export default function AgentsPage() {
                     <SpecialOpCard key={op.id} op={op} agents={agentData} onClaim={handleClaimSpecialOp} />
                 ))}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {agentData.map(agent => (
-                        <AgentCard key={agent.id} agentData={agent} userXp={userXp} onAction={fetchData} />
+                    {currentUser && agentData.map(agent => (
+                        <AgentCard key={agent.id} agentData={agent} userXp={userXp} onAction={() => fetchData(currentUser.id)} userId={currentUser.id} />
                     ))}
                 </div>
             </>
