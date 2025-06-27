@@ -19,6 +19,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Mail, Gift, Rocket, Sparkles, Phone, User, Bot } from 'lucide-react';
 import { handleAirdropSignupAction, type AirdropFormData } from '@/app/actions';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const TwitterIcon = () => (
   <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary">
@@ -41,6 +42,7 @@ interface AirdropSignupModalProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onSignupSuccess: () => void;
+  userId: string;
 }
 
 const signupSchema = z.object({
@@ -72,18 +74,36 @@ const signupSchema = z.object({
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
-const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen, onOpenChange, onSignupSuccess }) => {
+const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen, onOpenChange, onSignupSuccess, userId }) => {
+  const { user } = useCurrentUser();
+
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      email: '',
-      phone: '',
-      x_handle: '',
-      telegram_handle: '',
-      youtube_handle: '',
-      wallet_address: '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      x_handle: user?.x_handle || '',
+      telegram_handle: user?.telegram_handle || '',
+      youtube_handle: user?.youtube_handle || '',
+      wallet_address: user?.wallet_address || '',
+      wallet_type: user?.wallet_type as 'ETH' | 'SOL' | 'TON' | undefined,
     },
   });
+
+  useEffect(() => {
+    if (user) {
+        form.reset({
+            email: user.email || '',
+            phone: user.phone || '',
+            x_handle: user.x_handle || '',
+            telegram_handle: user.telegram_handle || '',
+            youtube_handle: user.youtube_handle || '',
+            wallet_address: user.wallet_address || '',
+            wallet_type: user.wallet_type as 'ETH' | 'SOL' | 'TON' | undefined,
+        });
+    }
+  }, [user, form]);
+
 
   const selectedWalletType = useWatch({
     control: form.control,
@@ -100,7 +120,6 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
   }
 
   const onSubmit = async (data: AirdropFormData) => {
-    const userId = localStorage.getItem('currentUserId');
     if (!userId) {
         alert("Could not find your user session. Please refresh the page and try again.");
         return;
@@ -109,12 +128,12 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
     console.log("Submitting Airdrop Signup Data:", data);
     try {
       const result = await handleAirdropSignupAction(data, userId);
-      if (result.userId) {
+      if ('userId' in result) {
         console.log("Airdrop signup successful for User ID:", result.userId);
         onSignupSuccess();
         form.reset();
         onOpenChange(false);
-      } else if (result.error) {
+      } else if ('error' in result) {
         console.error("Airdrop signup failed:", result.error);
         alert(`Signup failed: ${result.error}`);
       } else {
@@ -160,7 +179,7 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       className="flex flex-col space-y-1"
                     >
                       <FormItem className="flex items-center space-x-3 space-y-0">
@@ -201,7 +220,7 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
                 disabled={form.formState.isSubmitting}
               >
                 <Rocket className="mr-2 h-5 w-5" />
-                Confirm Eligibility & Register
+                {user?.status === 'Registered' ? 'Update Registration' : 'Confirm Eligibility & Register'}
               </Button>
             </DialogFooter>
           </form>

@@ -254,11 +254,6 @@ export default function ProfilePage() {
                     </CardContent>
                 </Card>
             </div>
-            <AirdropSignupModal
-                isOpen={showAirdropModal}
-                onOpenChange={setShowAirdropModal}
-                onSignupSuccess={handleAirdropSignupSuccess}
-            />
         </>
       );
   }
@@ -493,11 +488,14 @@ export default function ProfilePage() {
         </Tabs>
 
       </div>
-       <AirdropSignupModal
-        isOpen={showAirdropModal}
-        onOpenChange={setShowAirdropModal}
-        onSignupSuccess={handleAirdropSignupSuccess}
-      />
+      {currentUser && (
+        <AirdropSignupModal
+            isOpen={showAirdropModal}
+            onOpenChange={setShowAirdropModal}
+            onSignupSuccess={handleAirdropSignupSuccess}
+            userId={currentUser.id}
+        />
+      )}
     </>
   );
 }

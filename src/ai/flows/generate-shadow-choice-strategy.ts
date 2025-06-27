@@ -164,9 +164,8 @@ const shadowChoiceStrategyFlow = ai.defineFlow(
     return {
         ...output,
         gpt_confidence_score: score,
+        risk_rating: output.risk_rating || "Medium",
         analysisSummary: output.analysisSummary || "Analysis summary was not generated.",
     };
   }
 );
-
-    

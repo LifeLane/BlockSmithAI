@@ -350,11 +350,14 @@ export default function CoreConsolePage() {
         )}
       </div>
       <ChatbotPopup isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
-      <AirdropSignupModal
-        isOpen={showAirdropModal}
-        onOpenChange={setShowAirdropModal}
-        onSignupSuccess={handleAirdropSignupSuccess}
-      />
+      {currentUser && (
+        <AirdropSignupModal
+            isOpen={showAirdropModal}
+            onOpenChange={setShowAirdropModal}
+            onSignupSuccess={handleAirdropSignupSuccess}
+            userId={currentUser.id}
+        />
+      )}
       <ApiSettingsModal />
     </>
   );

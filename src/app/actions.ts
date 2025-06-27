@@ -632,3 +632,4 @@ export async function claimSpecialOpAction(userId: string, opId: string): Promis
     } catch (error: any) {
         return { success: false, message: `Claim failed: ${error.message}` };
     }
+}
