@@ -433,10 +433,7 @@ export async function closePositionAction(positionId: string, closePrice: number
 
         // The entry price is fixed when the position is created and should not change.
         const entry = position.entryPrice;
-        if (isNaN(entry)) {
-             return { error: 'Invalid entry price stored for this position.' };
-        }
-
+        
         const pnl = position.signalType === 'BUY' ? (closePrice - entry) * position.size : (entry - closePrice) * position.size;
         const airdropPointsEarned = Math.max(0, Math.floor(pnl * 10)); // Example: 10 points per dollar of PnL
         
@@ -469,7 +466,7 @@ export async function fetchPendingAndOpenPositionsAction(userId: string): Promis
         return await prisma.position.findMany({ 
             where: { 
                 userId, 
-                status: { in: ['PENDING', 'OPEN'] }
+                status: { in: ['OPEN'] }
             }, 
             orderBy: { id: 'desc' } 
         });
@@ -635,4 +632,3 @@ export async function claimSpecialOpAction(userId: string, opId: string): Promis
     } catch (error: any) {
         return { success: false, message: `Claim failed: ${error.message}` };
     }
-}
