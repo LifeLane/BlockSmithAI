@@ -348,17 +348,48 @@ export async function claimMissionRewardAction(userId: string, missionId: string
 }
 
 export async function openSimulatedPositionAction(userId: string, strategy: GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput): Promise<{ position?: Position; error?: string }> {
-    if (!strategy.signal || strategy.signal.toUpperCase() === 'HOLD') return { error: "Cannot open a position for a 'HOLD' signal." };
+    if (!strategy.signal) return { error: "Signal information is missing from the strategy." };
+    
+    // Acknowledge HOLD signals without creating a trade, which is the correct interpretation.
+    if (strategy.signal.toUpperCase() === 'HOLD') {
+        return { error: "A 'HOLD' signal means no new position should be opened. Action acknowledged." };
+    }
+    
     try {
+        const entryPrice = parseFloat(strategy.entry_zone);
+        const stopLoss = parseFloat(strategy.stop_loss);
+        const takeProfit = parseFloat(strategy.take_profit);
+
+        if (isNaN(entryPrice) || isNaN(stopLoss) || isNaN(takeProfit)) {
+            return { error: "Invalid price format for entry, stop loss, or take profit." };
+        }
+
+        // Validate SL/TP based on signal direction
+        if (strategy.signal.toUpperCase() === 'BUY') {
+            if (stopLoss >= entryPrice) {
+                return { error: `Invalid Stop Loss for BUY signal. Stop Loss (${stopLoss}) must be below Entry Price (${entryPrice}).` };
+            }
+            if (takeProfit <= entryPrice) {
+                return { error: `Invalid Take Profit for BUY signal. Take Profit (${takeProfit}) must be above Entry Price (${entryPrice}).` };
+            }
+        } else if (strategy.signal.toUpperCase() === 'SELL') {
+            if (stopLoss <= entryPrice) {
+                return { error: `Invalid Stop Loss for SELL signal. Stop Loss (${stopLoss}) must be above Entry Price (${entryPrice}).` };
+            }
+            if (takeProfit >= entryPrice) {
+                return { error: `Invalid Take Profit for SELL signal. Take Profit (${takeProfit}) must be below Entry Price (${entryPrice}).` };
+            }
+        }
+
         const newPosition = await prisma.position.create({
             data: {
                 id: randomUUID(), userId, symbol: strategy.symbol,
                 signalType: strategy.signal === 'BUY' ? 'BUY' : 'SELL',
-                entryPrice: parseFloat(strategy.entry_zone),
+                entryPrice: entryPrice,
                 size: 1, status: 'OPEN',
                 openTimestamp: new Date().toISOString(),
-                stopLoss: parseFloat(strategy.stop_loss),
-                takeProfit: parseFloat(strategy.take_profit),
+                stopLoss: stopLoss,
+                takeProfit: takeProfit,
                 expirationTimestamp: add(new Date(), { hours: 24 }).toISOString(),
             }
         });
@@ -543,5 +574,7 @@ export async function claimSpecialOpAction(userId: string, opId: string): Promis
         return { success: false, message: `Claim failed: ${error.message}` };
     }
 }
+
+    
 
     

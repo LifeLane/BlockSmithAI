@@ -365,14 +365,10 @@ Analysis Timestamp: ${currentDateTime}
                 <Button
                     onClick={onSimulate}
                     className="w-full max-w-sm bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground font-semibold py-3 text-base shadow-lg"
-                    disabled={strategy.signal?.toUpperCase() === 'HOLD'}
                 >
                     <Zap className="mr-2 h-5 w-5"/>
-                    Simulate This Insight
+                    Acknowledge & Simulate
                 </Button>
-            )}
-             {strategy.signal?.toUpperCase() === 'HOLD' && (
-                <p className="text-xs text-center text-muted-foreground">A 'HOLD' signal indicates no action. Simulation is disabled.</p>
             )}
        </CardFooter>
     </Card>
@@ -380,3 +376,5 @@ Analysis Timestamp: ${currentDateTime}
 };
 
 export default StrategyExplanationSection;
+
+    

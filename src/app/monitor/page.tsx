@@ -53,14 +53,6 @@ export default function MonitorPage() {
   }, []);
   
   const handleSimulateClick = (signal: SignalWithTimestamp) => {
-    if (signal.signal.toUpperCase() === 'HOLD') {
-        toast({
-            title: "Cannot Simulate 'HOLD'",
-            description: "A 'HOLD' signal indicates no action should be taken. You cannot open a position based on it.",
-            variant: "default",
-        });
-        return;
-    }
     setSelectedSignal(signal);
     setShowConfirmDialog(true);
   };
@@ -186,7 +178,7 @@ export default function MonitorPage() {
                             isExecuted ? "bg-secondary hover:bg-secondary/80 cursor-not-allowed" : "bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground"
                         )}
                         onClick={() => handleSimulateClick(signal)}
-                        disabled={isExecuted || signal.signal.toUpperCase() === 'HOLD'}
+                        disabled={isExecuted}
                     >
                         {isExecuted ? <CheckCircle2 className="h-4 w-4 mr-2"/> : <Zap className="h-4 w-4 mr-2"/>}
                         {isExecuted ? 'Trade Executed' : 'Simulate This Trade'}
@@ -248,3 +240,5 @@ export default function MonitorPage() {
     </>
   );
 }
+
+    
