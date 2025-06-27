@@ -104,18 +104,18 @@ export default function MonitorPage() {
             variant: "destructive",
         });
     } else {
-        const toastTitle = selectedSignal.signal.toUpperCase() === 'HOLD'
+        const isHoldSignal = selectedSignal.signal.toUpperCase() === 'HOLD';
+        const toastTitle = isHoldSignal
             ? <span className="text-primary">HOLD Signal Acknowledged</span>
             : <span className="text-tertiary">Position Opened!</span>;
         
-        const toastDescription = selectedSignal.signal.toUpperCase() === 'HOLD'
-            ? <span>Simulated {selectedSignal?.signal} for {selectedSignal?.symbol} has been logged in your Portfolio History.</span>
+        const toastDescription = isHoldSignal
+            ? <span>The HOLD signal for {selectedSignal?.symbol} has been acknowledged. No position was opened.</span>
             : <span>Simulated {selectedSignal?.signal} for {selectedSignal?.symbol} opened. View in your Portfolio.</span>;
         
         toast({
             title: toastTitle,
             description: toastDescription,
-            variant: "default",
         });
          try {
             const history: SignalWithTimestamp[] = JSON.parse(localStorage.getItem('bsaiSignalHistory') || '[]');
@@ -254,7 +254,7 @@ export default function MonitorPage() {
               </AlertDialogTitle>
                <AlertDialogDescription>
                 {selectedSignal.signal.toUpperCase() === 'HOLD'
-                  ? <>You are about to acknowledge a <strong className="text-primary">HOLD</strong> signal for <strong className="text-primary">{selectedSignal.symbol}</strong>. This will be logged in your trade history.</>
+                  ? <>You are about to acknowledge a <strong className="text-primary">HOLD</strong> signal for <strong className="text-primary">{selectedSignal.symbol}</strong>. This will be logged in your signal history but will not open a trade.</>
                   : <>You are about to open a simulated <strong className={selectedSignal.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{selectedSignal.signal}</strong> position
                     for <strong className="text-primary">{selectedSignal.symbol}</strong> based on this historical analysis.</>
                 }

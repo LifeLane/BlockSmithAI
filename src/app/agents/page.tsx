@@ -15,18 +15,10 @@ import {
   upgradeAgentAction,
   fetchSpecialOpsAction,
   claimSpecialOpAction,
-  getOrCreateUserAction, // Add import
   type UserAgentData,
   type SpecialOp,
-  type UserProfile, // Add import
 } from '@/app/actions';
-
-const getCurrentUserId = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('currentUserId');
-  }
-  return null;
-};
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const AGENT_ICONS: { [key: string]: React.ElementType } = {
     Binary: Binary,
@@ -239,56 +231,44 @@ export default function AgentsPage() {
     const [agentData, setAgentData] = useState<UserAgentData[]>([]);
     const [userXp, setUserXp] = useState(0);
     const [specialOps, setSpecialOps] = useState<SpecialOp[]>([]);
-    const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const { toast } = useToast();
-    
+    const { user: currentUser, isLoading: isUserLoading, error: userError } = useCurrentUser();
+
     const fetchData = useCallback(async (userId: string) => {
         setIsLoading(true);
+        setError(null);
         
-        const [agentResult, opsResult] = await Promise.all([
-            fetchAgentDataAction(userId),
-            fetchSpecialOpsAction(userId)
-        ]);
-
-        if ('error' in agentResult) {
-            setError(agentResult.error);
-            toast({ title: "Data Error", description: agentResult.error, variant: "destructive" });
-        } else {
-            setAgentData(agentResult.agents);
-            setUserXp(agentResult.userXp);
-        }
-        
-        setSpecialOps(opsResult); // No error handling for ops, can fail gracefully
-
-        setIsLoading(false);
-    }, [toast]);
-
-    useEffect(() => {
-      const initializeUser = async () => {
-        setIsLoading(true);
-        const userIdFromStorage = getCurrentUserId();
         try {
-          const user = await getOrCreateUserAction(userIdFromStorage);
-          setCurrentUser(user);
-          if (user.id !== userIdFromStorage) {
-            localStorage.setItem('currentUserId', user.id);
-          }
+            const [agentResult, opsResult] = await Promise.all([
+                fetchAgentDataAction(userId),
+                fetchSpecialOpsAction(userId)
+            ]);
+
+            if ('error' in agentResult) {
+                setError(agentResult.error);
+            } else {
+                setAgentData(agentResult.agents);
+                setUserXp(agentResult.userXp);
+            }
+            
+            setSpecialOps(opsResult); // No error handling for ops, can fail gracefully
         } catch (e: any) {
-          console.error("Failed to init user on agents page", e);
-          setError("Could not establish a user session.");
-          setIsLoading(false);
+            setError(e.message || "An unexpected error occurred while fetching agent data.");
+        } finally {
+            setIsLoading(false);
         }
-      };
-      initializeUser();
     }, []);
 
     useEffect(() => {
-        if (currentUser) {
+        if (userError) {
+            setError(userError);
+            setIsLoading(false);
+        } else if (currentUser) {
             fetchData(currentUser.id);
         }
-    }, [currentUser, fetchData]);
+    }, [currentUser, userError, fetchData]);
     
     const handleClaimSpecialOp = async (opId: string) => {
         if (!currentUser) return;
@@ -302,7 +282,7 @@ export default function AgentsPage() {
     };
 
     const renderContent = () => {
-        if (isLoading) {
+        if (isLoading || isUserLoading) {
             return (
                 <div className="flex justify-center items-center h-64">
                     <Loader2 className="h-8 w-8 animate-spin text-primary"/>

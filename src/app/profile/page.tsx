@@ -15,14 +15,13 @@ import { useToast } from "@/hooks/use-toast";
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 // Import JSON-based actions and types from app/actions.ts
 import { 
-  fetchCurrentUserJson, 
   fetchLeaderboardDataJson, 
   updateUserSettingsJson, 
   claimMissionRewardAction,
-  getOrCreateUserAction, // Add import
   type UserProfile, 
   type LeaderboardUser,
 } from '../actions';
@@ -41,7 +40,7 @@ const TelegramIcon = () => (
 );
 const YouTubeIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-8 w-8 text-primary" fill="currentColor">
-        <path d="M21.582 7.696c-.246-1.34-1.28-2.37-2.62-2.616C17.043 4.5 12 4.5 12 4.5s-5.043 0-6.962.58c-1.34.246-2.374 1.276-2.62-2.616C2.5 9.615 2.5 12 2.5 12s0 2.385.418 4.304c.246 1.34 1.28 2.37 2.62 2.616C7.457 19.5 12 19.5 12 19.5s5.043 0 6.962-.58c1.34-.246 2.374-1.276-2.62-2.616C21.5 14.385 21.5 12 21.5 12s0-2.385-.418-4.304zM9.5 15.5V8.5l6 3.5-6 3.5z" />
+        <path d="M21.582 7.696c-.246-1.34-1.28-2.37-2.62-2.616C17.043 4.5 12 4.5 12 4.5s-5.043 0-6.962.58c-1.34.246-2.374 1.276-2.62 2.616C2.5 9.615 2.5 12 2.5 12s0 2.385.418 4.304c.246 1.34 1.28 2.37 2.62 2.616C7.457 19.5 12 19.5 12 19.5s5.043 0 6.962-.58c1.34-.246 2.374-1.276 2.62 2.616C21.5 14.385 21.5 12 21.5 12s0-2.385-.418-4.304zM9.5 15.5V8.5l6 3.5-6 3.5z" />
     </svg>
 );
 
@@ -84,13 +83,6 @@ const getRankDetails = (xp: number) => {
     xpInCurrentLevel: xpInCurrentLevel.toLocaleString(),
     xpNeededForNextLevel: xpNeededForNextLevel.toLocaleString(),
   };
-};
-
-const getCurrentUserId = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('currentUserId');
-  }
-  return null;
 };
 
 const RankIcon = ({ rank }: { rank: number }) => {
@@ -153,67 +145,33 @@ const MissionCard = ({ mission, onClaim, isClaimed, isLocked }: { mission: typeo
 // ---- Main Page Component ----
 export default function ProfilePage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const [showAirdropModal, setShowAirdropModal] = useState(false);
+  const { user: currentUser, isLoading: isUserLoading, error: userError, refetch: refetchUser } = useCurrentUser();
   
-  const loadData = useCallback(async (userId: string) => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        const [user, leaderboard] = await Promise.all([
-          fetchCurrentUserJson(userId),
-          fetchLeaderboardDataJson(),
-        ]);
+  const loadPageData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const leaderboard = await fetchLeaderboardDataJson();
+      const rankedData = leaderboard.map((user, index) => ({ ...user, rank: index + 1 }));
+      setLeaderboardData(rankedData);
+    } catch (e: any) {
+      console.error("Failed to load leaderboard data:", e);
+      toast({ title: "Leaderboard Error", description: "Could not fetch leaderboard data.", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
 
-        if (user) {
-            setCurrentUser(user);
-            setUsername(user.username);
-        } else {
-            setError("Could not find user profile. It may have been deleted or the ID is incorrect.");
-        }
-        
-        const rankedData = leaderboard.map((user, index) => ({ ...user, rank: index + 1 }));
-        setLeaderboardData(rankedData);
-
-      } catch (e: any) {
-          console.error("Failed to load profile data:", e);
-          setError(`An error occurred while fetching data: ${e.message}`);
-      } finally {
-          setLoading(false);
-      }
-    }, []);
-
-    useEffect(() => {
-        const initializeUser = async () => {
-            setLoading(true);
-            const userIdFromStorage = getCurrentUserId();
-            try {
-                const user = await getOrCreateUserAction(userIdFromStorage);
-                setCurrentUser(user);
-                 if (user.id !== userIdFromStorage) {
-                    localStorage.setItem('currentUserId', user.id);
-                }
-            } catch (e: any) {
-                console.error("Failed to initialize user on profile page:", e);
-                setError(`An error occurred while fetching user data: ${e.message}`);
-                setLoading(false);
-            }
-        };
-        initializeUser();
-    }, []);
-
-    useEffect(() => {
-        if (currentUser) {
-            loadData(currentUser.id);
-        }
-    }, [currentUser, loadData]);
-
+  useEffect(() => {
+    if (currentUser) {
+      setUsername(currentUser.username);
+      loadPageData();
+    }
+  }, [currentUser, loadPageData]);
 
   const handleClaim = async (missionId: string) => {
       if (!currentUser) return;
@@ -228,7 +186,7 @@ export default function ProfilePage() {
               title: <span className="text-accent">{`Reward Claimed for "${mission.title}"!`}</span>,
               description: <span className="text-foreground">{result.message}</span>,
           });
-          if (currentUser) loadData(currentUser.id); 
+          refetchUser(); 
       } else {
            toast({
               title: "Claim Failed",
@@ -244,21 +202,18 @@ export default function ProfilePage() {
         title: <span className="text-accent">BlockShadow Registration Complete!</span>,
         description: <span className="text-foreground">Your eligibility is confirmed. Welcome to the Initiative.</span>,
       });
-      if (currentUser) loadData(currentUser.id);
-  }, [currentUser, loadData, toast]);
+      refetchUser();
+  }, [refetchUser, toast]);
 
 
   const handleSaveSettings = async () => {
-    if (currentUser && username !== currentUser.username) {
+    if (currentUser && username && username !== currentUser.username) {
       setLoading(true);
-      setError(null);
-
       const updatedUser = await updateUserSettingsJson(currentUser.id, { username });
       if (updatedUser) {
-        setCurrentUser(updatedUser);
         toast({ title: "Success", description: "Username updated successfully."});
+        refetchUser();
       } else {
-        setError('Failed to update username.');
          toast({ title: "Error", description: "Failed to update username.", variant: "destructive"});
       }
       setLoading(false);
@@ -266,7 +221,7 @@ export default function ProfilePage() {
     setSettingsOpen(false);
   };
   
-  if (loading && !currentUser) {
+  if (isUserLoading || (loading && !currentUser)) {
     return (
         <>
             <AppHeader />
@@ -277,7 +232,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (error || !currentUser) {
+  if (userError || !currentUser) {
       return (
          <>
             <AppHeader />
@@ -287,10 +242,10 @@ export default function ProfilePage() {
                          <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
                             <AlertTriangle className="h-10 w-10 text-destructive" />
                         </div>
-                        <CardTitle className="text-destructive mt-4">{error ? 'Profile Error' : 'User Not Found'}</CardTitle>
+                        <CardTitle className="text-destructive mt-4">{userError ? 'Profile Error' : 'User Not Found'}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-muted-foreground">{error || "Please visit the Core Console to initialize your session."}</p>
+                        <p className="text-muted-foreground">{userError || "Please visit the Core Console to initialize your session."}</p>
                          <Button asChild className="mt-4 glow-button">
                              <Link href="/core">
                                 Go to Core Console

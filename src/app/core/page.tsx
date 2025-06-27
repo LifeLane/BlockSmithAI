@@ -28,16 +28,13 @@ import {
   fetchMarketDataAction,
   fetchAllTradingSymbolsAction,
   openSimulatedPositionAction,
-  getOrCreateUserAction,
   type LiveMarketData,
   type FormattedSymbol,
-  type UserProfile,
-  fetchCurrentUserJson,
   type GenerateTradingStrategyOutput as AIOutputType,
   type GenerateShadowChoiceStrategyOutput,
 } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
-import { useApiKeys } from '@/context/ApiKeyContext';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { Loader2, Sparkles, ShieldQuestion, BrainCircuit } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -77,8 +74,7 @@ export default function CoreConsolePage() {
   const [showConfirmTradeDialog, setShowConfirmTradeDialog] = useState<boolean>(false);
   
   // User state
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
-  const [isUserLoading, setIsUserLoading] = useState(true);
+  const { user: currentUser, isLoading: isUserLoading, refetch: refetchUser } = useCurrentUser();
   
   // Guest usage tracking
   const [analysisCount, setAnalysisCount] = useState<number>(0);
@@ -86,33 +82,7 @@ export default function CoreConsolePage() {
 
   const { toast } = useToast();
   const mainContentRef = useRef<HTMLDivElement>(null);
-
-
-  // Get or create user on initial load
-  useEffect(() => {
-    const initializeUser = async () => {
-      setIsUserLoading(true);
-      const userIdFromStorage = localStorage.getItem('currentUserId');
-      try {
-        const user = await getOrCreateUserAction(userIdFromStorage);
-        setCurrentUser(user);
-        if (user.id !== userIdFromStorage) {
-          localStorage.setItem('currentUserId', user.id);
-        }
-      } catch (error) {
-        console.error("Failed to initialize user:", error);
-        toast({
-          title: "User Session Error",
-          description: "Could not initialize your analyst profile. Some features may be limited.",
-          variant: "destructive",
-        });
-      }
-      setIsUserLoading(false);
-    };
-    initializeUser();
-  }, [toast]);
   
-
   // Load guest usage data from local storage
   useEffect(() => {
     if (!currentUser || currentUser.status !== 'Guest') {
@@ -362,13 +332,7 @@ export default function CoreConsolePage() {
       title: <span className="text-accent">BlockShadow Registration Complete!</span>,
       description: <span className="text-foreground">You're confirmed for the <strong className="text-orange-400">$BSAI airdrop</strong>. <strong className="text-primary">Unlimited SHADOW analyses</strong> unlocked!</span>,
     });
-    // Refresh user data
-     if (currentUser) {
-        const updatedUser = await fetchCurrentUserJson(currentUser.id);
-        if (updatedUser) {
-            setCurrentUser(updatedUser);
-        }
-    }
+    await refetchUser();
   };
 
   const handleSimulateTrade = () => {
@@ -407,29 +371,26 @@ export default function CoreConsolePage() {
             variant: "destructive",
         });
     } else {
-        const toastTitle = aiStrategy.signal.toUpperCase() === 'HOLD'
+        const isHoldSignal = aiStrategy.signal.toUpperCase() === 'HOLD';
+        const toastTitle = isHoldSignal
             ? <span className="text-primary">HOLD Signal Acknowledged</span>
             : <span className="text-tertiary">Position Opened!</span>;
         
-        const toastDescription = aiStrategy.signal.toUpperCase() === 'HOLD'
-            ? <span>Simulated {aiStrategy?.signal} for {aiStrategy?.symbol} has been logged in your Portfolio History.</span>
+        const toastDescription = isHoldSignal
+            ? <span>The HOLD signal for {aiStrategy?.symbol} has been acknowledged and marked as executed.</span>
             : <span>Simulated {aiStrategy?.signal} for {aiStrategy?.symbol} opened. View in your Portfolio.</span>;
 
         toast({
             title: toastTitle,
             description: toastDescription,
-            variant: "default",
         });
-        // Mark the signal as executed in history
+
         if (aiStrategy?.id) {
             try {
                 const history = JSON.parse(localStorage.getItem('bsaiSignalHistory') || '[]');
-                const updatedHistory = history.map((signal: any) => {
-                    if (signal.id === aiStrategy.id) {
-                        return { ...signal, status: 'EXECUTED' };
-                    }
-                    return signal;
-                });
+                const updatedHistory = history.map((signal: any) => 
+                    signal.id === aiStrategy.id ? { ...signal, status: 'EXECUTED' } : signal
+                );
                 localStorage.setItem('bsaiSignalHistory', JSON.stringify(updatedHistory));
             } catch (e) {
                 console.error("Failed to update signal status in history:", e);
@@ -570,7 +531,7 @@ export default function CoreConsolePage() {
               </AlertDialogTitle>
               <AlertDialogDescription>
                 {aiStrategy.signal.toUpperCase() === 'HOLD'
-                  ? <>You are about to acknowledge a <strong className="text-primary">HOLD</strong> signal for <strong className="text-primary">{symbol}</strong>. This action will be logged in your trade history with zero profit/loss.</>
+                  ? <>You are about to acknowledge a <strong className="text-primary">HOLD</strong> signal for <strong className="text-primary">{symbol}</strong>. This action will be logged in your signal history but will not open a trade.</>
                   : <>You are about to open a simulated <strong className={aiStrategy.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{aiStrategy.signal}</strong> position
                     for <strong className="text-primary">{symbol}</strong> based on SHADOW's parameters.</>
                 }

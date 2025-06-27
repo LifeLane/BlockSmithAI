@@ -3,14 +3,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, XCircle, Hourglass, TrendingUp, TrendingDown, Clock, Bot, Info, LogIn, Target, ShieldX, Zap, ShieldQuestion, PauseCircle, Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PauseCircle, CheckCircle2, XCircle, Bot } from 'lucide-react';
 
 // Import actions and types
 import {
@@ -19,19 +18,10 @@ import {
   fetchMarketDataAction,
   fetchTradeHistoryAction,
   fetchPortfolioStatsAction,
-  getOrCreateUserAction, // <-- Add import
   type Position,
   type LiveMarketData,
   type PortfolioStats,
-  type UserProfile, // <-- Add import
 } from '@/app/actions';
-
-const getCurrentUserId = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('currentUserId');
-  }
-  return null;
-};
 
 const TimeLeft = ({ expiration, className }: { expiration: string, className?: string }) => {
     const [timeLeft, setTimeLeft] = useState('');
@@ -217,40 +207,17 @@ const PortfolioStatsDisplay = ({ stats }: { stats: PortfolioStats }) => {
 
 
 export default function PortfolioPage() {
+    const { user: currentUser, isLoading: isUserLoading, error: userError } = useCurrentUser();
     const [positions, setPositions] = useState<Position[]>([]);
     const [tradeHistory, setTradeHistory] = useState<Position[]>([]);
     const [portfolioStats, setPortfolioStats] = useState<PortfolioStats | null>(null);
-    const [displayStats, setDisplayStats] = useState<PortfolioStats | null>(null);
     const [livePrices, setLivePrices] = useState<Record<string, LiveMarketData>>({});
     const [closingPositionId, setClosingPositionId] = useState<string | null>(null);
+    const [isLoadingData, setIsLoadingData] = useState(true);
 
-    const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    
     const { toast } = useToast();
-    const isFetching = useRef(false);
-
-    useEffect(() => {
-      const initializeUser = async () => {
-        setIsLoading(true);
-        const userIdFromStorage = getCurrentUserId();
-        try {
-          const user = await getOrCreateUserAction(userIdFromStorage);
-          setCurrentUser(user);
-          if (user.id !== userIdFromStorage) {
-            localStorage.setItem('currentUserId', user.id);
-          }
-          setError(null);
-        } catch (e: any) {
-          console.error("Failed to initialize user on portfolio page:", e);
-          setError("Could not establish a user session. Please try again.");
-          setCurrentUser(null);
-          setIsLoading(false);
-        }
-      };
-      initializeUser();
-    }, []);
+    const isFetchingRef = useRef(false);
+    const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const showCloseToast = useCallback((closedPosition: Position, airdropPoints: number, reason: 'manual' | 'expired' | 'auto-sl' | 'auto-tp') => {
         const pnl = closedPosition.pnl || 0;
@@ -288,26 +255,10 @@ export default function PortfolioPage() {
     const handleClosePosition = useCallback(async (positionId: string, closePrice: number, reason: 'manual' | 'expired' | 'auto-sl' | 'auto-tp' = 'manual') => {
         setClosingPositionId(positionId);
         const result = await closePositionAction(positionId, closePrice);
-        setClosingPositionId(null);
         
         if (result.position) {
-            const closedPosition = result.position;
-            const points = result.airdropPointsEarned || 0;
-            
-            showCloseToast(closedPosition, points, reason);
-
-            // Optimistic UI update
-            setPositions(prev => prev.filter(p => p.id !== closedPosition.id));
-            setTradeHistory(prev => [closedPosition, ...prev]);
-            
-            if (currentUser) {
-                fetchPortfolioStatsAction(currentUser.id).then(statsResult => {
-                    if (!('error' in statsResult)) {
-                        setPortfolioStats(statsResult);
-                    }
-                });
-            }
-
+            showCloseToast(result.position, result.airdropPointsEarned || 0, reason);
+            // Data will be re-fetched by the simulation cycle, so optimistic UI updates are less critical
         } else {
             toast({
                 title: "Error Closing Position",
@@ -315,13 +266,13 @@ export default function PortfolioPage() {
                 variant: "destructive",
             });
         }
-    }, [currentUser, showCloseToast, toast]);
+        setClosingPositionId(null);
+    }, [showCloseToast, toast]);
 
-    const fetchPortfolioData = useCallback(async (userId: string, forceRerun = false) => {
-        if (!userId || (isFetching.current && !forceRerun)) return;
+    const runSimulationCycle = useCallback(async (userId: string) => {
+        if (isFetchingRef.current) return;
+        isFetchingRef.current = true;
 
-        isFetching.current = true;
-        
         try {
             const [userPositions, history, statsResult] = await Promise.all([
                 fetchActivePositionsAction(userId),
@@ -329,126 +280,94 @@ export default function PortfolioPage() {
                 fetchPortfolioStatsAction(userId),
             ]);
 
-            let currentLivePrices = { ...livePrices };
-            let positionsToAutoClose: { pos: Position; closePrice: number; reason: 'auto-sl' | 'auto-tp' | 'expired' }[] = [];
-            const activePositions = userPositions.filter(p => p.status === 'OPEN');
-
-
-            if (activePositions.length > 0) {
-                const symbols = [...new Set(activePositions.map(p => p.symbol))];
-                const pricePromises = symbols.map(symbol => fetchMarketDataAction({ symbol }));
-                const results = await Promise.allSettled(pricePromises);
-
-                results.forEach((result, index) => {
-                    if (result.status === 'fulfilled' && !('error' in result.value)) {
-                        currentLivePrices[symbols[index]] = result.value as LiveMarketData;
-                    } else {
-                        console.error(`Failed to fetch price for ${symbols[index]}`);
-                    }
-                });
-                setLivePrices(currentLivePrices);
-
-                 // Auto-close logic
-                for (const pos of activePositions) {
-                    const livePriceData = currentLivePrices[pos.symbol];
-                    if (!livePriceData) continue;
-                    
-                    const currentPrice = parseFloat(livePriceData.lastPrice);
-                    let closeReason: 'auto-sl' | 'auto-tp' | 'expired' | null = null;
-                    let closePrice = 0;
-
-                    if (pos.signalType === 'BUY') {
-                        if (pos.takeProfit && currentPrice >= pos.takeProfit) {
-                            closeReason = 'auto-tp';
-                            closePrice = pos.takeProfit;
-                        } else if (pos.stopLoss && currentPrice <= pos.stopLoss) {
-                            closeReason = 'auto-sl';
-                            closePrice = pos.stopLoss;
-                        }
-                    } else { // SELL
-                        if (pos.takeProfit && currentPrice <= pos.takeProfit) {
-                            closeReason = 'auto-tp';
-                            closePrice = pos.takeProfit;
-                        } else if (pos.stopLoss && currentPrice >= pos.stopLoss) {
-                            closeReason = 'auto-sl';
-                            closePrice = pos.stopLoss;
-                        }
-                    }
-
-                    if (!closeReason && pos.expirationTimestamp && new Date(pos.expirationTimestamp) < new Date()) {
-                        closeReason = 'expired';
-                        closePrice = currentPrice;
-                    }
-
-                    if (closeReason) {
-                        positionsToAutoClose.push({ pos, closePrice, reason: closeReason });
-                    }
-                }
-            }
-            
-            if (positionsToAutoClose.length > 0) {
-                 for (const { pos, closePrice, reason } of positionsToAutoClose) {
-                    if(closingPositionId !== pos.id) {
-                        await handleClosePosition(pos.id, closePrice, reason);
-                    }
-                }
-                const remainingPositions = activePositions.filter(p => !positionsToAutoClose.some(closed => closed.pos.id === p.id));
-                setPositions(remainingPositions);
-            } else {
-                setPositions(activePositions);
-            }
-
             setTradeHistory(history);
             if (!('error' in statsResult)) {
-                setPortfolioStats(statsResult);
-            } else {
-                setError(statsResult.error);
-                setPortfolioStats(null);
+                 const unrealizedPnl = userPositions.reduce((acc, pos) => {
+                    const livePriceData = livePrices[pos.symbol];
+                    if (livePriceData) {
+                        const currentPrice = parseFloat(livePriceData.lastPrice);
+                        if (pos.signalType === 'BUY') {
+                            return acc + (currentPrice - pos.entryPrice) * pos.size;
+                        } else {
+                            return acc + (pos.entryPrice - currentPrice) * pos.size;
+                        }
+                    }
+                    return acc;
+                }, 0);
+                setPortfolioStats({
+                    ...statsResult,
+                    totalPnl: statsResult.totalPnl + unrealizedPnl,
+                });
             }
 
+            const activePositions = userPositions.filter(p => p.status === 'OPEN');
+            if (activePositions.length === 0) {
+                setPositions([]);
+                setIsLoadingData(false);
+                isFetchingRef.current = false;
+                return;
+            }
+
+            const symbols = [...new Set(activePositions.map(p => p.symbol))];
+            const pricePromises = symbols.map(symbol => fetchMarketDataAction({ symbol }));
+            const priceResults = await Promise.allSettled(pricePromises);
+
+            const currentLivePrices = { ...livePrices };
+            priceResults.forEach((result, index) => {
+                if (result.status === 'fulfilled' && !('error' in result.value)) {
+                    currentLivePrices[symbols[index]] = result.value as LiveMarketData;
+                }
+            });
+            setLivePrices(currentLivePrices);
+
+            for (const pos of activePositions) {
+                const livePriceData = currentLivePrices[pos.symbol];
+                if (!livePriceData) continue;
+                
+                const currentPrice = parseFloat(livePriceData.lastPrice);
+                let closeReason: 'auto-sl' | 'auto-tp' | 'expired' | null = null;
+                let closePrice = 0;
+
+                if (pos.signalType === 'BUY') {
+                    if (pos.takeProfit && currentPrice >= pos.takeProfit) { closeReason = 'auto-tp'; closePrice = pos.takeProfit; } 
+                    else if (pos.stopLoss && currentPrice <= pos.stopLoss) { closeReason = 'auto-sl'; closePrice = pos.stopLoss; }
+                } else { // SELL
+                    if (pos.takeProfit && currentPrice <= pos.takeProfit) { closeReason = 'auto-tp'; closePrice = pos.takeProfit; }
+                    else if (pos.stopLoss && currentPrice >= pos.stopLoss) { closeReason = 'auto-sl'; closePrice = pos.stopLoss; }
+                }
+
+                if (!closeReason && pos.expirationTimestamp && new Date(pos.expirationTimestamp) < new Date()) {
+                    closeReason = 'expired';
+                    closePrice = currentPrice;
+                }
+
+                if (closeReason) {
+                    await handleClosePosition(pos.id, closePrice, closeReason);
+                }
+            }
+             setPositions(activePositions.filter(p => p.status === 'OPEN' && !closingPositionId));
+
         } catch (e: any) {
-             setError(e.message || "Failed to fetch portfolio data.");
+             console.error("Error in simulation cycle:", e);
         } finally {
-            setIsLoading(false);
-            isFetching.current = false;
+            setIsLoadingData(false);
+            isFetchingRef.current = false;
         }
     }, [handleClosePosition, livePrices, closingPositionId]);
     
-
     useEffect(() => {
         if (currentUser?.id) {
-            fetchPortfolioData(currentUser.id);
-            const interval = setInterval(() => fetchPortfolioData(currentUser.id), 15000); // Refresh every 15 seconds
-            return () => clearInterval(interval);
+            const run = async () => {
+                await runSimulationCycle(currentUser.id);
+                if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
+                pollingTimeoutRef.current = setTimeout(run, 15000);
+            };
+            run();
         }
-    }, [currentUser, fetchPortfolioData]); 
-    
-    // Effect to calculate and update the displayed stats including unrealized PnL
-    useEffect(() => {
-        if (!portfolioStats) {
-            setDisplayStats(null);
-            return;
+        return () => {
+            if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
         }
-
-        const unrealizedPnl = positions.reduce((acc, pos) => {
-            const livePriceData = livePrices[pos.symbol];
-            if (livePriceData) {
-                const currentPrice = parseFloat(livePriceData.lastPrice);
-                if (pos.signalType === 'BUY') {
-                    return acc + (currentPrice - pos.entryPrice) * pos.size;
-                } else { // SELL
-                    return acc + (pos.entryPrice - currentPrice) * pos.size;
-                }
-            }
-            return acc;
-        }, 0);
-
-        setDisplayStats({
-            ...portfolioStats,
-            totalPnl: portfolioStats.totalPnl + unrealizedPnl,
-        });
-
-    }, [portfolioStats, positions, livePrices]);
+    }, [currentUser?.id, runSimulationCycle]); 
 
     const renderOpenPositions = () => {
         if (positions.length === 0) {
@@ -498,37 +417,57 @@ export default function PortfolioPage() {
             </div>
         )
     };
+    
+    if (isUserLoading) {
+        return (
+            <>
+                <AppHeader />
+                <div className="flex justify-center items-center h-[calc(100vh-8rem)]">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary"/>
+                </div>
+            </>
+        )
+    }
+
+    if (userError) {
+        return (
+             <>
+                <AppHeader />
+                <div className="container mx-auto px-4 py-8">
+                    <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm border-destructive">
+                        <CardHeader>
+                            <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
+                                <AlertTriangle className="h-10 w-10 text-destructive" />
+                            </div>
+                            <CardTitle className="mt-4 text-destructive">Access Denied</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-base text-destructive-foreground">{userError}</p>
+                            <Button asChild className="glow-button mt-4">
+                                <Link href="/core">Return to Core</Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </div>
+            </>
+        )
+    }
 
     return (
     <>
       <AppHeader />
       <div className="container mx-auto px-4 py-8">
-        {isLoading ? (
-            <div className="flex justify-center items-center h-[calc(100vh-8rem)]">
+        {isLoadingData ? (
+             <div className="flex justify-center items-center h-48">
                 <Loader2 className="h-8 w-8 animate-spin text-primary"/>
             </div>
-        ) : error ? (
-            <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm border-destructive">
-                <CardHeader>
-                    <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
-                        <AlertTriangle className="h-10 w-10 text-destructive" />
-                    </div>
-                    <CardTitle className="mt-4 text-destructive">Access Denied</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-base text-destructive-foreground">{error}</p>
-                    <Button asChild className="glow-button mt-4">
-                        <Link href="/core">Return to Core</Link>
-                    </Button>
-                </CardContent>
-            </Card>
         ) : (
              <>
-                {displayStats && <PortfolioStatsDisplay stats={displayStats} />}
+                {portfolioStats && <PortfolioStatsDisplay stats={portfolioStats} />}
                  <Tabs defaultValue="open" className="mt-4">
                     <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="open">Open Positions</TabsTrigger>
-                        <TabsTrigger value="history">Trade History</TabsTrigger>
+                        <TabsTrigger value="open">Open Positions ({positions.length})</TabsTrigger>
+                        <TabsTrigger value="history">Trade History ({tradeHistory.length})</TabsTrigger>
                     </TabsList>
                     <TabsContent value="open" className="mt-4">
                         {renderOpenPositions()}

@@ -364,87 +364,80 @@ export async function claimMissionRewardAction(userId: string, missionId: string
     }
 }
 
-export async function openSimulatedPositionAction(userId: string, strategy: GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput): Promise<{ position?: Position; error?: string }> {
-    if (!strategy.signal) return { error: "Signal information is missing from the strategy." };
-    
-    // Handle HOLD signal by creating a closed, zero-pnl trade for the history
-    if (strategy.signal.toUpperCase() === 'HOLD') {
-        const marketDataResult = await fetchMarketDataAction({ symbol: strategy.symbol });
-        if ('error' in marketDataResult) {
-            return { error: `Could not fetch current price to log HOLD signal: ${marketDataResult.error}` };
-        }
-        const currentPrice = parsePrice(marketDataResult.lastPrice);
-        
-        const holdPosition = await prisma.position.create({
-            data: {
-                userId,
-                symbol: strategy.symbol,
-                signalType: 'HOLD',
-                entryPrice: currentPrice,
-                closePrice: currentPrice,
-                size: 1, // Default value, does not affect PnL
-                status: PositionStatus.CLOSED,
-                openTimestamp: new Date(),
-                closeTimestamp: new Date(),
-                pnl: 0,
-            }
-        });
-        return { position: holdPosition };
+export async function openSimulatedPositionAction(
+  userId: string,
+  strategy: GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput
+): Promise<{ position: Position | null; error?: string; message?: string }> {
+  if (!strategy.signal) {
+    return { position: null, error: "Signal information is missing from the strategy." };
+  }
+
+  // Refined HOLD signal logic: Do not create a position.
+  if (strategy.signal.toUpperCase() === 'HOLD') {
+    return { position: null, message: "HOLD signal acknowledged successfully." };
+  }
+
+  if (!userId) {
+    return { position: null, error: "User ID is required to open a position." };
+  }
+
+  try {
+    const entryPrice = parsePrice(strategy.entry_zone);
+    const stopLoss = parsePrice(strategy.stop_loss);
+    const takeProfit = parsePrice(strategy.take_profit);
+
+    if (isNaN(entryPrice) || isNaN(stopLoss) || isNaN(takeProfit)) {
+      return { position: null, error: "Invalid price format for entry, stop loss, or take profit. Could not parse numbers." };
+    }
+
+    // Validate SL/TP based on signal direction
+    if (strategy.signal.toUpperCase() === 'BUY') {
+      if (stopLoss >= entryPrice) {
+        return { position: null, error: `Invalid Stop Loss for BUY signal. Stop Loss (${stopLoss}) must be below Entry Price (${entryPrice}).` };
+      }
+      if (takeProfit <= entryPrice) {
+        return { position: null, error: `Invalid Take Profit for BUY signal. Take Profit (${takeProfit}) must be above Entry Price (${entryPrice}).` };
+      }
+    } else if (strategy.signal.toUpperCase() === 'SELL') {
+      if (stopLoss <= entryPrice) {
+        return { position: null, error: `Invalid Stop Loss for SELL signal. Stop Loss (${stopLoss}) must be above Entry Price (${entryPrice}).` };
+      }
+      if (takeProfit >= entryPrice) {
+        return { position: null, error: `Invalid Take Profit for SELL signal. Take Profit (${takeProfit}) must be below Entry Price (${entryPrice}).` };
+      }
     }
     
-    try {
-        const entryPrice = parsePrice(strategy.entry_zone);
-        const stopLoss = parsePrice(strategy.stop_loss);
-        const takeProfit = parsePrice(strategy.take_profit);
-
-        if (isNaN(entryPrice) || isNaN(stopLoss) || isNaN(takeProfit)) {
-            return { error: "Invalid price format for entry, stop loss, or take profit. Could not parse numbers." };
-        }
-
-        // Validate SL/TP based on signal direction
-        if (strategy.signal.toUpperCase() === 'BUY') {
-            if (stopLoss >= entryPrice) {
-                return { error: `Invalid Stop Loss for BUY signal. Stop Loss (${stopLoss}) must be below Entry Price (${entryPrice}).` };
-            }
-            if (takeProfit <= entryPrice) {
-                return { error: `Invalid Take Profit for BUY signal. Take Profit (${takeProfit}) must be above Entry Price (${entryPrice}).` };
-            }
-        } else if (strategy.signal.toUpperCase() === 'SELL') {
-            if (stopLoss <= entryPrice) {
-                return { error: `Invalid Stop Loss for SELL signal. Stop Loss (${stopLoss}) must be above Entry Price (${entryPrice}).` };
-            }
-            if (takeProfit >= entryPrice) {
-                return { error: `Invalid Take Profit for SELL signal. Take Profit (${takeProfit}) must be below Entry Price (${entryPrice}).` };
-            }
-        }
-        
-        const tradingMode = 'tradingMode' in strategy ? strategy.tradingMode : ('chosenTradingMode' in strategy ? strategy.chosenTradingMode : 'Intraday');
-        let expirationDate: Date;
-        switch (tradingMode) {
-            case 'Scalper': expirationDate = add(new Date(), { hours: 1 }); break;
-            case 'Sniper': expirationDate = add(new Date(), { hours: 4 }); break;
-            case 'Intraday': expirationDate = add(new Date(), { hours: 12 }); break;
-            case 'Swing': expirationDate = add(new Date(), { days: 3 }); break;
-            default: expirationDate = add(new Date(), { hours: 24 }); break;
-        }
-
-
-        const newPosition = await prisma.position.create({
-            data: {
-                id: randomUUID(), userId, symbol: strategy.symbol,
-                signalType: strategy.signal === 'BUY' ? 'BUY' : 'SELL',
-                entryPrice: entryPrice,
-                size: 1, status: PositionStatus.OPEN,
-                openTimestamp: new Date(),
-                stopLoss: stopLoss,
-                takeProfit: takeProfit,
-                expirationTimestamp: expirationDate,
-            }
-        });
-        return { position: newPosition };
-    } catch (error: any) {
-        return { error: `Failed to open position: ${error.message}` };
+    const tradingMode = 'tradingMode' in strategy ? strategy.tradingMode : ('chosenTradingMode' in strategy ? strategy.chosenTradingMode : 'Intraday');
+    let expirationDate: Date;
+    switch (tradingMode) {
+      case 'Scalper': expirationDate = add(new Date(), { hours: 1 }); break;
+      case 'Sniper': expirationDate = add(new Date(), { hours: 4 }); break;
+      case 'Intraday': expirationDate = add(new Date(), { hours: 12 }); break;
+      case 'Swing': expirationDate = add(new Date(), { days: 3 }); break;
+      default: expirationDate = add(new Date(), { hours: 24 }); break;
     }
+
+    const newPosition = await prisma.position.create({
+      data: {
+        id: randomUUID(),
+        userId,
+        symbol: strategy.symbol,
+        signalType: strategy.signal === 'BUY' ? 'BUY' : 'SELL',
+        entryPrice,
+        size: 1,
+        status: PositionStatus.OPEN,
+        openTimestamp: new Date(),
+        stopLoss,
+        takeProfit,
+        expirationTimestamp: expirationDate,
+      }
+    });
+
+    return { position: newPosition };
+  } catch (error: any) {
+    console.error("Error in openSimulatedPositionAction:", error);
+    return { position: null, error: `Failed to open position: ${error.message}` };
+  }
 }
 
 export async function closePositionAction(positionId: string, closePrice: number): Promise<{ position?: Position; airdropPointsEarned?: number; error?: string; }> {
@@ -493,10 +486,10 @@ export async function fetchPortfolioStatsAction(userId: string): Promise<Portfol
         const pnls = closedTrades.map(t => t.pnl || 0);
         return {
             totalTrades,
-            winRate: (winningTrades / totalTrades) * 100,
+            winRate: (totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0),
             totalPnl,
-            bestTradePnl: Math.max(...pnls),
-            worstTradePnl: Math.min(...pnls),
+            bestTradePnl: pnls.length > 0 ? Math.max(...pnls) : 0,
+            worstTradePnl: pnls.length > 0 ? Math.min(...pnls) : 0,
             lifetimeRewards: user.airdropPoints || 0,
         };
     } catch (error: any) {
