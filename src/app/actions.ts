@@ -9,13 +9,29 @@ import { generateShadowChoiceStrategy as genShadowChoice, type ShadowChoiceStrat
 import { generateMissionLog, type GenerateMissionLogInput } from '@/ai/flows/generate-mission-log';
 
 // Node/Prisma Imports
-import { PrismaClient, type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, type SignalType } from '@prisma/client';
+import { PrismaClient, type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, type SignalType, PositionStatus } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { add, isBefore } from 'date-fns';
 
 
 // Initialize Prisma
 const prisma = new PrismaClient();
+
+// Helper function to robustly parse price strings, which could be a single number or a range.
+const parsePrice = (priceStr: string | undefined): number => {
+    if (!priceStr) return NaN;
+    // Replace non-numeric/non-decimal characters (like '$' or text) but keep '-' for ranges
+    const cleanedStr = priceStr.replace(/[^0-9.-]/g, ' '); 
+    const parts = cleanedStr.split(' ').filter(p => p !== '' && !isNaN(parseFloat(p)));
+    
+    if (parts.length === 0) return NaN;
+    if (parts.length === 1) return parseFloat(parts[0]);
+    
+    // If it's a range (e.g., "100.50 - 100.60"), calculate the average.
+    const sum = parts.reduce((acc, val) => acc + parseFloat(val), 0);
+    return sum / parts.length;
+};
+
 
 // Type Definitions
 export type Position = PrismaPosition;
@@ -357,7 +373,7 @@ export async function openSimulatedPositionAction(userId: string, strategy: Gene
         if ('error' in marketDataResult) {
             return { error: `Could not fetch current price to log HOLD signal: ${marketDataResult.error}` };
         }
-        const currentPrice = parseFloat(marketDataResult.lastPrice);
+        const currentPrice = parsePrice(marketDataResult.lastPrice);
         
         const holdPosition = await prisma.position.create({
             data: {
@@ -367,9 +383,9 @@ export async function openSimulatedPositionAction(userId: string, strategy: Gene
                 entryPrice: currentPrice,
                 closePrice: currentPrice,
                 size: 1, // Default value, does not affect PnL
-                status: 'CLOSED',
-                openTimestamp: new Date().toISOString(),
-                closeTimestamp: new Date().toISOString(),
+                status: PositionStatus.CLOSED,
+                openTimestamp: new Date(),
+                closeTimestamp: new Date(),
                 pnl: 0,
             }
         });
@@ -377,12 +393,12 @@ export async function openSimulatedPositionAction(userId: string, strategy: Gene
     }
     
     try {
-        const entryPrice = parseFloat(strategy.entry_zone);
-        const stopLoss = parseFloat(strategy.stop_loss);
-        const takeProfit = parseFloat(strategy.take_profit);
+        const entryPrice = parsePrice(strategy.entry_zone);
+        const stopLoss = parsePrice(strategy.stop_loss);
+        const takeProfit = parsePrice(strategy.take_profit);
 
         if (isNaN(entryPrice) || isNaN(stopLoss) || isNaN(takeProfit)) {
-            return { error: "Invalid price format for entry, stop loss, or take profit." };
+            return { error: "Invalid price format for entry, stop loss, or take profit. Could not parse numbers." };
         }
 
         // Validate SL/TP based on signal direction
@@ -418,11 +434,11 @@ export async function openSimulatedPositionAction(userId: string, strategy: Gene
                 id: randomUUID(), userId, symbol: strategy.symbol,
                 signalType: strategy.signal === 'BUY' ? 'BUY' : 'SELL',
                 entryPrice: entryPrice,
-                size: 1, status: 'OPEN',
-                openTimestamp: new Date().toISOString(),
+                size: 1, status: PositionStatus.OPEN,
+                openTimestamp: new Date(),
                 stopLoss: stopLoss,
                 takeProfit: takeProfit,
-                expirationTimestamp: expirationDate.toISOString(),
+                expirationTimestamp: expirationDate,
             }
         });
         return { position: newPosition };
@@ -439,7 +455,7 @@ export async function closePositionAction(positionId: string, closePrice: number
         const airdropPointsEarned = Math.max(0, Math.floor(pnl));
         const updatedPosition = await prisma.position.update({
             where: { id: positionId },
-            data: { status: 'CLOSED', closePrice: closePrice, closeTimestamp: new Date().toISOString(), pnl: pnl, }
+            data: { status: PositionStatus.CLOSED, closePrice: closePrice, closeTimestamp: new Date(), pnl: pnl, }
         });
         if (airdropPointsEarned > 0) {
             await prisma.user.update({ where: { id: position.userId }, data: { airdropPoints: { increment: airdropPointsEarned } } });
@@ -516,7 +532,7 @@ export async function deployAgentAction(userId: string, agentId: string): Promis
         const levelData = agentDef.levels.find(l => l.level === level);
         if (!levelData) return { success: false, error: "Agent level data not found." };
 
-        const deploymentEndTime = add(new Date(), { seconds: levelData.deployDuration }).toISOString();
+        const deploymentEndTime = add(new Date(), { seconds: levelData.deployDuration });
         if (userAgent) {
             await prisma.userAgent.update({ where: { id: userAgent.id }, data: { status: 'DEPLOYED', deploymentEndTime } });
         } else {
