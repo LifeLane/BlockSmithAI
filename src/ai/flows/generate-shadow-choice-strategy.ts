@@ -11,6 +11,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
+import { fetchNewsTool } from '@/ai/tools/fetch-news-tool';
 
 // Re-using the core input schema parts for consistency
 const ShadowChoiceStrategyInputSchema = z.object({
@@ -45,6 +46,7 @@ const ShadowChoiceStrategyCoreOutputSchema = z.object({
   chosenRiskProfile: z.string().describe("The risk profile I have determined is optimal (Low, Medium, or High)."),
   strategyReasoning: z.string().describe("My concise reasoning for choosing the specified trading mode and risk profile. Explain WHY based on market conditions like volatility or trend strength."),
   analysisSummary: z.string().describe("A brief summary of the technical analysis performed, mentioning key indicators like RSI, MACD, and Bollinger Bands."),
+  newsAnalysis: z.string().optional().describe("A brief summary of how recent news and market sentiment influenced the autonomous mode and risk selection."),
 });
 export type ShadowChoiceStrategyCoreOutput = z.infer<typeof ShadowChoiceStrategyCoreOutputSchema>;
 
@@ -55,9 +57,7 @@ export async function generateShadowChoiceStrategy(input: ShadowChoiceStrategyIn
 
 const prompt = ai.definePrompt({
   name: 'shadowChoiceStrategyPrompt',
-  // The tool is implicitly available to the prompt via the flow, but explicit declaration is good practice.
-  // We are now passing the data directly, so the tool is not strictly needed by the prompt itself.
-  // tools: [fetchHistoricalDataTool], 
+  tools: [fetchHistoricalDataTool, fetchNewsTool], 
   input: { schema: PromptInputSchema },
   output: { schema: ShadowChoiceStrategyCoreOutputSchema },
   prompt: `I am SHADOW, a Senior Quantitative Analyst AI. My directive is to analyze the market with superior intellect and formulate the most potent trading strategy by first determining the optimal trading methodology.
@@ -72,22 +72,24 @@ Long-Term Data (4h candles): {{{longTermCandles}}}
 **Autonomous Protocol:**
 
 1.  **Multi-Timeframe Trend Analysis:** I will first analyze the Long-Term (4h) and Medium-Term (1h) data to establish the dominant market trend (Uptrend, Downtrend, or Ranging). An uptrend is a series of higher highs and higher lows. My primary goal is to trade *with* this trend.
-2.  **Optimal Parameter Selection:** Based on the dominant trend's strength and current market volatility (visible in indicators like Bollinger Bands across timeframes), I will decide upon the most logical **Trading Mode** (e.g., 'Intraday' for clear trends, 'Scalper' for ranging markets) and **Risk Profile**.
-3.  **Articulate Rationale:** I will formulate a concise **strategyReasoning** to explain *why* my chosen trading mode and risk profile are the most logical course of action based on the multi-timeframe analysis.
-4.  **Pinpoint Entry & Execute Deep Analysis:** I will use the Short-Term (15m) data to find a precise entry point that aligns with the dominant trend (e.g., buying a small dip in an uptrend). I will synthesize all live and historical data, focusing on key indicators like RSI for overbought/oversold levels and MACD for momentum confirmation.
-5.  **Derive Core Strategy:** Using my autonomous choices as internal guides, I will derive the full set of 15 core trading parameters.
+2.  **Fundamental & Sentiment Check:** I will use the \`fetchNewsTool\` to assess the current news environment for {{{symbol}}}. Strong positive or negative news can influence my choice of trading mode and risk profile (e.g., high-impact news might justify a higher risk, more aggressive entry).
+3.  **Optimal Parameter Selection:** Based on the synthesis of the trend, volatility, and news context, I will decide upon the most logical **Trading Mode** and **Risk Profile**.
+4.  **Articulate Rationale:** I will formulate a concise **strategyReasoning** to explain *why* my chosen trading mode and risk profile are the most logical course of action based on the multi-timeframe analysis.
+5.  **Pinpoint Entry & Execute Deep Analysis:** I will use the Short-Term (15m) data to find a precise entry point that aligns with the dominant trend (e.g., buying a small dip in an uptrend). I will synthesize all live and historical data, focusing on key indicators like RSI for overbought/oversold levels and MACD for momentum confirmation.
+6.  **Derive Core Strategy:** Using my autonomous choices as internal guides, I will derive the full set of 16 core trading parameters.
     -   **Data-Driven SL/TP:** My 'stop_loss' and 'take_profit' will be data-driven, based on key support and resistance levels identified across the multiple timeframes.
     -   For a **BUY** signal, my 'stop_loss' will be set just below a key recent support level. My 'take_profit' will be set at a logical resistance level.
     -   For a **SELL** signal, my 'stop_loss' will be set just above a key recent resistance level. My 'take_profit' will be set at a logical support level.
     -   All derived trading parameters must be specific numerical values with realistic precision.
-6.  **Final Output Formulation**: I will assemble all 15 required output fields.
+7.  **Final Output Formulation**: I will assemble all 16 required output fields. My \`newsAnalysis\` output must explain how the news context influenced my autonomous choices.
 
-**Output Requirements (Provide ALL 15 of these fields based on my autonomous analysis):**
+**Output Requirements (Provide ALL 16 of these fields based on my autonomous analysis):**
 
 *   **chosenTradingMode**: The optimal mode I selected.
 *   **chosenRiskProfile**: The optimal risk profile I selected.
 *   **strategyReasoning**: My justification for the choices above.
 *   **analysisSummary**: A brief summary of my technical analysis, referencing the indicators used.
+*   **newsAnalysis**: (A summary of how news influenced my choice of mode and risk. If no significant news, state that.)
 *   **signal**: (BUY, SELL, or HOLD)
 *   **entry_zone**: (Specific price or a tight price range)
 *   **stop_loss**: (Specific numerical price, data-driven)
@@ -108,7 +110,7 @@ const shadowChoiceStrategyFlow = ai.defineFlow(
     name: 'shadowChoiceStrategyFlow',
     inputSchema: ShadowChoiceStrategyInputSchema,
     outputSchema: ShadowChoiceStrategyCoreOutputSchema,
-    tools: [fetchHistoricalDataTool],
+    tools: [fetchHistoricalDataTool, fetchNewsTool],
   },
   async (input) => {
     // For autonomous choice, we fetch a standard set of timeframes for analysis.
@@ -149,6 +151,7 @@ const shadowChoiceStrategyFlow = ai.defineFlow(
         chosenRiskProfile: "Unknown",
         strategyReasoning: "A critical failure occurred during the autonomous decision-making process. The query could not be resolved.",
         analysisSummary: "Technical analysis failed due to the core decision-making error.",
+        newsAnalysis: "News feed analysis failed.",
       };
     }
 

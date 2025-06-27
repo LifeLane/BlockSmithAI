@@ -27,11 +27,13 @@ import {
   Zap,
   BrainCircuit,
   Info,
+  Newspaper,
 } from 'lucide-react';
 
 type CombinedStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
     id?: string;
     analysisSummary?: string; 
+    newsAnalysis?: string;
 };
 
 interface StrategyExplanationSectionProps {
@@ -138,6 +140,10 @@ ${reasoningSection}
 SHADOW's Technical Analysis:
 ------------------------------------
   ${strategy.analysisSummary || "Not provided."}
+------------------------------------
+SHADOW's Market Intelligence:
+------------------------------------
+  ${strategy.newsAnalysis || "Not provided."}
 ------------------------------------
 SHADOW's Edict (Disclaimer):
 ------------------------------------
@@ -350,6 +356,20 @@ Analysis Timestamp: ${currentDateTime}
                 </CardHeader>
                 <CardContent>
                     <p className="text-sm text-muted-foreground italic border-l-2 border-primary pl-3">"{strategy.analysisSummary}"</p>
+                </CardContent>
+            </Card>
+        )}
+
+        {strategy.newsAnalysis && (
+            <Card className="bg-background/40 border-purple-400/70 shadow-inner">
+                <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center text-lg text-purple-400">
+                        <Newspaper className="mr-3 h-6 w-6"/>
+                        Market Intelligence Briefing
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground italic border-l-2 border-purple-400 pl-3">"{strategy.newsAnalysis}"</p>
                 </CardContent>
             </Card>
         )}
