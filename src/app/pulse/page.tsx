@@ -74,12 +74,12 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
 
     if (currentPrice && !isPending) {
         if (position.signalType === 'BUY') {
-            pnl = (currentPrice - position.entryPrice) * position.size;
+            pnl = (currentPrice - position.entryPrice);
         } else {
-            pnl = (position.entryPrice - currentPrice) * position.size;
+            pnl = (position.entryPrice - currentPrice);
         }
         if (position.entryPrice > 0) {
-            pnlPercent = (pnl / (position.entryPrice * position.size)) * 100;
+            pnlPercent = (pnl / position.entryPrice) * 100;
         }
     }
 
@@ -103,7 +103,7 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
                  <div className="flex flex-col items-end">
                      <Badge className={statusBadgeColor}>{statusIcon}{statusText}</Badge>
                     {position.expirationTimestamp && !isPending && (
-                        <TimeLeft expiration={position.expirationTimestamp} className="text-xs text-muted-foreground mt-2"/>
+                        <TimeLeft expiration={new Date(position.expirationTimestamp)} className="text-xs text-muted-foreground mt-2"/>
                     )}
                 </div>
             </CardHeader>
@@ -268,22 +268,27 @@ export default function PortfolioPage() {
     const runSimulationCycle = useCallback(async (userId: string) => {
         if (isFetchingRef.current) return;
         isFetchingRef.current = true;
-        if (!positions.length && !tradeHistory.length) setIsLoadingData(true);
+        
+        // Initial load should show spinner, subsequent loads can be background updates.
+        if (positions.length === 0 && tradeHistory.length === 0) {
+            setIsLoadingData(true);
+        }
 
         try {
-            const currentPositions = await fetchPendingAndOpenPositionsAction(userId);
+            const [currentPositions, history, statsResult] = await Promise.all([
+                fetchPendingAndOpenPositionsAction(userId),
+                fetchTradeHistoryAction(userId),
+                fetchPortfolioStatsAction(userId),
+            ]);
+            
+            setTradeHistory(history);
+            if (!('error' in statsResult)) setPortfolioStats(statsResult);
+
             if (currentPositions.length === 0) {
                  isFetchingRef.current = false;
                  setIsLoadingData(false);
                  setPositions([]); // Clear positions if none are active
-                 // Fetch history and stats if no active positions
-                 const [history, statsResult] = await Promise.all([
-                    fetchTradeHistoryAction(userId),
-                    fetchPortfolioStatsAction(userId),
-                ]);
-                setTradeHistory(history);
-                if (!('error' in statsResult)) setPortfolioStats(statsResult);
-                return;
+                 return;
             }
 
             const symbols = [...new Set(currentPositions.map(p => p.symbol))];
@@ -309,8 +314,8 @@ export default function PortfolioPage() {
                 if (pos.status === 'PENDING') {
                     const shouldActivate = (pos.signalType === 'BUY' && currentPrice <= pos.entryPrice) || (pos.signalType === 'SELL' && currentPrice >= pos.entryPrice);
                     if (shouldActivate) {
-                        await activatePendingPositionAction(pos.id);
-                        needsReFetch = true;
+                        const activationResult = await activatePendingPositionAction(pos.id);
+                        if (!activationResult.error) needsReFetch = true;
                     }
                 }
                 // OPEN to CLOSED logic
@@ -360,7 +365,7 @@ export default function PortfolioPage() {
             setIsLoadingData(false);
             isFetchingRef.current = false;
         }
-    }, [handleManualClose, positions.length, tradeHistory.length, showCloseToast]);
+    }, [showCloseToast, positions.length, tradeHistory.length]);
     
     useEffect(() => {
         if (currentUser?.id) {
@@ -387,7 +392,7 @@ export default function PortfolioPage() {
                         </div>
                         <CardTitle className="mt-4">No Active Positions</CardTitle>
                         <CardDescription className="mt-2 text-base">
-                           Open a position from the Core Console to begin.
+                           Generate a signal from the Core Console to begin.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -440,7 +445,7 @@ export default function PortfolioPage() {
         )
     }
 
-    if (userError) {
+    if (userError || !currentUser) {
         return (
              <>
                 <AppHeader />
@@ -453,7 +458,7 @@ export default function PortfolioPage() {
                             <CardTitle className="mt-4 text-destructive">Access Denied</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-base text-destructive-foreground">{userError}</p>
+                            <p className="text-base text-destructive-foreground">{userError || "Please visit the Core Console to initialize a user session."}</p>
                             <Button asChild className="glow-button mt-4">
                                 <Link href="/core">Return to Core</Link>
                             </Button>
