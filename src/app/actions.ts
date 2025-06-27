@@ -388,6 +388,8 @@ export async function logSimulatedPositionAction(
       return { position: null, error: "Invalid price format for entry, stop loss, or take profit. Could not parse numbers." };
     }
     
+    const size = entryPrice < 1 ? 10000 : 1;
+    
     const tradingMode = 'tradingMode' in strategy ? strategy.tradingMode : ('chosenTradingMode' in strategy ? strategy.chosenTradingMode : 'Intraday');
     let expirationDate: Date;
     switch (tradingMode) {
@@ -406,6 +408,7 @@ export async function logSimulatedPositionAction(
         status: PositionStatus.OPEN,
         openTimestamp: new Date(),
         entryPrice,
+        size,
         stopLoss,
         takeProfit,
         expirationTimestamp: expirationDate,
@@ -490,12 +493,16 @@ export async function fetchPortfolioStatsAction(userId: string): Promise<Portfol
         const winningTrades = closedTrades.filter(t => t.pnl && t.pnl > 0).length;
         const totalPnl = closedTrades.reduce((acc, t) => acc + (t.pnl || 0), 0);
         const pnls = closedTrades.map(t => t.pnl || 0);
+        
+        const losingTrades = pnls.filter(pnl => pnl < 0);
+        const worstTradePnl = losingTrades.length > 0 ? Math.min(...losingTrades) : 0;
+        
         return {
             totalTrades,
             winRate: (totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0),
             totalPnl,
             bestTradePnl: pnls.length > 0 ? Math.max(...pnls) : 0,
-            worstTradePnl: pnls.length > 0 ? Math.min(...pnls) : 0,
+            worstTradePnl,
             lifetimeRewards: user.airdropPoints || 0,
         };
     } catch (error: any) {

@@ -72,15 +72,17 @@ const TimeLeft = ({ expiration, className }: { expiration?: Date | null, classNa
 const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position: Position, currentPrice?: number, onClose: (positionId: string, closePrice: number) => void, isClosing: boolean }) => {
     let pnl = 0;
     let pnlPercent = 0;
+    const positionSize = position.size || 1;
 
     if (currentPrice) {
-        if (position.signalType === 'BUY') {
-            pnl = (currentPrice - position.entryPrice);
-        } else {
-            pnl = (position.entryPrice - currentPrice);
-        }
+        const priceDiff = position.signalType === 'BUY' 
+            ? (currentPrice - position.entryPrice) 
+            : (position.entryPrice - currentPrice);
+            
+        pnl = priceDiff * positionSize;
+        
         if (position.entryPrice > 0) {
-            pnlPercent = (pnl / position.entryPrice) * 100;
+            pnlPercent = (priceDiff / position.entryPrice) * 100;
         }
     }
 
