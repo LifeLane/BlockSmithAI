@@ -5,48 +5,45 @@
 
 @layer base {
   :root {
-    --background: 220 20% 5%; /* UPDATED: Deep Space Blue */
-    --foreground: 210 20% 90%; /* UPDATED: Cool Gray */
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
 
-    --card: 220 20% 8%; /* UPDATED */
-    --card-foreground: var(--foreground);
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
 
-    --popover: 220 20% 8%; /* UPDATED */
-    --popover-foreground: var(--foreground);
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
 
-    --primary: 210 100% 60%; /* UPDATED: Electric Blue */
-    --primary-foreground: 210 100% 10%; /* UPDATED */
+    --primary: 210 100% 50%;
+    --primary-foreground: 210 20% 98%;
 
-    --secondary: 220 20% 15%; /* UPDATED */
-    --secondary-foreground: 210 20% 85%; /* UPDATED */
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220 13% 29%;
 
-    --muted: 220 20% 15%; /* UPDATED */
-    --muted-foreground: 210 20% 65%; /* UPDATED */
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
 
-    --accent: 270 100% 65%; /* UPDATED: Electric Violet */
-    --accent-foreground: 270 100% 95%; /* UPDATED: Light for contrast */
+    --accent: 270 90% 55%;
+    --accent-foreground: 210 20% 98%;
 
-    --tertiary: 35 100% 55%; /* UPDATED: Saffron Gold */
-    --tertiary-foreground: 35 100% 5%; /* UPDATED: Dark for contrast */
+    --tertiary: 35 92% 55%;
+    --tertiary-foreground: 48 95.8% 11.2%;
 
-    --destructive: 0 70% 55%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 20% 20%; /* UPDATED */
-    --input: 220 20% 10%; /* UPDATED */
-    --ring: hsl(var(--accent));
-    
-    /* REMOVED yellow-neon and saffron-neon */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 222.2 84% 4.9%;
 
     --chart-1: hsl(var(--primary));
-    --chart-2: hsl(var(--accent)); 
-    --chart-3: hsl(var(--tertiary)); 
+    --chart-2: hsl(var(--accent));
+    --chart-3: hsl(var(--tertiary));
     --chart-4: 120 80% 60%; /* Lime Green */
     --chart-5: 200 80% 60%;
     --radius: 0.5rem;
 
-    /* Sidebar variables adjusted for new theme */
-    --sidebar-background: 220 20% 7%;
+    --sidebar-background: 220 14.3% 98%;
     --sidebar-foreground: var(--foreground);
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
@@ -60,9 +57,9 @@
     --background: 220 20% 5%;
     --foreground: 210 20% 90%;
     --card: 220 20% 8%;
-    --card-foreground: var(--foreground);
+    --card-foreground: hsl(var(--foreground));
     --popover: 220 20% 8%;
-    --popover-foreground: var(--foreground);
+    --popover-foreground: hsl(var(--foreground));
     --primary: 210 100% 60%;
     --primary-foreground: 210 100% 10%;
     --secondary: 220 20% 15%;
@@ -78,6 +75,14 @@
     --border: 220 20% 20%;
     --input: 220 20% 10%;
     --ring: hsl(var(--accent));
+    --sidebar-background: 220 20% 7%;
+    --sidebar-foreground: hsl(var(--foreground));
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
+    --sidebar-accent: hsl(var(--accent));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-border: hsl(var(--border));
+    --sidebar-ring: hsl(var(--ring));
   }
 }
 
@@ -86,7 +91,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-transparent text-foreground;
+    @apply bg-background text-foreground;
     font-family: 'Space Mono', Arial, Helvetica, sans-serif;
   }
 }

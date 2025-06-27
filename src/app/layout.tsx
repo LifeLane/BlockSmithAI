@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster"
 import MatrixBackground from '@/components/blocksmith-ai/MatrixBackground';
 import BottomNav from '@/components/layout/BottomNav';
 import { ApiKeyProvider } from '@/context/ApiKeyContext';
+import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
   title: 'BlockShadow',
@@ -17,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -25,16 +26,23 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <MatrixBackground />
-        <ApiKeyProvider>
-          <div className="text-foreground bg-transparent min-h-screen flex flex-col relative z-10">
-            <main className="flex-grow pb-16">
-              {children}
-            </main>
-            <BottomNav />
-          </div>
-          <Toaster />
-        </ApiKeyProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <MatrixBackground />
+          <ApiKeyProvider>
+            <div className="text-foreground bg-transparent min-h-screen flex flex-col relative z-10">
+              <main className="flex-grow pb-16">
+                {children}
+              </main>
+              <BottomNav />
+            </div>
+            <Toaster />
+          </ApiKeyProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
