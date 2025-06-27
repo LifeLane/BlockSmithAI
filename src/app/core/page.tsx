@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -85,7 +84,6 @@ export default function CoreConsolePage() {
   const [lastAnalysisDate, setLastAnalysisDate] = useState<string>('');
 
   const { toast } = useToast();
-  const { openModal } = useApiKeys();
   const mainContentRef = useRef<HTMLDivElement>(null);
 
 
@@ -445,7 +443,7 @@ export default function CoreConsolePage() {
 
   return (
     <>
-      <AppHeader onApiSettingsClick={openModal} />
+      <AppHeader />
       <div ref={mainContentRef} className="container mx-auto px-4 py-4 flex flex-col w-full min-h-[calc(100vh-140px)]">
         
         <div className={cn(

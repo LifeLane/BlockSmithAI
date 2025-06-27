@@ -1,10 +1,8 @@
-
 'use client';
 
 import { FunctionComponent, useEffect, useRef } from 'react';
-import { Settings, Zap } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { gsap } from 'gsap';
-import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 
 interface AppHeaderProps {
@@ -69,16 +67,6 @@ const AppHeader: FunctionComponent<AppHeaderProps> = ({ onApiSettingsClick }) =>
       </div>
       <div className="absolute top-2 right-4 flex items-center gap-2">
         <ThemeToggle />
-        {onApiSettingsClick && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onApiSettingsClick}
-            aria-label="API Settings"
-          >
-            <Settings className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
-          </Button>
-        )}
       </div>
       <style jsx>{`
         .glowing-logo-border {
