@@ -27,11 +27,14 @@ const TimeLeft = ({ expiration, className }: { expiration?: Date | null, classNa
     const [timeLeft, setTimeLeft] = useState('');
 
     useEffect(() => {
-        if (!expiration) return;
+        if (!expiration || isNaN(expiration.getTime())) {
+            setTimeLeft('Expired');
+            return;
+        }
 
         const calculateTimeLeft = () => {
             const now = new Date();
-            const end = new Date(expiration);
+            const end = expiration;
             const distance = end.getTime() - now.getTime();
 
             if (distance < 0) {
@@ -83,6 +86,10 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
         }
     }
 
+    const openDate = position.openTimestamp ? new Date(position.openTimestamp) : null;
+    const isValidOpenDate = openDate && !isNaN(openDate.getTime());
+    const openTimestampText = isValidOpenDate ? `Opened: ${formatDistanceToNow(openDate)} ago` : 'N/A';
+
     const pnlColor = pnl >= 0 ? 'text-green-400' : 'text-red-400';
     const statusText = isPending ? 'PENDING' : 'OPEN';
     const statusIcon = isPending ? <Hourglass className="h-4 w-4 mr-2 text-yellow-400"/> : <PlayCircle className="h-4 w-4 mr-2 text-blue-400"/>;
@@ -97,7 +104,7 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
                         {position.symbol}
                     </CardTitle>
                      <CardDescription className="text-xs">
-                        {isPending ? 'Awaiting execution...' : `Opened: ${position.openTimestamp ? formatDistanceToNow(new Date(position.openTimestamp)) : 'N/A'} ago`}
+                        {isPending ? 'Awaiting execution...' : openTimestampText}
                     </CardDescription>
                 </div>
                  <div className="flex flex-col items-end">
@@ -150,6 +157,10 @@ const HistoryCard = ({ position }: { position: Position }) => {
     const icon = isWin ? <CheckCircle2 className="h-6 w-6 text-green-400"/> : <XCircle className="h-6 w-6 text-red-400"/>;
     const titleColor = isWin ? 'text-green-400' : 'text-red-400';
 
+    const closeDate = position.closeTimestamp ? new Date(position.closeTimestamp) : null;
+    const isValidDate = closeDate && !isNaN(closeDate.getTime());
+    const closeTimestampText = isValidDate ? formatDistanceToNow(closeDate) : 'an unknown time';
+
     return (
         <Card className="bg-card/80 backdrop-blur-sm">
              <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -158,7 +169,7 @@ const HistoryCard = ({ position }: { position: Position }) => {
                     <div>
                         <CardTitle className="text-base">{position.signalType} {position.symbol}</CardTitle>
                         <CardDescription className="text-xs">
-                            Closed {position.closeTimestamp ? formatDistanceToNow(new Date(position.closeTimestamp)) : ''} ago
+                            Closed {closeTimestampText} ago
                         </CardDescription>
                     </div>
                 </div>
