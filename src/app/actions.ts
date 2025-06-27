@@ -585,6 +585,7 @@ export async function upgradeAgentAction(userId: string, agentId: string): Promi
 export async function fetchSpecialOpsAction(userId: string): Promise<SpecialOp[]> {
     try {
         const user = await prisma.user.findUnique({ where: {id: userId }, select: { claimedSpecialOps: true }});
+        if (!user) return specialOpsDefinitions; // Return all if user not found, they can't claim anyway
         return specialOpsDefinitions.filter(op => !user?.claimedSpecialOps.includes(op.id));
     } catch (error: any) {
         return [];

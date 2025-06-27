@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
@@ -171,7 +171,7 @@ const HistoryCard = ({ position }: { position: Position }) => {
                 </div>
                  <div className="flex justify-between p-2 bg-background/50 rounded-md">
                     <span className="text-muted-foreground">Exit:</span>
-                    <span className="font-mono">${position.closePrice?.toFixed(2)}</span>
+                    <span className="font-mono">${position.closePrice?.toFixed(2) ?? 'N/A'}</span>
                 </div>
              </CardContent>
         </Card>
@@ -185,7 +185,24 @@ const StatCard = ({ title, value, icon, valueClassName }: { title: string; value
     </div>
 );
 
-const PortfolioStatsDisplay = ({ stats }: { stats: PortfolioStats }) => {
+const PortfolioStatsDisplay = ({ stats, isLoading }: { stats: PortfolioStats | null, isLoading: boolean }) => {
+    if (isLoading && !stats) {
+        return (
+             <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30">
+                <CardHeader className="pb-4">
+                    <CardTitle className="text-lg flex items-center gap-2 text-accent"><Briefcase /> Performance Matrix</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex justify-center items-center h-24">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary"/>
+                    </div>
+                </CardContent>
+            </Card>
+        )
+    }
+
+    if (!stats) return null;
+
     return (
         <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30">
             <CardHeader className="pb-4">
@@ -256,7 +273,6 @@ export default function PortfolioPage() {
         
         if (result.position) {
             showCloseToast(result.position, result.airdropPointsEarned || 0, reason);
-            // Data will be re-fetched by the simulation cycle, so optimistic UI updates are less critical
         } else {
             toast({
                 title: "Error Closing Position",
@@ -273,38 +289,33 @@ export default function PortfolioPage() {
         setIsLoadingData(true);
 
         try {
-            // First, fetch current open positions
             const currentPositions = await fetchActivePositionsAction(userId);
-            setPositions(currentPositions);
-
-            // If there are no open positions, we can stop here after fetching history/stats
+            
             if (currentPositions.length === 0) {
                  const [history, statsResult] = await Promise.all([
                     fetchTradeHistoryAction(userId),
                     fetchPortfolioStatsAction(userId),
                 ]);
+                setPositions([]);
                 setTradeHistory(history);
                 if (!('error' in statsResult)) setPortfolioStats(statsResult);
-                
                 isFetchingRef.current = false;
                 setIsLoadingData(false);
                 return;
             }
 
-            // Fetch live prices for all unique symbols in open positions
             const symbols = [...new Set(currentPositions.map(p => p.symbol))];
             const pricePromises = symbols.map(symbol => fetchMarketDataAction({ symbol }));
             const priceResults = await Promise.allSettled(pricePromises);
 
-            const updatedLivePrices = { ...livePrices };
+            const updatedLivePrices: Record<string, LiveMarketData> = {};
             priceResults.forEach((result, index) => {
                 if (result.status === 'fulfilled' && !('error' in result.value)) {
                     updatedLivePrices[symbols[index]] = result.value as LiveMarketData;
                 }
             });
-            setLivePrices(updatedLivePrices);
+            setLivePrices(current => ({ ...current, ...updatedLivePrices }));
 
-            // Check each position for auto-close conditions
             let didCloseAnyPosition = false;
             for (const pos of currentPositions) {
                 const livePriceData = updatedLivePrices[pos.symbol];
@@ -314,7 +325,6 @@ export default function PortfolioPage() {
                 let closeReason: 'auto-sl' | 'auto-tp' | 'expired' | null = null;
                 let closePrice = 0;
 
-                // Determine close price based on which condition is met first
                 if (pos.signalType === 'BUY') {
                     if (pos.takeProfit && currentPrice >= pos.takeProfit) { closeReason = 'auto-tp'; closePrice = pos.takeProfit; } 
                     else if (pos.stopLoss && currentPrice <= pos.stopLoss) { closeReason = 'auto-sl'; closePrice = pos.stopLoss; }
@@ -325,7 +335,7 @@ export default function PortfolioPage() {
                 
                 if (!closeReason && pos.expirationTimestamp && new Date(pos.expirationTimestamp) < new Date()) {
                     closeReason = 'expired';
-                    closePrice = currentPrice; // Close at current price if expired
+                    closePrice = currentPrice;
                 }
 
                 if (closeReason) {
@@ -334,7 +344,6 @@ export default function PortfolioPage() {
                 }
             }
             
-            // If any position was closed, refetch all data for consistency
             if (didCloseAnyPosition) {
                 const [finalPositions, finalHistory, finalStats] = await Promise.all([
                     fetchActivePositionsAction(userId),
@@ -345,8 +354,8 @@ export default function PortfolioPage() {
                 setTradeHistory(finalHistory);
                 if (!('error' in finalStats)) setPortfolioStats(finalStats);
             } else {
-                // If no positions were closed, just update history and stats
-                const [history, statsResult] = await Promise.all([
+                 setPositions(currentPositions);
+                 const [history, statsResult] = await Promise.all([
                     fetchTradeHistoryAction(userId),
                     fetchPortfolioStatsAction(userId),
                 ]);
@@ -354,14 +363,13 @@ export default function PortfolioPage() {
                 if (!('error' in statsResult)) setPortfolioStats(statsResult);
             }
 
-
         } catch (e: any) {
              console.error("Error in simulation cycle:", e);
         } finally {
             setIsLoadingData(false);
             isFetchingRef.current = false;
         }
-    }, [handleClosePosition, livePrices]);
+    }, [handleClosePosition]);
     
     useEffect(() => {
         if (currentUser?.id) {
@@ -380,6 +388,9 @@ export default function PortfolioPage() {
     }, [currentUser?.id, runSimulationCycle]); 
 
     const renderOpenPositions = () => {
+        if (isLoadingData && positions.length === 0) {
+            return <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin"/></div>
+        }
         if (positions.length === 0) {
              return (
                 <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4">
@@ -418,6 +429,9 @@ export default function PortfolioPage() {
     };
     
     const renderTradeHistory = () => {
+        if (isLoadingData && tradeHistory.length === 0) {
+            return <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin"/></div>
+        }
         if (tradeHistory.length === 0) {
             return <p className="text-center text-muted-foreground mt-8">No closed trades yet.</p>
         }
@@ -467,27 +481,19 @@ export default function PortfolioPage() {
     <>
       <AppHeader />
       <div className="container mx-auto px-4 py-8 pb-20">
-        {(isLoadingData && !portfolioStats) ? (
-             <div className="flex justify-center items-center h-48">
-                <Loader2 className="h-8 w-8 animate-spin text-primary"/>
-            </div>
-        ) : (
-             <>
-                {portfolioStats && <PortfolioStatsDisplay stats={portfolioStats} />}
-                 <Tabs defaultValue="open" className="mt-4">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="open">Open Positions ({positions.length})</TabsTrigger>
-                        <TabsTrigger value="history">Trade History ({tradeHistory.length})</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="open" className="mt-4">
-                        {(isLoadingData && positions.length === 0) ? <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin"/></div> : renderOpenPositions()}
-                    </TabsContent>
-                    <TabsContent value="history" className="mt-4">
-                         {(isLoadingData && tradeHistory.length === 0) ? <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin"/></div> : renderTradeHistory()}
-                    </TabsContent>
-                </Tabs>
-            </>
-        )}
+        <PortfolioStatsDisplay stats={portfolioStats} isLoading={isLoadingData && !portfolioStats} />
+         <Tabs defaultValue="open" className="mt-4">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="open">Open Positions ({positions.length})</TabsTrigger>
+                <TabsTrigger value="history">Trade History ({tradeHistory.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="open" className="mt-4">
+                {renderOpenPositions()}
+            </TabsContent>
+            <TabsContent value="history" className="mt-4">
+                 {renderTradeHistory()}
+            </TabsContent>
+        </Tabs>
       </div>
     </>
   );
