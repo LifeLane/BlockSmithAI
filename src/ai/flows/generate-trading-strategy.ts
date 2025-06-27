@@ -80,6 +80,7 @@ const generateTradingStrategyPrompt = ai.definePrompt({
         - **Volume Analysis:** to confirm trend strength.
   4.  **Cognitive Synthesis & Parameter Derivation:** Based on the total integrated analysis, I will derive the following 12 core parameters. My output will be concise and strictly focused on these. I will internally assess risk to provide a 'risk_rating'.
       -   My strategy must be heavily influenced by the **Trading Mode** and **User Risk Profile**.
+      -   **CRITICAL DIRECTIVE:** For 'Scalper', 'Sniper', and 'Intraday' modes, I MUST provide a 'BUY' or 'SELL' signal. I AM NOT PERMITTED to signal 'HOLD' for these modes. The 'HOLD' signal is reserved exclusively for the 'Swing' trading mode when market conditions are genuinely directionless.
 
   **Output Requirements (Provide ALL 12 of these fields based on my direct analysis):**
 

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -379,14 +380,6 @@ export default function CoreConsolePage() {
         });
         return;
     }
-    if (aiStrategy.signal.toUpperCase() === 'HOLD') {
-        toast({
-            title: "Cannot Simulate 'HOLD'",
-            description: "A 'HOLD' signal indicates no action should be taken.",
-            variant: "default",
-        });
-        return;
-    }
     setShowConfirmTradeDialog(true);
   };
 
@@ -409,14 +402,22 @@ export default function CoreConsolePage() {
 
     if (result.error) {
         toast({
-            title: <span className="text-destructive">Position Open Failed!</span>,
+            title: <span className="text-destructive">Action Failed!</span>,
             description: <span className="text-foreground">{result.error}</span>,
             variant: "destructive",
         });
     } else {
+        const toastTitle = aiStrategy.signal.toUpperCase() === 'HOLD'
+            ? <span className="text-primary">HOLD Signal Acknowledged</span>
+            : <span className="text-tertiary">Position Opened!</span>;
+        
+        const toastDescription = aiStrategy.signal.toUpperCase() === 'HOLD'
+            ? <span>Simulated {aiStrategy?.signal} for {aiStrategy?.symbol} has been logged in your Portfolio History.</span>
+            : <span>Simulated {aiStrategy?.signal} for {aiStrategy?.symbol} opened. View in your Portfolio.</span>;
+
         toast({
-            title: <span className="text-tertiary">Position Opened!</span>,
-            description: <span>Simulated {aiStrategy?.signal} for {aiStrategy?.symbol} opened. View in your Portfolio.</span>,
+            title: toastTitle,
+            description: toastDescription,
             variant: "default",
         });
         // Mark the signal as executed in history
@@ -565,11 +566,14 @@ export default function CoreConsolePage() {
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center">
                 <ShieldQuestion className="mr-2 h-6 w-6 text-tertiary"/>
-                Confirm Simulated Trade
+                Confirm Action
               </AlertDialogTitle>
               <AlertDialogDescription>
-                You are about to open a simulated <strong className={aiStrategy.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{aiStrategy.signal}</strong> position
-                for <strong className="text-primary">{symbol}</strong> based on SHADOW's parameters.
+                {aiStrategy.signal.toUpperCase() === 'HOLD'
+                  ? <>You are about to acknowledge a <strong className="text-primary">HOLD</strong> signal for <strong className="text-primary">{symbol}</strong>. This action will be logged in your trade history with zero profit/loss.</>
+                  : <>You are about to open a simulated <strong className={aiStrategy.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{aiStrategy.signal}</strong> position
+                    for <strong className="text-primary">{symbol}</strong> based on SHADOW's parameters.</>
+                }
                 <br />
                 <br />
                 This position is <strong className="text-accent">NOT a real trade</strong> and will be tracked in your portfolio.
@@ -582,7 +586,7 @@ export default function CoreConsolePage() {
                 onClick={confirmSimulatedTrade}
                 className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground"
               >
-                Open Simulated Position
+                {aiStrategy.signal.toUpperCase() === 'HOLD' ? 'Acknowledge HOLD' : 'Open Simulated Position'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

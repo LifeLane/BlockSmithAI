@@ -9,7 +9,7 @@ import { fetchActivePositionsAction, type Position } from '@/app/actions';
 const PositionSchema = z.object({
   id: z.string(),
   symbol: z.string(),
-  signalType: z.enum(['BUY', 'SELL']),
+  signalType: z.enum(['BUY', 'SELL', 'HOLD']),
   entryPrice: z.number(),
   size: z.number(),
   status: z.enum(['OPEN', 'CLOSED']),

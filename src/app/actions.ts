@@ -9,7 +9,7 @@ import { generateShadowChoiceStrategy as genShadowChoice, type ShadowChoiceStrat
 import { generateMissionLog, type GenerateMissionLogInput } from '@/ai/flows/generate-mission-log';
 
 // Node/Prisma Imports
-import { PrismaClient, type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge } from '@prisma/client';
+import { PrismaClient, type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, type SignalType } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { add, isBefore } from 'date-fns';
 
@@ -350,9 +350,29 @@ export async function claimMissionRewardAction(userId: string, missionId: string
 export async function openSimulatedPositionAction(userId: string, strategy: GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput): Promise<{ position?: Position; error?: string }> {
     if (!strategy.signal) return { error: "Signal information is missing from the strategy." };
     
-    // Acknowledge HOLD signals without creating a trade, which is the correct interpretation.
+    // Handle HOLD signal by creating a closed, zero-pnl trade for the history
     if (strategy.signal.toUpperCase() === 'HOLD') {
-        return { error: "A 'HOLD' signal means no new position should be opened. Action acknowledged." };
+        const marketDataResult = await fetchMarketDataAction({ symbol: strategy.symbol });
+        if ('error' in marketDataResult) {
+            return { error: `Could not fetch current price to log HOLD signal: ${marketDataResult.error}` };
+        }
+        const currentPrice = parseFloat(marketDataResult.lastPrice);
+        
+        const holdPosition = await prisma.position.create({
+            data: {
+                userId,
+                symbol: strategy.symbol,
+                signalType: 'HOLD',
+                entryPrice: currentPrice,
+                closePrice: currentPrice,
+                size: 1, // Default value, does not affect PnL
+                status: 'CLOSED',
+                openTimestamp: new Date().toISOString(),
+                closeTimestamp: new Date().toISOString(),
+                pnl: 0,
+            }
+        });
+        return { position: holdPosition };
     }
     
     try {

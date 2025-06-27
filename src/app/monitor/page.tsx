@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, XCircle, Hourglass, TrendingUp, TrendingDown, Clock, Bot, Info, LogIn, Target, ShieldX, Zap, ShieldQuestion } from 'lucide-react';
+import { CheckCircle2, XCircle, Hourglass, TrendingUp, TrendingDown, Clock, Bot, Info, LogIn, Target, ShieldX, Zap, ShieldQuestion, PauseCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -32,6 +32,20 @@ const getCurrentUserId = (): string | null => {
   }
   return null;
 };
+
+const SignalIcon = ({ signal }: { signal: string }) => {
+    switch(signal.toUpperCase()) {
+        case 'BUY':
+            return <TrendingUp className="h-6 w-6 text-green-400"/>;
+        case 'SELL':
+            return <TrendingDown className="h-6 w-6 text-red-400"/>;
+        case 'HOLD':
+            return <PauseCircle className="h-6 w-6 text-primary"/>;
+        default:
+            return <Bot className="h-6 w-6 text-primary"/>;
+    }
+}
+
 
 export default function MonitorPage() {
   const [signals, setSignals] = useState<SignalWithTimestamp[]>([]);
@@ -78,14 +92,22 @@ export default function MonitorPage() {
 
     if (result.error) {
         toast({
-            title: <span className="text-destructive">Position Open Failed!</span>,
+            title: <span className="text-destructive">Action Failed!</span>,
             description: <span className="text-foreground">{result.error}</span>,
             variant: "destructive",
         });
     } else {
+        const toastTitle = selectedSignal.signal.toUpperCase() === 'HOLD'
+            ? <span className="text-primary">HOLD Signal Acknowledged</span>
+            : <span className="text-tertiary">Position Opened!</span>;
+        
+        const toastDescription = selectedSignal.signal.toUpperCase() === 'HOLD'
+            ? <span>Simulated {selectedSignal?.signal} for {selectedSignal?.symbol} has been logged in your Portfolio History.</span>
+            : <span>Simulated {selectedSignal?.signal} for {selectedSignal?.symbol} opened. View in your Portfolio.</span>;
+        
         toast({
-            title: <span className="text-tertiary">Position Opened!</span>,
-            description: <span>Simulated {selectedSignal?.signal} for {selectedSignal?.symbol} opened. View in your Portfolio.</span>,
+            title: toastTitle,
+            description: toastDescription,
             variant: "default",
         });
          try {
@@ -126,16 +148,22 @@ export default function MonitorPage() {
           <div className="space-y-4">
             {signals.length > 0 ? signals.map((signal, index) => {
                 const isExecuted = signal.status === 'EXECUTED';
+                const signalType = signal.signal.toUpperCase();
+                let signalColor = 'text-foreground';
+                if (signalType === 'BUY') signalColor = 'text-green-400';
+                if (signalType === 'SELL') signalColor = 'text-red-400';
+                if (signalType === 'HOLD') signalColor = 'text-primary';
+                
                 return (
               <Card key={signal.id || `${signal.symbol}-${index}`} className="bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 flex flex-col">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <div className="flex items-center gap-4">
                      <div className="p-2 bg-background rounded-md">
-                        {signal.signal === 'BUY' ? <TrendingUp className="h-6 w-6 text-green-400"/> : signal.signal === 'SELL' ? <TrendingDown className="h-6 w-6 text-red-400"/> : <Bot className="h-6 w-6 text-primary"/>}
+                        <SignalIcon signal={signal.signal} />
                     </div>
                     <div>
                       <CardTitle className="text-lg">
-                        <span className={`mr-2 font-bold ${signal.signal === 'BUY' ? 'text-green-400' : 'text-red-400'}`}>{signal.signal}</span>
+                        <span className={`mr-2 font-bold ${signalColor}`}>{signal.signal}</span>
                         <span className="text-foreground">{signal.symbol}</span>
                       </CardTitle>
                       <CardDescription className="flex items-center text-xs">
@@ -181,7 +209,7 @@ export default function MonitorPage() {
                         disabled={isExecuted}
                     >
                         {isExecuted ? <CheckCircle2 className="h-4 w-4 mr-2"/> : <Zap className="h-4 w-4 mr-2"/>}
-                        {isExecuted ? 'Trade Executed' : 'Simulate This Trade'}
+                        {isExecuted ? 'Action Executed' : `Acknowledge & Log ${signal.signal}`}
                     </Button>
                 </CardFooter>
               </Card>
@@ -215,11 +243,14 @@ export default function MonitorPage() {
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center">
                 <ShieldQuestion className="mr-2 h-6 w-6 text-tertiary"/>
-                Confirm Simulated Trade
+                Confirm Action
               </AlertDialogTitle>
-              <AlertDialogDescription>
-                You are about to open a simulated <strong className={selectedSignal.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{selectedSignal.signal}</strong> position
-                for <strong className="text-primary">{selectedSignal.symbol}</strong> based on this historical analysis.
+               <AlertDialogDescription>
+                {selectedSignal.signal.toUpperCase() === 'HOLD'
+                  ? <>You are about to acknowledge a <strong className="text-primary">HOLD</strong> signal for <strong className="text-primary">{selectedSignal.symbol}</strong>. This will be logged in your trade history.</>
+                  : <>You are about to open a simulated <strong className={selectedSignal.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{selectedSignal.signal}</strong> position
+                    for <strong className="text-primary">{selectedSignal.symbol}</strong> based on this historical analysis.</>
+                }
                 <br />
                 <br />
                 This position will be tracked in your Portfolio. This is <strong className="text-accent">NOT a real trade</strong>.
@@ -231,7 +262,7 @@ export default function MonitorPage() {
                 onClick={confirmSimulatedTrade}
                 className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground"
               >
-                Open Simulated Position
+                {selectedSignal.signal.toUpperCase() === 'HOLD' ? 'Acknowledge & Log' : 'Open Simulated Position'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -240,5 +271,3 @@ export default function MonitorPage() {
     </>
   );
 }
-
-    

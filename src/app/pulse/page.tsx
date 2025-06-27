@@ -5,7 +5,7 @@ import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, TrendingUp, TrendingDown, Briefcase, Bot, AlertTriangle, LogOut, ShieldX, Target, LogIn, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, CheckCircle, XCircle, Gift, Clock } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, Briefcase, Bot, AlertTriangle, LogOut, ShieldX, Target, LogIn, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, CheckCircle, XCircle, Gift, Clock, PauseCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
@@ -142,12 +142,27 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
 }
 
 const HistoryCard = ({ position }: { position: Position }) => {
-    const isWin = position.pnl && position.pnl > 0;
+    const isWin = position.pnl != null && position.pnl > 0;
+    const isHold = position.signalType === 'HOLD';
+    const pnl = position.pnl ?? 0;
+
+    let icon, titleColor;
+    if (isHold) {
+        icon = <PauseCircle className="h-6 w-6 text-primary"/>
+        titleColor = 'text-primary';
+    } else if (isWin) {
+        icon = <CheckCircle className="h-6 w-6 text-green-400"/>
+        titleColor = 'text-green-400';
+    } else {
+        icon = <XCircle className="h-6 w-6 text-red-400"/>;
+        titleColor = 'text-red-400';
+    }
+
     return (
         <Card className="bg-card/80 backdrop-blur-sm">
              <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div className="flex items-center gap-4">
-                    {isWin ? <CheckCircle className="h-6 w-6 text-green-400"/> : <XCircle className="h-6 w-6 text-red-400"/>}
+                    {icon}
                     <div>
                         <CardTitle className="text-base">{position.signalType} {position.symbol}</CardTitle>
                         <CardDescription className="text-xs">
@@ -155,8 +170,8 @@ const HistoryCard = ({ position }: { position: Position }) => {
                         </CardDescription>
                     </div>
                 </div>
-                <div className={`font-bold ${isWin ? 'text-green-400' : 'text-red-400'}`}>
-                    PnL: ${position.pnl?.toFixed(2)}
+                <div className={`font-bold ${titleColor}`}>
+                    {isHold ? 'Acknowledged' : `PnL: $${pnl.toFixed(2)}`}
                 </div>
              </CardHeader>
              <CardContent className="grid grid-cols-2 gap-2 text-xs pt-2">
@@ -508,6 +523,3 @@ export default function PortfolioPage() {
     </>
   );
 }
-
-    
-
