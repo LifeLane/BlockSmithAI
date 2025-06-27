@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  username          String   @unique
+  shadowId          String   @unique
+  status            String
+  weeklyPoints      Int      @default(0)
+  airdropPoints     Int      @default(0)
+  wallet_address    String?
+  wallet_type       String?
+  email             String?  @unique
+  phone             String?
+  x_handle          String?
+  telegram_handle   String?
+  youtube_handle    String?
+  claimedMissions   String[]
+  claimedSpecialOps String[] @default([])
+
+  positions Position[]
+  agents    UserAgent[]
+  badges    Badge[]    @relation("UserBadges")
+}
+
+model Position {
+  id                  String         @id @default(uuid())
+  userId              String
+  symbol              String
+  signalType          SignalType
+  entryPrice          Float
+  size                Float
+  status              PositionStatus
+  openTimestamp       DateTime       @default(now())
+  stopLoss            Float?
+  takeProfit          Float?
+  expirationTimestamp DateTime?
+
+  // Fields to fix the error
+  closePrice          Float?
+  closeTimestamp      DateTime?
+  pnl                 Float?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Badge {
+  id    String @id @default(uuid())
+  name  String @unique
+  users User[] @relation("UserBadges")
+}
+
+model UserAgent {
+  id                String    @id @default(uuid())
+  userId            String
+  agentId           String
+  level             Int
+  status            String
+  deploymentEndTime DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, agentId])
+}
+
+enum SignalType {
+  BUY
+  SELL
+  HOLD
+}
+
+enum PositionStatus {
+  PENDING
+  OPEN
+  CLOSED
+}
