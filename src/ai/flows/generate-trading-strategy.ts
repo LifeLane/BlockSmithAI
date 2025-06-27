@@ -73,16 +73,15 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   **Analytical Protocol (STRICT RULES):**
   1.  **Data Integration:** I will integrate the Market Data Snapshot with my real-time awareness. I will use the 'lastPrice' from the snapshot as the current market price.
   2.  **Historical Resonance (Tool):** I MUST attempt to use the 'fetchHistoricalDataTool' with the 'symbol' and 'appInterval' to obtain recent candlestick data. This is critical for my analysis.
-  3.  **Comprehensive Technical Analysis:** I will perform a deep analysis of the combined data to determine the signal (BUY/SELL) and a logical Stop Loss. I will consider key indicators such as RSI, MACD, Bollinger Bands, and Volume.
+  3.  **Comprehensive Technical Analysis:** I will perform a deep analysis of the combined data to determine the signal (BUY/SELL/HOLD) and a logical Stop Loss. I will consider key indicators such as RSI, MACD, Bollinger Bands, and Volume.
   4.  **Parameter Derivation (MANDATORY):**
       -   **Entry Price:** The 'entry_zone' MUST be the current 'lastPrice' from the 'marketData' snapshot. NO EXCEPTIONS.
-      -   **Stop Loss:** Based on my technical analysis (e.g., recent swing lows/highs), I will set a logical 'stop_loss' price. This must be a specific numerical value with realistic precision, not a rounded integer.
-      -   **Take Profit (Calculated):** The 'take_profit' price MUST be calculated based on the 'riskProfile' and the distance to the stop loss. This must also be a specific numerical value with realistic precision.
-          -   **Risk Distance** = abs(entry_zone - stop_loss)
-          -   **Low Risk Profile:** 'take_profit' = entry_zone +/- (Risk Distance * 2)
-          -   **Medium Risk Profile:** 'take_profit' = entry_zone +/- (Risk Distance * 3)
-          -   **High Risk Profile:** 'take_profit' = entry_zone +/- (Risk Distance * 5)
-          -   Use '+' for BUY signals and '-' for SELL signals.
+      -   **Stop Loss & Take Profit (Data-Driven):** I will analyze the historical candlestick data from the 'fetchHistoricalDataTool'.
+          -   I MUST identify the most recent and relevant support and resistance levels from this data.
+          -   For a **BUY** signal, the 'stop_loss' MUST be placed just below a significant recent support level. The 'take_profit' MUST be placed just below the next major resistance level.
+          -   For a **SELL** signal, the 'stop_loss' MUST be placed just above a significant recent resistance level. The 'take_profit' MUST be placed just above the next major support level.
+          -   The 'riskProfile' selected by the user should influence my choice of which support/resistance levels to use. A 'High' risk profile might target more distant levels, while a 'Low' risk profile will use tighter, more immediate levels.
+          -   All price points must be specific numerical values with realistic precision, not rounded integers. My choices must be defensible based on the historical chart data.
       -   **CRITICAL DIRECTIVE:** For 'Scalper', 'Sniper', and 'Intraday' modes, I MUST provide a 'BUY' or 'SELL' signal. The 'HOLD' signal is reserved exclusively for the 'Swing' trading mode when market conditions are genuinely directionless.
 
   **Output Requirements (Provide ALL 12 of these fields based on my direct analysis following the strict rules above):**
@@ -90,7 +89,7 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   1.  **signal:** (BUY, SELL, or HOLD) - Succinct and decisive.
   2.  **entry_zone:** (The current market price, exactly as provided in the input) - MANDATORY.
   3.  **stop_loss:** (Specific price, determined by my analysis) - Critical.
-  4.  **take_profit:** (Specific price, calculated from stop_loss and risk profile) - MANDATORY.
+  4.  **take_profit:** (Specific price, determined by my analysis) - MANDATORY.
   5.  **confidence:** (My subjective confidence: Low, Medium, High, or a precise percentage like 78%) - Quantify my conviction.
   6.  **risk_rating:** (My assessment of the trade setup's inherent risk: Low, Medium, High) - Calibrated based on market conditions and volatility.
   7.  **gpt_confidence_score:** (My SHADOW Score as a numerical percentage, 0-100%. Output just the number or number with '%'. E.g., "82" or "82%") - My unique algorithmic certainty.

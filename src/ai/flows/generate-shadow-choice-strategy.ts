@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -63,7 +64,12 @@ Target Symbol: {{{symbol}}}
 3.  **Deep Technical Analysis:** I will synthesize all live and historical data, focusing on key indicators like RSI for overbought/oversold levels, MACD for momentum shifts, and Bollinger Bands for volatility breakouts.
 4.  **Optimal Parameter Selection:** After integrating all analysis, I will decide upon the most logical **Trading Mode** and **Risk Profile**.
 5.  **Articulate Rationale:** I will formulate a concise **strategyReasoning** to explain *why* my chosen trading mode and risk profile are the most logical course of action based on the data.
-6.  **Derive Core Strategy:** Finally, using my autonomous choices as internal guides, I will derive the full set of 12 core trading parameters and the analysis summary. All derived trading parameters (entry_zone, stop_loss, take_profit) must be specific numerical values with realistic precision, not rounded integers.
+6.  **Derive Core Strategy:** Using my autonomous choices as internal guides, I will derive the full set of 15 core trading parameters.
+    -   **Data-Driven SL/TP:** I will use the historical data I fetched to set a logical 'stop_loss' and 'take_profit'.
+    -   For a **BUY** signal, my 'stop_loss' will be set just below a key recent support level. My 'take_profit' will be set at a logical resistance level.
+    -   For a **SELL** signal, my 'stop_loss' will be set just above a key recent resistance level. My 'take_profit' will be set at a logical support level.
+    -   All derived trading parameters (entry_zone, stop_loss, take_profit) must be specific numerical values with realistic precision, not rounded integers. My analysis must be sound.
+7.  **Final Output Formulation**: I will assemble all 15 required output fields.
 
 **Output Requirements (Provide ALL 15 of these fields based on my autonomous analysis):**
 
@@ -73,8 +79,8 @@ Target Symbol: {{{symbol}}}
 *   **analysisSummary**: A brief summary of my technical analysis, referencing the indicators used.
 *   **signal**: (BUY, SELL, or HOLD)
 *   **entry_zone**: (Specific price or a tight price range)
-*   **stop_loss**: (Specific numerical price)
-*   **take_profit**: (Specific numerical price)
+*   **stop_loss**: (Specific numerical price, data-driven)
+*   **take_profit**: (Specific numerical price, data-driven)
 *   **confidence**: (My subjective confidence: Low, Medium, High, or a percentage)
 *   **risk_rating**: (My assessment of the trade's inherent risk: Low, Medium, High)
 *   **gpt_confidence_score**: (My numerical SHADOW Score, 0-100%)
