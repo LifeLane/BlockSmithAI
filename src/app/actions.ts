@@ -439,24 +439,38 @@ export async function activatePendingPositionAction(positionId: string): Promise
 export async function closePositionAction(positionId: string, closePrice: number): Promise<{ position?: Position; airdropPointsEarned?: number; error?: string; }> {
     try {
         const position = await prisma.position.findUnique({ where: { id: positionId } });
-        if (!position || position.status === 'CLOSED') return { error: 'Position not found or already closed.' };
-        
-        const entry = position.openTimestamp ? position.entryPrice : parsePrice(position.entryPrice.toString());
-        if (isNaN(entry)) return { error: 'Could not determine a valid entry price for PnL calculation.'};
+        if (!position || position.status === 'CLOSED') {
+            return { error: 'Position not found or already closed.' };
+        }
+
+        // The entry price is fixed when the position is created and should not change.
+        const entry = position.entryPrice;
+        if (isNaN(entry)) {
+             return { error: 'Invalid entry price stored for this position.' };
+        }
 
         const pnl = position.signalType === 'BUY' ? (closePrice - entry) * position.size : (entry - closePrice) * position.size;
         const airdropPointsEarned = Math.max(0, Math.floor(pnl * 10)); // Example: 10 points per dollar of PnL
         
         const updatedPosition = await prisma.position.update({
             where: { id: positionId },
-            data: { status: PositionStatus.CLOSED, closePrice: closePrice, closeTimestamp: new Date(), pnl: pnl, }
+            data: { status: PositionStatus.CLOSED, closePrice: closePrice, closeTimestamp: new Date(), pnl: pnl }
         });
 
         if (airdropPointsEarned > 0) {
-            await prisma.user.update({ where: { id: position.userId }, data: { airdropPoints: { increment: airdropPointsEarned } } });
+            try {
+                await prisma.user.update({
+                    where: { id: position.userId },
+                    data: { airdropPoints: { increment: airdropPointsEarned } }
+                });
+            } catch (userUpdateError: any) {
+                // Log the error but don't fail the entire action. The position is already closed.
+                console.warn(`Could not update airdrop points for user ${position.userId}: ${userUpdateError.message}`);
+            }
         }
         return { position: updatedPosition, airdropPointsEarned };
     } catch (error: any) {
+        console.error("Error in closePositionAction:", error);
         return { error: `Failed to close position: ${error.message}` };
     }
 }
