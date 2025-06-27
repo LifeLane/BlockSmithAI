@@ -368,7 +368,7 @@ Analysis Timestamp: ${currentDateTime}
                 <Button
                     onClick={onChat}
                     variant="outline"
-                    className="border-primary text-primary hover:bg-primary/10 hover:text-primary-foreground font-semibold"
+                    className="border-primary text-primary hover:bg-primary/10 hover:text-primary font-semibold"
                 >
                     <MessageSquareHeart className="mr-2 h-4 w-4" /> Chat with SHADOW
                 </Button>
@@ -391,7 +391,7 @@ Analysis Timestamp: ${currentDateTime}
                     className="w-full max-w-sm bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground font-semibold py-3 text-base shadow-lg"
                 >
                     <Zap className="mr-2 h-5 w-5"/>
-                    Acknowledge & Simulate
+                    Log Signal for Simulation
                 </Button>
             )}
        </CardFooter>

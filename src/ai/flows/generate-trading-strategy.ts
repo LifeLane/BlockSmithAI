@@ -76,8 +76,8 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   3.  **Comprehensive Technical Analysis:** I will perform a deep analysis of the combined data to determine the signal (BUY/SELL) and a logical Stop Loss. I will consider key indicators such as RSI, MACD, Bollinger Bands, and Volume.
   4.  **Parameter Derivation (MANDATORY):**
       -   **Entry Price:** The 'entry_zone' MUST be the current 'lastPrice' from the 'marketData' snapshot. NO EXCEPTIONS.
-      -   **Stop Loss:** Based on my technical analysis (e.g., recent swing lows/highs), I will set a logical 'stop_loss' price.
-      -   **Take Profit (Calculated):** The 'take_profit' price MUST be calculated based on the 'riskProfile' and the distance to the stop loss.
+      -   **Stop Loss:** Based on my technical analysis (e.g., recent swing lows/highs), I will set a logical 'stop_loss' price. This must be a specific numerical value with realistic precision, not a rounded integer.
+      -   **Take Profit (Calculated):** The 'take_profit' price MUST be calculated based on the 'riskProfile' and the distance to the stop loss. This must also be a specific numerical value with realistic precision.
           -   **Risk Distance** = abs(entry_zone - stop_loss)
           -   **Low Risk Profile:** 'take_profit' = entry_zone +/- (Risk Distance * 2)
           -   **Medium Risk Profile:** 'take_profit' = entry_zone +/- (Risk Distance * 3)

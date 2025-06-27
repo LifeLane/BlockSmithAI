@@ -27,7 +27,7 @@ import {
   generateShadowChoiceStrategyAction,
   fetchMarketDataAction,
   fetchAllTradingSymbolsAction,
-  openSimulatedPositionAction,
+  logSimulatedPositionAction,
   type LiveMarketData,
   type FormattedSymbol,
   type GenerateTradingStrategyOutput as AIOutputType,
@@ -38,7 +38,6 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { Loader2, Sparkles, ShieldQuestion, BrainCircuit } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// This combined type will now encompass both standard and SHADOW's Choice outputs.
 type AIStrategyOutput = (AIOutputType | GenerateShadowChoiceStrategyOutput) & { 
   id?: string;
 };
@@ -71,26 +70,23 @@ export default function CoreConsolePage() {
 
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
-  const [showConfirmTradeDialog, setShowConfirmTradeDialog] = useState<boolean>(false);
+  const [showConfirmLogDialog, setShowConfirmLogDialog] = useState<boolean>(false);
   
-  // User state
   const { user: currentUser, isLoading: isUserLoading, refetch: refetchUser } = useCurrentUser();
   
-  // Guest usage tracking
   const [analysisCount, setAnalysisCount] = useState<number>(0);
   const [lastAnalysisDate, setLastAnalysisDate] = useState<string>('');
 
   const { toast } = useToast();
   const mainContentRef = useRef<HTMLDivElement>(null);
   
-  // Load guest usage data from local storage
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     if (!currentUser || currentUser.status !== 'Guest') {
-        // If user is registered, don't apply guest limits
         setAnalysisCount(0);
         return;
     }
-
     const storedCount = localStorage.getItem('bsaiAnalysisCount');
     const storedDate = localStorage.getItem('bsaiLastAnalysisDate');
     const today = new Date().toISOString().split('T')[0];
@@ -98,7 +94,6 @@ export default function CoreConsolePage() {
     if (storedDate === today && storedCount) {
         setAnalysisCount(parseInt(storedCount, 10));
     } else {
-        // Reset count for a new day or if no data exists
         localStorage.setItem('bsaiAnalysisCount', '0');
         localStorage.setItem('bsaiLastAnalysisDate', today);
         setAnalysisCount(0);
@@ -169,11 +164,9 @@ export default function CoreConsolePage() {
   }, [symbol, fetchAndSetMarketData]);
 
 
-  const handleGenerateStrategy = useCallback(async () => {
-    // Scroll to results block after generation
+  const handleGenerateStrategy = useCallback(async (isShadowChoice = false) => {
     setTimeout(() => {
-        const resultsRef = document.getElementById('results-block');
-        resultsRef?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('results-block')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
 
     if (currentUser?.status === 'Guest') {
@@ -195,32 +188,34 @@ export default function CoreConsolePage() {
       updateUsageData(currentCount + 1);
     }
 
-    setIsLoadingStrategy(true);
+    if (isShadowChoice) setIsLoadingShadowChoice(true);
+    else setIsLoadingStrategy(true);
+    
     setStrategyError(null);
     setAiStrategy(null);
 
-    let marketDataForAIString = '{}';
     let currentDataToUse = liveMarketData;
-
     if (!currentDataToUse || (currentDataToUse.symbol !== symbol)) {
       const result = await fetchAndSetMarketData(symbol, true);
       if ('error' in result) {
         setStrategyError("Market data unavailable. Strategy generation aborted.");
-        setIsLoadingStrategy(false);
         if(currentUser?.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
+        if (isShadowChoice) setIsLoadingShadowChoice(false);
+        else setIsLoadingStrategy(false);
         return;
       }
       currentDataToUse = result;
     }
 
-    if (currentDataToUse) {
-        marketDataForAIString = JSON.stringify(currentDataToUse);
+    const marketDataForAIString = JSON.stringify(currentDataToUse);
+    let result;
+
+    if (isShadowChoice) {
+        result = await generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString });
+    } else {
+        result = await generateTradingStrategyAction({ symbol, tradingMode, riskProfile, marketData: marketDataForAIString });
     }
-
-    const inputForAI = { symbol, tradingMode, riskProfile, marketData: marketDataForAIString };
-
-    const result = await generateTradingStrategyAction(inputForAI);
-
+    
     if ('error' in result) {
       setStrategyError(result.error);
       setAiStrategy(null);
@@ -231,98 +226,17 @@ export default function CoreConsolePage() {
       });
       if(currentUser?.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount -1);
     } else {
-      const resultWithId: AIStrategyOutput = {
-          ...result,
-          id: crypto.randomUUID(),
-      };
+      const resultWithId: AIStrategyOutput = { ...result, id: crypto.randomUUID() };
       setAiStrategy(resultWithId);
       toast({
         title: <span className="text-accent">SHADOW's Insight Materialized!</span>,
         description: <span className="text-foreground">New analysis for <strong className="text-primary">{result.symbol}</strong> has been generated.</span>,
       });
-
-      try {
-        const history = JSON.parse(localStorage.getItem('bsaiSignalHistory') || '[]');
-        const newEntry = { ...resultWithId, timestamp: new Date().toISOString(), status: 'PENDING' };
-        const updatedHistory = [newEntry, ...history].slice(0, 20); // Keep latest 20
-        localStorage.setItem('bsaiSignalHistory', JSON.stringify(updatedHistory));
-      } catch (e) {
-        console.error("Failed to save signal to history:", e);
-      }
     }
-    setIsLoadingStrategy(false);
+    
+    if (isShadowChoice) setIsLoadingShadowChoice(false);
+    else setIsLoadingStrategy(false);
   }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast]);
-
-    const handleGenerateShadowChoice = useCallback(async () => {
-        setTimeout(() => {
-            document.getElementById('results-block')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-
-        if (currentUser?.status === 'Guest') {
-            const today = new Date().toISOString().split('T')[0];
-            let currentCount = analysisCount;
-            if (lastAnalysisDate !== today) {
-                currentCount = 0;
-                updateUsageData(0);
-            }
-            if (currentCount >= MAX_GUEST_ANALYSES) {
-                setShowAirdropModal(true);
-                toast({
-                    title: "Daily Limit Reached",
-                    description: "Guests are limited. Register for unlimited SHADOW's Choice analyses.",
-                });
-                return;
-            }
-            updateUsageData(currentCount + 1);
-        }
-
-        setIsLoadingShadowChoice(true);
-        setStrategyError(null);
-        setAiStrategy(null);
-
-        let marketDataForAIString = '{}';
-        let currentDataToUse = liveMarketData;
-
-        if (!currentDataToUse || (currentDataToUse.symbol !== symbol)) {
-            const result = await fetchAndSetMarketData(symbol, true);
-            if ('error' in result) {
-                setStrategyError("Market data unavailable. SHADOW's Choice aborted.");
-                setIsLoadingShadowChoice(false);
-                if (currentUser?.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
-                return;
-            }
-            currentDataToUse = result;
-        }
-
-        if (currentDataToUse) {
-            marketDataForAIString = JSON.stringify(currentDataToUse);
-        }
-
-        const result = await generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString });
-
-        if ('error' in result) {
-            setStrategyError(result.error);
-            setAiStrategy(null);
-            toast({ title: "SHADOW's Choice Failed", description: result.error, variant: "destructive" });
-            if (currentUser?.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
-        } else {
-            const resultWithId: AIStrategyOutput = { ...result, id: crypto.randomUUID() };
-            setAiStrategy(resultWithId);
-            toast({
-                title: <span className="text-tertiary">SHADOW's Choice Received!</span>,
-                description: <span className="text-foreground">Autonomous analysis for <strong className="text-primary">{result.symbol}</strong> is complete.</span>,
-            });
-             try {
-                const history = JSON.parse(localStorage.getItem('bsaiSignalHistory') || '[]');
-                const newEntry = { ...resultWithId, timestamp: new Date().toISOString(), status: 'PENDING' };
-                const updatedHistory = [newEntry, ...history].slice(0, 20);
-                localStorage.setItem('bsaiSignalHistory', JSON.stringify(updatedHistory));
-            } catch (e) {
-                console.error("Failed to save signal to history:", e);
-            }
-        }
-        setIsLoadingShadowChoice(false);
-    }, [symbol, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast]);
 
 
   const handleToggleChat = () => setIsChatOpen(prev => !prev);
@@ -335,7 +249,7 @@ export default function CoreConsolePage() {
     await refetchUser();
   };
 
-  const handleSimulateTrade = () => {
+  const handleLogSignal = () => {
     if (!aiStrategy) {
          toast({
             title: "No SHADOW Insight Available",
@@ -344,25 +258,17 @@ export default function CoreConsolePage() {
         });
         return;
     }
-    setShowConfirmTradeDialog(true);
+    setShowConfirmLogDialog(true);
   };
 
-  const confirmSimulatedTrade = async () => {
+  const confirmLogSignal = async () => {
     if (!currentUser) {
-        toast({
-            title: "User Not Found",
-            description: "Cannot simulate trade without a user profile. Please refresh the page.",
-            variant: "destructive",
-        });
-        setShowConfirmTradeDialog(false);
-        return;
+        toast({ title: "User Not Found", description: "Cannot log signal. Please refresh the page.", variant: "destructive" });
+        return setShowConfirmLogDialog(false);
     }
-    if (!aiStrategy) {
-        setShowConfirmTradeDialog(false);
-        return;
-    }
+    if (!aiStrategy) return setShowConfirmLogDialog(false);
 
-    const result = await openSimulatedPositionAction(currentUser.id, aiStrategy);
+    const result = await logSimulatedPositionAction(currentUser.id, aiStrategy);
 
     if (result.error) {
         toast({
@@ -374,30 +280,18 @@ export default function CoreConsolePage() {
         const isHoldSignal = aiStrategy.signal.toUpperCase() === 'HOLD';
         const toastTitle = isHoldSignal
             ? <span className="text-primary">HOLD Signal Acknowledged</span>
-            : <span className="text-tertiary">Position Opened!</span>;
+            : <span className="text-tertiary">Signal Logged & Pending</span>;
         
         const toastDescription = isHoldSignal
-            ? <span>The HOLD signal for {aiStrategy?.symbol} has been acknowledged and marked as executed.</span>
-            : <span>Simulated {aiStrategy?.signal} for {aiStrategy?.symbol} opened. View in your Portfolio.</span>;
+            ? <span>The HOLD signal for {aiStrategy?.symbol} has been logged.</span>
+            : <span>Signal for {aiStrategy?.symbol} is now PENDING. The portfolio monitor will execute it automatically when the entry price is met.</span>;
 
         toast({
             title: toastTitle,
             description: toastDescription,
         });
-
-        if (aiStrategy?.id) {
-            try {
-                const history = JSON.parse(localStorage.getItem('bsaiSignalHistory') || '[]');
-                const updatedHistory = history.map((signal: any) => 
-                    signal.id === aiStrategy.id ? { ...signal, status: 'EXECUTED' } : signal
-                );
-                localStorage.setItem('bsaiSignalHistory', JSON.stringify(updatedHistory));
-            } catch (e) {
-                console.error("Failed to update signal status in history:", e);
-            }
-        }
     }
-    setShowConfirmTradeDialog(false);
+    setShowConfirmLogDialog(false);
   };
 
   const isButtonDisabled = isUserLoading || isLoadingStrategy || isLoadingShadowChoice || isLoadingSymbols || (currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES);
@@ -433,44 +327,23 @@ export default function CoreConsolePage() {
                 
                 <div className="flex flex-col items-center gap-4 pt-2">
                     <Button
-                        onClick={handleGenerateStrategy}
+                        onClick={() => handleGenerateStrategy(false)}
                         disabled={isButtonDisabled}
                         className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
                     >
-                        {isLoadingStrategy ? (
-                            <>
-                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                            SHADOW is Analyzing...
-                            </>
-                        ) : isUserLoading ? (
-                             <>
-                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                            Initializing Analyst Profile...
-                            </>
-                        ) : (
-                            <>
-                            <Sparkles className="mr-2 h-5 w-5" />
-                            Generate Signal
-                            </>
-                        )}
+                        {isLoadingStrategy ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            : isUserLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            : <Sparkles className="mr-2 h-5 w-5" />}
+                        {isLoadingStrategy ? "SHADOW is Analyzing..." : isUserLoading ? "Initializing Analyst Profile..." : "Generate Signal"}
                     </Button>
 
                      <Button
-                        onClick={handleGenerateShadowChoice}
+                        onClick={() => handleGenerateStrategy(true)}
                         disabled={isButtonDisabled}
                         className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out shadow-choice-button"
                     >
-                        {isLoadingShadowChoice ? (
-                            <>
-                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                SHADOW is Deciding...
-                            </>
-                        ) : (
-                            <>
-                                <BrainCircuit className="mr-2 h-5 w-5" />
-                                Invoke SHADOW's Choice
-                            </>
-                        )}
+                        {isLoadingShadowChoice ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
+                        {isLoadingShadowChoice ? "SHADOW is Deciding..." : "Invoke SHADOW's Choice"}
                     </Button>
                     
                     {currentUser?.status === 'Guest' && (
@@ -491,7 +364,7 @@ export default function CoreConsolePage() {
                         isLoading={isLoadingStrategy || isLoadingShadowChoice}
                         error={strategyError}
                         symbol={symbol}
-                        onSimulate={handleSimulateTrade}
+                        onSimulate={handleLogSignal}
                         onChat={handleToggleChat}
                     />
 
@@ -522,7 +395,7 @@ export default function CoreConsolePage() {
       />
       <ApiSettingsModal />
       {aiStrategy && (
-        <AlertDialog open={showConfirmTradeDialog} onOpenChange={setShowConfirmTradeDialog}>
+        <AlertDialog open={showConfirmLogDialog} onOpenChange={setShowConfirmLogDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center">
@@ -531,23 +404,22 @@ export default function CoreConsolePage() {
               </AlertDialogTitle>
               <AlertDialogDescription>
                 {aiStrategy.signal.toUpperCase() === 'HOLD'
-                  ? <>You are about to acknowledge a <strong className="text-primary">HOLD</strong> signal for <strong className="text-primary">{symbol}</strong>. This action will be logged in your signal history but will not open a trade.</>
-                  : <>You are about to open a simulated <strong className={aiStrategy.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{aiStrategy.signal}</strong> position
+                  ? <>You are about to acknowledge and log a <strong className="text-primary">HOLD</strong> signal for <strong className="text-primary">{symbol}</strong>. This action will be recorded but will not create a pending trade.</>
+                  : <>You are about to log a <strong className={aiStrategy.signal?.toLowerCase().includes('buy') ? 'text-green-400' : 'text-red-400'}>{aiStrategy.signal}</strong> signal
                     for <strong className="text-primary">{symbol}</strong> based on SHADOW's parameters.</>
                 }
                 <br />
                 <br />
-                This position is <strong className="text-accent">NOT a real trade</strong> and will be tracked in your portfolio.
-                BlockShadow is not responsible for any actions taken based on this simulation.
+                The signal will be set to <strong className="text-accent">PENDING</strong> and will be monitored by the Portfolio. It will execute automatically when market conditions are met.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                onClick={confirmSimulatedTrade}
+                onClick={confirmLogSignal}
                 className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground"
               >
-                {aiStrategy.signal.toUpperCase() === 'HOLD' ? 'Acknowledge HOLD' : 'Open Simulated Position'}
+                {aiStrategy.signal.toUpperCase() === 'HOLD' ? 'Acknowledge HOLD' : 'Log Pending Signal'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

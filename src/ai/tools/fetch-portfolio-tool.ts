@@ -4,16 +4,18 @@
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { fetchActivePositionsAction, type Position } from '@/app/actions';
+// Corrected the import to use the existing 'fetchPendingAndOpenPositionsAction'
+import { fetchPendingAndOpenPositionsAction, type Position } from '@/app/actions';
 
+// Corrected schema to match the data model for a Position.
 const PositionSchema = z.object({
   id: z.string(),
   symbol: z.string(),
-  signalType: z.enum(['BUY', 'SELL', 'HOLD']),
+  signalType: z.enum(['BUY', 'SELL']),
   entryPrice: z.number(),
   size: z.number(),
-  status: z.enum(['OPEN', 'CLOSED']),
-  openTimestamp: z.string(),
+  status: z.enum(['PENDING', 'OPEN', 'CLOSED']), // The full enum from the DB schema
+  openTimestamp: z.string().nullable(), // Can be null for PENDING positions
 });
 
 const FetchPortfolioInputSchema = z.object({
@@ -21,7 +23,7 @@ const FetchPortfolioInputSchema = z.object({
 });
 
 const FetchPortfolioOutputSchema = z.object({
-  positions: z.array(PositionSchema).optional().describe('An array of open positions.'),
+  positions: z.array(PositionSchema).optional().describe('An array of pending or open positions.'),
   error: z.string().optional().describe('An error message if fetching failed.'),
   message: z.string().optional().describe('A summary message about the portfolio.'),
 });
@@ -29,7 +31,7 @@ const FetchPortfolioOutputSchema = z.object({
 export const fetchPortfolioTool = ai.defineTool(
   {
     name: 'fetchUserPortfolio',
-    description: "Fetches the user's current open simulated trading positions. Use this if the user asks about their trades, P&L, or what they are currently holding.",
+    description: "Fetches the user's current pending and open simulated trading positions. Use this if the user asks about their trades, P&L, or what they are currently holding.",
     inputSchema: FetchPortfolioInputSchema,
     outputSchema: FetchPortfolioOutputSchema,
   },
@@ -38,11 +40,12 @@ export const fetchPortfolioTool = ai.defineTool(
       return { error: 'User ID is required to fetch portfolio.' };
     }
     try {
-      const positions = await fetchActivePositionsAction(input.userId);
+      // Corrected the function call
+      const positions = await fetchPendingAndOpenPositionsAction(input.userId);
       if (positions.length === 0) {
-        return { message: "The user has no open positions." };
+        return { message: "The user has no open or pending positions." };
       }
-      return { positions, message: `User has ${positions.length} open position(s).` };
+      return { positions, message: `User has ${positions.length} active position(s).` };
     } catch (error: any) {
       return { error: `Failed to fetch portfolio: ${error.message}` };
     }

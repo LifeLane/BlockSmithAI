@@ -9,7 +9,7 @@ import { generateShadowChoiceStrategy as genShadowChoice, type ShadowChoiceStrat
 import { generateMissionLog, type GenerateMissionLogInput } from '@/ai/flows/generate-mission-log';
 
 // Node/Prisma Imports
-import { PrismaClient, type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, type SignalType, PositionStatus } from '@prisma/client';
+import { PrismaClient, type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, SignalType, PositionStatus } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { add, isBefore } from 'date-fns';
 
@@ -20,14 +20,12 @@ const prisma = new PrismaClient();
 // Helper function to robustly parse price strings, which could be a single number or a range.
 const parsePrice = (priceStr: string | undefined): number => {
     if (!priceStr) return NaN;
-    // Replace non-numeric/non-decimal characters (like '$' or text) but keep '-' for ranges
     const cleanedStr = priceStr.replace(/[^0-9.-]/g, ' '); 
     const parts = cleanedStr.split(' ').filter(p => p !== '' && !isNaN(parseFloat(p)));
     
     if (parts.length === 0) return NaN;
     if (parts.length === 1) return parseFloat(parts[0]);
     
-    // If it's a range (e.g., "100.50 - 100.60"), calculate the average.
     const sum = parts.reduce((acc, val) => acc + parseFloat(val), 0);
     return sum / parts.length;
 };
@@ -364,7 +362,7 @@ export async function claimMissionRewardAction(userId: string, missionId: string
     }
 }
 
-export async function openSimulatedPositionAction(
+export async function logSimulatedPositionAction(
   userId: string,
   strategy: GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput
 ): Promise<{ position: Position | null; error?: string; message?: string }> {
@@ -372,13 +370,13 @@ export async function openSimulatedPositionAction(
     return { position: null, error: "Signal information is missing from the strategy." };
   }
 
-  // Refined HOLD signal logic: Do not create a position.
+  // Acknowledge HOLD signal without creating a position
   if (strategy.signal.toUpperCase() === 'HOLD') {
-    return { position: null, message: "HOLD signal acknowledged successfully." };
+    return { position: null, message: "HOLD signal acknowledged. No position logged." };
   }
 
   if (!userId) {
-    return { position: null, error: "User ID is required to open a position." };
+    return { position: null, error: "User ID is required to log a position." };
   }
 
   try {
@@ -388,23 +386,6 @@ export async function openSimulatedPositionAction(
 
     if (isNaN(entryPrice) || isNaN(stopLoss) || isNaN(takeProfit)) {
       return { position: null, error: "Invalid price format for entry, stop loss, or take profit. Could not parse numbers." };
-    }
-
-    // Validate SL/TP based on signal direction
-    if (strategy.signal.toUpperCase() === 'BUY') {
-      if (stopLoss >= entryPrice) {
-        return { position: null, error: `Invalid Stop Loss for BUY signal. Stop Loss (${stopLoss}) must be below Entry Price (${entryPrice}).` };
-      }
-      if (takeProfit <= entryPrice) {
-        return { position: null, error: `Invalid Take Profit for BUY signal. Take Profit (${takeProfit}) must be above Entry Price (${entryPrice}).` };
-      }
-    } else if (strategy.signal.toUpperCase() === 'SELL') {
-      if (stopLoss <= entryPrice) {
-        return { position: null, error: `Invalid Stop Loss for SELL signal. Stop Loss (${stopLoss}) must be above Entry Price (${entryPrice}).` };
-      }
-      if (takeProfit >= entryPrice) {
-        return { position: null, error: `Invalid Take Profit for SELL signal. Take Profit (${takeProfit}) must be below Entry Price (${entryPrice}).` };
-      }
     }
     
     const tradingMode = 'tradingMode' in strategy ? strategy.tradingMode : ('chosenTradingMode' in strategy ? strategy.chosenTradingMode : 'Intraday');
@@ -419,37 +400,58 @@ export async function openSimulatedPositionAction(
 
     const newPosition = await prisma.position.create({
       data: {
-        id: randomUUID(),
         userId,
         symbol: strategy.symbol,
-        signalType: strategy.signal === 'BUY' ? 'BUY' : 'SELL',
+        signalType: strategy.signal === 'BUY' ? SignalType.BUY : SignalType.SELL,
+        status: PositionStatus.PENDING,
         entryPrice,
-        size: 1,
-        status: PositionStatus.OPEN,
-        openTimestamp: new Date(),
         stopLoss,
         takeProfit,
         expirationTimestamp: expirationDate,
+        strategyId: strategy.id,
       }
     });
 
     return { position: newPosition };
   } catch (error: any) {
-    console.error("Error in openSimulatedPositionAction:", error);
-    return { position: null, error: `Failed to open position: ${error.message}` };
+    console.error("Error in logSimulatedPositionAction:", error);
+    return { position: null, error: `Failed to log position: ${error.message}` };
   }
 }
+
+export async function activatePendingPositionAction(positionId: string): Promise<{ position?: Position; error?: string; }> {
+    try {
+        const position = await prisma.position.findUnique({ where: { id: positionId }});
+        if (!position || position.status !== 'PENDING') {
+            return { error: 'Position not found or is not pending.'};
+        }
+        const updatedPosition = await prisma.position.update({
+            where: { id: positionId },
+            data: { status: PositionStatus.OPEN, openTimestamp: new Date() }
+        });
+        return { position: updatedPosition };
+    } catch (error: any) {
+        return { error: `Failed to activate position: ${error.message}` };
+    }
+}
+
 
 export async function closePositionAction(positionId: string, closePrice: number): Promise<{ position?: Position; airdropPointsEarned?: number; error?: string; }> {
     try {
         const position = await prisma.position.findUnique({ where: { id: positionId } });
         if (!position || position.status === 'CLOSED') return { error: 'Position not found or already closed.' };
-        const pnl = position.signalType === 'BUY' ? (closePrice - position.entryPrice) * position.size : (position.entryPrice - closePrice) * position.size;
-        const airdropPointsEarned = Math.max(0, Math.floor(pnl));
+        
+        const entry = position.openTimestamp ? position.entryPrice : parsePrice(position.entryPrice.toString());
+        if (isNaN(entry)) return { error: 'Could not determine a valid entry price for PnL calculation.'};
+
+        const pnl = position.signalType === 'BUY' ? (closePrice - entry) * position.size : (entry - closePrice) * position.size;
+        const airdropPointsEarned = Math.max(0, Math.floor(pnl * 10)); // Example: 10 points per dollar of PnL
+        
         const updatedPosition = await prisma.position.update({
             where: { id: positionId },
             data: { status: PositionStatus.CLOSED, closePrice: closePrice, closeTimestamp: new Date(), pnl: pnl, }
         });
+
         if (airdropPointsEarned > 0) {
             await prisma.user.update({ where: { id: position.userId }, data: { airdropPoints: { increment: airdropPointsEarned } } });
         }
@@ -459,10 +461,16 @@ export async function closePositionAction(positionId: string, closePrice: number
     }
 }
 
-export async function fetchActivePositionsAction(userId: string): Promise<Position[]> {
+export async function fetchPendingAndOpenPositionsAction(userId: string): Promise<Position[]> {
     if (!userId) return [];
     try {
-        return await prisma.position.findMany({ where: { userId, status: 'OPEN' }, orderBy: { openTimestamp: 'desc' } });
+        return await prisma.position.findMany({ 
+            where: { 
+                userId, 
+                status: { in: ['PENDING', 'OPEN'] }
+            }, 
+            orderBy: { id: 'desc' } 
+        });
     } catch (error) { console.error(error); return []; }
 }
 
@@ -505,7 +513,7 @@ export async function fetchAgentDataAction(userId: string): Promise<{ agents: Us
         const userAgents = await prisma.userAgent.findMany({ where: { userId } });
         const agents = agentDefinitions.map(def => {
             const userState = userAgents.find(ua => ua.agentId === def.id) || null;
-            return { ...def, userState };
+            return { ...def, userState: userState ? { ...userState, deploymentEndTime: userState.deploymentEndTime?.toISOString() || null } : null };
         });
         return { agents, userXp: user.weeklyPoints };
     } catch (error: any) {
@@ -573,6 +581,7 @@ export async function upgradeAgentAction(userId: string, agentId: string): Promi
         if (userAgent) {
             await prisma.userAgent.update({ where: { id: userAgent.id }, data: { level: newLevel } });
         } else {
+            // This case should ideally not happen if upgrading, but is a safe fallback
             await prisma.userAgent.create({ data: { id: randomUUID(), userId, agentId, level: newLevel, status: 'IDLE' } });
         }
         await prisma.user.update({ where: { id: userId }, data: { weeklyPoints: { decrement: currentLevelData.upgradeCost } } });
