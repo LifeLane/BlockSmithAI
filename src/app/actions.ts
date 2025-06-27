@@ -112,6 +112,7 @@ export interface PortfolioStats {
     bestTradePnl: number;
     worstTradePnl: number;
     lifetimeRewards: number;
+    totalCapitalInvested: number;
 }
 export type GenerateTradingStrategyOutput = CoreOutput & {
   id?: string;
@@ -485,9 +486,13 @@ export async function fetchTradeHistoryAction(userId: string): Promise<Position[
 export async function fetchPortfolioStatsAction(userId: string): Promise<PortfolioStats | { error: string }> {
     try {
         const closedTrades = await prisma.position.findMany({ where: { userId, status: 'CLOSED' } });
+        const openPositions = await prisma.position.findMany({ where: { userId, status: 'OPEN' } });
         const user = await prisma.user.findUnique({ where: { id: userId } });
         if (!user) return { error: "User not found." };
-        if (closedTrades.length === 0) return { totalTrades: 0, winRate: 0, totalPnl: 0, bestTradePnl: 0, worstTradePnl: 0, lifetimeRewards: user.airdropPoints };
+        
+        const totalCapitalInvested = openPositions.reduce((acc, t) => acc + (t.entryPrice * t.size), 0);
+        
+        if (closedTrades.length === 0) return { totalTrades: 0, winRate: 0, totalPnl: 0, bestTradePnl: 0, worstTradePnl: 0, lifetimeRewards: user.airdropPoints, totalCapitalInvested };
         
         const totalTrades = closedTrades.length;
         const winningTrades = closedTrades.filter(t => t.pnl && t.pnl > 0).length;
@@ -504,6 +509,7 @@ export async function fetchPortfolioStatsAction(userId: string): Promise<Portfol
             bestTradePnl: pnls.length > 0 ? Math.max(...pnls) : 0,
             worstTradePnl,
             lifetimeRewards: user.airdropPoints || 0,
+            totalCapitalInvested,
         };
     } catch (error: any) {
         return { error: `Failed to calculate portfolio stats: ${error.message}` };

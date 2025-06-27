@@ -9,7 +9,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PauseCircle, CheckCircle2, XCircle, Bot, PlayCircle } from 'lucide-react';
+import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PauseCircle, CheckCircle2, XCircle, Bot, PlayCircle, Wallet, Activity } from 'lucide-react';
 import {
   fetchPendingAndOpenPositionsAction,
   closePositionAction,
@@ -195,7 +195,7 @@ const StatCard = ({ title, value, icon, valueClassName }: { title: string; value
     </div>
 );
 
-const PortfolioStatsDisplay = ({ stats, isLoading }: { stats: PortfolioStats | null, isLoading: boolean }) => {
+const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl }: { stats: PortfolioStats | null, isLoading: boolean, realtimePnl: number }) => {
     if (isLoading && !stats) {
         return (
              <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30">
@@ -213,15 +213,19 @@ const PortfolioStatsDisplay = ({ stats, isLoading }: { stats: PortfolioStats | n
 
     if (!stats) return null;
 
+    const pnlColor = realtimePnl >= 0 ? 'text-green-400' : 'text-red-400';
+
     return (
         <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30">
             <CardHeader className="pb-4">
                 <CardTitle className="text-lg flex items-center gap-2 text-accent"><Briefcase /> Performance Matrix</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <StatCard title="Capital Invested" value={`$${stats.totalCapitalInvested.toFixed(2)}`} icon={<Wallet size={14} />} valueClassName="text-tertiary" />
+                <StatCard title="Real-time PnL" value={`$${realtimePnl.toFixed(2)}`} icon={<Activity size={14} />} valueClassName={pnlColor} />
                 <StatCard title="Total Trades" value={stats.totalTrades} icon={<History size={14} />} />
-                <StatCard title="Win Rate" value={`${stats.winRate.toFixed(1)}%`} icon={<Percent size={14} />} valueClassName={stats.winRate > 50 ? 'text-green-400' : 'text-red-400'} />
-                <StatCard title="Total PnL" value={`$${stats.totalPnl.toFixed(2)}`} icon={<DollarSign size={14} />} valueClassName={stats.totalPnl >= 0 ? 'text-green-400' : 'text-red-400'} />
+                <StatCard title="Win Rate" value={`${stats.winRate.toFixed(1)}%`} icon={<Percent size={14} />} valueClassName={stats.winRate >= 50 ? 'text-green-400' : 'text-red-400'} />
+                <StatCard title="Total Closed PnL" value={`$${stats.totalPnl.toFixed(2)}`} icon={<DollarSign size={14} />} valueClassName={stats.totalPnl >= 0 ? 'text-green-400' : 'text-red-400'} />
                 <StatCard title="Best Trade" value={`$${stats.bestTradePnl.toFixed(2)}`} icon={<ArrowUp size={14} />} valueClassName="text-green-400" />
                 <StatCard title="Worst Trade" value={`$${stats.worstTradePnl.toFixed(2)}`} icon={<ArrowDown size={14} />} valueClassName="text-red-400" />
                 <StatCard title="Lifetime Rewards" value={stats.lifetimeRewards.toLocaleString()} icon={<Gift size={14}/>} valueClassName="text-orange-400" />
@@ -239,10 +243,34 @@ export default function PortfolioPage() {
     const [livePrices, setLivePrices] = useState<Record<string, LiveMarketData>>({});
     const [closingPositionId, setClosingPositionId] = useState<string | null>(null);
     const [isLoadingData, setIsLoadingData] = useState(true);
+    const [realtimePnl, setRealtimePnl] = useState(0);
 
     const { toast } = useToast();
     const isFetchingRef = useRef(false);
     const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        const openPositions = positions.filter(p => p.status === 'OPEN');
+        if (openPositions.length === 0) {
+            setRealtimePnl(0);
+            return;
+        }
+
+        const totalPnl = openPositions.reduce((acc, pos) => {
+            const livePriceData = livePrices[pos.symbol];
+            if (!livePriceData) return acc;
+
+            const currentPrice = parseFloat(livePriceData.lastPrice);
+            const positionSize = pos.size || 1;
+            const priceDiff = pos.signalType === 'BUY'
+                ? (currentPrice - pos.entryPrice)
+                : (pos.entryPrice - currentPrice);
+            
+            return acc + (priceDiff * positionSize);
+        }, 0);
+
+        setRealtimePnl(totalPnl);
+    }, [positions, livePrices]);
 
     const showCloseToast = useCallback((closedPosition: Position, airdropPoints: number, reason: string) => {
         const pnl = closedPosition.pnl || 0;
@@ -473,7 +501,7 @@ export default function PortfolioPage() {
     <>
       <AppHeader />
       <div className="container mx-auto px-4 py-8 pb-20">
-        <PortfolioStatsDisplay stats={portfolioStats} isLoading={isLoadingData && !portfolioStats} />
+        <PortfolioStatsDisplay stats={portfolioStats} isLoading={isLoadingData && !portfolioStats} realtimePnl={realtimePnl} />
          <Tabs defaultValue="open" className="mt-4">
             <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="open">Active Positions ({positions.filter(p => p.status === 'OPEN').length})</TabsTrigger>
