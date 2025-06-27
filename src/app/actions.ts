@@ -103,6 +103,7 @@ export type GenerateTradingStrategyOutput = CoreOutput & {
   id?: string;
   disclaimer: string;
   symbol: string;
+  tradingMode?: string;
 };
 export type GenerateShadowChoiceStrategyOutput = ShadowChoiceStrategyCoreOutput & {
   id?: string;
@@ -297,7 +298,7 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
     try {
         const [strategy, disclaimer] = await Promise.all([ genCoreStrategy(input), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
-        return { ...strategy, symbol: input.symbol, disclaimer: disclaimer.disclaimer };
+        return { ...strategy, symbol: input.symbol, disclaimer: disclaimer.disclaimer, tradingMode: input.tradingMode };
     } catch (error: any) {
         return { error: `An unexpected error occurred in SHADOW's cognitive core: ${error.message}` };
     }
@@ -400,6 +401,17 @@ export async function openSimulatedPositionAction(userId: string, strategy: Gene
                 return { error: `Invalid Take Profit for SELL signal. Take Profit (${takeProfit}) must be below Entry Price (${entryPrice}).` };
             }
         }
+        
+        const tradingMode = 'tradingMode' in strategy ? strategy.tradingMode : ('chosenTradingMode' in strategy ? strategy.chosenTradingMode : 'Intraday');
+        let expirationDate: Date;
+        switch (tradingMode) {
+            case 'Scalper': expirationDate = add(new Date(), { hours: 1 }); break;
+            case 'Sniper': expirationDate = add(new Date(), { hours: 4 }); break;
+            case 'Intraday': expirationDate = add(new Date(), { hours: 12 }); break;
+            case 'Swing': expirationDate = add(new Date(), { days: 3 }); break;
+            default: expirationDate = add(new Date(), { hours: 24 }); break;
+        }
+
 
         const newPosition = await prisma.position.create({
             data: {
@@ -410,7 +422,7 @@ export async function openSimulatedPositionAction(userId: string, strategy: Gene
                 openTimestamp: new Date().toISOString(),
                 stopLoss: stopLoss,
                 takeProfit: takeProfit,
-                expirationTimestamp: add(new Date(), { hours: 24 }).toISOString(),
+                expirationTimestamp: expirationDate.toISOString(),
             }
         });
         return { position: newPosition };
@@ -594,7 +606,3 @@ export async function claimSpecialOpAction(userId: string, opId: string): Promis
         return { success: false, message: `Claim failed: ${error.message}` };
     }
 }
-
-    
-
-    

@@ -25,6 +25,7 @@ import {
   Copy,
   Zap,
   BrainCircuit,
+  Info,
 } from 'lucide-react';
 
 type CombinedStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
@@ -231,6 +232,9 @@ Analysis Timestamp: ${currentDateTime}
       break;
   }
 
+  const isHoldSignal = signalTextFormatted === 'HOLD';
+
+
   return (
     <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out">
       <CardHeader className="text-center pb-4 pt-5">
@@ -259,22 +263,42 @@ Analysis Timestamp: ${currentDateTime}
             icon={sentimentIcon}
             valueClassName={`${sentimentColor}`}
           />
-          <StatCard
-            title="Entry Zone"
-            value={<span className="text-primary">{strategy.entry_zone || 'N/A'}</span>}
-            icon={<LogIn size={20} className="text-primary"/>}
-          />
-          <StatCard
-            title="Stop Loss"
-            value={<span className="text-red-400">{strategy.stop_loss || 'N/A'}</span>}
-            icon={<ShieldX size={20} className="text-red-400"/>}
-          />
-          <StatCard
-            title="Take Profit"
-            value={<span className="text-green-400">{strategy.take_profit || 'N/A'}</span>}
-            icon={<Target size={20} className="text-green-400"/>}
-          />
+          {!isHoldSignal && (
+            <>
+              <StatCard
+                title="Entry Zone"
+                value={<span className="text-primary">{strategy.entry_zone || 'N/A'}</span>}
+                icon={<LogIn size={20} className="text-primary"/>}
+              />
+              <StatCard
+                title="Stop Loss"
+                value={<span className="text-red-400">{strategy.stop_loss || 'N/A'}</span>}
+                icon={<ShieldX size={20} className="text-red-400"/>}
+              />
+              <StatCard
+                title="Take Profit"
+                value={<span className="text-green-400">{strategy.take_profit || 'N/A'}</span>}
+                icon={<Target size={20} className="text-green-400"/>}
+              />
+            </>
+          )}
         </div>
+
+        {isHoldSignal && (
+             <div className="mt-4 p-4 bg-background/40 border-l-4 border-orange-400 rounded-r-lg">
+                <div className="flex">
+                    <div className="flex-shrink-0">
+                        <Info className="h-5 w-5 text-orange-400" />
+                    </div>
+                    <div className="ml-3">
+                        <p className="text-sm text-foreground">
+                            A <strong className="font-semibold text-orange-400">HOLD</strong> signal indicates that market conditions are neutral or uncertain. SHADOW recommends staying on the sidelines and not entering a new position at this time.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-3 md:mt-4">
             <StatCard
                 title="Confidence Level"
@@ -376,5 +400,3 @@ Analysis Timestamp: ${currentDateTime}
 };
 
 export default StrategyExplanationSection;
-
-    

@@ -300,17 +300,18 @@ export default function PortfolioPage() {
         if (!portfolioStats) setIsLoading(true);
 
         try {
-            const [userPositions, history, statsResult] = await Promise.all([
-                fetchActivePositionsAction(userId),
-                fetchTradeHistoryAction(userId),
-                fetchPortfolioStatsAction(userId),
-            ]);
+            const userPositions = await fetchActivePositionsAction(userId);
+            const history = await fetchTradeHistoryAction(userId);
+            const statsResult = await fetchPortfolioStatsAction(userId);
+
 
             let currentLivePrices = { ...livePrices };
             let positionsToAutoClose: { pos: Position; closePrice: number; reason: 'auto-sl' | 'auto-tp' | 'expired' }[] = [];
+            const activePositions = userPositions.filter(p => p.status === 'OPEN');
 
-            if (userPositions.length > 0) {
-                const symbols = [...new Set(userPositions.map(p => p.symbol))];
+
+            if (activePositions.length > 0) {
+                const symbols = [...new Set(activePositions.map(p => p.symbol))];
                 const pricePromises = symbols.map(symbol => fetchMarketDataAction({ symbol }));
                 const results = await Promise.allSettled(pricePromises);
 
@@ -324,9 +325,7 @@ export default function PortfolioPage() {
                 setLivePrices(currentLivePrices);
 
                  // Auto-close logic
-                for (const pos of userPositions) {
-                     if (pos.status !== 'OPEN') continue;
-
+                for (const pos of activePositions) {
                     const livePriceData = currentLivePrices[pos.symbol];
                     if (!livePriceData) continue;
                     
@@ -363,20 +362,27 @@ export default function PortfolioPage() {
                 }
             }
             
-            setPositions(userPositions);
+            // Execute auto-closures right away
+            if (positionsToAutoClose.length > 0) {
+                 for (const { pos, closePrice, reason } of positionsToAutoClose) {
+                    // Make sure we're not trying to close it again if it's already being processed
+                    if(closingPositionId !== pos.id) {
+                        await handleClosePosition(pos.id, closePrice, reason);
+                    }
+                }
+                 // After auto-closing, we need to refilter the positions list for the UI
+                const remainingPositions = activePositions.filter(p => !positionsToAutoClose.some(closed => closed.pos.id === p.id));
+                setPositions(remainingPositions);
+            } else {
+                setPositions(activePositions);
+            }
+
             setTradeHistory(history);
-             if (!('error' in statsResult)) {
+            if (!('error' in statsResult)) {
                 setPortfolioStats(statsResult);
             } else {
                 setError(statsResult.error);
                 setPortfolioStats(null);
-            }
-
-            // Execute auto-closures after setting state to avoid race conditions
-            if (positionsToAutoClose.length > 0) {
-                 for (const { pos, closePrice, reason } of positionsToAutoClose) {
-                    await handleClosePosition(pos.id, closePrice, reason);
-                }
             }
 
         } catch (e: any) {
@@ -385,7 +391,7 @@ export default function PortfolioPage() {
             setIsLoading(false);
             isFetching.current = false;
         }
-    }, [userId, portfolioStats, handleClosePosition, livePrices]);
+    }, [userId, portfolioStats, handleClosePosition, livePrices, closingPositionId]);
     
 
     useEffect(() => {
