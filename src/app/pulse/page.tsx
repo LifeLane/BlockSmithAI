@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
@@ -10,8 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PauseCircle, CheckCircle2, XCircle, Bot } from 'lucide-react';
-
-// Import actions and types
 import {
   fetchActivePositionsAction,
   closePositionAction,
@@ -99,26 +97,26 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
                         Close
                     </Button>
                     {position.expirationTimestamp && (
-                        <TimeLeft expiration={position.expirationTimestamp} className="text-xs text-muted-foreground mt-2"/>
+                        <TimeLeft expiration={position.expirationTimestamp.toISOString()} className="text-xs text-muted-foreground mt-2"/>
                     )}
                 </div>
             </CardHeader>
             <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-xs text-muted-foreground flex items-center gap-1"><LogIn size={12}/>Entry Price</span>
-                    <span className="font-mono font-semibold text-primary">${position.entryPrice.toLocaleString()}</span>
+                    <span className="font-mono font-semibold text-primary">${position.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
                 </div>
                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-xs text-muted-foreground">Current Price</span>
-                    <span className="font-mono font-semibold text-primary">{currentPrice ? `$${currentPrice.toLocaleString()}`: <Loader2 className="h-4 w-4 animate-spin"/>}</span>
+                    <span className="font-mono font-semibold text-primary">{currentPrice ? `$${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`: <Loader2 className="h-4 w-4 animate-spin"/>}</span>
                 </div>
                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-xs text-muted-foreground flex items-center gap-1"><ShieldX size={12}/>Stop Loss</span>
-                    <span className="font-mono font-semibold text-red-400">{position.stopLoss ? `$${position.stopLoss.toLocaleString()}` : 'N/A'}</span>
+                    <span className="font-mono font-semibold text-red-400">{position.stopLoss ? `$${position.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : 'N/A'}</span>
                 </div>
                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-xs text-muted-foreground flex items-center gap-1"><Target size={12}/>Take Profit</span>
-                    <span className="font-mono font-semibold text-green-400">{position.takeProfit ? `$${position.takeProfit.toLocaleString()}`: 'N/A'}</span>
+                    <span className="font-mono font-semibold text-green-400">{position.takeProfit ? `$${position.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`: 'N/A'}</span>
                 </div>
                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-xs text-muted-foreground">Unrealized PnL</span>
@@ -143,7 +141,7 @@ const HistoryCard = ({ position }: { position: Position }) => {
         icon = <PauseCircle className="h-6 w-6 text-primary"/>
         titleColor = 'text-primary';
     } else if (isWin) {
-        icon = <CheckCircle className="h-6 w-6 text-green-400"/>
+        icon = <CheckCircle2 className="h-6 w-6 text-green-400"/>
         titleColor = 'text-green-400';
     } else {
         icon = <XCircle className="h-6 w-6 text-red-400"/>;
@@ -272,62 +270,51 @@ export default function PortfolioPage() {
     const runSimulationCycle = useCallback(async (userId: string) => {
         if (isFetchingRef.current) return;
         isFetchingRef.current = true;
+        setIsLoadingData(true);
 
         try {
-            const [userPositions, history, statsResult] = await Promise.all([
-                fetchActivePositionsAction(userId),
-                fetchTradeHistoryAction(userId),
-                fetchPortfolioStatsAction(userId),
-            ]);
+            // First, fetch current open positions
+            const currentPositions = await fetchActivePositionsAction(userId);
+            setPositions(currentPositions);
 
-            setTradeHistory(history);
-            if (!('error' in statsResult)) {
-                 const unrealizedPnl = userPositions.reduce((acc, pos) => {
-                    const livePriceData = livePrices[pos.symbol];
-                    if (livePriceData) {
-                        const currentPrice = parseFloat(livePriceData.lastPrice);
-                        if (pos.signalType === 'BUY') {
-                            return acc + (currentPrice - pos.entryPrice) * pos.size;
-                        } else {
-                            return acc + (pos.entryPrice - currentPrice) * pos.size;
-                        }
-                    }
-                    return acc;
-                }, 0);
-                setPortfolioStats({
-                    ...statsResult,
-                    totalPnl: statsResult.totalPnl + unrealizedPnl,
-                });
-            }
-
-            const activePositions = userPositions.filter(p => p.status === 'OPEN');
-            if (activePositions.length === 0) {
-                setPositions([]);
-                setIsLoadingData(false);
+            // If there are no open positions, we can stop here after fetching history/stats
+            if (currentPositions.length === 0) {
+                 const [history, statsResult] = await Promise.all([
+                    fetchTradeHistoryAction(userId),
+                    fetchPortfolioStatsAction(userId),
+                ]);
+                setTradeHistory(history);
+                if (!('error' in statsResult)) setPortfolioStats(statsResult);
+                
                 isFetchingRef.current = false;
+                setIsLoadingData(false);
                 return;
             }
 
-            const symbols = [...new Set(activePositions.map(p => p.symbol))];
+            // Fetch live prices for all unique symbols in open positions
+            const symbols = [...new Set(currentPositions.map(p => p.symbol))];
             const pricePromises = symbols.map(symbol => fetchMarketDataAction({ symbol }));
             const priceResults = await Promise.allSettled(pricePromises);
 
-            const currentLivePrices = { ...livePrices };
+            const updatedLivePrices = { ...livePrices };
             priceResults.forEach((result, index) => {
                 if (result.status === 'fulfilled' && !('error' in result.value)) {
-                    currentLivePrices[symbols[index]] = result.value as LiveMarketData;
+                    updatedLivePrices[symbols[index]] = result.value as LiveMarketData;
                 }
             });
-            setLivePrices(currentLivePrices);
+            setLivePrices(updatedLivePrices);
 
-            for (const pos of activePositions) {
-                const livePriceData = currentLivePrices[pos.symbol];
+            // Check each position for auto-close conditions
+            let didCloseAnyPosition = false;
+            for (const pos of currentPositions) {
+                const livePriceData = updatedLivePrices[pos.symbol];
                 if (!livePriceData) continue;
                 
                 const currentPrice = parseFloat(livePriceData.lastPrice);
                 let closeReason: 'auto-sl' | 'auto-tp' | 'expired' | null = null;
                 let closePrice = 0;
 
+                // Determine close price based on which condition is met first
                 if (pos.signalType === 'BUY') {
                     if (pos.takeProfit && currentPrice >= pos.takeProfit) { closeReason = 'auto-tp'; closePrice = pos.takeProfit; } 
                     else if (pos.stopLoss && currentPrice <= pos.stopLoss) { closeReason = 'auto-sl'; closePrice = pos.stopLoss; }
@@ -335,17 +322,38 @@ export default function PortfolioPage() {
                     if (pos.takeProfit && currentPrice <= pos.takeProfit) { closeReason = 'auto-tp'; closePrice = pos.takeProfit; }
                     else if (pos.stopLoss && currentPrice >= pos.stopLoss) { closeReason = 'auto-sl'; closePrice = pos.stopLoss; }
                 }
-
+                
                 if (!closeReason && pos.expirationTimestamp && new Date(pos.expirationTimestamp) < new Date()) {
                     closeReason = 'expired';
-                    closePrice = currentPrice;
+                    closePrice = currentPrice; // Close at current price if expired
                 }
 
                 if (closeReason) {
                     await handleClosePosition(pos.id, closePrice, closeReason);
+                    didCloseAnyPosition = true;
                 }
             }
-             setPositions(activePositions.filter(p => p.status === 'OPEN' && !closingPositionId));
+            
+            // If any position was closed, refetch all data for consistency
+            if (didCloseAnyPosition) {
+                const [finalPositions, finalHistory, finalStats] = await Promise.all([
+                    fetchActivePositionsAction(userId),
+                    fetchTradeHistoryAction(userId),
+                    fetchPortfolioStatsAction(userId),
+                ]);
+                setPositions(finalPositions);
+                setTradeHistory(finalHistory);
+                if (!('error' in finalStats)) setPortfolioStats(finalStats);
+            } else {
+                // If no positions were closed, just update history and stats
+                const [history, statsResult] = await Promise.all([
+                    fetchTradeHistoryAction(userId),
+                    fetchPortfolioStatsAction(userId),
+                ]);
+                setTradeHistory(history);
+                if (!('error' in statsResult)) setPortfolioStats(statsResult);
+            }
+
 
         } catch (e: any) {
              console.error("Error in simulation cycle:", e);
@@ -353,16 +361,18 @@ export default function PortfolioPage() {
             setIsLoadingData(false);
             isFetchingRef.current = false;
         }
-    }, [handleClosePosition, livePrices, closingPositionId]);
+    }, [handleClosePosition, livePrices]);
     
     useEffect(() => {
         if (currentUser?.id) {
             const run = async () => {
-                await runSimulationCycle(currentUser.id);
+                if (!isFetchingRef.current) {
+                  await runSimulationCycle(currentUser.id);
+                }
                 if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
-                pollingTimeoutRef.current = setTimeout(run, 15000);
+                pollingTimeoutRef.current = setTimeout(run, 15000); // Poll every 15 seconds
             };
-            run();
+            run(); // Initial run
         }
         return () => {
             if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
@@ -456,8 +466,8 @@ export default function PortfolioPage() {
     return (
     <>
       <AppHeader />
-      <div className="container mx-auto px-4 py-8">
-        {isLoadingData ? (
+      <div className="container mx-auto px-4 py-8 pb-20">
+        {(isLoadingData && !portfolioStats) ? (
              <div className="flex justify-center items-center h-48">
                 <Loader2 className="h-8 w-8 animate-spin text-primary"/>
             </div>
@@ -470,10 +480,10 @@ export default function PortfolioPage() {
                         <TabsTrigger value="history">Trade History ({tradeHistory.length})</TabsTrigger>
                     </TabsList>
                     <TabsContent value="open" className="mt-4">
-                        {renderOpenPositions()}
+                        {(isLoadingData && positions.length === 0) ? <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin"/></div> : renderOpenPositions()}
                     </TabsContent>
                     <TabsContent value="history" className="mt-4">
-                        {renderTradeHistory()}
+                         {(isLoadingData && tradeHistory.length === 0) ? <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin"/></div> : renderTradeHistory()}
                     </TabsContent>
                 </Tabs>
             </>

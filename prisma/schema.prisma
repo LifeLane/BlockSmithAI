@@ -1,4 +1,7 @@
 
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -9,70 +12,70 @@ generator client {
 }
 
 model User {
-  id                  String        @id @default(uuid())
-  username            String
-  shadowId            String        @unique
-  status              String        @default("Guest")
-  weeklyPoints        Int           @default(0)
-  airdropPoints       Int           @default(0)
-  claimedMissions     String[]
-  claimedSpecialOps   String[]
-  wallet_address      String?
-  wallet_type         String?
-  email               String?       @unique
-  phone               String?
-  x_handle            String?
-  telegram_handle     String?
-  youtube_handle      String?
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  id                String   @id @default(uuid())
+  username          String   @unique
+  shadowId          String   @unique
+  status            UserStatus @default(Guest)
+  weeklyPoints      Int      @default(0)
+  airdropPoints     Int      @default(0)
   
-  positions           Position[]
-  userAgents          UserAgent[]
-  badges              Badge[]       @relation("UserBadges")
-}
+  email             String?
+  phone             String?
+  x_handle          String?
+  telegram_handle   String?
+  youtube_handle    String?
+  wallet_type       String?
+  wallet_address    String?
 
-model Badge {
-  id    String @id @default(uuid())
-  name  String @unique
-  users User[] @relation("UserBadges")
+  claimedMissions    String[]
+  claimedSpecialOps  String[]
+
+  positions         Position[]
+  userAgents        UserAgent[]
+  badges            Badge[]    @relation("UserBadges")
 }
 
 model Position {
-  id                  String          @id @default(uuid())
+  id                  String   @id @default(uuid())
+  userId              String
   symbol              String
   signalType          SignalType
   entryPrice          Float
-  size                Float           @default(1)
-  status              PositionStatus
-  openTimestamp       DateTime        @default(now())
-  expirationTimestamp DateTime?
-  
   closePrice          Float?
+  size                Float
+  status              PositionStatus
+  openTimestamp       DateTime @default(now())
   closeTimestamp      DateTime?
-  pnl                 Float?
-
   stopLoss            Float?
   takeProfit          Float?
+  pnl                 Float?
+  expirationTimestamp DateTime?
 
-  userId              String
-  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
+  user User @relation(fields: [userId], references: [id])
 }
 
 model UserAgent {
   id                String      @id @default(uuid())
+  userId            String
   agentId           String
   level             Int         @default(1)
   status            AgentStatus @default(IDLE)
   deploymentEndTime DateTime?
 
-  userId            String
-  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
 
   @@unique([userId, agentId])
-  @@index([userId])
+}
+
+model Badge {
+  id     String @id @default(uuid())
+  name   String @unique
+  users  User[] @relation("UserBadges")
+}
+
+enum UserStatus {
+  Guest
+  Registered
 }
 
 enum SignalType {
@@ -84,7 +87,6 @@ enum SignalType {
 enum PositionStatus {
   OPEN
   CLOSED
-  PENDING 
 }
 
 enum AgentStatus {

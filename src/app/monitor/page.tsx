@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, XCircle, Hourglass, TrendingUp, TrendingDown, Clock, Bot, Info, LogIn, Target, ShieldX, Zap, ShieldQuestion, PauseCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, Hourglass, TrendingUp, TrendingDown, Clock, Bot, Info, LogIn, Target, ShieldX, Zap, ShieldQuestion, PauseCircle, BrainCircuit, Percent, ShieldCheck } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import type { GenerateTradingStrategyOutput } from '@/ai/flows/generate-trading-strategy';
+import type { GenerateTradingStrategyOutput, GenerateShadowChoiceStrategyOutput } from '@/app/actions';
 import { formatDistanceToNow } from 'date-fns';
 import {
   AlertDialog,
@@ -22,16 +22,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { openSimulatedPositionAction } from '@/app/actions';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { cn } from '@/lib/utils';
 
-type SignalWithTimestamp = GenerateTradingStrategyOutput & { id: string; timestamp: string; status?: 'EXECUTED' | 'SIMULATED' };
-
-const getCurrentUserId = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('currentUserId');
-  }
-  return null;
+type SignalWithTimestamp = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
+  id: string; 
+  timestamp: string; 
+  status?: 'EXECUTED' | 'SIMULATED' | 'PENDING' 
 };
+
 
 const SignalIcon = ({ signal }: { signal: string }) => {
     switch(signal.toUpperCase()) {
@@ -48,9 +47,9 @@ const SignalIcon = ({ signal }: { signal: string }) => {
 
 const formatPrice = (priceStr?: string) => {
     if (!priceStr) return 'N/A';
-    const price = parseFloat(priceStr);
-    if (isNaN(price)) return 'N/A';
-    return price.toFixed(2);
+    const price = parseFloat(priceStr.replace(/[^0-9.-]/g, ''));
+    if (isNaN(price)) return priceStr;
+    return price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
 
@@ -60,6 +59,7 @@ export default function MonitorPage() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedSignal, setSelectedSignal] = useState<SignalWithTimestamp | null>(null);
   const { toast } = useToast();
+  const { user: currentUser } = useCurrentUser();
 
   useEffect(() => {
     setMounted(true);
@@ -79,8 +79,7 @@ export default function MonitorPage() {
   };
 
   const confirmSimulatedTrade = async () => {
-    const userId = getCurrentUserId();
-    if (!userId) {
+    if (!currentUser) {
         toast({
             title: "User Not Found",
             description: "Cannot simulate trade without a user profile. Please sign up from the Profile page.",
@@ -95,7 +94,7 @@ export default function MonitorPage() {
         return;
     }
 
-    const result = await openSimulatedPositionAction(userId, selectedSignal);
+    const result = await openSimulatedPositionAction(currentUser.id, selectedSignal);
 
     if (result.error) {
         toast({
@@ -153,17 +152,19 @@ export default function MonitorPage() {
       <div className="container mx-auto px-4 py-8">
         <ScrollArea className="h-[calc(100vh-250px)] pr-4">
           <div className="space-y-4">
-            {signals.length > 0 ? signals.map((signal, index) => {
+            {signals.length > 0 ? signals.map((signal) => {
                 const isActionTaken = signal.status === 'EXECUTED' || signal.status === 'SIMULATED';
                 const signalType = signal.signal.toUpperCase();
                 let signalColor = 'text-foreground';
                 if (signalType === 'BUY') signalColor = 'text-green-400';
                 if (signalType === 'SELL') signalColor = 'text-red-400';
                 if (signalType === 'HOLD') signalColor = 'text-primary';
+
+                const tradingMode = 'tradingMode' in signal ? signal.tradingMode : ('chosenTradingMode' in signal ? signal.chosenTradingMode : 'N/A');
                 
                 return (
-              <Card key={signal.id || `${signal.symbol}-${index}`} className="bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 flex flex-col">
-                <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2 gap-2">
+              <Card key={signal.id} className="bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 flex flex-col">
+                <CardHeader className="flex flex-col sm:flex-row sm:items-start sm:justify-between pb-3 gap-2">
                   <div className="flex items-center gap-4">
                      <div className="p-2 bg-background rounded-md shrink-0">
                         <SignalIcon signal={signal.signal} />
@@ -178,15 +179,20 @@ export default function MonitorPage() {
                       </CardDescription>
                     </div>
                   </div>
-                   <Badge variant={isActionTaken ? "default" : "secondary"} className={cn(
-                        "transition-colors self-start sm:self-center",
+                   <div className="flex flex-col items-end gap-1.5 self-start sm:self-center">
+                    <Badge variant={isActionTaken ? "default" : "secondary"} className={cn(
+                        "transition-colors",
                         isActionTaken ? "bg-green-900/60 text-green-300 border-green-500/50" : "bg-background"
                     )}>
                         {isActionTaken ? <CheckCircle2 className="h-3 w-3 mr-1.5"/> : <Hourglass className="h-3 w-3 mr-1.5"/>}
-                        {isActionTaken ? 'Executed' : 'Pending'} | {signal.risk_rating} Risk
+                        {isActionTaken ? 'Executed' : 'Pending'}
                     </Badge>
+                     <Badge variant="outline" className="border-tertiary text-tertiary">
+                       {tradingMode}
+                    </Badge>
+                   </div>
                 </CardHeader>
-                <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm pt-4">
+                <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                    <div className="flex flex-col items-center p-2 bg-background/50 rounded-md">
                     <span className="text-muted-foreground text-xs flex items-center gap-1"><LogIn size={12}/>Entry</span>
                     <span className="font-mono font-semibold text-primary">{formatPrice(signal.entry_zone)}</span>
@@ -199,13 +205,27 @@ export default function MonitorPage() {
                     <span className="text-muted-foreground text-xs flex items-center gap-1"><Target size={12}/>Take Profit</span>
                     <span className="font-mono font-semibold text-green-400">{formatPrice(signal.take_profit)}</span>
                   </div>
+                   <div className="flex flex-col items-center p-2 bg-background/50 rounded-md">
+                    <span className="text-muted-foreground text-xs flex items-center gap-1"><ShieldCheck size={12}/>Confidence</span>
+                    <span className="font-mono font-semibold text-tertiary">{signal.confidence}</span>
+                  </div>
+                   <div className="flex flex-col items-center p-2 bg-background/50 rounded-md">
+                    <span className="text-muted-foreground text-xs flex items-center gap-1"><BrainCircuit size={12}/>Sentiment</span>
+                    <span className="font-mono font-semibold text-purple-400">{signal.sentiment}</span>
+                  </div>
+                   <div className="flex flex-col items-center p-2 bg-background/50 rounded-md">
+                    <span className="text-muted-foreground text-xs flex items-center gap-1"><Percent size={12}/>SHADOW Score</span>
+                    <span className="font-mono font-semibold text-accent">{signal.gpt_confidence_score}%</span>
+                  </div>
                 </CardContent>
+
                 <CardContent className="pt-2">
                     <div className="flex items-center justify-center p-2 bg-background/50 rounded-md text-xs text-muted-foreground italic">
                         <Info size={14} className="mr-2 shrink-0"/>
                         <p>"{signal.currentThought}"</p>
                     </div>
                 </CardContent>
+
                 <CardFooter className="mt-auto pt-4">
                     <Button 
                         className={cn(

@@ -243,7 +243,7 @@ export default function CoreConsolePage() {
 
       try {
         const history = JSON.parse(localStorage.getItem('bsaiSignalHistory') || '[]');
-        const newEntry = { ...resultWithId, timestamp: new Date().toISOString() };
+        const newEntry = { ...resultWithId, timestamp: new Date().toISOString(), status: 'PENDING' };
         const updatedHistory = [newEntry, ...history].slice(0, 20); // Keep latest 20
         localStorage.setItem('bsaiSignalHistory', JSON.stringify(updatedHistory));
       } catch (e) {
@@ -314,7 +314,7 @@ export default function CoreConsolePage() {
             });
              try {
                 const history = JSON.parse(localStorage.getItem('bsaiSignalHistory') || '[]');
-                const newEntry = { ...resultWithId, timestamp: new Date().toISOString() };
+                const newEntry = { ...resultWithId, timestamp: new Date().toISOString(), status: 'PENDING' };
                 const updatedHistory = [newEntry, ...history].slice(0, 20);
                 localStorage.setItem('bsaiSignalHistory', JSON.stringify(updatedHistory));
             } catch (e) {
