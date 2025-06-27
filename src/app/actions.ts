@@ -403,7 +403,8 @@ export async function logSimulatedPositionAction(
         userId,
         symbol: strategy.symbol,
         signalType: strategy.signal === 'BUY' ? SignalType.BUY : SignalType.SELL,
-        status: PositionStatus.PENDING,
+        status: PositionStatus.OPEN,
+        openTimestamp: new Date(),
         entryPrice,
         stopLoss,
         takeProfit,
@@ -418,23 +419,6 @@ export async function logSimulatedPositionAction(
     return { position: null, error: `Failed to log position: ${error.message}` };
   }
 }
-
-export async function activatePendingPositionAction(positionId: string): Promise<{ position?: Position; error?: string; }> {
-    try {
-        const position = await prisma.position.findUnique({ where: { id: positionId }});
-        if (!position || position.status !== 'PENDING') {
-            return { error: 'Position not found or is not pending.'};
-        }
-        const updatedPosition = await prisma.position.update({
-            where: { id: positionId },
-            data: { status: PositionStatus.OPEN, openTimestamp: new Date() }
-        });
-        return { position: updatedPosition };
-    } catch (error: any) {
-        return { error: `Failed to activate position: ${error.message}` };
-    }
-}
-
 
 export async function closePositionAction(positionId: string, closePrice: number): Promise<{ position?: Position; airdropPointsEarned?: number; error?: string; }> {
     try {

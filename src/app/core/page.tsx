@@ -280,11 +280,11 @@ export default function CoreConsolePage() {
         const isHoldSignal = aiStrategy.signal.toUpperCase() === 'HOLD';
         const toastTitle = isHoldSignal
             ? <span className="text-primary">HOLD Signal Acknowledged</span>
-            : <span className="text-tertiary">Signal Logged & Pending</span>;
+            : <span className="text-tertiary">Position Opened</span>;
         
         const toastDescription = isHoldSignal
             ? <span>The HOLD signal for {aiStrategy?.symbol} has been logged.</span>
-            : <span>Signal for {aiStrategy?.symbol} is now PENDING. The portfolio monitor will execute it automatically when the entry price is met.</span>;
+            : <span>An OPEN position for {aiStrategy?.symbol} has been logged and is now being monitored.</span>;
 
         toast({
             title: toastTitle,
@@ -410,7 +410,7 @@ export default function CoreConsolePage() {
                 }
                 <br />
                 <br />
-                The signal will be set to <strong className="text-accent">PENDING</strong> and will be monitored by the Portfolio. It will execute automatically when market conditions are met.
+                The signal will be executed immediately as an <strong className="text-accent">OPEN</strong> position and will be monitored by the Portfolio.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -419,7 +419,7 @@ export default function CoreConsolePage() {
                 onClick={confirmLogSignal}
                 className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground"
               >
-                {aiStrategy.signal.toUpperCase() === 'HOLD' ? 'Acknowledge HOLD' : 'Log Pending Signal'}
+                {aiStrategy.signal.toUpperCase() === 'HOLD' ? 'Acknowledge HOLD' : 'Log Open Position'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

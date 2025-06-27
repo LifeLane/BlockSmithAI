@@ -9,10 +9,9 @@ import { formatDistanceToNow } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PauseCircle, CheckCircle2, XCircle, Bot, PlayCircle, Hourglass } from 'lucide-react';
+import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PauseCircle, CheckCircle2, XCircle, Bot, PlayCircle } from 'lucide-react';
 import {
   fetchPendingAndOpenPositionsAction,
-  activatePendingPositionAction,
   closePositionAction,
   fetchMarketDataAction,
   fetchTradeHistoryAction,
@@ -73,9 +72,8 @@ const TimeLeft = ({ expiration, className }: { expiration?: Date | null, classNa
 const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position: Position, currentPrice?: number, onClose: (positionId: string, closePrice: number) => void, isClosing: boolean }) => {
     let pnl = 0;
     let pnlPercent = 0;
-    const isPending = position.status === 'PENDING';
 
-    if (currentPrice && !isPending) {
+    if (currentPrice) {
         if (position.signalType === 'BUY') {
             pnl = (currentPrice - position.entryPrice);
         } else {
@@ -91,9 +89,6 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
     const openTimestampText = isValidOpenDate ? `Opened: ${formatDistanceToNow(openDate)} ago` : 'N/A';
 
     const pnlColor = pnl >= 0 ? 'text-green-400' : 'text-red-400';
-    const statusText = isPending ? 'PENDING' : 'OPEN';
-    const statusIcon = isPending ? <Hourglass className="h-4 w-4 mr-2 text-yellow-400"/> : <PlayCircle className="h-4 w-4 mr-2 text-blue-400"/>;
-    const statusBadgeColor = isPending ? 'border-yellow-500/50 bg-yellow-900/60 text-yellow-300' : 'border-blue-500/50 bg-blue-900/60 text-blue-300';
     
     return (
         <Card className="bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300">
@@ -104,12 +99,12 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
                         {position.symbol}
                     </CardTitle>
                      <CardDescription className="text-xs">
-                        {isPending ? 'Awaiting execution...' : openTimestampText}
+                        {openTimestampText}
                     </CardDescription>
                 </div>
                  <div className="flex flex-col items-end">
-                     <Badge className={statusBadgeColor}>{statusIcon}{statusText}</Badge>
-                    {position.expirationTimestamp && !isPending && (
+                     <Badge className={'border-blue-500/50 bg-blue-900/60 text-blue-300'}><PlayCircle className="h-4 w-4 mr-2 text-blue-400"/>OPEN</Badge>
+                    {position.expirationTimestamp && (
                         <TimeLeft expiration={new Date(position.expirationTimestamp)} className="text-xs text-muted-foreground mt-2"/>
                     )}
                 </div>
@@ -133,15 +128,15 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
                 </div>
                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-xs text-muted-foreground">Unrealized PnL</span>
-                    <span className={`font-mono font-semibold ${pnlColor}`}>{!isPending && currentPrice ? `$${pnl.toFixed(2)}` : '...'}</span>
+                    <span className={`font-mono font-semibold ${pnlColor}`}>{currentPrice ? `$${pnl.toFixed(2)}` : '...'}</span>
                 </div>
                  <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-xs text-muted-foreground">Unrealized PnL %</span>
-                    <span className={`font-mono font-semibold ${pnlColor}`}>{!isPending && currentPrice ? `${pnlPercent.toFixed(2)}%` : '...'}</span>
+                    <span className={`font-mono font-semibold ${pnlColor}`}>{currentPrice ? `${pnlPercent.toFixed(2)}%` : '...'}</span>
                 </div>
             </CardContent>
             <CardFooter className="pt-4">
-                <Button size="sm" variant="destructive" onClick={() => currentPrice && onClose(position.id, currentPrice)} disabled={isClosing || !currentPrice || isPending}>
+                <Button size="sm" variant="destructive" onClick={() => currentPrice && onClose(position.id, currentPrice)} disabled={isClosing || !currentPrice}>
                     {isClosing ? <Loader2 className="h-4 w-4 animate-spin"/> : <LogOut className="h-4 w-4 mr-1"/>}
                     Close Manually
                 </Button>
@@ -321,16 +316,7 @@ export default function PortfolioPage() {
                 
                 const currentPrice = parseFloat(livePriceData.lastPrice);
                 
-                // PENDING to OPEN logic
-                if (pos.status === 'PENDING') {
-                    const shouldActivate = (pos.signalType === 'BUY' && currentPrice <= pos.entryPrice) || (pos.signalType === 'SELL' && currentPrice >= pos.entryPrice);
-                    if (shouldActivate) {
-                        const activationResult = await activatePendingPositionAction(pos.id);
-                        if (!activationResult.error) needsReFetch = true;
-                    }
-                }
-                // OPEN to CLOSED logic
-                else if (pos.status === 'OPEN') {
+                if (pos.status === 'OPEN') {
                     let closeReason: string | null = null;
                     let closePrice = 0;
 
@@ -391,10 +377,11 @@ export default function PortfolioPage() {
     }, [currentUser?.id, runSimulationCycle]); 
 
     const renderActivePositions = () => {
-        if (isLoadingData && positions.length === 0) {
+        const openPositions = positions.filter(p => p.status === 'OPEN');
+        if (isLoadingData && openPositions.length === 0) {
             return <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin"/></div>
         }
-        if (positions.length === 0) {
+        if (openPositions.length === 0) {
              return (
                 <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4">
                      <CardHeader>
@@ -418,7 +405,7 @@ export default function PortfolioPage() {
         }
         return (
             <div className="space-y-4">
-                {positions.map(pos => (
+                {openPositions.map(pos => (
                     <PositionCard
                         key={pos.id}
                         position={pos}
@@ -487,7 +474,7 @@ export default function PortfolioPage() {
         <PortfolioStatsDisplay stats={portfolioStats} isLoading={isLoadingData && !portfolioStats} />
          <Tabs defaultValue="open" className="mt-4">
             <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="open">Active Positions ({positions.length})</TabsTrigger>
+                <TabsTrigger value="open">Active Positions ({positions.filter(p => p.status === 'OPEN').length})</TabsTrigger>
                 <TabsTrigger value="history">Trade History ({tradeHistory.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="open" className="mt-4">
