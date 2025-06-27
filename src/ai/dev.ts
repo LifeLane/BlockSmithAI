@@ -11,4 +11,3 @@ import '@/ai/flows/generate-mission-log.ts';
 import '@/ai/tools/fetch-historical-data-tool.ts';
 import '@/ai/tools/fetch-portfolio-tool.ts';
 import '@/ai/tools/fetch-live-market-data-tool.ts';
-
