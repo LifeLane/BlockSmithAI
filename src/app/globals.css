@@ -5,45 +5,45 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 224 71.4% 4.1%;
+    --background: 0 0% 98%;
+    --foreground: 224 71% 4%;
 
     --card: 0 0% 100%;
-    --card-foreground: 224 71.4% 4.1%;
+    --card-foreground: 224 71% 4%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
+    --popover-foreground: 224 71% 4%;
 
     --primary: 210 100% 50%;
     --primary-foreground: 210 20% 98%;
 
-    --secondary: 220 14.3% 95.9%;
+    --secondary: 220 14% 96%;
     --secondary-foreground: 220 13% 29%;
 
-    --muted: 220 14.3% 95.9%;
-    --muted-foreground: 220 8.9% 46.1%;
-
-    --accent: 270 90% 55%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    
+    --accent: 270 90% 60%;
     --accent-foreground: 210 20% 98%;
 
     --tertiary: 35 92% 55%;
-    --tertiary-foreground: 48 95.8% 11.2%;
+    --tertiary-foreground: 48 96% 11%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 222.2 84% 4.9%;
+    --ring: hsl(var(--primary));
 
     --chart-1: hsl(var(--primary));
     --chart-2: hsl(var(--accent));
     --chart-3: hsl(var(--tertiary));
-    --chart-4: 120 80% 60%; /* Lime Green */
+    --chart-4: 120 80% 60%;
     --chart-5: 200 80% 60%;
     --radius: 0.5rem;
 
-    --sidebar-background: 220 14.3% 98%;
+    --sidebar-background: 220 14% 99%;
     --sidebar-foreground: var(--foreground);
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
@@ -56,25 +56,35 @@
   .dark {
     --background: 220 20% 5%;
     --foreground: 210 20% 90%;
+    
     --card: 220 20% 8%;
-    --card-foreground: hsl(var(--foreground));
+    --card-foreground: 210 20% 90%;
+    
     --popover: 220 20% 8%;
-    --popover-foreground: hsl(var(--foreground));
+    --popover-foreground: 210 20% 90%;
+    
     --primary: 210 100% 60%;
     --primary-foreground: 210 100% 10%;
+    
     --secondary: 220 20% 15%;
     --secondary-foreground: 210 20% 85%;
+    
     --muted: 220 20% 15%;
     --muted-foreground: 210 20% 65%;
+    
     --accent: 270 100% 65%;
     --accent-foreground: 270 100% 95%;
+    
     --tertiary: 35 100% 55%;
     --tertiary-foreground: 35 100% 5%;
+    
     --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 98%;
+    
     --border: 220 20% 20%;
-    --input: 220 20% 10%;
+    --input: 220 20% 12%;
     --ring: hsl(var(--accent));
+    
     --sidebar-background: 220 20% 7%;
     --sidebar-foreground: hsl(var(--foreground));
     --sidebar-primary: hsl(var(--primary));
