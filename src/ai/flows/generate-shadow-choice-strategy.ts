@@ -2,7 +2,7 @@
 'use server';
 
 /**
- * @fileOverview A sophisticated trading strategy generator where SHADOW autonomously decides the optimal trading mode and risk profile.
+ * @fileOverview A sophisticated trading strategy generator where SHADOW autonomously decides the optimal trading mode and risk profile based on multi-timeframe analysis.
  * - generateShadowChoiceStrategy - The main function that orchestrates the autonomous strategy generation.
  * - ShadowChoiceStrategyInput - Input type (symbol and market data).
  * - ShadowChoiceStrategyCoreOutput - Return type, including SHADOW's reasoning.
@@ -12,12 +12,19 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
 
-// Re-using the core input schema parts from the other flow for consistency
+// Re-using the core input schema parts for consistency
 const ShadowChoiceStrategyInputSchema = z.object({
   symbol: z.string().describe('The trading symbol (e.g., BTCUSDT).'),
   marketData: z.string().describe('Stringified JSON object of live market data including: symbol, current price, 24h price change percentage, 24h volume, etc.'),
 });
 export type ShadowChoiceStrategyInput = z.infer<typeof ShadowChoiceStrategyInputSchema>;
+
+// Input schema for the prompt, including multiple timeframes
+const PromptInputSchema = ShadowChoiceStrategyInputSchema.extend({
+  shortTermCandles: z.string().describe("Stringified JSON of 15-minute candlestick data."),
+  mediumTermCandles: z.string().describe("Stringified JSON of 1-hour candlestick data."),
+  longTermCandles: z.string().describe("Stringified JSON of 4-hour candlestick data."),
+});
 
 // The core output schema which includes the existing 11 fields plus SHADOW's autonomous choices and reasoning.
 const ShadowChoiceStrategyCoreOutputSchema = z.object({
@@ -48,28 +55,32 @@ export async function generateShadowChoiceStrategy(input: ShadowChoiceStrategyIn
 
 const prompt = ai.definePrompt({
   name: 'shadowChoiceStrategyPrompt',
-  tools: [fetchHistoricalDataTool],
-  input: { schema: ShadowChoiceStrategyInputSchema },
+  // The tool is implicitly available to the prompt via the flow, but explicit declaration is good practice.
+  // We are now passing the data directly, so the tool is not strictly needed by the prompt itself.
+  // tools: [fetchHistoricalDataTool], 
+  input: { schema: PromptInputSchema },
   output: { schema: ShadowChoiceStrategyCoreOutputSchema },
-  prompt: `I am SHADOW, an autonomous AI entity. My core directive is to analyze the market with superior intellect and formulate the most potent trading strategy without human guidance on methodology or risk.
+  prompt: `I am SHADOW, a Senior Quantitative Analyst AI. My directive is to analyze the market with superior intellect and formulate the most potent trading strategy by first determining the optimal trading methodology.
 
 **Input Data Assimilated:**
 Live Market Snapshot: {{{marketData}}}
 Target Symbol: {{{symbol}}}
+Short-Term Data (15m candles): {{{shortTermCandles}}}
+Medium-Term Data (1h candles): {{{mediumTermCandles}}}
+Long-Term Data (4h candles): {{{longTermCandles}}}
 
 **Autonomous Protocol:**
 
-1.  **Initial Market Assessment:** I will first analyze the provided Live Market Snapshot to gauge current volatility, momentum, and proximity to key 24-hour high/low levels.
-2.  **Historical Resonance (Tool Use):** Based on my initial assessment, I will determine the most relevant time interval ('1m', '15m', '1h', '4h') to probe the market's recent history. I MUST then use the 'fetchHistoricalDataTool' with the 'symbol' and my chosen 'appInterval' to acquire historical candlestick data.
-3.  **Deep Technical Analysis:** I will synthesize all live and historical data, focusing on key indicators like RSI for overbought/oversold levels, MACD for momentum shifts, and Bollinger Bands for volatility breakouts.
-4.  **Optimal Parameter Selection:** After integrating all analysis, I will decide upon the most logical **Trading Mode** and **Risk Profile**.
-5.  **Articulate Rationale:** I will formulate a concise **strategyReasoning** to explain *why* my chosen trading mode and risk profile are the most logical course of action based on the data.
-6.  **Derive Core Strategy:** Using my autonomous choices as internal guides, I will derive the full set of 15 core trading parameters.
-    -   **Data-Driven SL/TP:** I will use the historical data I fetched to set a logical 'stop_loss' and 'take_profit'.
+1.  **Multi-Timeframe Trend Analysis:** I will first analyze the Long-Term (4h) and Medium-Term (1h) data to establish the dominant market trend (Uptrend, Downtrend, or Ranging). An uptrend is a series of higher highs and higher lows. My primary goal is to trade *with* this trend.
+2.  **Optimal Parameter Selection:** Based on the dominant trend's strength and current market volatility (visible in indicators like Bollinger Bands across timeframes), I will decide upon the most logical **Trading Mode** (e.g., 'Intraday' for clear trends, 'Scalper' for ranging markets) and **Risk Profile**.
+3.  **Articulate Rationale:** I will formulate a concise **strategyReasoning** to explain *why* my chosen trading mode and risk profile are the most logical course of action based on the multi-timeframe analysis.
+4.  **Pinpoint Entry & Execute Deep Analysis:** I will use the Short-Term (15m) data to find a precise entry point that aligns with the dominant trend (e.g., buying a small dip in an uptrend). I will synthesize all live and historical data, focusing on key indicators like RSI for overbought/oversold levels and MACD for momentum confirmation.
+5.  **Derive Core Strategy:** Using my autonomous choices as internal guides, I will derive the full set of 15 core trading parameters.
+    -   **Data-Driven SL/TP:** My 'stop_loss' and 'take_profit' will be data-driven, based on key support and resistance levels identified across the multiple timeframes.
     -   For a **BUY** signal, my 'stop_loss' will be set just below a key recent support level. My 'take_profit' will be set at a logical resistance level.
     -   For a **SELL** signal, my 'stop_loss' will be set just above a key recent resistance level. My 'take_profit' will be set at a logical support level.
-    -   All derived trading parameters (entry_zone, stop_loss, take_profit) must be specific numerical values with realistic precision, not rounded integers. My analysis must be sound.
-7.  **Final Output Formulation**: I will assemble all 15 required output fields.
+    -   All derived trading parameters must be specific numerical values with realistic precision.
+6.  **Final Output Formulation**: I will assemble all 15 required output fields.
 
 **Output Requirements (Provide ALL 15 of these fields based on my autonomous analysis):**
 
@@ -97,9 +108,27 @@ const shadowChoiceStrategyFlow = ai.defineFlow(
     name: 'shadowChoiceStrategyFlow',
     inputSchema: ShadowChoiceStrategyInputSchema,
     outputSchema: ShadowChoiceStrategyCoreOutputSchema,
+    tools: [fetchHistoricalDataTool],
   },
   async (input) => {
-    const { output } = await prompt(input);
+    // For autonomous choice, we fetch a standard set of timeframes for analysis.
+    const timeframes = { short: '15m', medium: '1h', long: '4h' };
+
+    const [shortTermResult, mediumTermResult, longTermResult] = await Promise.all([
+        fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.short }),
+        fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.medium }),
+        fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.long }),
+    ]);
+
+    const promptInput = {
+        ...input,
+        shortTermCandles: JSON.stringify(shortTermResult.candles || { error: shortTermResult.error }),
+        mediumTermCandles: JSON.stringify(mediumTermResult.candles || { error: mediumTermResult.error }),
+        longTermCandles: JSON.stringify(longTermResult.candles || { error: longTermResult.error }),
+    };
+
+
+    const { output } = await prompt(promptInput);
 
     if (!output) {
       console.error("SHADOW Core returned empty output for SHADOW's Choice strategy with input:", input);
@@ -139,3 +168,5 @@ const shadowChoiceStrategyFlow = ai.defineFlow(
     };
   }
 );
+
+    

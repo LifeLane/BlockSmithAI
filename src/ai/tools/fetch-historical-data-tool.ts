@@ -24,8 +24,8 @@ const CandlestickSchema = z.object({
 
 const FetchHistoricalDataInputSchema = z.object({
   symbol: z.string().describe('The trading symbol (e.g., BTCUSDT, ETHUSDT).'),
-  // App's interval format: "1m", "15m", "1h", "4h". We'll parse this.
-  appInterval: z.string().describe('The chart interval string from the app (e.g., "1m", "15m", "1h", "4h").'),
+  // App's interval format: "1m", "15m", "1h", "4h", "1d". We'll parse this.
+  appInterval: z.string().describe('The chart interval string from the app (e.g., "1m", "5m", "1h", "1d").'),
 });
 export type FetchHistoricalDataInput = z.infer<typeof FetchHistoricalDataInputSchema>;
 
@@ -42,9 +42,9 @@ function mapAppIntervalToPolygonParams(appInterval: string): {
     timespan: 'minute' | 'hour' | 'day';
     error?: string;
   } {
-  const match = appInterval.match(/^(\d+)([mh])$/); // m for minute, h for hour
+  const match = appInterval.match(/^(\d+)([mhd])$/); // m for minute, h for hour, d for day
   if (!match) {
-    return { multiplier: 0, timespan: 'minute', error: `Invalid appInterval format: ${appInterval}. Expected format like '1m', '15m', '1h', '4h'.` };
+    return { multiplier: 0, timespan: 'minute', error: `Invalid appInterval format: ${appInterval}. Expected format like '1m', '15m', '1h', '1d'.` };
   }
   const value = parseInt(match[1], 10);
   const unit = match[2];
@@ -55,6 +55,9 @@ function mapAppIntervalToPolygonParams(appInterval: string): {
   } else if (unit === 'h') {
      if (value < 1 ) return {multiplier: 0, timespan: 'hour', error: "Hour interval must be 1 or greater."};
     return { multiplier: value, timespan: 'hour' };
+  } else if (unit === 'd') {
+     if (value < 1 ) return {multiplier: 0, timespan: 'day', error: "Day interval must be 1 or greater."};
+    return { multiplier: value, timespan: 'day' };
   }
   return { multiplier: 0, timespan: 'minute', error: `Unsupported unit in appInterval: ${unit}` };
 }
@@ -73,8 +76,10 @@ function calculateDateRange(
     fromDate = subMinutes(toDate, multiplier * candleCount);
   } else if (timespan === 'hour') {
     fromDate = subHours(toDate, multiplier * candleCount);
-  } else { // Default to day for safety, though our current intervals are m/h
+  } else if (timespan === 'day') {
     fromDate = subDays(toDate, multiplier * candleCount);
+  } else {
+    return { from: '', to: '', error: `Unhandled timespan: ${timespan}` };
   }
    // Polygon free tier often has a delay, so fetching up to "yesterday" might be more reliable for some tickers
    // For crypto, "today" is usually fine.
@@ -88,7 +93,7 @@ function calculateDateRange(
 export const fetchHistoricalDataTool = ai.defineTool(
   {
     name: 'fetchHistoricalDataTool',
-    description: 'Fetches recent historical candlestick (OHLCV) data for a given trading symbol and interval. This data can be used to identify recent chart patterns.',
+    description: 'Fetches recent historical candlestick (OHLCV) data for a given trading symbol and interval. This data can be used to identify recent chart patterns, support, and resistance.',
     inputSchema: FetchHistoricalDataInputSchema,
     outputSchema: FetchHistoricalDataOutputSchema,
   },
@@ -122,3 +127,5 @@ export const fetchHistoricalDataTool = ai.defineTool(
     return { candles: result, message: `Fetched ${result.length} candles for ${input.symbol} on ${input.appInterval} interval from ${from} to ${to}.` };
   }
 );
+
+    
