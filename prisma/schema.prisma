@@ -1,21 +1,22 @@
-// prisma/schema.prisma
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
 }
 
 model User {
-  id                String     @id @default(uuid())
+  id                String      @id @default(uuid())
   username          String
-  shadowId          String     @unique
+  shadowId          String      @unique
   status            String
-  weeklyPoints      Int        @default(0)
-  airdropPoints     Int        @default(0)
+  weeklyPoints      Int         @default(0)
+  airdropPoints     Int         @default(0)
   wallet_address    String?
   wallet_type       String?
   email             String?
@@ -25,35 +26,35 @@ model User {
   youtube_handle    String?
   claimedMissions   String[]
   claimedSpecialOps String[]
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
+  badges            Badge[]     @relation("UserBadges")
   positions         Position[]
-  agents            UserAgent[]
-  badges            Badge[]    @relation("UserBadges")
+  userAgents        UserAgent[]
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @default(now()) @updatedAt
 }
 
 model Badge {
   id    String @id @default(uuid())
-  name  String @unique
+  name  String
   users User[] @relation("UserBadges")
 }
 
 model Position {
-  id                  String      @id @default(uuid())
+  id                  String         @id @default(uuid())
   userId              String
-  user                User        @relation(fields: [userId], references: [id])
+  user                User           @relation(fields: [userId], references: [id])
   symbol              String
   signalType          SignalType
+  status              PositionStatus
   entryPrice          Float
-  size                Float       @default(1)
-  status              PositionStatus @default(OPEN)
+  size                Float
+  closePrice          Float?
+  pnl                 Float?
   openTimestamp       DateTime?
   closeTimestamp      DateTime?
-  expirationTimestamp DateTime?
-  pnl                 Float?
   stopLoss            Float?
   takeProfit          Float?
-  closePrice          Float?
+  expirationTimestamp DateTime?
   strategyId          String?
 }
 
@@ -62,8 +63,8 @@ model UserAgent {
   userId            String
   user              User      @relation(fields: [userId], references: [id])
   agentId           String
-  level             Int       @default(1)
-  status            String    @default("IDLE") // 'IDLE', 'DEPLOYED'
+  level             Int
+  status            String // e.g., 'IDLE', 'DEPLOYED'
   deploymentEndTime DateTime?
 }
 
