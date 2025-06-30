@@ -32,7 +32,7 @@ const formatNumber = (numStr: string) => {
 
 // A small component for each stat to avoid repetition
 const StatBox = ({ title, value, icon, valueClassName }: { title: string; value: React.ReactNode; icon: React.ReactNode, valueClassName?: string }) => (
-    <div className="flex flex-col items-center justify-center p-3 bg-background/50 rounded-lg text-center">
+    <div className="flex flex-col items-center justify-center p-3 bg-secondary rounded-lg text-center">
         <span className="text-xs text-muted-foreground flex items-center gap-1.5">{icon} {title}</span>
         <span className={`text-lg font-bold font-mono ${valueClassName || 'text-primary'} mt-1`}>{value}</span>
     </div>
@@ -107,7 +107,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 
 
   return (
-    <Card className="shadow-lg transition-all duration-300 ease-in-out border-border/50 bg-gradient-to-br from-card to-background">
+    <Card className="shadow-lg transition-all duration-300 ease-in-out border-border/50 bg-gradient-to-br from-card to-background interactive-card">
       <CardHeader className="items-center text-center pb-4">
         <CardTitle className="text-2xl font-headline text-foreground">
           Market Pulse: <span className="text-accent">{actualBaseSymbol}/USDT</span>

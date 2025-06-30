@@ -119,7 +119,7 @@ const AgentCard = ({ agentData, userXp, onAction, userId }: { agentData: UserAge
     const canUpgrade = !isMaxLevel && userXp >= currentLevelData.upgradeCost;
 
     return (
-        <Card className="bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 flex flex-col">
+        <Card className="bg-card/80 backdrop-blur-sm transition-all duration-300 flex flex-col interactive-card">
             <CardHeader>
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-background rounded-lg border border-border">
@@ -198,7 +198,7 @@ const SpecialOpCard = ({ op, agents, onClaim }: { op: SpecialOp, agents: UserAge
     const Icon = AGENT_ICONS[requiredAgent?.icon || 'Default'] || AGENT_ICONS.Default;
 
     return (
-        <Card className="bg-gradient-to-br from-tertiary/20 via-card to-accent/20 border-tertiary shadow-lg shadow-tertiary/20 mb-8">
+        <Card className="bg-gradient-to-br from-tertiary/20 via-card to-accent/20 border-tertiary shadow-lg shadow-tertiary/20 mb-8 interactive-card">
             <CardHeader>
                 <div className="flex justify-between items-center">
                     <CardTitle className="flex items-center text-tertiary text-xl">
@@ -303,7 +303,7 @@ export default function AgentsPage() {
 
         if (error) {
             return (
-                <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm border-destructive">
+                <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm border-destructive interactive-card">
                     <CardHeader>
                         <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
                             <AlertTriangle className="h-10 w-10 text-destructive" />
@@ -322,7 +322,7 @@ export default function AgentsPage() {
 
         return (
             <>
-                <Card className="mb-8 bg-card/80 backdrop-blur-sm border-tertiary/50 shadow-lg shadow-tertiary/10">
+                <Card className="mb-8 bg-card/80 backdrop-blur-sm border-tertiary/50 shadow-lg shadow-tertiary/10 interactive-card">
                     <CardHeader>
                         <CardTitle className="flex items-center text-lg text-tertiary">
                             <TrendingUp className="mr-3 h-5 w-5"/>

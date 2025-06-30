@@ -96,7 +96,7 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
     const pnlColor = pnl >= 0 ? 'text-green-400' : 'text-red-400';
     
     return (
-        <Card className="bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300">
+        <Card className="bg-card/80 backdrop-blur-sm transition-all duration-300 interactive-card">
             <CardHeader className="flex flex-row items-start justify-between pb-3">
                 <div>
                     <CardTitle className="text-lg flex items-center">
@@ -162,7 +162,7 @@ const HistoryCard = ({ position }: { position: Position }) => {
     const closeTimestampText = isValidDate ? formatDistanceToNow(closeDate) : 'an unknown time';
 
     return (
-        <Card className="bg-card/80 backdrop-blur-sm">
+        <Card className="bg-card/80 backdrop-blur-sm interactive-card">
              <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div className="flex items-center gap-4">
                     {icon}
@@ -224,7 +224,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
     const winRateColor = stats.winRate >= 50 ? 'text-green-400' : 'text-red-400';
 
     return (
-        <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30">
+        <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30 interactive-card">
             <CardHeader className="flex-col sm:flex-row items-start sm:items-center justify-between pb-4">
                 <div className="space-y-1 mb-4 sm:mb-0">
                     <CardTitle className="text-lg flex items-center gap-2 text-accent"><Briefcase /> Performance Matrix</CardTitle>
@@ -469,7 +469,7 @@ export default function PortfolioPage() {
         }
         if (openPositions.length === 0) {
              return (
-                <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4">
+                <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4 interactive-card">
                      <CardHeader>
                         <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">
                             <Bot className="h-10 w-10 text-primary" />
@@ -534,7 +534,7 @@ export default function PortfolioPage() {
              <>
                 <AppHeader />
                 <div className="container mx-auto px-4 py-8">
-                    <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm border-destructive">
+                    <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm border-destructive interactive-card">
                         <CardHeader>
                             <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
                                 <AlertTriangle className="h-10 w-10 text-destructive" />
