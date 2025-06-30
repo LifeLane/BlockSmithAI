@@ -321,69 +321,6 @@ export default function PortfolioPage() {
     const isFetchingRef = useRef(false);
     const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-     const handleGenerateReview = useCallback(async () => {
-        if (!currentUser) return;
-        setIsGeneratingReview(true);
-        setReviewData(null);
-        setReviewError(null);
-        setIsReviewModalOpen(true);
-
-        const result = await generatePerformanceReviewAction(currentUser.id);
-        
-        if ('error' in result) {
-            setReviewError(result.error);
-        } else {
-            setReviewData(result);
-        }
-        setIsGeneratingReview(false);
-    }, [currentUser]);
-
-    const handleKillSwitch = useCallback(async () => {
-        if (!currentUser) return;
-        setIsKilling(true);
-        const result = await killSwitchAction(currentUser.id);
-        if (result.success) {
-            toast({
-                title: "Kill Switch Activated",
-                description: result.message,
-                variant: "default",
-            });
-            // Force a full re-fetch of all data
-            if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
-            runSimulationCycle(currentUser.id);
-        } else {
-            toast({
-                title: "Kill Switch Failed",
-                description: result.message,
-                variant: "destructive",
-            });
-        }
-        setIsKilling(false);
-    }, [currentUser, toast, runSimulationCycle]);
-
-    useEffect(() => {
-        const openPositions = positions.filter(p => p.status === 'OPEN');
-        if (openPositions.length === 0) {
-            setRealtimePnl(0);
-            return;
-        }
-
-        const totalPnl = openPositions.reduce((acc, pos) => {
-            const livePriceData = livePrices[pos.symbol];
-            if (!livePriceData) return acc;
-
-            const currentPrice = parseFloat(livePriceData.lastPrice);
-            const positionSize = pos.size || 1;
-            const priceDiff = pos.signalType === 'BUY'
-                ? (currentPrice - pos.entryPrice)
-                : (pos.entryPrice - currentPrice);
-            
-            return acc + (priceDiff * positionSize);
-        }, 0);
-
-        setRealtimePnl(totalPnl);
-    }, [positions, livePrices]);
-
     const showCloseToast = useCallback((closedPosition: Position, airdropPoints: number, reason: string) => {
         const pnl = closedPosition.pnl || 0;
         toast({
@@ -402,22 +339,10 @@ export default function PortfolioPage() {
         });
     }, [toast]);
     
-    const handleManualClose = useCallback(async (positionId: string, closePrice: number) => {
-        setClosingPositionId(positionId);
-        const result = await closePositionAction(positionId, closePrice);
-        if (result.position) {
-            showCloseToast(result.position, result.airdropPointsEarned || 0, 'Position Closed Manually');
-        } else {
-            toast({ title: "Error Closing Position", description: result.error, variant: "destructive" });
-        }
-        setClosingPositionId(null);
-    }, [showCloseToast, toast]);
-
     const runSimulationCycle = useCallback(async (userId: string) => {
         if (isFetchingRef.current) return;
         isFetchingRef.current = true;
         
-        // Initial load should show spinner, subsequent loads can be background updates.
         if (positions.length === 0 && tradeHistory.length === 0) {
             setIsLoadingData(true);
         }
@@ -435,7 +360,7 @@ export default function PortfolioPage() {
             if (currentPositions.length === 0) {
                  isFetchingRef.current = false;
                  setIsLoadingData(false);
-                 setPositions([]); // Clear positions if none are active
+                 setPositions([]);
                  return;
             }
 
@@ -505,6 +430,81 @@ export default function PortfolioPage() {
             isFetchingRef.current = false;
         }
     }, [showCloseToast, positions.length, tradeHistory.length]);
+
+     const handleGenerateReview = useCallback(async () => {
+        if (!currentUser) return;
+        setIsGeneratingReview(true);
+        setReviewData(null);
+        setReviewError(null);
+        setIsReviewModalOpen(true);
+
+        const result = await generatePerformanceReviewAction(currentUser.id);
+        
+        if ('error' in result) {
+            setReviewError(result.error);
+        } else {
+            setReviewData(result);
+        }
+        setIsGeneratingReview(false);
+    }, [currentUser]);
+
+    const handleKillSwitch = useCallback(async () => {
+        if (!currentUser) return;
+        setIsKilling(true);
+        const result = await killSwitchAction(currentUser.id);
+        if (result.success) {
+            toast({
+                title: "Kill Switch Activated",
+                description: result.message,
+                variant: "default",
+            });
+            if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
+            await runSimulationCycle(currentUser.id);
+        } else {
+            toast({
+                title: "Kill Switch Failed",
+                description: result.message,
+                variant: "destructive",
+            });
+        }
+        setIsKilling(false);
+    }, [currentUser, toast, runSimulationCycle]);
+
+    const handleManualClose = useCallback(async (positionId: string, closePrice: number) => {
+        if (!currentUser) return;
+        setClosingPositionId(positionId);
+        const result = await closePositionAction(positionId, closePrice);
+        if (result.position) {
+            showCloseToast(result.position, result.airdropPointsEarned || 0, 'Position Closed Manually');
+            await runSimulationCycle(currentUser.id);
+        } else {
+            toast({ title: "Error Closing Position", description: result.error, variant: "destructive" });
+        }
+        setClosingPositionId(null);
+    }, [showCloseToast, toast, currentUser, runSimulationCycle]);
+    
+    useEffect(() => {
+        const openPositions = positions.filter(p => p.status === 'OPEN');
+        if (openPositions.length === 0) {
+            setRealtimePnl(0);
+            return;
+        }
+
+        const totalPnl = openPositions.reduce((acc, pos) => {
+            const livePriceData = livePrices[pos.symbol];
+            if (!livePriceData) return acc;
+
+            const currentPrice = parseFloat(livePriceData.lastPrice);
+            const positionSize = pos.size || 1;
+            const priceDiff = pos.signalType === 'BUY'
+                ? (currentPrice - pos.entryPrice)
+                : (pos.entryPrice - currentPrice);
+            
+            return acc + (priceDiff * positionSize);
+        }, 0);
+
+        setRealtimePnl(totalPnl);
+    }, [positions, livePrices]);
     
     useEffect(() => {
         if (currentUser?.id) {
