@@ -6,3 +6,5 @@ export default function MonitorPage() {
   // We redirect any old links to the new unified location.
   redirect('/pulse');
 }
+
+    

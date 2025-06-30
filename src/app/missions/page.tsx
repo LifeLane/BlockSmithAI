@@ -6,3 +6,5 @@ export default function MissionsRedirectPage() {
   // We redirect any old links to the new unified location.
   redirect('/profile');
 }
+
+    

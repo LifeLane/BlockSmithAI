@@ -138,3 +138,5 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 };
 
 export default MarketDataDisplay;
+
+    
