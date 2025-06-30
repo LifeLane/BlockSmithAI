@@ -25,7 +25,7 @@ import {
 } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Sparkles, BrainCircuit } from 'lucide-react';
+import { Loader2, Sparkles, BrainCircuit, Unlock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type AIStrategyOutput = (AIOutputType | GenerateShadowChoiceStrategyOutput) & { 
@@ -257,8 +257,9 @@ export default function CoreConsolePage() {
     await refetchUser();
   };
 
-  const isButtonDisabled = isUserLoading || isLoadingStrategy || isLoadingShadowChoice || isLoadingSymbols || (currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES);
+  const isButtonDisabled = isUserLoading || isLoadingStrategy || isLoadingShadowChoice || isLoadingSymbols;
   const showResults = aiStrategy || isLoadingStrategy || isLoadingShadowChoice || strategyError;
+  const isLimitReached = currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES;
 
   return (
     <>
@@ -289,29 +290,49 @@ export default function CoreConsolePage() {
                 />
                 
                 <div className="flex flex-col items-center gap-4 pt-2">
-                    <Button
-                        onClick={() => handleGenerateStrategy(false)}
-                        disabled={isButtonDisabled}
-                        className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
-                    >
-                        {isLoadingStrategy ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                            : isUserLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                            : <Sparkles className="mr-2 h-5 w-5" />}
-                        {isLoadingStrategy ? "SHADOW is Analyzing..." : isUserLoading ? "Initializing Analyst Profile..." : "Generate Signal"}
-                    </Button>
+                    {isLimitReached ? (
+                        <Button
+                            onClick={() => setShowAirdropModal(true)}
+                            className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out glow-button"
+                        >
+                            <Unlock className="mr-2 h-5 w-5" />
+                            Join Network for Unlimited Signals
+                        </Button>
+                    ) : (
+                        <>
+                            <Button
+                                onClick={() => handleGenerateStrategy(false)}
+                                disabled={isButtonDisabled}
+                                className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
+                            >
+                                {isLoadingStrategy ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    : isUserLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    : <Sparkles className="mr-2 h-5 w-5" />}
+                                {isLoadingStrategy ? "SHADOW is Analyzing..." : isUserLoading ? "Initializing Analyst Profile..." : "Generate Signal"}
+                            </Button>
 
-                     <Button
-                        onClick={() => handleGenerateStrategy(true)}
-                        disabled={isButtonDisabled}
-                        className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out shadow-choice-button"
-                    >
-                        {isLoadingShadowChoice ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
-                        {isLoadingShadowChoice ? "SHADOW is Deciding..." : "Invoke SHADOW's Choice"}
-                    </Button>
+                            <Button
+                                onClick={() => handleGenerateStrategy(true)}
+                                disabled={isButtonDisabled}
+                                className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out shadow-choice-button"
+                            >
+                                {isLoadingShadowChoice ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
+                                {isLoadingShadowChoice ? "SHADOW is Deciding..." : "Invoke SHADOW's Choice"}
+                            </Button>
+                        </>
+                    )}
                     
                     {currentUser?.status === 'Guest' && (
                         <p className="text-xs text-center text-muted-foreground mt-2">
-                        Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Register</button> for <strong className="text-orange-400">unlimited</strong>.
+                        {isLimitReached ? (
+                            <>
+                                You've reached your daily limit of <strong className="text-primary">{MAX_GUEST_ANALYSES} analyses</strong>.
+                            </>
+                        ) : (
+                            <>
+                                Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Register</button> for <strong className="text-orange-400">unlimited</strong>.
+                            </>
+                        )}
                         </p>
                     )}
                 </div>
