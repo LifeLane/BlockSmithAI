@@ -333,7 +333,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
             <CardHeader className="flex-col sm:flex-row items-start sm:items-center justify-between pb-4">
                 <div className="space-y-1 mb-4 sm:mb-0">
                     <CardTitle className="text-lg flex items-center gap-2 text-accent font-headline"><Briefcase /> Performance Matrix</CardTitle>
-                    <CardDescription>An overview of your closed trade performance.</CardDescription>
+                    <CardDescription>An overview of your <strong className="text-accent">closed trade</strong> performance.</CardDescription>
                 </div>
                 <Button size="sm" onClick={onGenerateReview} disabled={isGeneratingReview} className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground w-full sm:w-auto">
                     {isGeneratingReview ? <Loader2 className="h-4 w-4 animate-spin"/> : <BrainCircuit className="h-4 w-4 mr-2"/>}
@@ -365,7 +365,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
              <CardFooter className="pt-6 flex-col sm:flex-row items-center justify-between gap-4 border-t border-border/20 mt-4">
                 <div className="text-center sm:text-left">
                     <h4 className="font-semibold text-destructive font-headline">Emergency Protocol</h4>
-                    <p className="text-xs text-muted-foreground">Instantly close all active positions.</p>
+                    <p className="text-xs text-muted-foreground">Instantly close all <strong className="text-destructive">active positions</strong>.</p>
                 </div>
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -665,7 +665,7 @@ export default function PortfolioPage() {
                         </div>
                         <CardTitle className="mt-4">No Active Positions</CardTitle>
                         <CardDescription className="mt-2 text-base">
-                           Generate a signal from the Core Console to begin.
+                           Generate a signal from the <strong className="text-primary">Core Console</strong> to begin.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -720,7 +720,7 @@ export default function PortfolioPage() {
             return <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin"/></div>
         }
         if (tradeHistory.length === 0) {
-            return <p className="text-center text-muted-foreground mt-8">No closed trades yet.</p>
+            return <p className="text-center text-muted-foreground mt-8">No closed trades yet. Your <strong className="text-tertiary">trade history</strong> will appear here.</p>
         }
         return (
             <div className="space-y-3">
@@ -800,5 +800,3 @@ export default function PortfolioPage() {
     </>
   );
 }
-
-    

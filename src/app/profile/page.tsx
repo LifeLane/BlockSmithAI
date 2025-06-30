@@ -347,7 +347,7 @@ export default function ProfilePage() {
                                 <span className="ml-2">Analyst Rank: {rankDetails.name}</span>
                             </CardTitle>
                              <CardDescription>
-                                Level {rankDetails.level} - Based on your Weekly XP.
+                                Level {rankDetails.level} - Based on your <strong className="text-tertiary">Weekly XP</strong>.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -379,7 +379,7 @@ export default function ProfilePage() {
                             {badge.name}
                             </Badge>
                         )) : (
-                            <p className="text-sm text-muted-foreground">No badges earned yet. Complete missions to earn them.</p>
+                            <p className="text-sm text-muted-foreground">No badges earned yet. <strong className="text-accent">Complete missions</strong> to earn them.</p>
                         )}
                         </CardContent>
                     </Card>
@@ -389,7 +389,7 @@ export default function ProfilePage() {
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="space-y-1">
                     <CardTitle>Settings</CardTitle>
-                    <CardDescription>Manage your profile information.</CardDescription>
+                    <CardDescription>Manage your <strong className="text-primary">profile information</strong>.</CardDescription>
                     </div>
                     <Button variant="outline" size="sm" onClick={() => setSettingsOpen(!settingsOpen)}>
                     <Settings className="h-4 w-4 mr-2" />
@@ -428,7 +428,7 @@ export default function ProfilePage() {
                             <Progress value={progress} className="w-full h-3 bg-background [&>*]:bg-accent" />
                         </div>
                         <p className="text-xs text-muted-foreground">
-                            You must complete all mandatory missions and submit your details to be eligible for the airdrop.
+                           You must complete all <strong className="text-primary">mandatory missions</strong> and submit your details to be eligible for the <strong className="text-orange-400">airdrop</strong>.
                         </p>
                     </CardContent>
                     <CardFooter>
@@ -499,5 +499,3 @@ export default function ProfilePage() {
     </>
   );
 }
-
-    

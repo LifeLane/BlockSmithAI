@@ -88,7 +88,7 @@ const PerformanceReviewModal: FunctionComponent<PerformanceReviewModalProps> = (
             SHADOW's Performance Debrief
           </DialogTitle>
           <DialogDescription className="text-muted-foreground px-2">
-            A cognitive analysis of your recent trading patterns.
+            A cognitive analysis of your recent <strong className="text-tertiary">trading patterns</strong>.
           </DialogDescription>
         </DialogHeader>
         <div className="max-h-[60vh] overflow-y-auto px-6 pb-6">
@@ -100,5 +100,3 @@ const PerformanceReviewModal: FunctionComponent<PerformanceReviewModalProps> = (
 };
 
 export default PerformanceReviewModal;
-
-    

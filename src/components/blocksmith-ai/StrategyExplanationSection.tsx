@@ -102,8 +102,8 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
             </p>
                 <p className="text-xs text-muted-foreground mt-1">
                 {isCustomSignal ? 
-                    "You can review and execute it from the Signals page."
-                    : (isHoldSignal ? "No action is required." : "You can track its performance on the Portfolio page.")
+                    <>You can review and execute it from the <strong className="text-primary">Signals</strong> page.</>
+                    : (isHoldSignal ? "No action is required." : <>You can track its performance on the <strong className="text-tertiary">Portfolio</strong> page.</>)
                 }
             </p>
         </div>

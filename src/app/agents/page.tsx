@@ -329,7 +329,7 @@ export default function AgentsPage() {
                             Available Experience Points
                         </CardTitle>
                         <CardDescription>
-                            Use XP to upgrade your agents and unlock higher rewards.
+                            Use <strong className="text-tertiary">XP</strong> to upgrade your agents and unlock <strong className="text-accent">higher rewards</strong>.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -363,5 +363,3 @@ export default function AgentsPage() {
     </>
   );
 }
-
-    
