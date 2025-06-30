@@ -21,7 +21,7 @@
     --secondary-foreground: 220 13% 29%;
 
     --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --muted-foreground: 220 13% 29%;
     
     --accent: 270 90% 60%;
     --accent-foreground: 210 20% 98%;
@@ -128,7 +128,7 @@
 .interactive-card:hover {
     transform: translateY(-2px);
     animation: border-glow 3s linear infinite;
-    border-color: hsl(var(--foreground) / 0.3);
+    border-color: hsl(var(--foreground) / 0.5);
 }
 
 
@@ -182,5 +182,5 @@
 
 /* Custom styles for Tabs to add a glow effect on the active trigger */
 .data-\[state\=active\]\:shadow-active-tab-glow {
-    box-shadow: 0 2px 15px -3px hsl(var(--primary)/0.6), 0 4px 6px -4px hsl(var(--primary)/0.5);
+    box-shadow: 0 0 8px -2px hsl(var(--primary)/0.7), 0 0 15px -4px hsl(var(--accent)/0.7);
 }

@@ -109,7 +109,7 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
     const isBuy = position.signalType === 'BUY';
     
     return (
-        <Card className="bg-card/80 backdrop-blur-sm transition-all duration-300 interactive-card">
+        <Card className="bg-card/80 backdrop-blur-sm transition-all duration-300 interactive-card overflow-hidden">
             <CardHeader className="flex flex-row items-start justify-between pb-4">
                 <div>
                     <CardTitle className="text-lg flex items-center font-headline">
@@ -127,30 +127,36 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
                     )}
                 </div>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4 text-sm">
-                 <div className="flex flex-col p-2 space-y-1">
+            <CardContent className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                
+                <div className="space-y-1">
                     <span className="text-xs text-muted-foreground">Current Price</span>
-                    <span className="font-mono font-semibold text-primary">{currentPrice ? `$${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`: <Loader2 className="h-4 w-4 animate-spin"/>}</span>
+                    <div className="font-mono font-semibold text-primary">{currentPrice ? `$${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`: <Loader2 className="h-4 w-4 animate-spin"/>}</div>
                 </div>
-                <div className="flex flex-col p-2 space-y-1">
+
+                <div className="space-y-1">
                     <span className="text-xs text-muted-foreground flex items-center gap-1"><LogIn size={12}/>Entry Price</span>
-                    <span className="font-mono font-semibold text-primary">${position.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+                    <div className="font-mono font-semibold text-primary">${position.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</div>
                 </div>
-                <div className="flex flex-col p-2 space-y-1">
+
+                <div className="space-y-1">
                     <span className="text-xs text-muted-foreground flex items-center gap-1"><ShieldX size={12}/>Stop Loss</span>
-                    <span className="font-mono font-semibold text-red-400">{position.stopLoss ? `$${position.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : 'N/A'}</span>
+                    <div className="font-mono font-semibold text-red-400">{position.stopLoss ? `$${position.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : 'N/A'}</div>
                 </div>
-                <div className="flex flex-col p-2 space-y-1">
+
+                <div className="space-y-1">
                     <span className="text-xs text-muted-foreground flex items-center gap-1"><Target size={12}/>Take Profit</span>
-                    <span className="font-mono font-semibold text-green-400">{position.takeProfit ? `$${position.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : 'N/A'}</span>
+                    <div className="font-mono font-semibold text-green-400">{position.takeProfit ? `$${position.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : 'N/A'}</div>
                 </div>
-                <div className="flex flex-col p-2 space-y-1">
+
+                <div className="space-y-1">
                     <span className="text-xs text-muted-foreground">Unrealized PnL</span>
-                    <span className={`font-mono font-semibold ${pnlColor}`}>{currentPrice ? `$${pnl.toFixed(2)}` : '...'}</span>
+                    <div className={`font-mono font-semibold ${pnlColor}`}>{currentPrice ? `$${pnl.toFixed(2)}` : '...'}</div>
                 </div>
-                 <div className="flex flex-col p-2 space-y-1">
+
+                 <div className="space-y-1">
                     <span className="text-xs text-muted-foreground">Unrealized PnL %</span>
-                    <span className={`font-mono font-semibold ${pnlColor}`}>{currentPrice ? `${pnlPercent.toFixed(2)}%` : '...'}</span>
+                    <div className={`font-mono font-semibold ${pnlColor}`}>{currentPrice ? `${pnlPercent.toFixed(2)}%` : '...'}</div>
                 </div>
             </CardContent>
             <CardFooter className="pt-4">
