@@ -4,18 +4,18 @@ import { useState, useEffect, useCallback } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertTriangle, Bot, BrainCircuit, Play, Trash2, LogIn, ShieldX, Target } from 'lucide-react';
+import { Loader2, Bot, BrainCircuit, Play, Trash2, LogIn, ShieldX, Target } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import {
-  logSimulatedPositionAction,
-  type GenerateShadowChoiceStrategyOutput,
+  fetchPendingSignalsAction,
+  executeCustomSignalAction,
+  dismissCustomSignalAction,
+  type GeneratedSignal,
 } from '@/app/actions';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 
-type CustomSignal = GenerateShadowChoiceStrategyOutput & { id: string };
-
-const STORAGE_KEY = 'customSignals';
+type CustomSignal = GeneratedSignal;
 
 const CustomSignalCard = ({ signal, onExecute, onDismiss, isProcessing }: { signal: CustomSignal, onExecute: (s: CustomSignal) => void, onDismiss: (id: string) => void, isProcessing: boolean }) => {
     
@@ -79,22 +79,25 @@ export default function SignalsPage() {
     const { user, isLoading: isUserLoading } = useCurrentUser();
     const { toast } = useToast();
 
-    useEffect(() => {
-        try {
-            const savedSignalsJSON = localStorage.getItem(STORAGE_KEY);
-            if (savedSignalsJSON) {
-                setSignals(JSON.parse(savedSignalsJSON));
-            }
-        } catch (error) {
-            console.error("Failed to parse custom signals from localStorage", error);
+    const fetchSignals = useCallback(async (userId: string) => {
+        setIsLoading(true);
+        const result = await fetchPendingSignalsAction(userId);
+        if ('error' in result) {
+            toast({ title: "Error", description: result.error, variant: 'destructive' });
+            setSignals([]);
+        } else {
+            setSignals(result);
         }
         setIsLoading(false);
-    }, []);
+    }, [toast]);
 
-    const updateSignals = (newSignals: CustomSignal[]) => {
-        setSignals(newSignals);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newSignals));
-    };
+    useEffect(() => {
+        if (user?.id) {
+            fetchSignals(user.id);
+        } else if (!isUserLoading) {
+            setIsLoading(false);
+        }
+    }, [user, isUserLoading, fetchSignals]);
 
     const handleExecute = useCallback(async (signalToExecute: CustomSignal) => {
         if (!user) {
@@ -102,23 +105,30 @@ export default function SignalsPage() {
             return;
         }
         setProcessingId(signalToExecute.id);
-        const result = await logSimulatedPositionAction(user.id, signalToExecute);
+        const result = await executeCustomSignalAction(signalToExecute.id, user.id);
 
         if (result.error) {
             toast({ title: "Execution Failed", description: result.error, variant: "destructive" });
         } else {
-            toast({ title: "Signal Executed!", description: `${signalToExecute.symbol} position has been logged to your portfolio.`, variant: "default" });
-            const newSignals = signals.filter(s => s.id !== signalToExecute.id);
-            updateSignals(newSignals);
+            toast({ title: "Signal Submitted!", description: `${signalToExecute.symbol} position is now pending execution.`, variant: "default" });
+            fetchSignals(user.id); // Re-fetch signals
         }
         setProcessingId(null);
-    }, [user, signals, toast]);
+    }, [user, toast, fetchSignals]);
 
-    const handleDismiss = useCallback((signalId: string) => {
-        const newSignals = signals.filter(s => s.id !== signalId);
-        updateSignals(newSignals);
-        toast({ title: "Signal Dismissed", description: "The custom signal has been removed." });
-    }, [signals, toast]);
+    const handleDismiss = useCallback(async (signalId: string) => {
+        if (!user) return;
+        setProcessingId(signalId);
+        const result = await dismissCustomSignalAction(signalId, user.id);
+        
+        if (result.success) {
+            toast({ title: "Signal Dismissed", description: "The custom signal has been removed." });
+            fetchSignals(user.id); // Re-fetch signals
+        } else {
+            toast({ title: "Dismissal Failed", description: result.error, variant: 'destructive' });
+        }
+        setProcessingId(null);
+    }, [user, toast, fetchSignals]);
 
     const renderContent = () => {
         if (isLoading || isUserLoading) {
@@ -126,6 +136,30 @@ export default function SignalsPage() {
                 <div className="flex justify-center items-center h-64">
                     <Loader2 className="h-8 w-8 animate-spin text-primary"/>
                 </div>
+            );
+        }
+        
+        if (!user) {
+            // New state for non-logged-in users
+            return (
+                <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4 interactive-card">
+                     <CardHeader>
+                        <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">
+                            <Bot className="h-10 w-10 text-primary" />
+                        </div>
+                        <CardTitle className="mt-4">Please Log In</CardTitle>
+                        <CardDescription className="mt-2 text-base">
+                           You need to have a user session to view or generate signals.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <Button asChild className="glow-button">
+                             <Link href="/core">
+                                Go to Core Console
+                            </Link>
+                        </Button>
+                    </CardContent>
+                </Card>
             );
         }
 

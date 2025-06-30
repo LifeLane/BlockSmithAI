@@ -15,7 +15,7 @@ import {
   generateShadowChoiceStrategyAction,
   fetchMarketDataAction,
   fetchAllTradingSymbolsAction,
-  logSimulatedPositionAction,
+  logInstantPositionAction,
   type LiveMarketData,
   type FormattedSymbol,
   type GenerateTradingStrategyOutput,
@@ -157,7 +157,16 @@ export default function CoreConsolePage() {
         document.getElementById('results-block')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
 
-    if (currentUser?.status === 'Guest') {
+    if (!currentUser) {
+        setShowAirdropModal(true);
+        toast({
+          title: "User Session Required",
+          description: "Please sign up to generate signals and interact with SHADOW.",
+        });
+        return;
+    }
+
+    if (currentUser.status === 'Guest') {
       const today = new Date().toISOString().split('T')[0];
       let currentCount = analysisCount;
       if (lastAnalysisDate !== today) {
@@ -188,7 +197,7 @@ export default function CoreConsolePage() {
       const result = await fetchAndSetMarketData(symbol, true);
       if ('error' in result) {
         setStrategyError("Market data unavailable. Strategy generation aborted.");
-        if(currentUser?.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
+        if(currentUser.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
         if (isCustom) setIsLoadingCustom(false);
         else setIsLoadingInstant(false);
         return;
@@ -200,7 +209,7 @@ export default function CoreConsolePage() {
     let result;
 
     if (isCustom) {
-        result = await generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString });
+        result = await generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString }, currentUser.id);
     } else {
         result = await generateTradingStrategyAction({ symbol, tradingMode, riskProfile, marketData: marketDataForAIString });
     }
@@ -213,17 +222,12 @@ export default function CoreConsolePage() {
         description: result.error,
         variant: "destructive",
       });
-      if(currentUser?.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
+      if(currentUser.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
     } else {
       const resultWithId: AIStrategyOutput = { ...result, id: crypto.randomUUID() };
       setAiStrategy(resultWithId);
-      localStorage.setItem('shadowMindData', JSON.stringify(resultWithId));
       
       if (isCustom) {
-        // Save to localStorage for the Signals page
-        const existingSignalsJSON = localStorage.getItem('customSignals');
-        const existingSignals = existingSignalsJSON ? JSON.parse(existingSignalsJSON) : [];
-        localStorage.setItem('customSignals', JSON.stringify([resultWithId, ...existingSignals]));
         toast({
           title: <span className="text-accent">Custom Signal Generated!</span>,
           description: (
@@ -235,8 +239,8 @@ export default function CoreConsolePage() {
       } else {
          // Instant Signal: Log the position immediately
         const isHold = result.signal?.toUpperCase() === 'HOLD';
-        if (currentUser && !isUserLoading && !isHold) {
-            const logResult = await logSimulatedPositionAction(currentUser.id, resultWithId);
+        if (!isHold) {
+            const logResult = await logInstantPositionAction(currentUser.id, resultWithId as GenerateTradingStrategyOutput);
             if (logResult.error) {
                  toast({
                     title: <span className="text-accent">Instant Signal Generated!</span>,
@@ -259,7 +263,7 @@ export default function CoreConsolePage() {
     
     if (isCustom) setIsLoadingCustom(false);
     else setIsLoadingInstant(false);
-  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, isUserLoading, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast]);
+  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast]);
 
 
   const handleToggleChat = () => setIsChatOpen(prev => !prev);

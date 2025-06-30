@@ -15,7 +15,7 @@ import {
 
 
 // Node/Prisma Imports
-import { PrismaClient, type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, SignalType, PositionStatus, AgentStatus } from '@prisma/client';
+import { PrismaClient, type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, SignalType, PositionStatus, AgentStatus, GeneratedSignal, GeneratedSignalStatus } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { add, isBefore } from 'date-fns';
 
@@ -46,6 +46,7 @@ export type UserProfile = PrismaUser & {
     badges?: Badge[];
 };
 export type ChatMessage = AIChatMessage;
+export type { GeneratedSignal };
 export interface LeaderboardUser {
     id: string;
     username: string;
@@ -338,11 +339,40 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
     }
 }
 
-export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStrategyInput): Promise<GenerateShadowChoiceStrategyOutput | { error: string }> {
+export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStrategyInput, userId: string): Promise<GenerateShadowChoiceStrategyOutput | { error: string }> {
     try {
         const [strategy, disclaimer] = await Promise.all([ genShadowChoice(input), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate an autonomous strategy." };
-        return { ...strategy, symbol: input.symbol, disclaimer: disclaimer.disclaimer };
+
+        const resultWithDisclaimer = { ...strategy, symbol: input.symbol, disclaimer: disclaimer.disclaimer };
+        
+        // Save the generated signal to the database
+        await prisma.generatedSignal.create({
+            data: {
+                userId: userId,
+                symbol: resultWithDisclaimer.symbol,
+                signal: resultWithDisclaimer.signal,
+                entry_zone: resultWithDisclaimer.entry_zone,
+                stop_loss: resultWithDisclaimer.stop_loss,
+                take_profit: resultWithDisclaimer.take_profit,
+                confidence: resultWithDisclaimer.confidence,
+                risk_rating: resultWithDisclaimer.risk_rating,
+                gpt_confidence_score: resultWithDisclaimer.gpt_confidence_score,
+                sentiment: resultWithDisclaimer.sentiment,
+                currentThought: resultWithDisclaimer.currentThought,
+                shortTermPrediction: resultWithDisclaimer.shortTermPrediction,
+                sentimentTransition: resultWithDisclaimer.sentimentTransition,
+                chosenTradingMode: resultWithDisclaimer.chosenTradingMode,
+                chosenRiskProfile: resultWithDisclaimer.chosenRiskProfile,
+                strategyReasoning: resultWithDisclaimer.strategyReasoning,
+                analysisSummary: resultWithDisclaimer.analysisSummary,
+                newsAnalysis: resultWithDisclaimer.newsAnalysis,
+                disclaimer: resultWithDisclaimer.disclaimer,
+            }
+        });
+        
+        return resultWithDisclaimer;
+
     } catch (error: any) {
         return { error: `An unexpected error occurred in SHADOW's autonomous core: ${error.message}` };
     }
@@ -382,15 +412,10 @@ export async function claimMissionRewardAction(userId: string, missionId: string
     }
 }
 
-export async function logSimulatedPositionAction(
+export async function logInstantPositionAction(
   userId: string,
-  strategy: GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput
+  strategy: GenerateTradingStrategyOutput
 ): Promise<{ position: Position | null; error?: string; message?: string }> {
-  if (!strategy.signal) {
-    return { position: null, error: "Signal information is missing from the strategy." };
-  }
-
-  // Acknowledge HOLD signal without creating a position
   if (strategy.signal.toUpperCase() === 'HOLD') {
     return { position: null, message: "HOLD signal acknowledged. No position logged." };
   }
@@ -410,7 +435,7 @@ export async function logSimulatedPositionAction(
     
     const size = entryPrice < 1 ? 10000 : 1;
     
-    const tradingMode = 'tradingMode' in strategy ? strategy.tradingMode : ('chosenTradingMode' in strategy ? strategy.chosenTradingMode : 'Intraday');
+    const tradingMode = strategy.tradingMode || 'Intraday';
     let expirationDate: Date;
     switch (tradingMode) {
       case 'Scalper': expirationDate = add(new Date(), { hours: 1 }); break;
@@ -420,15 +445,13 @@ export async function logSimulatedPositionAction(
       default: expirationDate = add(new Date(), { hours: 24 }); break;
     }
 
-    const isCustomSignal = 'chosenTradingMode' in strategy;
-
     const newPosition = await prisma.position.create({
       data: {
         userId,
         symbol: strategy.symbol,
         signalType: strategy.signal === 'BUY' ? SignalType.BUY : SignalType.SELL,
-        status: isCustomSignal ? PositionStatus.PENDING : PositionStatus.OPEN,
-        openTimestamp: isCustomSignal ? null : new Date(),
+        status: PositionStatus.OPEN,
+        openTimestamp: new Date(),
         entryPrice,
         size,
         stopLoss,
@@ -440,8 +463,74 @@ export async function logSimulatedPositionAction(
 
     return { position: newPosition };
   } catch (error: any) {
-    console.error("Error in logSimulatedPositionAction:", error);
+    console.error("Error in logInstantPositionAction:", error);
     return { position: null, error: `Failed to log position: ${error.message}` };
+  }
+}
+
+export async function executeCustomSignalAction(
+  signalId: string,
+  userId: string
+): Promise<{ position: Position | null; error?: string }> {
+  try {
+    const signal = await prisma.generatedSignal.findUnique({
+      where: { id: signalId, userId: userId },
+    });
+
+    if (!signal) {
+      return { position: null, error: "Signal not found or you do not have permission to execute it." };
+    }
+
+    if (signal.status !== 'PENDING_EXECUTION') {
+        return { position: null, error: `Signal has already been ${signal.status.toLowerCase()}.` };
+    }
+
+    const entryPrice = parsePrice(signal.entry_zone);
+    const stopLoss = parsePrice(signal.stop_loss);
+    const takeProfit = parsePrice(signal.take_profit);
+
+    if (isNaN(entryPrice) || isNaN(stopLoss) || isNaN(takeProfit)) {
+      return { position: null, error: "Invalid price format in signal." };
+    }
+    
+    const size = entryPrice < 1 ? 10000 : 1;
+    
+    const tradingMode = signal.chosenTradingMode;
+    let expirationDate: Date;
+    switch (tradingMode) {
+      case 'Scalper': expirationDate = add(new Date(), { hours: 1 }); break;
+      case 'Sniper': expirationDate = add(new Date(), { hours: 4 }); break;
+      case 'Intraday': expirationDate = add(new Date(), { hours: 12 }); break;
+      case 'Swing': expirationDate = add(new Date(), { days: 3 }); break;
+      default: expirationDate = add(new Date(), { hours: 24 }); break;
+    }
+
+    const newPosition = await prisma.position.create({
+      data: {
+        userId,
+        symbol: signal.symbol,
+        signalType: signal.signal === 'BUY' ? SignalType.BUY : SignalType.SELL,
+        status: PositionStatus.PENDING, // This is key - it's a pending order now.
+        openTimestamp: null,
+        entryPrice,
+        size,
+        stopLoss,
+        takeProfit,
+        expirationTimestamp: expirationDate,
+        strategyId: signal.id,
+      }
+    });
+
+    // Update the signal status to EXECUTED
+    await prisma.generatedSignal.update({
+        where: { id: signalId },
+        data: { status: GeneratedSignalStatus.EXECUTED }
+    });
+
+    return { position: newPosition };
+  } catch (error: any) {
+    console.error("Error in executeCustomSignalAction:", error);
+    return { position: null, error: `Failed to execute signal: ${error.message}` };
   }
 }
 
@@ -583,7 +672,7 @@ export async function deployAgentAction(userId: string, agentId: string): Promis
         if (userAgent) {
             await prisma.userAgent.update({ where: { id: userAgent.id }, data: { status: AgentStatus.DEPLOYED, deploymentEndTime } });
         } else {
-            await prisma.userAgent.create({ data: { id: randomUUID(), userId, agentId, level: 1, status: AgentStatus.DEPLOYED, deploymentEndTime } });
+            await prisma.userAgent.create({ data: { userId, agentId, level: 1, status: AgentStatus.DEPLOYED, deploymentEndTime } });
         }
         return { success: true };
     } catch (error: any) {
@@ -633,8 +722,7 @@ export async function upgradeAgentAction(userId: string, agentId: string): Promi
         if (userAgent) {
             await prisma.userAgent.update({ where: { id: userAgent.id }, data: { level: newLevel } });
         } else {
-            // This case allows a user to "buy" an agent directly to a higher level if they have enough XP, though UI doesn't expose this directly.
-            await prisma.userAgent.create({ data: { id: randomUUID(), userId, agentId, level: newLevel, status: AgentStatus.IDLE } });
+            await prisma.userAgent.create({ data: { userId, agentId, level: newLevel, status: AgentStatus.IDLE } });
         }
         await prisma.user.update({ where: { id: userId }, data: { weeklyPoints: { decrement: currentLevelData.upgradeCost } } });
         return { success: true, message: `Agent upgraded to Level ${newLevel}!` };
@@ -699,7 +787,6 @@ export async function generatePerformanceReviewAction(userId: string): Promise<P
             return { error: 'Insufficient trade history. At least 5 closed trades (BUY/SELL) are required for a meaningful review.' };
         }
 
-        // The stats action returns more fields than the AI needs. Let's narrow it down.
         const statsForAI = {
             totalTrades: statsResult.totalTrades,
             winRate: statsResult.winRate,
@@ -709,7 +796,6 @@ export async function generatePerformanceReviewAction(userId: string): Promise<P
             worstTradePnl: statsResult.worstTradePnl,
         };
 
-        // The trade history also needs to be cleaned up for the AI.
         const historyForAI = filteredTradeHistory.map(t => ({
             id: t.id,
             symbol: t.symbol,
@@ -826,5 +912,45 @@ export async function cancelPendingPositionAction(positionId: string): Promise<{
     } catch (error: any) {
         console.error("Error in cancelPendingPositionAction:", error);
         return { success: false, error: `Failed to cancel position: ${error.message}` };
+    }
+}
+
+export async function fetchPendingSignalsAction(userId: string): Promise<GeneratedSignal[] | { error: string }> {
+    if (!userId) {
+        return { error: 'User not found.' };
+    }
+    try {
+        const signals = await prisma.generatedSignal.findMany({
+            where: {
+                userId,
+                status: GeneratedSignalStatus.PENDING_EXECUTION
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+        return signals;
+    } catch (error: any) {
+        return { error: `Failed to fetch signals: ${error.message}` };
+    }
+}
+
+export async function dismissCustomSignalAction(signalId: string, userId: string): Promise<{ success: boolean, error?: string }> {
+     try {
+        const result = await prisma.generatedSignal.deleteMany({
+            where: {
+                id: signalId,
+                userId: userId,
+                status: GeneratedSignalStatus.PENDING_EXECUTION
+            }
+        });
+
+        if (result.count === 0) {
+            return { success: false, error: 'Signal not found or could not be dismissed.' };
+        }
+        
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: `Failed to dismiss signal: ${error.message}` };
     }
 }

@@ -1,3 +1,4 @@
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -11,68 +12,37 @@ datasource db {
 }
 
 model User {
-  id                String      @id @default(uuid())
-  username          String      @unique
-  shadowId          String      @unique
+  id                String   @id @default(cuid())
+  username          String
+  shadowId          String   @unique
   status            String
-  weeklyPoints      Int         @default(0)
-  airdropPoints     Int         @default(0)
+  weeklyPoints      Int      @default(0)
+  airdropPoints     Int      @default(0)
   wallet_address    String?
   wallet_type       String?
-  email             String?     @unique
+  email             String?
   phone             String?
   x_handle          String?
   telegram_handle   String?
   youtube_handle    String?
   claimedMissions   String[]
   claimedSpecialOps String[]
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-  positions         Position[]
-  agents            UserAgent[]
-  badges            Badge[]     @relation("UserBadges")
+
+  positions        Position[]
+  badges           Badge[]           @relation("UserBadges")
+  userAgents       UserAgent[]
+  generatedSignals GeneratedSignal[]
 }
 
 model Badge {
-  id    String @id @default(uuid())
+  id    String @id @default(cuid())
   name  String @unique
   users User[] @relation("UserBadges")
-}
-
-model UserAgent {
-  id                String      @id @default(uuid())
-  userId            String
-  agentId           String
-  level             Int
-  status            AgentStatus
-  deploymentEndTime DateTime?
-  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, agentId])
-}
-
-model Position {
-  id                  String         @id @default(uuid())
-  userId              String
-  symbol              String
-  signalType          SignalType
-  status              PositionStatus
-  entryPrice          Float
-  size                Float
-  stopLoss            Float?
-  takeProfit          Float?
-  strategyId          String?
-  pnl                 Float?
-  openTimestamp       DateTime?
-  closeTimestamp      DateTime?
-  expirationTimestamp DateTime?
-  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum SignalType {
   BUY
   SELL
-  HOLD
 }
 
 enum PositionStatus {
@@ -81,7 +51,71 @@ enum PositionStatus {
   CLOSED
 }
 
+model Position {
+  id                  String         @id @default(cuid())
+  userId              String
+  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbol              String
+  signalType          SignalType
+  status              PositionStatus
+  entryPrice          Float
+  size                Float          @default(1)
+  stopLoss            Float
+  takeProfit          Float
+  closePrice          Float?
+  pnl                 Float?
+  openTimestamp       DateTime?
+  closeTimestamp      DateTime?
+  expirationTimestamp DateTime?
+  strategyId          String?
+}
+
 enum AgentStatus {
   IDLE
   DEPLOYED
+}
+
+model UserAgent {
+  id                String      @id @default(cuid())
+  userId            String
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agentId           String
+  level             Int
+  status            AgentStatus
+  deploymentEndTime DateTime?
+
+  @@unique([userId, agentId])
+}
+
+enum GeneratedSignalStatus {
+  PENDING_EXECUTION
+  EXECUTED
+  DISMISSED
+}
+
+model GeneratedSignal {
+  id                   String                @id @default(cuid())
+  userId               String
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt            DateTime              @default(now())
+  status               GeneratedSignalStatus @default(PENDING_EXECUTION)
+  // Fields from the strategy output
+  symbol               String
+  signal               String // BUY, SELL, HOLD
+  entry_zone           String
+  stop_loss            String
+  take_profit          String
+  confidence           String
+  risk_rating          String
+  gpt_confidence_score String
+  sentiment            String
+  currentThought       String
+  shortTermPrediction  String
+  sentimentTransition  String?
+  chosenTradingMode    String
+  chosenRiskProfile    String
+  strategyReasoning    String
+  analysisSummary      String
+  newsAnalysis         String?
+  disclaimer           String
 }
