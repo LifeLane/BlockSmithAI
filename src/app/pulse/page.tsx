@@ -437,7 +437,8 @@ export default function PortfolioPage() {
         if (isFetchingRef.current) return;
         isFetchingRef.current = true;
         
-        if (positions.length === 0 && tradeHistory.length === 0) {
+        const initialLoad = positions.length === 0 && tradeHistory.length === 0;
+        if (initialLoad) {
             setIsLoadingData(true);
         }
 
@@ -453,7 +454,7 @@ export default function PortfolioPage() {
 
             if (currentPositions.length === 0) {
                  isFetchingRef.current = false;
-                 setIsLoadingData(false);
+                 if (initialLoad) setIsLoadingData(false);
                  setPositions([]);
                  return;
             }
@@ -544,10 +545,10 @@ export default function PortfolioPage() {
         } catch (e: any) {
              console.error("Error in simulation cycle:", e);
         } finally {
-            setIsLoadingData(false);
+            if (initialLoad) setIsLoadingData(false);
             isFetchingRef.current = false;
         }
-    }, [showCloseToast, toast, positions.length, tradeHistory.length]);
+    }, [showCloseToast, toast]);
 
     const handleManualClose = useCallback(async (positionId: string, closePrice: number) => {
         if (!currentUser) return;

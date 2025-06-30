@@ -235,8 +235,7 @@ export default function CoreConsolePage() {
       });
       if(currentUser.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
     } else {
-      const resultWithId: AIStrategyOutput = { ...result, id: crypto.randomUUID() };
-      setAiStrategy(resultWithId);
+      setAiStrategy(result);
       
       if (isCustom) {
         toast({
@@ -251,7 +250,7 @@ export default function CoreConsolePage() {
          // Instant Signal: Log the position immediately
         const isHold = result.signal?.toUpperCase() === 'HOLD';
         if (!isHold) {
-            const logResult = await logInstantPositionAction(currentUser.id, resultWithId as GenerateTradingStrategyOutput);
+            const logResult = await logInstantPositionAction(currentUser.id, result as GenerateTradingStrategyOutput);
             if (logResult.error) {
                  toast({
                     title: <span className="text-accent">Instant Signal Generated!</span>,
