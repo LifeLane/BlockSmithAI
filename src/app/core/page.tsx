@@ -293,7 +293,7 @@ export default function CoreConsolePage() {
                     {isLimitReached ? (
                         <Button
                             onClick={() => setShowAirdropModal(true)}
-                            className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out glow-button"
+                            className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out glow-button"
                         >
                             <Unlock className="mr-2 h-5 w-5" />
                             Join Network for Unlimited Signals
@@ -303,7 +303,7 @@ export default function CoreConsolePage() {
                             <Button
                                 onClick={() => handleGenerateStrategy(false)}
                                 disabled={isButtonDisabled}
-                                className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
+                                className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
                             >
                                 {isLoadingStrategy ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                     : isUserLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -314,7 +314,7 @@ export default function CoreConsolePage() {
                             <Button
                                 onClick={() => handleGenerateStrategy(true)}
                                 disabled={isButtonDisabled}
-                                className="w-full font-semibold py-3 text-base shadow-lg transition-all duration-300 ease-in-out shadow-choice-button"
+                                className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out shadow-choice-button"
                             >
                                 {isLoadingShadowChoice ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
                                 {isLoadingShadowChoice ? "SHADOW is Deciding..." : "Invoke SHADOW's Choice"}
