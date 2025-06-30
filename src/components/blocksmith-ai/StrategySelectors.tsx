@@ -79,7 +79,7 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
   }, [symbol, symbols, isLoadingSymbols]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-card rounded-lg shadow-md">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-card rounded-lg border border-border/50">
       <div className="md:col-span-1">
         <Label htmlFor="symbol-select" className="mb-2 block text-sm font-medium text-muted-foreground flex items-center">
           <TargetIcon className="mr-2 h-4 w-4 text-primary" />
@@ -91,7 +91,7 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
               variant="outline"
               role="combobox"
               aria-expanded={openPopover}
-              className="w-full justify-between text-sm bg-secondary text-secondary-foreground border-border hover:bg-primary hover:text-primary-foreground hover:border-primary focus:border-primary focus:ring-primary"
+              className="w-full justify-between text-sm bg-input text-foreground border-border hover:bg-input hover:border-accent focus:border-accent focus:ring-accent"
               id="symbol-select"
               disabled={isLoadingSymbols && symbols.length === 0}
             >
@@ -150,7 +150,7 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
         <Select value={tradingMode} onValueChange={onTradingModeChange}>
           <SelectTrigger 
             id="trading-mode-select" 
-            className="w-full text-sm bg-secondary text-secondary-foreground border-border hover:bg-accent hover:text-accent-foreground hover:border-accent focus:border-accent focus:ring-accent"
+            className="w-full text-sm bg-input text-foreground border-border hover:bg-input hover:border-accent focus:border-accent focus:ring-accent"
           >
             <SelectValue placeholder="Select mode" />
           </SelectTrigger>
@@ -171,7 +171,7 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
         <Select value={riskProfile} onValueChange={onRiskProfileChange}>
           <SelectTrigger 
             id="risk-profile-select" 
-            className="w-full text-sm bg-secondary text-secondary-foreground border-border hover:bg-tertiary hover:text-tertiary-foreground hover:border-tertiary focus:border-tertiary focus:ring-tertiary"
+            className="w-full text-sm bg-input text-foreground border-border hover:bg-input hover:border-accent focus:border-accent focus:ring-accent"
           >
             <SelectValue placeholder="Select risk profile" />
           </SelectTrigger>

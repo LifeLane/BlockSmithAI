@@ -55,12 +55,12 @@ interface StatCardProps {
 }
 
 const StatCard: FunctionComponent<StatCardProps> = ({ title, value, icon, className = '', valueClassName = '', titleClassName = '' }) => (
-  <div className={`p-4 bg-background/50 rounded-lg shadow border border-border/50 flex flex-col items-center text-center ${className}`}>
-    <div className={`flex items-center text-sm text-muted-foreground mb-1 ${titleClassName}`}>
-      {icon && <span className="mr-2 opacity-80">{icon}</span>}
+  <div className={`flex flex-col items-center justify-center p-3 bg-background/50 rounded-lg text-center ${className}`}>
+    <div className={`flex items-center text-xs text-muted-foreground mb-1 ${titleClassName}`}>
+      {icon && <span className="mr-1.5 opacity-80">{icon}</span>}
       {title}
     </div>
-    <div className={`text-xl font-bold text-foreground ${valueClassName}`}>
+    <div className={`text-lg font-bold font-mono text-foreground ${valueClassName}`}>
       {value}
     </div>
   </div>
@@ -186,7 +186,7 @@ Analysis Timestamp: ${currentDateTime}
 
   if (isLoading) {
     return (
-      <Card className="shadow-lg w-full bg-card border-border transition-all duration-300 ease-in-out">
+      <Card className="shadow-lg w-full bg-card/80 backdrop-blur-sm border-0 transition-all duration-300 ease-in-out">
         <CardHeader className="items-center text-center">
            <Skeleton className="h-8 w-3/4 mb-2 bg-muted" />
            <Skeleton className="h-5 w-1/2 bg-muted" />
@@ -195,9 +195,7 @@ Analysis Timestamp: ${currentDateTime}
           <div className="flex justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
           </div>
-          <Skeleton className="h-6 w-full mt-4 bg-muted" />
-          <Skeleton className="h-10 w-full mt-2 bg-muted" />
-          <Skeleton className="h-20 w-full mt-2 bg-muted" />
+          <p className="text-center text-muted-foreground font-semibold animate-pulse">SHADOW is analyzing data streams...</p>
         </CardContent>
       </Card>
     );
@@ -205,17 +203,17 @@ Analysis Timestamp: ${currentDateTime}
 
   if (error) {
     return (
-      <Card className="shadow-lg border-destructive w-full bg-card transition-all duration-300 ease-in-out">
+      <Card className="shadow-lg border border-destructive/50 w-full bg-card transition-all duration-300 ease-in-out">
         <CardHeader className="items-center text-center">
           <CardTitle className="flex items-center text-destructive text-xl font-headline">
             <AlertTriangle className="mr-2 h-6 w-6" />
-            SHADOW's Analysis <span className="text-red-400 ml-1">Disrupted!</span>
+            Analysis Disrupted
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center p-6">
           <p className="text-destructive-foreground text-base">{error}</p>
           <p className="text-sm text-muted-foreground mt-3">
-            My <strong className="text-accent">quantum awareness</strong> encounters <strong className="text-orange-500">interference</strong>. The signal is unclear. Retry, or perhaps the market itself is too <strong className="text-purple-400">volatile</strong> for current parameters.
+            My quantum awareness encounters interference. The signal is unclear. Please try again.
           </p>
         </CardContent>
       </Card>
@@ -241,7 +239,7 @@ Analysis Timestamp: ${currentDateTime}
     case 'SELL':
     case 'SHORT':
       signalIcon = <ArrowDownCircle className="h-6 w-6 text-red-400" />;
-      signalColorCls = "text-red-400 font-bold";
+      signalColorCls = "text-destructive font-bold";
       signalTextFormatted = "SELL / SHORT"
       break;
     case 'HOLD':
@@ -255,11 +253,11 @@ Analysis Timestamp: ${currentDateTime}
 
 
   return (
-    <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out animated-border-glow">
+    <Card className="shadow-xl w-full bg-card border-0 transition-all duration-300 ease-in-out">
       <CardHeader className="text-center pb-4 pt-5">
-        <CardTitle className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground flex items-center justify-center flex-wrap font-headline break-words">
-           <Unlock className="mr-1.5 sm:mr-3 h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 text-primary shrink-0" />
-          SHADOW's <span className="text-primary mx-1 sm:mx-1.5">Insight</span> Unveiled: <span className="text-accent ml-1 sm:ml-1.5 font-extrabold">{symbol}</span>
+        <CardTitle className="text-2xl sm:text-3xl font-bold text-foreground flex items-center justify-center flex-wrap font-headline break-words">
+           <Unlock className="mr-2 sm:mr-3 h-6 w-6 sm:h-8 sm:w-8 text-primary shrink-0" />
+          SHADOW's Insight: <span className="text-accent ml-1.5 sm:ml-2 font-extrabold">{symbol}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 px-2 sm:px-4 pb-5">
@@ -269,7 +267,7 @@ Analysis Timestamp: ${currentDateTime}
             value={signalTextFormatted}
             icon={signalIcon}
             valueClassName={signalColorCls}
-            className="sm:col-span-1 lg:col-span-1 border-primary/50"
+            className="border-primary/50"
           />
           <StatCard
             title="Current Price"
@@ -291,8 +289,8 @@ Analysis Timestamp: ${currentDateTime}
               />
               <StatCard
                 title="Stop Loss"
-                value={<span className="text-red-400">{formatPrice(strategy.stop_loss)}</span>}
-                icon={<ShieldX size={20} className="text-red-400"/>}
+                value={<span className="text-destructive">{formatPrice(strategy.stop_loss)}</span>}
+                icon={<ShieldX size={20} className="text-destructive"/>}
               />
               <StatCard
                 title="Take Profit"
@@ -304,7 +302,7 @@ Analysis Timestamp: ${currentDateTime}
         </div>
 
         {isHoldSignal && (
-             <div className="mt-4 p-4 bg-background/40 border-l-4 border-orange-400 rounded-r-lg">
+             <div className="mt-4 p-4 bg-secondary border-l-4 border-orange-400 rounded-r-lg">
                 <div className="flex">
                     <div className="flex-shrink-0">
                         <Info className="h-5 w-5 text-orange-400" />
@@ -337,7 +335,7 @@ Analysis Timestamp: ${currentDateTime}
         </div>
         
         {'strategyReasoning' in strategy && strategy.strategyReasoning && (
-            <Card className="bg-background/40 border-tertiary/70 shadow-inner">
+            <Card className="bg-secondary border-tertiary/70 shadow-inner">
                 <CardHeader className="pb-3">
                     <CardTitle className="flex items-center text-lg text-tertiary">
                         <BrainCircuit className="mr-3 h-6 w-6"/>
@@ -347,11 +345,11 @@ Analysis Timestamp: ${currentDateTime}
                 <CardContent className="space-y-4">
                     <p className="text-sm text-muted-foreground italic border-l-2 border-tertiary pl-3">"{strategy.strategyReasoning}"</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                        <div className="p-3 bg-secondary/50 rounded-md">
+                        <div className="p-3 bg-background/50 rounded-md">
                             <span className="font-semibold text-foreground">Chosen Mode: </span> 
                             <span className="text-tertiary font-bold">{('chosenTradingMode' in strategy && strategy.chosenTradingMode) || 'N/A'}</span>
                         </div>
-                        <div className="p-3 bg-secondary/50 rounded-md">
+                        <div className="p-3 bg-background/50 rounded-md">
                             <span className="font-semibold text-foreground">Chosen Risk: </span>
                             <span className="text-tertiary font-bold">{('chosenRiskProfile' in strategy && strategy.chosenRiskProfile) || 'N/A'}</span>
                         </div>
@@ -361,7 +359,7 @@ Analysis Timestamp: ${currentDateTime}
         )}
 
         {strategy.analysisSummary && (
-            <Card className="bg-background/40 border-primary/70 shadow-inner">
+            <Card className="bg-secondary border-primary/70 shadow-inner">
                 <CardHeader className="pb-3">
                     <CardTitle className="flex items-center text-lg text-primary">
                         <Zap className="mr-3 h-6 w-6"/>
@@ -375,7 +373,7 @@ Analysis Timestamp: ${currentDateTime}
         )}
 
         {strategy.newsAnalysis && (
-            <Card className="bg-background/40 border-purple-400/70 shadow-inner">
+            <Card className="bg-secondary border-purple-400/70 shadow-inner">
                 <CardHeader className="pb-3">
                     <CardTitle className="flex items-center text-lg text-purple-400">
                         <Newspaper className="mr-3 h-6 w-6"/>
@@ -409,10 +407,10 @@ Analysis Timestamp: ${currentDateTime}
         </div>
 
         {strategy.disclaimer && (
-          <div className="mt-6 p-4 border-t border-primary/30 bg-background/50 rounded-lg shadow">
-            <p className="text-xs text-yellow-400 italic font-code text-center flex items-center justify-center">
-              <MessageSquareHeart className="mr-2 h-4 w-4 text-yellow-400 flex-shrink-0" />
-              "SHADOW's Edict: {strategy.disclaimer}"
+          <div className="mt-6 p-4 border-t border-border/50 bg-secondary/50 rounded-lg shadow">
+            <p className="text-xs text-muted-foreground italic font-code text-center flex items-center justify-center">
+              <MessageSquareHeart className="mr-2 h-4 w-4 text-tertiary flex-shrink-0" />
+              <span className="text-tertiary font-semibold mr-1">SHADOW's Edict:</span> {strategy.disclaimer}
             </p>
           </div>
         )}

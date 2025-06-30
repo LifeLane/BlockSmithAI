@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import StrategySelectors from '@/components/blocksmith-ai/StrategySelectors';
 import StrategyExplanationSection from '@/components/blocksmith-ai/StrategyExplanationSection';
@@ -26,9 +26,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { Loader2, Sparkles, BrainCircuit, Unlock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useGSAP } from '@gsap/react';
-import gsap from 'gsap';
-
 
 type AIStrategyOutput = (AIOutputType | GenerateShadowChoiceStrategyOutput) & { 
   id?: string;
@@ -69,25 +66,7 @@ export default function CoreConsolePage() {
   const [lastAnalysisDate, setLastAnalysisDate] = useState<string>('');
 
   const { toast } = useToast();
-  const mainContentRef = useRef<HTMLDivElement>(null);
   
-  // GSAP Animations
-  useGSAP(() => {
-    gsap.from("#market-data-display", { opacity: 0, y: -20, duration: 0.5, ease: 'power2.out' });
-    gsap.from("#strategy-selectors", { opacity: 0, y: -20, duration: 0.5, delay: 0.2, ease: 'power2.out' });
-    gsap.from(".generate-buttons", { opacity: 0, y: 20, duration: 0.5, delay: 0.4, stagger: 0.1, ease: 'power2.out' });
-  }, { scope: mainContentRef });
-
-  useEffect(() => {
-      if (aiStrategy || strategyError) {
-          gsap.fromTo("#results-block", 
-              { opacity: 0, y: 50 }, 
-              { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', delay: 0.1 }
-          );
-      }
-  }, [aiStrategy, strategyError]);
-
-
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -284,7 +263,7 @@ export default function CoreConsolePage() {
   return (
     <>
       <AppHeader />
-      <div ref={mainContentRef} className="container mx-auto px-4 py-4 flex flex-col w-full min-h-[calc(100vh-140px)]">
+      <div className="container mx-auto px-4 py-4 flex flex-col w-full min-h-[calc(100vh-140px)]">
         
         <div className={cn(
             "w-full space-y-4 transition-all duration-500",

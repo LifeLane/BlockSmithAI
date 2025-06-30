@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster"
 import BottomNav from '@/components/layout/BottomNav';
 import { ApiKeyProvider } from '@/context/ApiKeyContext';
 import { ThemeProvider } from "@/components/theme-provider";
-import ParticleBackground from '@/components/blocksmith-ai/ParticleBackground';
 
 export const metadata: Metadata = {
   title: 'BlockShadow',
@@ -33,8 +32,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ApiKeyProvider>
-            <ParticleBackground />
-            <div className="text-foreground bg-transparent min-h-screen flex flex-col relative z-10">
+            <div className="text-foreground bg-background min-h-screen flex flex-col">
               <main className="flex-grow pb-16">
                 {children}
               </main>
