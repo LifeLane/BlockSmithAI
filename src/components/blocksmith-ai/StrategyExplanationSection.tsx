@@ -433,5 +433,3 @@ Analysis Timestamp: ${currentDateTime}
 };
 
 export default StrategyExplanationSection;
-
-    
