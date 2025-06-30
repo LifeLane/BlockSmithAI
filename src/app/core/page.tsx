@@ -1,15 +1,15 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import StrategySelectors from '@/components/blocksmith-ai/StrategySelectors';
-import StrategyExplanationSection from '@/components/blocksmith-ai/StrategyExplanationSection';
-import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
 import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import ShadowMindInterface from '@/components/blocksmith-ai/ShadowMindInterface';
 import {
   generateTradingStrategyAction,
   generateShadowChoiceStrategyAction,
@@ -23,12 +23,18 @@ import {
 } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Sparkles, BrainCircuit, Unlock } from 'lucide-react';
+import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 type AIStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
   id?: string;
+  gpt_confidence_score?: string;
+  confidence?: string;
+  sentiment?: string;
+  risk_rating?: string;
+  currentThought?: string;
+  shortTermPrediction?: string;
 };
 
 const DEFAULT_SYMBOLS: FormattedSymbol[] = [
@@ -280,6 +286,59 @@ export default function CoreConsolePage() {
   const showResults = aiStrategy || isLoadingInstant || isLoadingCustom || strategyError;
   const isLimitReached = currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES;
 
+  const renderResults = () => {
+    if (isLoadingInstant || isLoadingCustom) {
+      return (
+        <Card className="shadow-lg w-full bg-card/80 backdrop-blur-sm border-0 transition-all duration-300 ease-in-out">
+          <CardHeader className="items-center text-center">
+             <Skeleton className="h-8 w-3/4 mb-2 bg-muted" />
+             <Skeleton className="h-5 w-1/2 bg-muted" />
+          </CardHeader>
+          <CardContent className="space-y-4 p-6">
+            <div className="flex justify-center">
+              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            </div>
+            <p className="text-center text-muted-foreground font-semibold animate-pulse">SHADOW is analyzing data streams...</p>
+          </CardContent>
+        </Card>
+      );
+    }
+  
+    if (strategyError) {
+      return (
+        <Card className="shadow-lg border border-destructive/50 w-full bg-card transition-all duration-300 ease-in-out">
+          <CardHeader className="items-center text-center">
+            <CardTitle className="flex items-center text-destructive text-xl font-headline">
+              <AlertTriangle className="mr-2 h-6 w-6" />
+              Analysis Disrupted
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center p-6">
+            <p className="text-destructive-foreground text-base">{strategyError}</p>
+            <p className="text-sm text-muted-foreground mt-3">
+              My quantum awareness encounters interference. The signal is unclear. Please try again.
+            </p>
+          </CardContent>
+        </Card>
+      );
+    }
+  
+    if (aiStrategy) {
+      return (
+        <ShadowMindInterface
+          shadowScore={aiStrategy.gpt_confidence_score}
+          confidence={aiStrategy.confidence}
+          sentiment={aiStrategy.sentiment}
+          riskRating={aiStrategy.risk_rating}
+          currentThought={aiStrategy.currentThought}
+          prediction={aiStrategy.shortTermPrediction}
+        />
+      );
+    }
+  
+    return null;
+  }
+
   return (
     <>
       <AppHeader />
@@ -363,16 +422,7 @@ export default function CoreConsolePage() {
 
         {showResults && (
             <div id="results-block" className="w-full space-y-6 mt-8">
-                <div className="w-full relative space-y-6">
-                    <StrategyExplanationSection
-                        strategy={aiStrategy}
-                        liveMarketData={liveMarketData} 
-                        isLoading={isLoadingInstant || isLoadingCustom}
-                        error={strategyError}
-                        symbol={symbol}
-                        isCustomSignal={isCustomSignal}
-                    />
-                </div>
+                {renderResults()}
             </div>
         )}
         
