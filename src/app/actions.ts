@@ -15,14 +15,14 @@ import {
 
 
 // Node/Prisma Imports
-import { PrismaClient, type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, SignalType, PositionStatus } from '@prisma/client';
+import { PrismaClient, type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, SignalType, PositionStatus, AgentStatus } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { add, isBefore } from 'date-fns';
 
 
 // Initialize Prisma
 const prisma = new PrismaClient({
-    datasourceUrl: process.env.DIRECT_URL || process.env.DATABASE_URL,
+    datasourceUrl: process.env.DATABASE_URL,
 });
 
 // Helper function to robustly parse price strings, which could be a single number or a range.
@@ -485,7 +485,7 @@ export async function fetchPendingAndOpenPositionsAction(userId: string): Promis
         return await prisma.position.findMany({ 
             where: { 
                 userId, 
-                status: { in: ['OPEN'] }
+                status: { in: ['PENDING', 'OPEN'] }
             }, 
             orderBy: { id: 'desc' } 
         });
@@ -579,9 +579,9 @@ export async function deployAgentAction(userId: string, agentId: string): Promis
 
         const deploymentEndTime = add(new Date(), { seconds: levelData.deployDuration });
         if (userAgent) {
-            await prisma.userAgent.update({ where: { id: userAgent.id }, data: { status: 'DEPLOYED', deploymentEndTime } });
+            await prisma.userAgent.update({ where: { id: userAgent.id }, data: { status: AgentStatus.DEPLOYED, deploymentEndTime } });
         } else {
-            await prisma.userAgent.create({ data: { id: randomUUID(), userId, agentId, level: 1, status: 'DEPLOYED', deploymentEndTime } });
+            await prisma.userAgent.create({ data: { id: randomUUID(), userId, agentId, level: 1, status: AgentStatus.DEPLOYED, deploymentEndTime } });
         }
         return { success: true };
     } catch (error: any) {
@@ -599,7 +599,7 @@ export async function claimAgentRewardsAction(userId: string, agentId: string): 
         const levelData = agentDef?.levels.find(l => l.level === userAgent.level);
         if (!agentDef || !levelData) return { success: false, message: "Agent data not found." };
 
-        await prisma.userAgent.update({ where: { id: userAgent.id }, data: { status: 'IDLE', deploymentEndTime: null } });
+        await prisma.userAgent.update({ where: { id: userAgent.id }, data: { status: AgentStatus.IDLE, deploymentEndTime: null } });
         await prisma.user.update({ where: { id: userId }, data: { weeklyPoints: { increment: levelData.xpReward }, airdropPoints: { increment: levelData.bsaiReward } } });
         
         const logResult = await generateMissionLog({ agentName: agentDef.name, agentLevel: userAgent.level });
@@ -632,7 +632,7 @@ export async function upgradeAgentAction(userId: string, agentId: string): Promi
             await prisma.userAgent.update({ where: { id: userAgent.id }, data: { level: newLevel } });
         } else {
             // This case allows a user to "buy" an agent directly to a higher level if they have enough XP, though UI doesn't expose this directly.
-            await prisma.userAgent.create({ data: { id: randomUUID(), userId, agentId, level: newLevel, status: 'IDLE' } });
+            await prisma.userAgent.create({ data: { id: randomUUID(), userId, agentId, level: newLevel, status: AgentStatus.IDLE } });
         }
         await prisma.user.update({ where: { id: userId }, data: { weeklyPoints: { decrement: currentLevelData.upgradeCost } } });
         return { success: true, message: `Agent upgraded to Level ${newLevel}!` };
