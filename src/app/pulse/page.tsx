@@ -137,25 +137,25 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
             <CardContent className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
                 <DataItem
                     label="Current Price"
-                    value={currentPrice ? `$${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : <Loader2 className="h-4 w-4 animate-spin"/>}
+                    value={currentPrice ? `$${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : <Loader2 className="h-4 w-4 animate-spin"/>}
                     valueClassName="text-primary"
                 />
                  <DataItem
                     label="Entry Price"
                     icon={<LogIn size={12}/>}
-                    value={`$${position.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`}
+                    value={`$${position.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                     valueClassName="text-primary"
                 />
                  <DataItem
                     label="Stop Loss"
                     icon={<ShieldX size={12}/>}
-                    value={position.stopLoss ? `$${position.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : 'N/A'}
+                    value={position.stopLoss ? `$${position.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A'}
                     valueClassName="text-red-400"
                 />
                 <DataItem
                     label="Take Profit"
                     icon={<Target size={12}/>}
-                    value={position.takeProfit ? `$${position.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : 'N/A'}
+                    value={position.takeProfit ? `$${position.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A'}
                     valueClassName="text-green-400"
                 />
                 <DataItem
@@ -218,11 +218,11 @@ const HistoryCard = ({ position }: { position: Position }) => {
              <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2">
                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-muted-foreground flex items-center gap-1"><LogIn size={12}/> Entry</span>
-                    <span className="font-mono text-sm font-semibold mt-1">${entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+                    <span className="font-mono text-sm font-semibold mt-1">${entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                  <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-muted-foreground flex items-center gap-1"><LogOut size={12}/> Exit</span>
-                    <span className="font-mono text-sm font-semibold mt-1">${closePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+                    <span className="font-mono text-sm font-semibold mt-1">${closePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                  <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-muted-foreground flex items-center gap-1"><DollarSign size={12}/> PnL</span>

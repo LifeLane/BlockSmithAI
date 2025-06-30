@@ -1,3 +1,4 @@
+
 import { FunctionComponent } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -91,7 +92,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 
   const lastPriceFormatted = parseFloat(data.lastPrice).toLocaleString(undefined, { 
     minimumFractionDigits: 2, 
-    maximumFractionDigits: 4
+    maximumFractionDigits: 2
   });
 
   return (
@@ -111,13 +112,13 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
         <StatBox
           title="24h High"
           icon={<ArrowUp size={14} />}
-          value={`$${parseFloat(data.highPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}`}
+          value={`$${parseFloat(data.highPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
           valueClassName="text-green-400"
         />
         <StatBox
           title="24h Low"
           icon={<ArrowDown size={14} />}
-          value={`$${parseFloat(data.lowPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}`}
+          value={`$${parseFloat(data.lowPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
           valueClassName="text-destructive"
         />
         <StatBox
