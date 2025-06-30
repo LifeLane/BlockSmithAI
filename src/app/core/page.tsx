@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import ShadowMindInterface from '@/components/blocksmith-ai/ShadowMindInterface';
+import StrategyExplanationSection from '@/components/blocksmith-ai/StrategyExplanationSection';
 import {
   generateTradingStrategyAction,
   generateShadowChoiceStrategyAction,
@@ -36,6 +37,9 @@ type AIStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStr
   risk_rating?: string;
   currentThought?: string;
   shortTermPrediction?: string;
+  analysisSummary?: string | null;
+  newsAnalysis?: string | null;
+  strategyReasoning?: string | null;
 };
 
 const DEFAULT_SYMBOLS: FormattedSymbol[] = [
@@ -326,14 +330,23 @@ export default function CoreConsolePage() {
   
     if (aiStrategy) {
       return (
-        <ShadowMindInterface
-          shadowScore={aiStrategy.gpt_confidence_score}
-          confidence={aiStrategy.confidence}
-          sentiment={aiStrategy.sentiment}
-          riskRating={aiStrategy.risk_rating}
-          currentThought={aiStrategy.currentThought}
-          prediction={aiStrategy.shortTermPrediction}
-        />
+        <>
+            <ShadowMindInterface
+              shadowScore={aiStrategy.gpt_confidence_score}
+              confidence={aiStrategy.confidence}
+              sentiment={aiStrategy.sentiment}
+              riskRating={aiStrategy.risk_rating}
+              currentThought={aiStrategy.currentThought}
+              prediction={aiStrategy.shortTermPrediction}
+            />
+            <StrategyExplanationSection
+                strategy={aiStrategy}
+                liveMarketData={liveMarketData}
+                isLoading={isLoadingInstant || isLoadingCustom}
+                symbol={symbol}
+                isCustomSignal={isCustomSignal}
+            />
+        </>
       );
     }
   
@@ -440,5 +453,3 @@ export default function CoreConsolePage() {
     </>
   );
 }
-
-    

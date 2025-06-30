@@ -1,18 +1,15 @@
 
 import { FunctionComponent } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import type { GenerateTradingStrategyOutput, GenerateShadowChoiceStrategyOutput } from '@/app/actions';
 import type { LiveMarketData } from '@/app/actions';
 import {
-  BrainCircuit,
-  AlertTriangle,
-  Unlock,
-  Loader2,
   MessageSquareHeart,
   Orbit,
-  Route
+  Route,
+  Newspaper,
+  BookOpen
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -43,43 +40,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   isCustomSignal,
 }) => {
 
-  if (isLoading) {
-    return (
-      <Card className="shadow-lg w-full bg-card/80 backdrop-blur-sm border-0 transition-all duration-300 ease-in-out">
-        <CardHeader className="items-center text-center">
-           <Skeleton className="h-8 w-3/4 mb-2 bg-muted" />
-           <Skeleton className="h-5 w-1/2 bg-muted" />
-        </CardHeader>
-        <CardContent className="space-y-4 p-6">
-          <div className="flex justify-center">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          </div>
-          <p className="text-center text-muted-foreground font-semibold animate-pulse">SHADOW is analyzing data streams...</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="shadow-lg border border-destructive/50 w-full bg-card transition-all duration-300 ease-in-out">
-        <CardHeader className="items-center text-center">
-          <CardTitle className="flex items-center text-destructive text-xl font-headline">
-            <AlertTriangle className="mr-2 h-6 w-6" />
-            Analysis Disrupted
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-center p-6">
-          <p className="text-destructive-foreground text-base">{error}</p>
-          <p className="text-sm text-muted-foreground mt-3">
-            My quantum awareness encounters interference. The signal is unclear. Please try again.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!strategy) {
+  if (isLoading || error || !strategy) {
     return null;
   }
   
@@ -90,15 +51,38 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
       <CardContent className="space-y-6 p-4 sm:p-6">
         
         {strategy.strategyReasoning && (
-             <div className="p-4 bg-background/50 rounded-lg border-l-4 border-purple-400">
+             <div className="p-4 bg-background/50 rounded-lg border-l-4 border-accent/50">
                 <p className="text-sm text-muted-foreground italic">"{strategy.strategyReasoning}"</p>
              </div>
         )}
 
+        {strategy.analysisSummary && (
+            <div className="w-full space-y-2">
+                <div className="flex items-center text-primary">
+                    <BookOpen className="h-5 w-5 mr-2" />
+                    <h4 className="font-semibold font-headline">Technical Analysis</h4>
+                </div>
+                <p className="text-xs text-muted-foreground pl-1">{strategy.analysisSummary}</p>
+            </div>
+        )}
+
+        {strategy.newsAnalysis && (
+            <div className="w-full space-y-2">
+                <div className="flex items-center text-primary">
+                    <Newspaper className="h-5 w-5 mr-2" />
+                    <h4 className="font-semibold font-headline">Market News Context</h4>
+                </div>
+                <p className="text-xs text-muted-foreground pl-1">{strategy.newsAnalysis}</p>
+            </div>
+        )}
+        
         <div className="text-center w-full p-4 bg-secondary rounded-lg">
             <p className="text-sm text-foreground flex items-center justify-center gap-2 font-semibold">
                 <Orbit className="h-5 w-5 text-tertiary" />
-                {isCustomSignal ? "Custom Signal generated and saved." : "Instant Signal executed and logged."}
+                {isCustomSignal ? 
+                    <>Custom Signal generated and <strong className="text-tertiary">saved</strong>.</>
+                    : <><strong className="text-tertiary">Instant Signal</strong> executed and <strong className="text-tertiary">logged</strong>.</>
+                }
             </p>
                 <p className="text-xs text-muted-foreground mt-1">
                 {isCustomSignal ? 

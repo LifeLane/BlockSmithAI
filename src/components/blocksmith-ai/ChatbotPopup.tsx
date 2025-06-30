@@ -128,8 +128,12 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
                     : 'bg-secondary text-secondary-foreground mr-auto'
                 }`}
               >
-                {msg.role === 'model' && index === 0 && <MessageSquareQuote className="inline h-4 w-4 mr-1 mb-0.5 text-accent"/>}
-                {msg.parts[0].text}
+                {msg.role === 'model' && index === 0 ? 
+                    <span>
+                        <MessageSquareQuote className="inline h-4 w-4 mr-1 mb-0.5 text-accent"/>
+                        I am <strong className="text-accent">SHADOW</strong>. The market's whispers reach me. What requires my attention?
+                    </span>
+                 : msg.parts[0].text}
               </div>
             </div>
           ))}
