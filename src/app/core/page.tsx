@@ -5,7 +5,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import StrategySelectors from '@/components/blocksmith-ai/StrategySelectors';
 import StrategyExplanationSection from '@/components/blocksmith-ai/StrategyExplanationSection';
-import ShadowMindInterface from '@/components/blocksmith-ai/ShadowMindInterface';
 import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
@@ -50,9 +49,6 @@ export default function CoreConsolePage() {
   const [isLoadingStrategy, setIsLoadingStrategy] = useState<boolean>(false);
   const [isLoadingShadowChoice, setIsLoadingShadowChoice] = useState<boolean>(false);
   const [strategyError, setStrategyError] = useState<string | null>(null);
-  
-  const [shadowMindData, setShadowMindData] = useState<AIStrategyOutput | null>(null);
-
 
   const [liveMarketData, setLiveMarketData] = useState<LiveMarketData | null>(null);
   const [isLoadingMarketData, setIsLoadingMarketData] = useState<boolean>(true);
@@ -71,19 +67,6 @@ export default function CoreConsolePage() {
 
   const { toast } = useToast();
   const mainContentRef = useRef<HTMLDivElement>(null);
-  
-  // Effect to load persistent terminal data
-  useEffect(() => {
-    const savedData = localStorage.getItem('shadowMindData');
-    if (savedData) {
-      try {
-        setShadowMindData(JSON.parse(savedData));
-      } catch (e) {
-        console.error("Failed to parse shadowMindData from localStorage", e);
-        localStorage.removeItem('shadowMindData');
-      }
-    }
-  }, []);
   
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -233,7 +216,6 @@ export default function CoreConsolePage() {
     } else {
       const resultWithId: AIStrategyOutput = { ...result, id: crypto.randomUUID() };
       setAiStrategy(resultWithId);
-      setShadowMindData(resultWithId); // Also set the persistent data
       localStorage.setItem('shadowMindData', JSON.stringify(resultWithId));
       
       let toastDescription;
@@ -286,7 +268,7 @@ export default function CoreConsolePage() {
         
         <div className={cn(
             "w-full space-y-4 transition-all duration-500",
-            !showResults && !shadowMindData ? 'flex-grow flex flex-col justify-center' : ''
+            !showResults ? 'flex-grow flex flex-col justify-center' : ''
         )}>
             <div className="space-y-4">
                 <MarketDataDisplay
@@ -371,26 +353,12 @@ export default function CoreConsolePage() {
                 </div>
             </div>
         )}
-
-        {/* This block ensures the tracker with the terminal shows up on refresh */}
-        { !showResults && shadowMindData && liveMarketData &&
-             <div id="results-block" className="w-full space-y-6 mt-8">
-                <div className="w-full relative space-y-6">
-                     <SignalTracker
-                        aiStrategy={null}
-                        liveMarketData={liveMarketData}
-                        shadowMindData={shadowMindData}
-                      />
-                </div>
-            </div>
-        }
         
         {/* This block handles showing the tracker during/after generation */}
-        { showResults && (aiStrategy || shadowMindData) && liveMarketData && !strategyError &&
+        { showResults && aiStrategy && aiStrategy.signal?.toUpperCase() !== 'HOLD' && liveMarketData && !strategyError &&
              <SignalTracker
                 aiStrategy={aiStrategy}
                 liveMarketData={liveMarketData}
-                shadowMindData={shadowMindData}
               />
         }
         
