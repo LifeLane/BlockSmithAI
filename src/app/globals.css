@@ -149,6 +149,12 @@
   background: linear-gradient(to right, hsl(var(--accent)), hsl(var(--primary)));
 }
 
+.glow-button:active:not(:disabled) {
+  transform: translateY(0px) scale(0.98);
+  box-shadow: 0 0 5px hsl(var(--primary)), 0 0 10px hsl(var(--primary)/0.7), 0 0 15px hsl(var(--accent)/0.7);
+  filter: brightness(1.1);
+}
+
 .generate-signal-button {
   background: hsl(var(--tertiary));
   color: hsl(var(--tertiary-foreground));
@@ -162,6 +168,12 @@
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 0 10px hsl(var(--tertiary)), 0 0 20px hsl(var(--tertiary)/0.8), 0 0 30px hsl(var(--tertiary)/0.8), 0 0 5px hsl(var(--background)/0.5) inset;
   filter: brightness(1.2);
+}
+
+.generate-signal-button:active:not(:disabled) {
+  transform: translateY(0px) scale(0.98);
+  box-shadow: 0 0 5px hsl(var(--tertiary)), 0 0 10px hsl(var(--tertiary)/0.7);
+  filter: brightness(1.1);
 }
 
 .shadow-choice-button {
@@ -178,6 +190,12 @@
   box-shadow: 0 0 10px hsl(var(--accent)), 0 0 20px hsl(var(--accent)/0.8), 0 0 30px hsl(var(--primary)/0.8), 0 0 5px hsl(var(--background)/0.5) inset;
   background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
   color: hsl(var(--primary-foreground));
+}
+
+.shadow-choice-button:active:not(:disabled) {
+  transform: translateY(0px) scale(0.98);
+  box-shadow: 0 0 5px hsl(var(--accent)), 0 0 10px hsl(var(--accent)/0.7);
+  filter: brightness(1.1);
 }
 
 /* Custom styles for Tabs to add a glow effect on the active trigger */
