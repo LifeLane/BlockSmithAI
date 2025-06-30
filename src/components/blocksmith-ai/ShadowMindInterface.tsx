@@ -3,21 +3,31 @@
 
 import type { FunctionComponent } from 'react';
 import Link from 'next/link';
+import {
+  ShieldCheck,
+  Percent,
+  Brain,
+  AlertTriangle
+} from 'lucide-react';
 
 interface ShadowMindInterfaceProps {
-  signalConfidence?: string; // Percentage string e.g., "82" or "82%"
+  shadowScore?: string;
+  confidence?: string;
+  sentiment?: string;
+  riskRating?: string;
   currentThought?: string;
-  sentimentMemory?: string;
   prediction?: string;
 }
 
 const ShadowMindInterface: FunctionComponent<ShadowMindInterfaceProps> = ({
-  signalConfidence = "0",
+  shadowScore = "0",
+  confidence = "N/A",
+  sentiment = "State: Nominal",
+  riskRating = "N/A",
   currentThought = "Awaiting neural synchronization...",
-  sentimentMemory = "State: Nominal",
   prediction = "Calculating future vectors...",
 }) => {
-  const confidenceValue = parseInt(signalConfidence.replace('%', ''), 10) || 0;
+  const confidenceValue = parseInt(shadowScore.replace('%', ''), 10) || 0;
 
   return (
     <div className="shadow-mind-terminal">
@@ -27,8 +37,9 @@ const ShadowMindInterface: FunctionComponent<ShadowMindInterfaceProps> = ({
       </div>
       
       <div className="space-y-2.5 pt-4">
+
         <div className="shadow-mind-line">
-            <span className="shadow-mind-label">│ Signal Confidence :</span>
+            <span className="shadow-mind-label">│ SHADOW Score      :</span>
             <span className="shadow-mind-value accent">
                 {confidenceValue}%
                 <div className="confidence-bar-container">
@@ -46,14 +57,26 @@ const ShadowMindInterface: FunctionComponent<ShadowMindInterfaceProps> = ({
         </div>
 
         <div className="shadow-mind-line">
-            <span className="shadow-mind-label">│ Current Thought   :</span>
-            <span className="shadow-mind-value thought">"{currentThought}"</span>
+            <span className="shadow-mind-label">│ Confidence Level  :</span>
+            <span className="shadow-mind-value text-tertiary">{confidence}</span>
             <span>│</span>
         </div>
 
         <div className="shadow-mind-line">
-            <span className="shadow-mind-label">│ Sentiment Memory  :</span>
-            <span className="shadow-mind-value">{sentimentMemory}</span>
+            <span className="shadow-mind-label">│ Sentiment Scan    :</span>
+            <span className="shadow-mind-value text-primary">{sentiment}</span>
+            <span>│</span>
+        </div>
+
+        <div className="shadow-mind-line">
+            <span className="shadow-mind-label">│ Risk Rating       :</span>
+            <span className="shadow-mind-value text-orange-500">{riskRating}</span>
+            <span>│</span>
+        </div>
+        
+        <div className="shadow-mind-line">
+            <span className="shadow-mind-label">│ Current Thought   :</span>
+            <span className="shadow-mind-value thought">"{currentThought}"</span>
             <span>│</span>
         </div>
         
@@ -63,17 +86,15 @@ const ShadowMindInterface: FunctionComponent<ShadowMindInterfaceProps> = ({
             <span>│</span>
         </div>
         
-        <div className="shadow-mind-line">
-            <span className="shadow-mind-label">│                   </span>
-            <span className="shadow-mind-value"></span>
-            <span>│</span>
-        </div>
       </div>
 
 
-      <div className="shadow-mind-footer">
-        <Link href="/core" className="glow-button">
-            ▷ [ Synchronize Thoughts ]
+      <div className="shadow-mind-footer flex flex-col sm:flex-row justify-center items-center gap-4">
+        <Link href="/pulse" className="glow-button w-full sm:w-auto">
+            ▷ [ Review Trade History ]
+        </Link>
+        <Link href="/core" className="shadow-choice-button w-full sm:w-auto">
+            ▷ [ Generate New Signal ]
         </Link>
       </div>
        <div className="shadow-mind-line footer-line">

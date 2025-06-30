@@ -34,9 +34,11 @@ export default function TerminalPage() {
             <div className="container mx-auto px-4 py-8">
                 {shadowMindData ? (
                     <ShadowMindInterface 
-                        signalConfidence={shadowMindData.gpt_confidence_score}
+                        shadowScore={shadowMindData.gpt_confidence_score}
+                        confidence={shadowMindData.confidence}
+                        sentiment={shadowMindData.sentiment}
+                        riskRating={shadowMindData.risk_rating}
                         currentThought={shadowMindData.currentThought}
-                        sentimentMemory={shadowMindData.sentimentTransition || shadowMindData.sentiment}
                         prediction={shadowMindData.shortTermPrediction}
                     />
                 ) : (
