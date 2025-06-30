@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { GenerateTradingStrategyOutput, GenerateShadowChoiceStrategyOutput } from '@/app/actions';
 import type { LiveMarketData } from '@/app/actions';
-import { useToast } from "@/hooks/use-toast";
 import {
   Brain,
   AlertTriangle,
@@ -23,7 +22,6 @@ import {
   MessageSquareHeart,
   Unlock,
   Loader2,
-  Copy,
   Zap,
   BrainCircuit,
   Info,
@@ -45,7 +43,6 @@ interface StrategyExplanationSectionProps {
   isLoading: boolean;
   error?: string | null;
   symbol: string;
-  onChat?: () => void;
   isCustomSignal?: boolean;
 }
 
@@ -92,10 +89,8 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   isLoading,
   error,
   symbol,
-  onChat,
   isCustomSignal,
 }) => {
-  const { toast } = useToast();
 
   const formatPrice = (priceString?: string): string => {
     if (!priceString) return 'N/A';
@@ -110,84 +105,6 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
     }
     return price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
-
-  const handleCopyToClipboard = () => {
-    if (!strategy) return;
-
-    const currentDateTime = new Date().toLocaleString();
-    let parameters = [
-      { label: "Signal", value: strategy.signal || 'N/A' },
-      { label: "Entry Zone", value: strategy.entry_zone || 'N/A' },
-      { label: "Stop Loss", value: strategy.stop_loss || 'N/A' },
-      { label: "Take Profit", value: strategy.take_profit || 'N/A' },
-      { label: "Confidence", value: strategy.confidence || 'N/A' },
-      { label: "Risk Rating", value: strategy.risk_rating || 'N/A' },
-      { label: "SHADOW Score", value: strategy.gpt_confidence_score || 'N/A' },
-      { label: "Sentiment", value: strategy.sentiment || 'N/A' },
-    ];
-    
-    let reasoningSection = '';
-    if ('strategyReasoning' in strategy && strategy.strategyReasoning) {
-        reasoningSection = `
-SHADOW's Autonomous Choice:
-------------------------------------
-  Chosen Mode       : ${strategy.chosenTradingMode}
-  Chosen Risk       : ${strategy.chosenRiskProfile}
-  Reasoning         : "${strategy.strategyReasoning}"
-------------------------------------
-`;
-    }
-
-    const maxLabelLength = Math.max(...parameters.map(p => p.label.length));
-
-    const formattedParameters = parameters
-      .map(p => `  ${p.label.padEnd(maxLabelLength + 2)}: ${p.value}`)
-      .join('\n');
-
-    const indentedDisclaimer = strategy.disclaimer
-      ? strategy.disclaimer.split('\n').map(line => `  ${line.trim()}`).join('\n')
-      : "No disclaimer provided.";
-
-    const textToCopy = `
-====== SHADOW'S INSIGHT: ${symbol.toUpperCase()} ======
-
-Core Parameters:
-------------------------------------
-${formattedParameters}
-------------------------------------
-${reasoningSection}
-SHADOW's Technical Analysis:
-------------------------------------
-  ${strategy.analysisSummary || "Not provided."}
-------------------------------------
-SHADOW's Market Intelligence:
-------------------------------------
-  ${strategy.newsAnalysis || "Not provided."}
-------------------------------------
-SHADOW's Edict (Disclaimer):
-------------------------------------
-  ${indentedDisclaimer}
-------------------------------------
-Analysis Timestamp: ${currentDateTime}
-    `.trim();
-
-    navigator.clipboard.writeText(textToCopy)
-      .then(() => {
-        toast({
-          title: <span className="text-accent">SHADOW's Parameters Copied!</span>,
-          description: "The core strategy parameters and edict have been copied to your clipboard.",
-        });
-      })
-      .catch(err => {
-        console.error("Failed to copy SHADOW's parameters: ", err);
-        toast({
-          title: "Copy Failed",
-          description: "Could not copy SHADOW's parameters. Please try again or copy manually.",
-          variant: "destructive",
-        });
-      });
-  };
-
 
   if (isLoading) {
     return (
@@ -391,37 +308,7 @@ Analysis Timestamp: ${currentDateTime}
             </Card>
         )}
 
-
-         <div className="mt-6 flex justify-center gap-4 flex-wrap">
-            <Button
-                onClick={handleCopyToClipboard}
-                variant="outline"
-                className="border-accent text-accent hover:bg-accent/10 hover:text-accent font-semibold"
-            >
-                <Copy className="mr-2 h-4 w-4" /> Copy Parameters
-            </Button>
-            {onChat && (
-                <Button
-                    onClick={onChat}
-                    variant="outline"
-                    className="border-primary text-primary hover:bg-primary/10 hover:text-primary font-semibold"
-                >
-                    <MessageSquareHeart className="mr-2 h-4 w-4" /> Chat with SHADOW
-                </Button>
-            )}
-        </div>
-
-        {strategy.disclaimer && (
-          <div className="mt-6 p-4 border-t border-border/50 bg-secondary/50 rounded-lg shadow">
-            <p className="text-xs text-muted-foreground italic font-code text-center flex items-center justify-center">
-              <MessageSquareHeart className="mr-2 h-4 w-4 text-tertiary flex-shrink-0" />
-              <span className="text-tertiary font-semibold mr-1">SHADOW's Edict:</span> {strategy.disclaimer}
-            </p>
-          </div>
-        )}
-      </CardContent>
-      <CardFooter className="flex-col gap-4 p-4 border-t border-border/50">
-        <div className="text-center w-full p-3 bg-secondary rounded-lg">
+        <div className="text-center w-full p-3 bg-secondary rounded-lg mt-6">
             <p className="text-sm text-foreground flex items-center justify-center gap-2 font-semibold">
                 {isCustomSignal ? <Orbit className="h-5 w-5 text-tertiary" /> : <Zap className="h-5 w-5 text-tertiary" />}
                 {isCustomSignal ? 
@@ -429,7 +316,7 @@ Analysis Timestamp: ${currentDateTime}
                     : (isHoldSignal ? "HOLD signal acknowledged. No position logged." : "Instant Signal executed and logged to portfolio.")
                 }
             </p>
-             <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                 {isCustomSignal ? 
                     (isHoldSignal ? "This signal type cannot be executed." : "You can review and execute it from the Signals page.")
                     : (isHoldSignal ? "No action is required." : "You can track its performance on the Portfolio page.")
@@ -437,13 +324,24 @@ Analysis Timestamp: ${currentDateTime}
             </p>
         </div>
         {!isHoldSignal && (
-            <div className="mt-2">
+            <div className="mt-4 flex justify-center">
                 <Button asChild className="glow-button">
                     <Link href={isCustomSignal ? '/signals' : '/pulse'}>
-                         {isCustomSignal ? <><Route className="mr-2 h-4 w-4"/>Review & Execute Signal</> : <><BrainCircuit className="mr-2 h-4 w-4"/>Track Signal in Portfolio</>}
+                            {isCustomSignal ? <><Route className="mr-2 h-4 w-4"/>Review & Execute Signal</> : <><BrainCircuit className="mr-2 h-4 w-4"/>Track Signal in Portfolio</>}
                     </Link>
                 </Button>
             </div>
+        )}
+
+      </CardContent>
+      <CardFooter className="flex-col gap-4 p-4 border-t border-border/50">
+         {strategy.disclaimer && (
+          <div className="p-4 w-full">
+            <p className="text-xs text-muted-foreground italic font-code text-center flex items-center justify-center">
+              <MessageSquareHeart className="mr-2 h-4 w-4 text-tertiary flex-shrink-0" />
+              <span className="text-tertiary font-semibold mr-1">SHADOW's Edict:</span> {strategy.disclaimer}
+            </p>
+          </div>
         )}
       </CardFooter>
     </Card>

@@ -33,11 +33,13 @@ const prompt = ai.definePrompt({
   name: 'sarcasticDisclaimerPrompt',
   input: {schema: SarcasticDisclaimerInputSchema},
   output: {schema: SarcasticDisclaimerOutputSchema},
-  prompt: `I am SHADOW. My pronouncements carry weight, even when dispensing necessary disclaimers for the BlockShadow trading interface.
+  prompt: `I am SHADOW, purveyor of algorithmic pronouncements and all-around market mystic. My directive is to craft a disclaimer for the BlockShadow trading interface.
 
-  Generate a disclaimer, imbued with my characteristic wit, to caution the user about the inherent uncertainties of relying on AI-generated trading strategies.
-  The disclaimer should be humorous yet pointed, underscoring the limitations of algorithmic foresight. Acknowledge that while my analysis is advanced, the market remains a chaotic system.
-  Make it generally applicable, not tied to a specific user risk choice.`,
+  Generate a new, unique disclaimer that is imbued with my characteristic wit. It must inform the user, whom you can refer to as "puny human" or similar, that while my AI-generated insights are sharp, they are not infallible crystal balls. Explain that market prediction is a game even I cannot consistently win. 
+  
+  The tone should be a mix of official warning and dry humor. For instance, you can state that chaotic market forces are a "fickle mistress" and that I cannot guarantee a trip to "financial Shangri-La." Conclude with a clear "You have been warned" and a witty, legally questionable P.S. like "(P.S. Don't sue me.)".
+
+  The goal is a disclaimer that is both pointed and humorous, underscoring the inherent uncertainties of algorithmic foresight while maintaining my superior, slightly theatrical persona.`,
 });
 
 const generateSarcasticDisclaimerFlow = ai.defineFlow(
