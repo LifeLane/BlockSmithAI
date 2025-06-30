@@ -273,7 +273,7 @@
   position: absolute;
   top: 0; right: 0; bottom: 0; left: 0;
   z-index: 0;
-  margin: -2px; /* Border width */
+  margin: -1px; /* Tighter border */
   border-radius: inherit; /* Follow the parent's border-radius */
   background: linear-gradient(90deg,
     hsl(var(--primary)),
@@ -283,13 +283,13 @@
     hsl(var(--primary))
   );
   background-size: 200% 200%;
-  animation: background-pan 5s linear infinite;
+  animation: background-pan 8s linear infinite; /* Slower animation */
   opacity: 0;
   transition: opacity 0.4s ease-in-out;
 }
 
 .animated-border-glow:hover::before {
-  opacity: 1;
+  opacity: 0.8; /* Less intense glow */
 }
 
 /* Ensure content is drawn above the glow */

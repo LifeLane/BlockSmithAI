@@ -122,7 +122,7 @@ const ParticleBackground: FunctionComponent = () => {
   }, [mounted, resolvedTheme]); 
 
   const isVisible = mounted;
-  const canvasOpacity = resolvedTheme === 'dark' ? 0.3 : 0.2;
+  const canvasOpacity = resolvedTheme === 'dark' ? 0.3 : 0.4;
 
   return (
     <canvas

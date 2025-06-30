@@ -34,7 +34,7 @@ export default function RootLayout({
         >
           <ApiKeyProvider>
             <ParticleBackground />
-            <div className="text-foreground bg-background/80 md:bg-transparent min-h-screen flex flex-col relative z-10 backdrop-blur-sm md:backdrop-blur-none">
+            <div className="text-foreground bg-transparent min-h-screen flex flex-col relative z-10">
               <main className="flex-grow pb-16">
                 {children}
               </main>
