@@ -9,7 +9,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PauseCircle, CheckCircle2, XCircle, Bot, PlayCircle, Wallet, Activity, BrainCircuit, ShieldAlert } from 'lucide-react';
+import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle, Wallet, Activity, BrainCircuit, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
 import {
   fetchPendingAndOpenPositionsAction,
   closePositionAction,
@@ -97,22 +97,23 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
         pnl = priceDiff * positionSize;
         
         if (position.entryPrice > 0) {
-            pnlPercent = (priceDiff / position.entryPrice) * 100;
+            pnlPercent = (pnl / position.entryPrice) * 100;
         }
     }
 
     const openDate = position.openTimestamp ? new Date(position.openTimestamp) : null;
     const isValidOpenDate = openDate && !isNaN(openDate.getTime());
     const openTimestampText = isValidOpenDate ? `Opened: ${formatDistanceToNow(openDate)} ago` : 'N/A';
-
+    
     const pnlColor = pnl >= 0 ? 'text-green-400' : 'text-red-400';
+    const isBuy = position.signalType === 'BUY';
     
     return (
         <Card className="bg-card/80 backdrop-blur-sm transition-all duration-300 interactive-card">
-            <CardHeader className="flex flex-row items-start justify-between pb-3">
+            <CardHeader className="flex flex-row items-start justify-between pb-4">
                 <div>
-                    <CardTitle className="text-lg flex items-center">
-                        <span className={`mr-2 font-bold ${position.signalType === 'BUY' ? 'text-green-400' : 'text-red-400'}`}>{position.signalType === 'BUY' ? 'LONG' : 'SHORT'}</span>
+                    <CardTitle className="text-lg flex items-center font-headline">
+                        <span className={`mr-2 font-bold ${isBuy ? 'text-green-400' : 'text-red-400'}`}>{isBuy ? 'LONG' : 'SHORT'}</span>
                         {position.symbol}
                     </CardTitle>
                      <CardDescription className="text-xs">
@@ -120,34 +121,34 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
                     </CardDescription>
                 </div>
                  <div className="flex flex-col items-end">
-                     <Badge className={'border-blue-500/50 bg-blue-900/60 text-blue-300'}><PlayCircle className="h-4 w-4 mr-2 text-blue-400"/>OPEN</Badge>
+                     <Badge className={'border-blue-500/50 bg-blue-900/60 text-blue-300'}><PlayCircle className="h-4 w-4 mr-1 text-blue-400"/>OPEN</Badge>
                     {position.expirationTimestamp && (
                         <TimeLeft expiration={new Date(position.expirationTimestamp)} className="text-xs text-muted-foreground mt-2"/>
                     )}
                 </div>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
-                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
+            <CardContent className="grid grid-cols-2 gap-4 text-sm">
+                 <div className="flex flex-col p-2 space-y-1">
                     <span className="text-xs text-muted-foreground">Current Price</span>
-                    <span className="font-mono font-semibold text-primary">{currentPrice ? `$${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`: <Loader2 className="h-4 w-4 animate-spin"/>}</span>
+                    <span className="font-mono font-semibold text-primary">{currentPrice ? `$${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`: <Loader2 className="h-4 w-4 animate-spin"/>}</span>
                 </div>
-                <div className="flex flex-col p-2 bg-background/50 rounded-md">
+                <div className="flex flex-col p-2 space-y-1">
                     <span className="text-xs text-muted-foreground flex items-center gap-1"><LogIn size={12}/>Entry Price</span>
-                    <span className="font-mono font-semibold text-primary">${position.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span className="font-mono font-semibold text-primary">${position.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
                 </div>
-                <div className="flex flex-col p-2 bg-background/50 rounded-md">
+                <div className="flex flex-col p-2 space-y-1">
                     <span className="text-xs text-muted-foreground flex items-center gap-1"><ShieldX size={12}/>Stop Loss</span>
-                    <span className="font-mono font-semibold text-red-400">${position.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span className="font-mono font-semibold text-red-400">${position.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
                 </div>
-                <div className="flex flex-col p-2 bg-background/50 rounded-md">
+                <div className="flex flex-col p-2 space-y-1">
                     <span className="text-xs text-muted-foreground flex items-center gap-1"><Target size={12}/>Take Profit</span>
-                    <span className="font-mono font-semibold text-green-400">${position.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span className="font-mono font-semibold text-green-400">${position.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
                 </div>
-                <div className="flex flex-col p-2 bg-background/50 rounded-md">
+                <div className="flex flex-col p-2 space-y-1">
                     <span className="text-xs text-muted-foreground">Unrealized PnL</span>
                     <span className={`font-mono font-semibold ${pnlColor}`}>{currentPrice ? `$${pnl.toFixed(2)}` : '...'}</span>
                 </div>
-                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
+                 <div className="flex flex-col p-2 space-y-1">
                     <span className="text-xs text-muted-foreground">Unrealized PnL %</span>
                     <span className={`font-mono font-semibold ${pnlColor}`}>{currentPrice ? `${pnlPercent.toFixed(2)}%` : '...'}</span>
                 </div>
@@ -179,14 +180,14 @@ const HistoryCard = ({ position }: { position: Position }) => {
                 <div className="flex items-center gap-4">
                     {icon}
                     <div>
-                        <CardTitle className="text-base">{position.signalType} {position.symbol}</CardTitle>
+                        <CardTitle className="text-base font-headline">{position.signalType} {position.symbol}</CardTitle>
                         <CardDescription className="text-xs">
                             Closed {closeTimestampText} ago
                         </CardDescription>
                     </div>
                 </div>
-                <div className={`font-bold ${titleColor}`}>
-                    {`PnL: $${pnl.toFixed(2)}`}
+                <div className={`font-bold font-mono text-lg ${titleColor}`}>
+                    {pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}
                 </div>
              </CardHeader>
              <CardContent className="grid grid-cols-2 gap-2 text-xs pt-2">
@@ -204,7 +205,7 @@ const HistoryCard = ({ position }: { position: Position }) => {
 }
 
 const StatCard = ({ title, value, subValue, icon, valueClassName }: { title: string; value: React.ReactNode; subValue?: React.ReactNode; icon: React.ReactNode; valueClassName?: string }) => (
-    <div className="flex flex-col items-center justify-center p-3 bg-background/50 rounded-lg border border-border/50 text-center">
+    <div className="flex flex-col items-center justify-center p-3 bg-secondary rounded-lg text-center">
         <span className="text-xs text-muted-foreground flex items-center gap-1.5">{icon} {title}</span>
         <div className="mt-1 flex items-baseline gap-1">
             <span className={`text-xl font-bold font-mono ${valueClassName || 'text-primary'}`}>{value}</span>
@@ -218,7 +219,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
         return (
              <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30">
                 <CardHeader className="pb-4">
-                    <CardTitle className="text-lg flex items-center gap-2 text-accent"><Briefcase /> Performance Matrix</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2 text-accent font-headline"><Briefcase /> Performance Matrix</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="flex justify-center items-center h-24">
@@ -239,7 +240,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
         <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30 interactive-card">
             <CardHeader className="flex-col sm:flex-row items-start sm:items-center justify-between pb-4">
                 <div className="space-y-1 mb-4 sm:mb-0">
-                    <CardTitle className="text-lg flex items-center gap-2 text-accent"><Briefcase /> Performance Matrix</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2 text-accent font-headline"><Briefcase /> Performance Matrix</CardTitle>
                     <CardDescription>An overview of your closed trade performance.</CardDescription>
                 </div>
                 <Button size="sm" onClick={onGenerateReview} disabled={isGeneratingReview} className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground w-full sm:w-auto">
@@ -271,7 +272,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
             </CardContent>
              <CardFooter className="pt-6 flex-col sm:flex-row items-center justify-between gap-4 border-t border-border/20 mt-4">
                 <div className="text-center sm:text-left">
-                    <h4 className="font-semibold text-destructive">Emergency Protocol</h4>
+                    <h4 className="font-semibold text-destructive font-headline">Emergency Protocol</h4>
                     <p className="text-xs text-muted-foreground">Instantly close all active positions.</p>
                 </div>
                 <AlertDialog>
@@ -430,6 +431,19 @@ export default function PortfolioPage() {
             isFetchingRef.current = false;
         }
     }, [showCloseToast, positions.length, tradeHistory.length]);
+    
+    const handleManualClose = useCallback(async (positionId: string, closePrice: number) => {
+        if (!currentUser) return;
+        setClosingPositionId(positionId);
+        const result = await closePositionAction(positionId, closePrice);
+        if (result.position) {
+            showCloseToast(result.position, result.airdropPointsEarned || 0, 'Position Closed Manually');
+            await runSimulationCycle(currentUser.id);
+        } else {
+            toast({ title: "Error Closing Position", description: result.error, variant: "destructive" });
+        }
+        setClosingPositionId(null);
+    }, [showCloseToast, toast, currentUser, runSimulationCycle]);
 
      const handleGenerateReview = useCallback(async () => {
         if (!currentUser) return;
@@ -469,19 +483,6 @@ export default function PortfolioPage() {
         }
         setIsKilling(false);
     }, [currentUser, toast, runSimulationCycle]);
-
-    const handleManualClose = useCallback(async (positionId: string, closePrice: number) => {
-        if (!currentUser) return;
-        setClosingPositionId(positionId);
-        const result = await closePositionAction(positionId, closePrice);
-        if (result.position) {
-            showCloseToast(result.position, result.airdropPointsEarned || 0, 'Position Closed Manually');
-            await runSimulationCycle(currentUser.id);
-        } else {
-            toast({ title: "Error Closing Position", description: result.error, variant: "destructive" });
-        }
-        setClosingPositionId(null);
-    }, [showCloseToast, toast, currentUser, runSimulationCycle]);
     
     useEffect(() => {
         const openPositions = positions.filter(p => p.status === 'OPEN');
@@ -624,8 +625,8 @@ export default function PortfolioPage() {
         />
          <Tabs defaultValue="open" className="mt-4">
             <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="open">Active Positions ({positions.filter(p => p.status === 'OPEN').length})</TabsTrigger>
-                <TabsTrigger value="history">Trade History ({tradeHistory.length})</TabsTrigger>
+                <TabsTrigger value="open" className="data-[state=active]:shadow-active-tab-glow">Active Positions ({positions.filter(p => p.status === 'OPEN').length})</TabsTrigger>
+                <TabsTrigger value="history" className="data-[state=active]:shadow-active-tab-glow">Trade History ({tradeHistory.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="open" className="mt-4">
                 {renderActivePositions()}
