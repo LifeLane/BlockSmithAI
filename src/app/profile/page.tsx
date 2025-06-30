@@ -107,7 +107,7 @@ const MissionCard = ({ mission, onClaim, isClaimed, isLocked }: { mission: typeo
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="text-sm font-semibold text-green-400 bg-green-900/30 border border-green-500/30 rounded-md p-2 text-center">
+                <div className="text-sm font-semibold text-green-600 dark:text-green-400 bg-green-500/10 border border-green-500/30 rounded-md p-2 text-center">
                     Reward: {mission.reward}
                 </div>
             </CardContent>
@@ -123,7 +123,7 @@ const MissionCard = ({ mission, onClaim, isClaimed, isLocked }: { mission: typeo
                         Locked
                     </Button>
                 ) : (
-                    <Button onClick={() => onClaim(mission.id)} className="w-full glow-button">
+                    <Button onClick={() => onClaim(mission.id)} className="w-full shadow-choice-button">
                         {mission.type === 'social' ? 'Verify & Claim' : 'Claim Reward'}
                     </Button>
                 )}
