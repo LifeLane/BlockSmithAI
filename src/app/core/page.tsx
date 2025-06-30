@@ -26,6 +26,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { Loader2, Sparkles, BrainCircuit, Unlock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
+
 
 type AIStrategyOutput = (AIOutputType | GenerateShadowChoiceStrategyOutput) & { 
   id?: string;
@@ -68,6 +71,23 @@ export default function CoreConsolePage() {
   const { toast } = useToast();
   const mainContentRef = useRef<HTMLDivElement>(null);
   
+  // GSAP Animations
+  useGSAP(() => {
+    gsap.from("#market-data-display", { opacity: 0, y: -20, duration: 0.5, ease: 'power2.out' });
+    gsap.from("#strategy-selectors", { opacity: 0, y: -20, duration: 0.5, delay: 0.2, ease: 'power2.out' });
+    gsap.from(".generate-buttons", { opacity: 0, y: 20, duration: 0.5, delay: 0.4, stagger: 0.1, ease: 'power2.out' });
+  }, { scope: mainContentRef });
+
+  useEffect(() => {
+      if (aiStrategy || strategyError) {
+          gsap.fromTo("#results-block", 
+              { opacity: 0, y: 50 }, 
+              { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', delay: 0.1 }
+          );
+      }
+  }, [aiStrategy, strategyError]);
+
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -271,29 +291,32 @@ export default function CoreConsolePage() {
             !showResults ? 'flex-grow flex flex-col justify-center' : ''
         )}>
             <div className="space-y-4">
-                <MarketDataDisplay
-                    liveMarketData={liveMarketData}
-                    isLoading={isLoadingMarketData}
-                    error={marketDataError}
-                    symbolForDisplay={symbol}
-                />
-            
-                <StrategySelectors
-                    symbol={symbol}
-                    onSymbolChange={setSymbol} 
-                    tradingMode={tradingMode}
-                    onTradingModeChange={setTradingMode}
-                    riskProfile={riskProfile}
-                    onRiskProfileChange={setRiskProfile}
-                    symbols={availableSymbols}
-                    isLoadingSymbols={isLoadingSymbols}
-                />
+                <div id="market-data-display">
+                    <MarketDataDisplay
+                        liveMarketData={liveMarketData}
+                        isLoading={isLoadingMarketData}
+                        error={marketDataError}
+                        symbolForDisplay={symbol}
+                    />
+                </div>
+                <div id="strategy-selectors">
+                    <StrategySelectors
+                        symbol={symbol}
+                        onSymbolChange={setSymbol} 
+                        tradingMode={tradingMode}
+                        onTradingModeChange={setTradingMode}
+                        riskProfile={riskProfile}
+                        onRiskProfileChange={setRiskProfile}
+                        symbols={availableSymbols}
+                        isLoadingSymbols={isLoadingSymbols}
+                    />
+                </div>
                 
                 <div className="flex flex-col items-center gap-4 pt-2">
                     {isLimitReached ? (
                         <Button
                             onClick={() => setShowAirdropModal(true)}
-                            className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out glow-button"
+                            className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out glow-button generate-buttons"
                         >
                             <Unlock className="mr-2 h-5 w-5" />
                             Join Network for Unlimited Signals
@@ -303,7 +326,7 @@ export default function CoreConsolePage() {
                             <Button
                                 onClick={() => handleGenerateStrategy(false)}
                                 disabled={isButtonDisabled}
-                                className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
+                                className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button generate-buttons"
                             >
                                 {isLoadingStrategy ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                     : isUserLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -314,7 +337,7 @@ export default function CoreConsolePage() {
                             <Button
                                 onClick={() => handleGenerateStrategy(true)}
                                 disabled={isButtonDisabled}
-                                className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out shadow-choice-button"
+                                className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out shadow-choice-button generate-buttons"
                             >
                                 {isLoadingShadowChoice ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
                                 {isLoadingShadowChoice ? "SHADOW is Deciding..." : "Invoke SHADOW's Choice"}
