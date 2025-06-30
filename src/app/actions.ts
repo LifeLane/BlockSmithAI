@@ -108,7 +108,9 @@ export type TickerSymbolData = Pick<LiveMarketData, 'symbol' | 'lastPrice' | 'pr
 export interface PortfolioStats {
     totalTrades: number;
     winRate: number;
+    winningTrades: number;
     totalPnl: number;
+    totalPnlPercentage: number;
     bestTradePnl: number;
     worstTradePnl: number;
     lifetimeRewards: number;
@@ -489,12 +491,27 @@ export async function fetchPortfolioStatsAction(userId: string): Promise<Portfol
         
         const totalCapitalInvested = openPositions.reduce((acc, t) => acc + (t.entryPrice * t.size), 0);
         
-        if (closedTrades.length === 0) return { totalTrades: 0, winRate: 0, totalPnl: 0, bestTradePnl: 0, worstTradePnl: 0, lifetimeRewards: user.airdropPoints, totalCapitalInvested };
+        if (closedTrades.length === 0) {
+            return { 
+                totalTrades: 0, 
+                winRate: 0, 
+                winningTrades: 0, 
+                totalPnl: 0, 
+                totalPnlPercentage: 0, 
+                bestTradePnl: 0, 
+                worstTradePnl: 0, 
+                lifetimeRewards: user.airdropPoints, 
+                totalCapitalInvested 
+            };
+        }
         
         const totalTrades = closedTrades.length;
         const winningTrades = closedTrades.filter(t => t.pnl && t.pnl > 0).length;
         const totalPnl = closedTrades.reduce((acc, t) => acc + (t.pnl || 0), 0);
         const pnls = closedTrades.map(t => t.pnl || 0);
+
+        const totalCapitalInClosedTrades = closedTrades.reduce((acc, t) => acc + (t.entryPrice * t.size), 0);
+        const totalPnlPercentage = totalCapitalInClosedTrades > 0 ? (totalPnl / totalCapitalInClosedTrades) * 100 : 0;
         
         const losingTrades = pnls.filter(pnl => pnl < 0);
         const worstTradePnl = losingTrades.length > 0 ? Math.min(...losingTrades) : 0;
@@ -502,7 +519,9 @@ export async function fetchPortfolioStatsAction(userId: string): Promise<Portfol
         return {
             totalTrades,
             winRate: (totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0),
+            winningTrades,
             totalPnl,
+            totalPnlPercentage,
             bestTradePnl: pnls.length > 0 ? Math.max(...pnls) : 0,
             worstTradePnl,
             lifetimeRewards: user.airdropPoints || 0,
