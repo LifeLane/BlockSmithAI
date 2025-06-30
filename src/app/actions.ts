@@ -21,7 +21,9 @@ import { add, isBefore } from 'date-fns';
 
 
 // Initialize Prisma
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+    datasourceUrl: process.env.DIRECT_URL || process.env.DATABASE_URL,
+});
 
 // Helper function to robustly parse price strings, which could be a single number or a range.
 const parsePrice = (priceStr: string | undefined): number => {
