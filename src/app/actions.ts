@@ -729,3 +729,61 @@ export async function generatePerformanceReviewAction(userId: string): Promise<P
         return { error: `An unexpected error occurred in SHADOW's analytical core: ${error.message}` };
     }
 }
+
+export async function killSwitchAction(userId: string): Promise<{ success: boolean; message: string; }> {
+    try {
+        const openPositions = await prisma.position.findMany({ where: { userId, status: 'OPEN' } });
+        if (openPositions.length === 0) {
+            return { success: true, message: 'No active positions to close.' };
+        }
+
+        const symbols = [...new Set(openPositions.map(p => p.symbol))];
+        const pricePromises = symbols.map(symbol => fetchMarketDataAction({ symbol }));
+        const priceResults = await Promise.all(pricePromises);
+
+        const livePrices: Record<string, number> = {};
+        for (const result of priceResults) {
+            if (!('error' in result) && result.symbol && result.lastPrice) {
+                livePrices[result.symbol] = parseFloat(result.lastPrice);
+            }
+        }
+        
+        let totalPnl = 0;
+        let totalAirdropPoints = 0;
+        let closedCount = 0;
+
+        for (const position of openPositions) {
+            const closePrice = livePrices[position.symbol];
+            if (closePrice) {
+                const entry = position.entryPrice;
+                const pnl = position.signalType === 'BUY' ? (closePrice - entry) * position.size : (entry - closePrice) * position.size;
+                
+                totalPnl += pnl;
+                const airdropPointsEarned = Math.max(0, Math.floor(pnl * 10));
+                totalAirdropPoints += airdropPointsEarned;
+
+                await prisma.position.update({
+                    where: { id: position.id },
+                    data: { status: PositionStatus.CLOSED, closePrice: closePrice, closeTimestamp: new Date(), pnl: pnl }
+                });
+                closedCount++;
+            }
+        }
+
+        if (totalAirdropPoints > 0) {
+            await prisma.user.update({
+                where: { id: userId },
+                data: { airdropPoints: { increment: totalAirdropPoints } }
+            });
+        }
+        
+        if (closedCount === 0) {
+            return { success: false, message: 'Could not fetch live prices to close positions.' };
+        }
+
+        return { success: true, message: `Kill Switch activated. Closed ${closedCount} position(s). Total PnL: $${totalPnl.toFixed(2)}.` };
+    } catch (error: any) {
+        console.error("Error in killSwitchAction:", error);
+        return { success: false, message: `Kill Switch failed: ${error.message}` };
+    }
+}

@@ -9,7 +9,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PauseCircle, CheckCircle2, XCircle, Bot, PlayCircle, Wallet, Activity, BrainCircuit } from 'lucide-react';
+import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PauseCircle, CheckCircle2, XCircle, Bot, PlayCircle, Wallet, Activity, BrainCircuit, ShieldAlert } from 'lucide-react';
 import {
   fetchPendingAndOpenPositionsAction,
   closePositionAction,
@@ -17,6 +17,7 @@ import {
   fetchTradeHistoryAction,
   fetchPortfolioStatsAction,
   generatePerformanceReviewAction,
+  killSwitchAction,
   type Position,
   type LiveMarketData,
   type PortfolioStats,
@@ -24,6 +25,17 @@ import {
 } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import PerformanceReviewModal from '@/components/blocksmith-ai/PerformanceReviewModal';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+  } from "@/components/ui/alert-dialog";
 
 const TimeLeft = ({ expiration, className }: { expiration?: Date | null, className?: string }) => {
     const [timeLeft, setTimeLeft] = useState('');
@@ -201,7 +213,7 @@ const StatCard = ({ title, value, subValue, icon, valueClassName }: { title: str
     </div>
 );
 
-const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview, isGeneratingReview }: { stats: PortfolioStats | null, isLoading: boolean, realtimePnl: number, onGenerateReview: () => void, isGeneratingReview: boolean }) => {
+const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview, isGeneratingReview, onKillSwitch, isKilling }: { stats: PortfolioStats | null, isLoading: boolean, realtimePnl: number, onGenerateReview: () => void, isGeneratingReview: boolean, onKillSwitch: () => void, isKilling: boolean }) => {
     if (isLoading && !stats) {
         return (
              <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30">
@@ -230,7 +242,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                     <CardTitle className="text-lg flex items-center gap-2 text-accent"><Briefcase /> Performance Matrix</CardTitle>
                     <CardDescription>An overview of your closed trade performance.</CardDescription>
                 </div>
-                <Button size="sm" onClick={onGenerateReview} disabled={isGeneratingReview || !stats || stats.totalTrades < 5} className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground w-full sm:w-auto">
+                <Button size="sm" onClick={onGenerateReview} disabled={isGeneratingReview} className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground w-full sm:w-auto">
                     {isGeneratingReview ? <Loader2 className="h-4 w-4 animate-spin"/> : <BrainCircuit className="h-4 w-4 mr-2"/>}
                     Get SHADOW's Review
                 </Button>
@@ -257,12 +269,32 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                 <StatCard title="Worst Trade" value={`$${stats.worstTradePnl.toFixed(2)}`} icon={<ArrowDown size={14} />} valueClassName="text-red-400" />
                 <StatCard title="Lifetime Rewards" value={stats.lifetimeRewards.toLocaleString()} icon={<Gift size={14}/>} valueClassName="text-orange-400" />
             </CardContent>
-             <CardFooter className="pt-3">
-                {stats && stats.totalTrades < 5 && (
-                    <p className="text-xs text-muted-foreground w-full text-center py-2">
-                        At least 5 closed trades are required for a meaningful performance review.
-                    </p>
-                )}
+             <CardFooter className="pt-6 flex-col sm:flex-row items-center justify-between gap-4 border-t border-border/20 mt-4">
+                <div className="text-center sm:text-left">
+                    <h4 className="font-semibold text-destructive">Emergency Protocol</h4>
+                    <p className="text-xs text-muted-foreground">Instantly close all active positions.</p>
+                </div>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="w-full sm:w-auto" disabled={isKilling || stats.totalCapitalInvested === 0}>
+                            <ShieldAlert className="mr-2 h-4 w-4"/> Kill Switch
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Activate Kill Switch?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This will immediately close ALL of your currently open positions at the current market price. This action cannot be undone. Are you sure you want to proceed?
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={onKillSwitch} className="bg-destructive hover:bg-destructive/90">
+                                {isKilling ? <Loader2 className="h-4 w-4 animate-spin"/> : "Confirm & Close All"}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </CardFooter>
         </Card>
     );
@@ -283,6 +315,7 @@ export default function PortfolioPage() {
     const [isGeneratingReview, setIsGeneratingReview] = useState(false);
     const [reviewData, setReviewData] = useState<PerformanceReviewOutput | null>(null);
     const [reviewError, setReviewError] = useState<string | null>(null);
+    const [isKilling, setIsKilling] = useState(false);
 
     const { toast } = useToast();
     const isFetchingRef = useRef(false);
@@ -304,6 +337,29 @@ export default function PortfolioPage() {
         }
         setIsGeneratingReview(false);
     }, [currentUser]);
+
+    const handleKillSwitch = useCallback(async () => {
+        if (!currentUser) return;
+        setIsKilling(true);
+        const result = await killSwitchAction(currentUser.id);
+        if (result.success) {
+            toast({
+                title: "Kill Switch Activated",
+                description: result.message,
+                variant: "default",
+            });
+            // Force a full re-fetch of all data
+            if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
+            runSimulationCycle(currentUser.id);
+        } else {
+            toast({
+                title: "Kill Switch Failed",
+                description: result.message,
+                variant: "destructive",
+            });
+        }
+        setIsKilling(false);
+    }, [currentUser, toast, runSimulationCycle]);
 
     useEffect(() => {
         const openPositions = positions.filter(p => p.status === 'OPEN');
@@ -563,6 +619,8 @@ export default function PortfolioPage() {
             realtimePnl={realtimePnl}
             onGenerateReview={handleGenerateReview}
             isGeneratingReview={isGeneratingReview}
+            onKillSwitch={handleKillSwitch}
+            isKilling={isKilling}
         />
          <Tabs defaultValue="open" className="mt-4">
             <TabsList className="grid w-full grid-cols-2">
