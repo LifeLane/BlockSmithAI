@@ -9,7 +9,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle, Wallet, Activity, BrainCircuit, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle, Wallet, Activity, BrainCircuit, ShieldAlert, CheckCircle2, XCircle, Bot } from 'lucide-react';
 import {
   fetchPendingAndOpenPositionsAction,
   closePositionAction,
@@ -97,7 +97,7 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
         pnl = priceDiff * positionSize;
         
         if (position.entryPrice > 0) {
-            pnlPercent = (pnl / position.entryPrice) * 100;
+            pnlPercent = (pnl / (position.entryPrice * positionSize)) * 100;
         }
     }
 
@@ -138,11 +138,11 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
                 </div>
                 <div className="flex flex-col p-2 space-y-1">
                     <span className="text-xs text-muted-foreground flex items-center gap-1"><ShieldX size={12}/>Stop Loss</span>
-                    <span className="font-mono font-semibold text-red-400">${position.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+                    <span className="font-mono font-semibold text-red-400">{position.stopLoss ? `$${position.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : 'N/A'}</span>
                 </div>
                 <div className="flex flex-col p-2 space-y-1">
                     <span className="text-xs text-muted-foreground flex items-center gap-1"><Target size={12}/>Take Profit</span>
-                    <span className="font-mono font-semibold text-green-400">${position.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+                    <span className="font-mono font-semibold text-green-400">{position.takeProfit ? `$${position.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : 'N/A'}</span>
                 </div>
                 <div className="flex flex-col p-2 space-y-1">
                     <span className="text-xs text-muted-foreground">Unrealized PnL</span>
@@ -321,7 +321,7 @@ export default function PortfolioPage() {
     const { toast } = useToast();
     const isFetchingRef = useRef(false);
     const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
+    
     const showCloseToast = useCallback((closedPosition: Position, airdropPoints: number, reason: string) => {
         const pnl = closedPosition.pnl || 0;
         toast({
@@ -387,13 +387,15 @@ export default function PortfolioPage() {
                 if (pos.status === 'OPEN') {
                     let closeReason: string | null = null;
                     let closePrice = 0;
-
-                    if (pos.signalType === 'BUY') {
-                        if (currentPrice >= pos.takeProfit) { closeReason = 'Take Profit Hit'; closePrice = pos.takeProfit; } 
-                        else if (currentPrice <= pos.stopLoss) { closeReason = 'Stop Loss Hit'; closePrice = pos.stopLoss; }
-                    } else { // SELL
-                        if (currentPrice <= pos.takeProfit) { closeReason = 'Take Profit Hit'; closePrice = pos.takeProfit; }
-                        else if (currentPrice >= pos.stopLoss) { closeReason = 'Stop Loss Hit'; closePrice = pos.stopLoss; }
+                    
+                    if (pos.takeProfit != null && pos.stopLoss != null) {
+                        if (pos.signalType === 'BUY') {
+                            if (currentPrice >= pos.takeProfit) { closeReason = 'Take Profit Hit'; closePrice = pos.takeProfit; } 
+                            else if (currentPrice <= pos.stopLoss) { closeReason = 'Stop Loss Hit'; closePrice = pos.stopLoss; }
+                        } else { // SELL
+                            if (currentPrice <= pos.takeProfit) { closeReason = 'Take Profit Hit'; closePrice = pos.takeProfit; }
+                            else if (currentPrice >= pos.stopLoss) { closeReason = 'Stop Loss Hit'; closePrice = pos.stopLoss; }
+                        }
                     }
                     
                     if (!closeReason && pos.expirationTimestamp && new Date(pos.expirationTimestamp) < new Date()) {
@@ -431,7 +433,7 @@ export default function PortfolioPage() {
             isFetchingRef.current = false;
         }
     }, [showCloseToast, positions.length, tradeHistory.length]);
-    
+
     const handleManualClose = useCallback(async (positionId: string, closePrice: number) => {
         if (!currentUser) return;
         setClosingPositionId(positionId);
@@ -445,7 +447,7 @@ export default function PortfolioPage() {
         setClosingPositionId(null);
     }, [showCloseToast, toast, currentUser, runSimulationCycle]);
 
-     const handleGenerateReview = useCallback(async () => {
+    const handleGenerateReview = useCallback(async () => {
         if (!currentUser) return;
         setIsGeneratingReview(true);
         setReviewData(null);
@@ -485,6 +487,18 @@ export default function PortfolioPage() {
     }, [currentUser, toast, runSimulationCycle]);
     
     useEffect(() => {
+        if (currentUser?.id) {
+            const run = async () => {
+                await runSimulationCycle(currentUser.id);
+                if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
+                pollingTimeoutRef.current = setTimeout(run, 15000);
+            };
+            run();
+        }
+        return () => { if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current); }
+    }, [currentUser?.id, runSimulationCycle]); 
+
+    useEffect(() => {
         const openPositions = positions.filter(p => p.status === 'OPEN');
         if (openPositions.length === 0) {
             setRealtimePnl(0);
@@ -507,18 +521,6 @@ export default function PortfolioPage() {
         setRealtimePnl(totalPnl);
     }, [positions, livePrices]);
     
-    useEffect(() => {
-        if (currentUser?.id) {
-            const run = async () => {
-                await runSimulationCycle(currentUser.id);
-                if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
-                pollingTimeoutRef.current = setTimeout(run, 15000);
-            };
-            run();
-        }
-        return () => { if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current); }
-    }, [currentUser?.id, runSimulationCycle]); 
-
     const renderActivePositions = () => {
         const openPositions = positions.filter(p => p.status === 'OPEN');
         if (isLoadingData && openPositions.length === 0) {
