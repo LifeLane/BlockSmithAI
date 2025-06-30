@@ -1,3 +1,5 @@
+// prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,65 +10,61 @@ datasource db {
 }
 
 model User {
-  id                 String      @id @default(cuid())
-  username           String      @unique
-  shadowId           String      @unique
-  status             String?     @default("Guest")
-  weeklyPoints       Int         @default(0)
-  airdropPoints      Int         @default(0)
-  claimedMissions    String[]
-  claimedSpecialOps  String[]
-  wallet_address     String?
-  wallet_type        String?
-  email              String?     @unique
-  phone              String?
-  x_handle           String?
-  telegram_handle    String?
-  youtube_handle     String?
-  positions          Position[]
-  userAgents         UserAgent[]
-  badges             Badge[]     @relation("UserBadges")
+  id                String     @id @default(uuid())
+  username          String
+  shadowId          String     @unique
+  status            String
+  weeklyPoints      Int        @default(0)
+  airdropPoints     Int        @default(0)
+  wallet_address    String?
+  wallet_type       String?
+  email             String?
+  phone             String?
+  x_handle          String?
+  telegram_handle   String?
+  youtube_handle    String?
+  claimedMissions   String[]
+  claimedSpecialOps String[]
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  positions         Position[]
+  agents            UserAgent[]
+  badges            Badge[]    @relation("UserBadges")
 }
 
 model Badge {
-  id    String @id @default(cuid())
+  id    String @id @default(uuid())
   name  String @unique
   users User[] @relation("UserBadges")
 }
 
 model Position {
-  id                  String         @id @default(cuid())
+  id                  String      @id @default(uuid())
   userId              String
+  user                User        @relation(fields: [userId], references: [id])
   symbol              String
   signalType          SignalType
-  status              PositionStatus @default(OPEN)
   entryPrice          Float
-  size                Float          @default(1)
+  size                Float       @default(1)
+  status              PositionStatus @default(OPEN)
+  openTimestamp       DateTime?
+  closeTimestamp      DateTime?
+  expirationTimestamp DateTime?
+  pnl                 Float?
   stopLoss            Float?
   takeProfit          Float?
   closePrice          Float?
-  pnl                 Float?
-  openTimestamp       DateTime?      @db.Timestamp(6)
-  closeTimestamp      DateTime?      @db.Timestamp(6)
-  expirationTimestamp DateTime?      @db.Timestamp(6)
   strategyId          String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
 }
 
 model UserAgent {
-  id                String          @id @default(cuid())
+  id                String    @id @default(uuid())
   userId            String
+  user              User      @relation(fields: [userId], references: [id])
   agentId           String
-  level             Int             @default(1)
-  status            UserAgentStatus @default(IDLE)
-  deploymentEndTime DateTime?       @db.Timestamp(6)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, agentId])
+  level             Int       @default(1)
+  status            String    @default("IDLE") // 'IDLE', 'DEPLOYED'
+  deploymentEndTime DateTime?
 }
 
 enum SignalType {
@@ -79,9 +77,4 @@ enum PositionStatus {
   PENDING
   OPEN
   CLOSED
-}
-
-enum UserAgentStatus {
-  IDLE
-  DEPLOYED
 }
