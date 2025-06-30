@@ -92,6 +92,20 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
 }) => {
   const { toast } = useToast();
 
+  const formatPrice = (priceString?: string): string => {
+    if (!priceString) return 'N/A';
+    const price = parseFloat(priceString);
+    if (isNaN(price)) {
+      // Handle ranges like "123.45 - 123.55"
+      const parts = priceString.split('-').map(p => parseFloat(p.trim()));
+      if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+        return `${parts[0].toFixed(2)} - ${parts[1].toFixed(2)}`;
+      }
+      return priceString; // Return original string if it's not a number or range
+    }
+    return price.toFixed(2);
+  };
+
   const handleCopyToClipboard = () => {
     if (!strategy) return;
 
@@ -272,17 +286,17 @@ Analysis Timestamp: ${currentDateTime}
             <>
               <StatCard
                 title="Entry Zone"
-                value={<span className="text-primary">{strategy.entry_zone || 'N/A'}</span>}
+                value={<span className="text-primary">{formatPrice(strategy.entry_zone)}</span>}
                 icon={<LogIn size={20} className="text-primary"/>}
               />
               <StatCard
                 title="Stop Loss"
-                value={<span className="text-red-400">{strategy.stop_loss || 'N/A'}</span>}
+                value={<span className="text-red-400">{formatPrice(strategy.stop_loss)}</span>}
                 icon={<ShieldX size={20} className="text-red-400"/>}
               />
               <StatCard
                 title="Take Profit"
-                value={<span className="text-green-400">{strategy.take_profit || 'N/A'}</span>}
+                value={<span className="text-green-400">{formatPrice(strategy.take_profit)}</span>}
                 icon={<Target size={20} className="text-green-400"/>}
               />
             </>
