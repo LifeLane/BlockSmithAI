@@ -103,7 +103,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
       }
       return priceString; // Return original string if it's not a number or range
     }
-    return price.toFixed(2);
+    return price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   const handleCopyToClipboard = () => {
@@ -326,7 +326,7 @@ Analysis Timestamp: ${currentDateTime}
             />
             <StatCard
                 title="SHADOW Score"
-                value={<span className="text-accent">{strategy.gpt_confidence_score || 'N/A'}</span>}
+                value={<span className="text-accent">{strategy.gpt_confidence_score || 'N/A'}%</span>}
                 icon={<Percent size={20} className="text-accent"/>}
             />
             <StatCard
@@ -349,11 +349,11 @@ Analysis Timestamp: ${currentDateTime}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                         <div className="p-3 bg-secondary/50 rounded-md">
                             <span className="font-semibold text-foreground">Chosen Mode: </span> 
-                            <span className="text-tertiary font-bold">{strategy.chosenTradingMode}</span>
+                            <span className="text-tertiary font-bold">{('chosenTradingMode' in strategy && strategy.chosenTradingMode) || 'N/A'}</span>
                         </div>
                         <div className="p-3 bg-secondary/50 rounded-md">
                             <span className="font-semibold text-foreground">Chosen Risk: </span>
-                            <span className="text-tertiary font-bold">{strategy.chosenRiskProfile}</span>
+                            <span className="text-tertiary font-bold">{('chosenRiskProfile' in strategy && strategy.chosenRiskProfile) || 'N/A'}</span>
                         </div>
                     </div>
                 </CardContent>
@@ -433,3 +433,5 @@ Analysis Timestamp: ${currentDateTime}
 };
 
 export default StrategyExplanationSection;
+
+    

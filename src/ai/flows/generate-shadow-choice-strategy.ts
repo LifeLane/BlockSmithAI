@@ -41,7 +41,7 @@ const ShadowChoiceStrategyCoreOutputSchema = z.object({
   shortTermPrediction: z.string().describe("A very brief prediction, e.g., '13m until breakout scenario'. Max 1 short phrase."),
   sentimentTransition: z.string().optional().describe("If applicable, a brief note on sentiment change. If no significant recent transition, omit or state 'Sentiment stable'."),
   
-  // --- SHADOW's Autonomous Choices ---
+  // --- SHADOW's Autonomous Choices & Analysis ---
   chosenTradingMode: z.string().describe("The trading mode I, SHADOW, have determined is optimal (Scalper, Sniper, Intraday, or Swing)."),
   chosenRiskProfile: z.string().describe("The risk profile I have determined is optimal (Low, Medium, or High)."),
   strategyReasoning: z.string().describe("My concise reasoning for choosing the specified trading mode and risk profile. Explain WHY based on market conditions like volatility or trend strength."),
@@ -71,7 +71,7 @@ Long-Term Data (4h candles): {{{longTermCandles}}}
 
 **Autonomous Protocol:**
 
-1.  **Multi-Timeframe Trend Analysis:** I will first analyze the Long-Term (4h) and Medium-Term (1h) data to establish the dominant market trend (Uptrend, Downtrend, or Ranging). An uptrend is a series of higher highs and higher lows. My primary goal is to trade *with* this trend.
+1.  **Multi-Timeframe Trend Analysis:** I will first analyze the Long-Term (4h) and Medium-Term (1h) data to establish the dominant market trend (Uptrend, Downtrend, or Ranging). My primary goal is to trade *with* this trend.
 2.  **Fundamental & Sentiment Check:** I will use the \`fetchNewsTool\` to assess the current news environment for {{{symbol}}}. Strong positive or negative news can influence my choice of trading mode and risk profile (e.g., high-impact news might justify a higher risk, more aggressive entry).
 3.  **Optimal Parameter Selection:** Based on the synthesis of the trend, volatility, and news context, I will decide upon the most logical **Trading Mode** and **Risk Profile**.
 4.  **Articulate Rationale:** I will formulate a concise **strategyReasoning** to explain *why* my chosen trading mode and risk profile are the most logical course of action based on the multi-timeframe analysis.
@@ -172,3 +172,5 @@ const shadowChoiceStrategyFlow = ai.defineFlow(
     };
   }
 );
+
+    

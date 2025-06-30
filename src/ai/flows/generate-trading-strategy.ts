@@ -30,7 +30,7 @@ const PromptInputSchema = GenerateTradingStrategyInputSchema.extend({
     longTermCandles: z.string().describe("Stringified JSON of recent candlestick data for the long-term timeframe, used to establish the primary trend."),
 });
 
-// Core output fields from the AI, now including thought process elements
+// Core output fields from the AI, now including thought process elements and analysis summaries
 const GenerateTradingStrategyCoreOutputSchema = z.object({
   signal: z.string().describe('The trading signal (BUY, SELL, or HOLD).'),
   entry_zone: z.string().describe('The entry zone for the trade (specific price or range).'),
@@ -179,3 +179,5 @@ const generateTradingStrategyFlow = ai.defineFlow(
     };
   }
 );
+
+    
