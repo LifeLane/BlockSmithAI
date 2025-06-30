@@ -323,25 +323,31 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
                 }
             </p>
         </div>
+      </CardContent>
+      <CardFooter className="flex-col items-center p-6 pt-4 border-t border-border/50">
         {!isHoldSignal && (
-            <div className="mt-4 flex justify-center">
-                <Button asChild className="glow-button">
-                    <Link href={isCustomSignal ? '/signals' : '/pulse'}>
-                            {isCustomSignal ? <><Route className="mr-2 h-4 w-4"/>Review & Execute Signal</> : <><BrainCircuit className="mr-2 h-4 w-4"/>Track Signal in Portfolio</>}
-                    </Link>
-                </Button>
-            </div>
+          <div className="flex justify-center">
+            <Button asChild className="glow-button">
+              <Link href={isCustomSignal ? '/signals' : '/pulse'}>
+                {isCustomSignal ? <><Route className="mr-2 h-4 w-4"/>Review & Execute Signal</> : <><BrainCircuit className="mr-2 h-4 w-4"/>Track Signal in Portfolio</>}
+              </Link>
+            </Button>
+          </div>
         )}
 
-      </CardContent>
-      <CardFooter className="flex-col gap-4 p-4 border-t border-border/50">
-         {strategy.disclaimer && (
-          <div className="p-4 w-full">
-            <p className="text-xs text-muted-foreground italic font-code text-center flex items-center justify-center">
-              <MessageSquareHeart className="mr-2 h-4 w-4 text-tertiary flex-shrink-0" />
-              <span className="text-tertiary font-semibold mr-1">SHADOW's Edict:</span> {strategy.disclaimer}
-            </p>
-          </div>
+        {strategy.disclaimer && (
+            <div className="mt-6 flex w-full items-start gap-4">
+                <div className="flex w-auto flex-shrink-0 flex-col items-center text-center text-tertiary">
+                    <MessageSquareHeart className="h-6 w-6" />
+                    <div className="mt-2 text-sm font-semibold font-headline">
+                        <p>SHADOW's</p>
+                        <p>Edict:</p>
+                    </div>
+                </div>
+                <p className="flex-1 text-xs text-muted-foreground font-code leading-relaxed">
+                    {strategy.disclaimer}
+                </p>
+            </div>
         )}
       </CardFooter>
     </Card>
