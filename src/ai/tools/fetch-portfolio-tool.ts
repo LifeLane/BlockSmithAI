@@ -15,7 +15,16 @@ const PositionSchema = z.object({
   entryPrice: z.number(),
   size: z.number(),
   status: z.enum(['PENDING', 'OPEN', 'CLOSED']), // The full enum from the DB schema
-  openTimestamp: z.string().nullable(), // Can be null for PENDING positions
+  openTimestamp: z.date().nullable(), // Correct type
+  closeTimestamp: z.date().nullable(), // Correct type
+  expirationTimestamp: z.date().nullable(), // Correct type
+  stopLoss: z.number().nullable(),
+  takeProfit: z.number().nullable(),
+  pnl: z.number().nullable(),
+  strategyId: z.string().nullable(),
+  userId: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });
 
 const FetchPortfolioInputSchema = z.object({

@@ -611,7 +611,7 @@ export async function fetchPendingAndOpenPositionsAction(userId: string): Promis
         return await prisma.position.findMany({ 
             where: { 
                 userId, 
-                status: { in: ['PENDING', 'OPEN'] }
+                status: { in: [PositionStatus.PENDING, PositionStatus.OPEN] }
             }, 
             orderBy: { id: 'desc' } 
         });

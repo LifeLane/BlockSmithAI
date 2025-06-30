@@ -1,3 +1,4 @@
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -7,100 +8,10 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
 }
 
-model User {
-  id                String    @id @default(uuid())
-  username          String
-  shadowId          String    @unique
-  status            String
-  weeklyPoints      Int       @default(0)
-  airdropPoints     Int       @default(0)
-  wallet_address    String?
-  wallet_type       String?
-  email             String?
-  phone             String?
-  x_handle          String?
-  telegram_handle   String?
-  youtube_handle    String?
-  claimedMissions   String[]
-  claimedSpecialOps String[]
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  positions         Position[]
-  userAgents        UserAgent[]
-  generatedSignals  GeneratedSignal[]
-  badges            Badge[]   @relation("UserBadges")
-}
-
-model Badge {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  users       User[]   @relation("UserBadges")
-  createdAt   DateTime @default(now())
-}
-
-model Position {
-  id                  String         @id @default(uuid())
-  userId              String
-  user                User           @relation(fields: [userId], references: [id])
-  symbol              String
-  signalType          SignalType
-  status              PositionStatus
-  openTimestamp       DateTime?
-  closeTimestamp      DateTime?
-  entryPrice          Float
-  closePrice          Float?
-  size                Float          @default(1)
-  pnl                 Float?
-  stopLoss            Float?
-  takeProfit          Float?
-  expirationTimestamp DateTime?
-  strategyId          String?
-}
-
-model UserAgent {
-  id                String       @id @default(uuid())
-  userId            String
-  user              User         @relation(fields: [userId], references: [id])
-  agentId           String
-  level             Int
-  status            AgentStatus
-  deploymentEndTime DateTime?
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
-
-  @@unique([userId, agentId])
-}
-
-model GeneratedSignal {
-  id                     String                 @id @default(uuid())
-  userId                 String
-  user                   User                   @relation(fields: [userId], references: [id])
-  type                   SignalGenerationType   @default(CUSTOM)
-  status                 GeneratedSignalStatus  @default(PENDING_EXECUTION)
-  symbol                 String
-  signal                 String
-  entry_zone             String
-  stop_loss              String
-  take_profit            String
-  confidence             String
-  risk_rating            String
-  gpt_confidence_score   String
-  sentiment              String
-  currentThought         String
-  shortTermPrediction    String
-  sentimentTransition    String?
-  chosenTradingMode      String
-  chosenRiskProfile      String
-  strategyReasoning      String
-  analysisSummary        String
-  newsAnalysis           String?
-  disclaimer             String
-  createdAt              DateTime               @default(now())
-}
+// -------------------- Enums --------------------
 
 enum SignalType {
   BUY
@@ -119,14 +30,127 @@ enum AgentStatus {
   DEPLOYED
 }
 
-enum SignalGenerationType {
-  INSTANT
-  CUSTOM
-}
-
 enum GeneratedSignalStatus {
   PENDING_EXECUTION
   EXECUTED
   DISMISSED
   ARCHIVED
+}
+
+enum SignalGenerationType {
+  INSTANT
+  CUSTOM
+}
+
+// -------------------- Models --------------------
+
+model User {
+  id                String   @id @default(uuid())
+  username          String   @unique
+  shadowId          String   @unique
+  status            String   @default("Guest")
+  weeklyPoints      Int      @default(0)
+  airdropPoints     Int      @default(0)
+  claimedMissions   String[] @default([])
+  claimedSpecialOps String[] @default([])
+
+  // Optional registration details
+  email           String? @unique
+  phone           String? @unique
+  x_handle        String?
+  telegram_handle String?
+  youtube_handle  String?
+  wallet_address  String?
+  wallet_type     String?
+
+  // Relations
+  badges          Badge[]           @relation("UserBadges")
+  positions       Position[]
+  userAgents      UserAgent[]
+  generatedSignals GeneratedSignal[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Badge {
+  id    String @id @default(uuid())
+  name  String @unique
+  users User[] @relation("UserBadges")
+}
+
+model Position {
+  id                  String          @id @default(uuid())
+  symbol              String
+  signalType          SignalType
+  entryPrice          Float
+  size                Float           @default(1.0)
+  status              PositionStatus
+  openTimestamp       DateTime?
+  closeTimestamp      DateTime?
+  expirationTimestamp DateTime?
+  stopLoss            Float?
+  takeProfit          Float?
+  pnl                 Float?
+  strategyId          String?
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status])
+}
+
+model UserAgent {
+  id                String      @id @default(uuid())
+  agentId           String
+  level             Int         @default(1)
+  status            AgentStatus @default(IDLE)
+  deploymentEndTime DateTime?
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, agentId])
+}
+
+model GeneratedSignal {
+  id          String   @id @default(uuid())
+  symbol      String
+  signal      String
+  entry_zone  String
+  stop_loss   String
+  take_profit String
+  confidence  String
+  risk_rating String
+  gpt_confidence_score String
+  sentiment   String
+  currentThought      String
+  shortTermPrediction String
+  sentimentTransition String?
+  
+  // Custom signal specific fields
+  chosenTradingMode String
+  chosenRiskProfile String
+  strategyReasoning String
+  analysisSummary   String
+  newsAnalysis      String?
+  disclaimer        String
+
+  // Metadata
+  type   SignalGenerationType
+  status GeneratedSignalStatus
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  createdAt DateTime @default(now())
 }
