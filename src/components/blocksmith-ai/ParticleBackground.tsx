@@ -22,10 +22,8 @@ const ParticleBackground: FunctionComponent = () => {
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
-    const isDark = resolvedTheme === 'dark';
-
-    // Don't run animation on server or if not dark
-    if (!mounted || !isDark) {
+    // Don't run animation on server
+    if (!mounted) {
         if (animationFrameIdRef.current) {
             cancelAnimationFrame(animationFrameIdRef.current);
             animationFrameIdRef.current = null;
@@ -123,7 +121,8 @@ const ParticleBackground: FunctionComponent = () => {
     };
   }, [mounted, resolvedTheme]); 
 
-  const isVisible = mounted && resolvedTheme === 'dark';
+  const isVisible = mounted;
+  const canvasOpacity = resolvedTheme === 'dark' ? 0.3 : 0.2;
 
   return (
     <canvas
@@ -137,7 +136,7 @@ const ParticleBackground: FunctionComponent = () => {
         zIndex: 0, 
         display: 'block',
         transition: 'opacity 0.5s',
-        opacity: isVisible ? 0.3 : 0, // Make it subtle
+        opacity: isVisible ? canvasOpacity : 0, // Make it subtle and theme-dependent
         pointerEvents: 'none',
       }}
       aria-hidden="true"
