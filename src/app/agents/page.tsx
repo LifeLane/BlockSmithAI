@@ -5,7 +5,7 @@ import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, AlertTriangle, Bot, Binary, Network, Waypoints, Zap, ArrowUp, Clock, Gift, CheckCircle2, Star, Trophy } from 'lucide-react';
+import { Loader2, AlertTriangle, Bot, Binary, Network, Waypoints, Zap, ArrowUp, Clock, Gift, CheckCircle2, Star, Trophy, Server, TrendingUp } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import {
@@ -24,6 +24,7 @@ const AGENT_ICONS: { [key: string]: React.ElementType } = {
     Binary: Binary,
     Network: Network,
     Waypoints: Waypoints,
+    Server: Server,
     Default: Bot,
 };
 
@@ -97,6 +98,11 @@ const AgentCard = ({ agentData, userXp, onAction, userId }: { agentData: UserAge
     };
 
     const handleUpgrade = async () => {
+        if (!currentLevelData.upgradeCost || currentLevelData.upgradeCost === 0) {
+             toast({ title: "Max Level", description: "This agent is already at its maximum level.", variant: "default" });
+             return;
+        }
+
         setIsProcessing(true);
         const result = await upgradeAgentAction(userId, agentData.id);
          if (result.success) {
@@ -110,7 +116,7 @@ const AgentCard = ({ agentData, userXp, onAction, userId }: { agentData: UserAge
     
     const isDeployed = agentData.userState?.status === 'DEPLOYED';
     const isComplete = isDeployed && agentData.userState.deploymentEndTime && new Date(agentData.userState.deploymentEndTime) <= new Date();
-    const canUpgrade = userXp >= currentLevelData.upgradeCost;
+    const canUpgrade = !isMaxLevel && userXp >= currentLevelData.upgradeCost;
 
     return (
         <Card className="bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 flex flex-col">
@@ -137,7 +143,7 @@ const AgentCard = ({ agentData, userXp, onAction, userId }: { agentData: UserAge
                     </div>
                 </div>
 
-                {!isMaxLevel && (
+                {!isMaxLevel && currentLevelData.upgradeCost > 0 && (
                     <div className="text-xs p-2 bg-background/50 rounded-md">
                         <div className="flex justify-between items-center text-muted-foreground"><span><ArrowUp className="inline h-3 w-3 mr-1"/>Next Level Upgrade</span></div>
                         <div className="flex justify-between items-center font-semibold text-foreground mt-1">
@@ -146,7 +152,12 @@ const AgentCard = ({ agentData, userXp, onAction, userId }: { agentData: UserAge
                                 {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <ArrowUp className="h-4 w-4"/>}
                            </Button>
                         </div>
-                         {!canUpgrade && <p className="text-red-500/80 text-center mt-1">Insufficient XP</p>}
+                         {!canUpgrade && <p className="text-red-500/80 text-center mt-1 text-[10px]">Insufficient XP</p>}
+                    </div>
+                )}
+                 {isMaxLevel && (
+                    <div className="text-xs p-2 bg-background/50 rounded-md text-center text-tertiary font-semibold">
+                       Max Level Reached
                     </div>
                 )}
             </CardContent>
@@ -311,9 +322,27 @@ export default function AgentsPage() {
 
         return (
             <>
+                <Card className="mb-8 bg-card/80 backdrop-blur-sm border-tertiary/50 shadow-lg shadow-tertiary/10">
+                    <CardHeader>
+                        <CardTitle className="flex items-center text-lg text-tertiary">
+                            <TrendingUp className="mr-3 h-5 w-5"/>
+                            Available Experience Points
+                        </CardTitle>
+                        <CardDescription>
+                            Use XP to upgrade your agents and unlock higher rewards.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-4xl lg:text-5xl font-bold text-tertiary font-mono tracking-wider">
+                            {userXp.toLocaleString()} XP
+                        </p>
+                    </CardContent>
+                </Card>
+
                 {specialOps.map(op => (
                     <SpecialOpCard key={op.id} op={op} agents={agentData} onClaim={handleClaimSpecialOp} />
                 ))}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {currentUser && agentData.map(agent => (
                         <AgentCard key={agent.id} agentData={agent} userXp={userXp} onAction={() => fetchData(currentUser.id)} userId={currentUser.id} />

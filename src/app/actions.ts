@@ -172,6 +172,14 @@ const agentDefinitions: Agent[] = [
         { "level": 2, "deployDuration": 64800, "xpReward": 400, "bsaiReward": 1000, "upgradeCost": 5000 },
         { "level": 3, "deployDuration": 43200, "xpReward": 600, "bsaiReward": 1500, "upgradeCost": 0 }
       ]
+    },
+    {
+      "id": "agent-004", "name": "Node Validator", "description": "Secures a segment of the network, earning passive rewards by validating transaction blocks.", "icon": "Server",
+      "levels": [
+        { "level": 1, "deployDuration": 28800, "xpReward": 150, "bsaiReward": 400, "upgradeCost": 1500 },
+        { "level": 2, "deployDuration": 21600, "xpReward": 250, "bsaiReward": 750, "upgradeCost": 3000 },
+        { "level": 3, "deployDuration": 14400, "xpReward": 400, "bsaiReward": 1200, "upgradeCost": 0 }
+      ]
     }
 ];
 
@@ -602,20 +610,26 @@ export async function claimAgentRewardsAction(userId: string, agentId: string): 
 export async function upgradeAgentAction(userId: string, agentId: string): Promise<{ success: boolean; message: string }> {
     try {
         const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) return { success: false, message: "User not found." };
+
         const userAgent = await prisma.userAgent.findFirst({ where: { userId, agentId } });
         const agentDef = agentDefinitions.find(a => a.id === agentId);
-        if (!user || !agentDef) return { success: false, message: "Data not found." };
+        if (!agentDef) return { success: false, message: "Agent data not found." };
         
         const currentLevel = userAgent?.level || 1;
         const currentLevelData = agentDef.levels.find(l => l.level === currentLevel);
-        if (!currentLevelData || !currentLevelData.upgradeCost) return { success: false, message: "Agent is at max level or upgrade data is missing." };
-        if (user.weeklyPoints < currentLevelData.upgradeCost) return { success: false, message: "Insufficient XP for upgrade." };
+        if (!currentLevelData || !currentLevelData.upgradeCost || currentLevelData.upgradeCost === 0) {
+            return { success: false, message: "Agent is at max level or upgrade data is missing." };
+        }
+        if (user.weeklyPoints < currentLevelData.upgradeCost) {
+            return { success: false, message: "Insufficient XP for upgrade." };
+        }
         
         const newLevel = currentLevel + 1;
         if (userAgent) {
             await prisma.userAgent.update({ where: { id: userAgent.id }, data: { level: newLevel } });
         } else {
-            // This case should ideally not happen if upgrading, but is a safe fallback
+            // This case allows a user to "buy" an agent directly to a higher level if they have enough XP, though UI doesn't expose this directly.
             await prisma.userAgent.create({ data: { id: randomUUID(), userId, agentId, level: newLevel, status: 'IDLE' } });
         }
         await prisma.user.update({ where: { id: userId }, data: { weeklyPoints: { decrement: currentLevelData.upgradeCost } } });

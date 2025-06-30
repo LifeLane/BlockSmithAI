@@ -330,7 +330,7 @@ export default function ProfilePage() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                              <div>
-                                <p className="text-sm font-medium text-muted-foreground flex items-center"><TrendingUp className="mr-1.5 h-4 w-4"/>Weekly XP (for Agent Upgrades):</p>
+                                <p className="text-sm font-medium text-muted-foreground flex items-center"><TrendingUp className="mr-1.5 h-4 w-4"/>Available XP (for Agent Upgrades):</p>
                                 <p className="text-lg font-semibold text-tertiary">{currentUser.weeklyPoints?.toLocaleString() || 0}</p>
                             </div>
                              <div>
