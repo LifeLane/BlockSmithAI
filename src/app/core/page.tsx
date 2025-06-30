@@ -50,6 +50,9 @@ export default function CoreConsolePage() {
   const [isLoadingStrategy, setIsLoadingStrategy] = useState<boolean>(false);
   const [isLoadingShadowChoice, setIsLoadingShadowChoice] = useState<boolean>(false);
   const [strategyError, setStrategyError] = useState<string | null>(null);
+  
+  const [shadowMindData, setShadowMindData] = useState<AIStrategyOutput | null>(null);
+
 
   const [liveMarketData, setLiveMarketData] = useState<LiveMarketData | null>(null);
   const [isLoadingMarketData, setIsLoadingMarketData] = useState<boolean>(true);
@@ -68,6 +71,19 @@ export default function CoreConsolePage() {
 
   const { toast } = useToast();
   const mainContentRef = useRef<HTMLDivElement>(null);
+  
+  // Effect to load persistent terminal data
+  useEffect(() => {
+    const savedData = localStorage.getItem('shadowMindData');
+    if (savedData) {
+      try {
+        setShadowMindData(JSON.parse(savedData));
+      } catch (e) {
+        console.error("Failed to parse shadowMindData from localStorage", e);
+        localStorage.removeItem('shadowMindData');
+      }
+    }
+  }, []);
   
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -217,6 +233,8 @@ export default function CoreConsolePage() {
     } else {
       const resultWithId: AIStrategyOutput = { ...result, id: crypto.randomUUID() };
       setAiStrategy(resultWithId);
+      setShadowMindData(resultWithId); // Also set the persistent data
+      localStorage.setItem('shadowMindData', JSON.stringify(resultWithId));
       
       let toastDescription;
       const isHold = result.signal?.toUpperCase() === 'HOLD';
@@ -268,7 +286,7 @@ export default function CoreConsolePage() {
         
         <div className={cn(
             "w-full space-y-4 transition-all duration-500",
-            !showResults ? 'flex-grow flex flex-col justify-center' : ''
+            !showResults && !shadowMindData ? 'flex-grow flex flex-col justify-center' : ''
         )}>
             <div className="space-y-4">
                 <MarketDataDisplay
@@ -350,25 +368,32 @@ export default function CoreConsolePage() {
                         symbol={symbol}
                         onChat={handleToggleChat}
                     />
-
-                    {aiStrategy && liveMarketData && !(isLoadingStrategy || isLoadingShadowChoice) && !strategyError && (
-                      <SignalTracker
-                        aiStrategy={aiStrategy}
-                        liveMarketData={liveMarketData}
-                      />
-                    )}
-
-                    {aiStrategy && !(isLoadingStrategy || isLoadingShadowChoice) && !strategyError && (
-                      <ShadowMindInterface 
-                          signalConfidence={aiStrategy.gpt_confidence_score}
-                          currentThought={aiStrategy.currentThought}
-                          sentimentMemory={aiStrategy.sentimentTransition || aiStrategy.sentiment}
-                          prediction={aiStrategy.shortTermPrediction}
-                      />
-                    )}
                 </div>
             </div>
         )}
+
+        {/* This block ensures the tracker with the terminal shows up on refresh */}
+        { !showResults && shadowMindData && liveMarketData &&
+             <div id="results-block" className="w-full space-y-6 mt-8">
+                <div className="w-full relative space-y-6">
+                     <SignalTracker
+                        aiStrategy={null}
+                        liveMarketData={liveMarketData}
+                        shadowMindData={shadowMindData}
+                      />
+                </div>
+            </div>
+        }
+        
+        {/* This block handles showing the tracker during/after generation */}
+        { showResults && (aiStrategy || shadowMindData) && liveMarketData && !strategyError &&
+             <SignalTracker
+                aiStrategy={aiStrategy}
+                liveMarketData={liveMarketData}
+                shadowMindData={shadowMindData}
+              />
+        }
+        
       </div>
       <ChatbotPopup isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
       {currentUser && (
