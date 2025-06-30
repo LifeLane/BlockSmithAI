@@ -6,68 +6,76 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
 }
 
 model User {
-  id                String   @id @default(uuid())
-  username          String
-  shadowId          String   @unique
-  status            String
-  email             String?
-  phone             String?
-  x_handle          String?
-  telegram_handle   String?
-  youtube_handle    String?
-  wallet_type       String?
-  wallet_address    String?
-  weeklyPoints      Int      @default(0)
-  airdropPoints     Int      @default(0)
-  claimedMissions   String[] @default([])
-  claimedSpecialOps String[] @default([])
+  id                  String    @id @default(cuid())
+  username            String
+  shadowId            String    @unique
+  status              String    @default("Guest") // e.g., "Guest", "Registered", "Active Analyst"
+  weeklyPoints        Int       @default(0)
+  airdropPoints       Int       @default(0)
+  
+  // Airdrop Registration Info
+  wallet_address      String?
+  wallet_type         String?
+  email               String?   @unique
+  phone               String?
+  x_handle            String?
+  telegram_handle     String?
+  youtube_handle      String?
+  
+  // Relations
+  positions           Position[]
+  badges              Badge[]    @relation("UserBadges")
+  agents              UserAgent[]
+  
+  // Mission Tracking
+  claimedMissions     String[]
+  claimedSpecialOps   String[]  @default([])
 
-  positions Position[]
-  agents    UserAgent[]
-  badges    Badge[]    @relation("UserBadges")
+  @@index([weeklyPoints])
 }
 
+
 model Badge {
-  id    String @id @default(uuid())
-  name  String
-  users User[] @relation("UserBadges")
+  id      String @id @default(cuid())
+  name    String @unique
+  users   User[] @relation("UserBadges")
 }
 
 model Position {
-  id                  String         @id @default(uuid())
+  id                  String        @id @default(cuid())
   userId              String
-  user                User           @relation(fields: [userId], references: [id])
+  user                User          @relation(fields: [userId], references: [id])
   symbol              String
   signalType          SignalType
   entryPrice          Float
   size                Float
-  status              PositionStatus @default(OPEN)
-  openTimestamp       DateTime       @default(now()) @db.Timestamp(3)
-  closeTimestamp      DateTime?      @db.Timestamp(3)
+  status              PositionStatus @default(PENDING)
+  openTimestamp       DateTime?     @db.Timestamp(3)
+  closeTimestamp      DateTime?     @db.Timestamp(3)
   pnl                 Float?
-  closePrice          Float?
   stopLoss            Float?
   takeProfit          Float?
-  expirationTimestamp DateTime?      @db.Timestamp(3)
   strategyId          String?
+  expirationTimestamp DateTime?     @db.Timestamp(3)
 }
 
 model UserAgent {
-  id                String    @id @default(uuid())
+  id                String    @id @default(cuid())
   userId            String
   user              User      @relation(fields: [userId], references: [id])
   agentId           String
   level             Int       @default(1)
-  status            String // 'IDLE', 'DEPLOYED'
+  status            String    @default("IDLE") // "IDLE" | "DEPLOYED"
   deploymentEndTime DateTime? @db.Timestamp(3)
 
   @@unique([userId, agentId])
 }
+
 
 enum SignalType {
   BUY
