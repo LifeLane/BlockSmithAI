@@ -420,13 +420,15 @@ export async function logSimulatedPositionAction(
       default: expirationDate = add(new Date(), { hours: 24 }); break;
     }
 
+    const isCustomSignal = 'chosenTradingMode' in strategy;
+
     const newPosition = await prisma.position.create({
       data: {
         userId,
         symbol: strategy.symbol,
         signalType: strategy.signal === 'BUY' ? SignalType.BUY : SignalType.SELL,
-        status: PositionStatus.OPEN,
-        openTimestamp: new Date(),
+        status: isCustomSignal ? PositionStatus.PENDING : PositionStatus.OPEN,
+        openTimestamp: isCustomSignal ? null : new Date(),
         entryPrice,
         size,
         stopLoss,
@@ -789,5 +791,40 @@ export async function killSwitchAction(userId: string): Promise<{ success: boole
     } catch (error: any) {
         console.error("Error in killSwitchAction:", error);
         return { success: false, message: `Kill Switch failed: ${error.message}` };
+    }
+}
+
+export async function activatePendingPositionAction(positionId: string): Promise<{ position?: Position; error?: string; }> {
+    try {
+        const position = await prisma.position.findUnique({ where: { id: positionId } });
+        if (!position || position.status !== 'PENDING') {
+            return { error: 'Position not found or is not a pending order.' };
+        }
+
+        const updatedPosition = await prisma.position.update({
+            where: { id: positionId },
+            data: { status: PositionStatus.OPEN, openTimestamp: new Date() }
+        });
+        return { position: updatedPosition };
+    } catch (error: any) {
+        console.error("Error in activatePendingPositionAction:", error);
+        return { error: `Failed to activate position: ${error.message}` };
+    }
+}
+
+export async function cancelPendingPositionAction(positionId: string): Promise<{ success: boolean; error?: string; }> {
+    try {
+        const position = await prisma.position.findUnique({ where: { id: positionId } });
+        if (!position || position.status !== 'PENDING') {
+            return { success: false, error: 'Position not found or is not a pending order.' };
+        }
+
+        await prisma.position.delete({
+            where: { id: positionId }
+        });
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error in cancelPendingPositionAction:", error);
+        return { success: false, error: `Failed to cancel position: ${error.message}` };
     }
 }

@@ -9,7 +9,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle, Wallet, Activity, BrainCircuit, ShieldAlert, CheckCircle2, XCircle, Bot } from 'lucide-react';
+import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle, Wallet, Activity, BrainCircuit, ShieldAlert, CheckCircle2, XCircle, Bot, Hourglass, Trash2 } from 'lucide-react';
 import {
   fetchPendingAndOpenPositionsAction,
   closePositionAction,
@@ -18,6 +18,8 @@ import {
   fetchPortfolioStatsAction,
   generatePerformanceReviewAction,
   killSwitchAction,
+  activatePendingPositionAction,
+  cancelPendingPositionAction,
   type Position,
   type LiveMarketData,
   type PortfolioStats,
@@ -84,7 +86,14 @@ const TimeLeft = ({ expiration, className }: { expiration?: Date | null, classNa
     );
 };
 
-const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position: Position, currentPrice?: number, onClose: (positionId: string, closePrice: number) => void, isClosing: boolean }) => {
+const DataItem = ({ label, value, icon, valueClassName }: { label: string, value: React.ReactNode, icon?: React.ReactNode, valueClassName?: string }) => (
+    <div className="space-y-1">
+        <span className="text-xs text-muted-foreground flex items-center gap-1.5">{icon}{label}</span>
+        <div className={`font-mono font-semibold text-lg ${valueClassName || 'text-foreground'}`}>{value}</div>
+    </div>
+);
+
+const OpenPositionCard = ({ position, currentPrice, onClose, isClosing }: { position: Position, currentPrice?: number, onClose: (positionId: string, closePrice: number) => void, isClosing: boolean }) => {
     let pnl = 0;
     let pnlPercent = 0;
     const positionSize = position.size || 1;
@@ -107,13 +116,6 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
     
     const pnlColor = pnl >= 0 ? 'text-green-400' : 'text-red-400';
     const isBuy = position.signalType === 'BUY';
-
-    const DataItem = ({ label, value, icon, valueClassName }: { label: string, value: React.ReactNode, icon?: React.ReactNode, valueClassName?: string }) => (
-        <div className="space-y-1">
-            <span className="text-xs text-muted-foreground flex items-center gap-1.5">{icon}{label}</span>
-            <div className={`font-mono font-semibold text-lg ${valueClassName || 'text-foreground'}`}>{value}</div>
-        </div>
-    );
     
     return (
         <Card className="bg-card/80 backdrop-blur-sm transition-all duration-300 interactive-card overflow-hidden">
@@ -178,6 +180,63 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
         </Card>
     )
 }
+
+const PendingPositionCard = ({ position, onCancel, isCancelling }: { position: Position, onCancel: (positionId: string) => void, isCancelling: boolean }) => {
+    const isBuy = position.signalType === 'BUY';
+    
+    return (
+        <Card className="bg-card/80 backdrop-blur-sm transition-all duration-300 interactive-card overflow-hidden border-dashed border-tertiary/50">
+            <CardHeader className="flex flex-row items-start justify-between pb-4">
+                <div>
+                    <CardTitle className="text-xl flex items-center font-headline">
+                        <span className={`mr-2 font-bold ${isBuy ? 'text-green-400' : 'text-red-400'}`}>{isBuy ? 'LIMIT BUY' : 'LIMIT SELL'}</span>
+                        {position.symbol}
+                    </CardTitle>
+                     <CardDescription className="text-xs">
+                        Awaiting price trigger...
+                    </CardDescription>
+                </div>
+                 <div className="flex flex-col items-end">
+                     <Badge variant="outline" className={'border-tertiary/80 text-tertiary'}><Hourglass className="h-4 w-4 mr-1"/>PENDING</Badge>
+                    {position.expirationTimestamp && (
+                        <TimeLeft expiration={new Date(position.expirationTimestamp)} className="text-xs text-muted-foreground mt-2"/>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
+                 <DataItem
+                    label="Target Entry"
+                    icon={<LogIn size={12}/>}
+                    value={`$${position.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    valueClassName="text-tertiary"
+                />
+                 <DataItem
+                    label="Order Type"
+                    value={"Limit Order"}
+                    valueClassName="text-tertiary"
+                />
+                 <DataItem
+                    label="Stop Loss"
+                    icon={<ShieldX size={12}/>}
+                    value={position.stopLoss ? `$${position.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A'}
+                    valueClassName="text-red-400"
+                />
+                <DataItem
+                    label="Take Profit"
+                    icon={<Target size={12}/>}
+                    value={position.takeProfit ? `$${position.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A'}
+                    valueClassName="text-green-400"
+                />
+            </CardContent>
+            <CardFooter className="pt-6">
+                <Button className="w-full" variant="outline" onClick={() => onCancel(position.id)} disabled={isCancelling}>
+                    {isCancelling ? <Loader2 className="h-4 w-4 animate-spin"/> : <Trash2 className="h-4 w-4 mr-1"/>}
+                    Cancel Order
+                </Button>
+            </CardFooter>
+        </Card>
+    );
+};
 
 const HistoryCard = ({ position }: { position: Position }) => {
     const isWin = position.pnl != null && position.pnl >= 0;
@@ -342,6 +401,7 @@ export default function PortfolioPage() {
     const [portfolioStats, setPortfolioStats] = useState<PortfolioStats | null>(null);
     const [livePrices, setLivePrices] = useState<Record<string, LiveMarketData>>({});
     const [closingPositionId, setClosingPositionId] = useState<string | null>(null);
+    const [cancellingPositionId, setCancellingPositionId] = useState<string | null>(null);
     const [isLoadingData, setIsLoadingData] = useState(true);
     const [realtimePnl, setRealtimePnl] = useState(0);
 
@@ -417,6 +477,28 @@ export default function PortfolioPage() {
                 
                 const currentPrice = parseFloat(livePriceData.lastPrice);
                 
+                // New logic to check for PENDING order activation
+                if (pos.status === 'PENDING') {
+                    let shouldActivate = false;
+                    if (pos.signalType === 'BUY' && currentPrice <= pos.entryPrice) {
+                        shouldActivate = true;
+                    } else if (pos.signalType === 'SELL' && currentPrice >= pos.entryPrice) {
+                        shouldActivate = true;
+                    }
+
+                    if (shouldActivate) {
+                        const result = await activatePendingPositionAction(pos.id);
+                        if (result.position) {
+                            toast({
+                                title: <span className="text-accent">Order Executed!</span>,
+                                description: `Your pending ${result.position.signalType} order for ${result.position.symbol} has been opened.`,
+                            });
+                            needsReFetch = true;
+                        }
+                    }
+                    continue; // Skip to next position if pending
+                }
+
                 if (pos.status === 'OPEN') {
                     let closeReason: string | null = null;
                     let closePrice = 0;
@@ -465,7 +547,7 @@ export default function PortfolioPage() {
             setIsLoadingData(false);
             isFetchingRef.current = false;
         }
-    }, [showCloseToast, positions.length, tradeHistory.length]);
+    }, [showCloseToast, toast, positions.length, tradeHistory.length]);
 
     const handleManualClose = useCallback(async (positionId: string, closePrice: number) => {
         if (!currentUser) return;
@@ -479,6 +561,19 @@ export default function PortfolioPage() {
         }
         setClosingPositionId(null);
     }, [showCloseToast, toast, currentUser, runSimulationCycle]);
+    
+    const handleCancelOrder = useCallback(async (positionId: string) => {
+        if (!currentUser) return;
+        setCancellingPositionId(positionId);
+        const result = await cancelPendingPositionAction(positionId);
+        if (result.success) {
+            toast({ title: "Order Cancelled", description: "Your pending order has been removed." });
+            await runSimulationCycle(currentUser.id);
+        } else {
+            toast({ title: "Error Cancelling Order", description: result.error, variant: "destructive" });
+        }
+        setCancellingPositionId(null);
+    }, [toast, currentUser, runSimulationCycle]);
 
     const handleGenerateReview = useCallback(async () => {
         if (!currentUser) return;
@@ -556,10 +651,12 @@ export default function PortfolioPage() {
     
     const renderActivePositions = () => {
         const openPositions = positions.filter(p => p.status === 'OPEN');
-        if (isLoadingData && openPositions.length === 0) {
+        const pendingPositions = positions.filter(p => p.status === 'PENDING');
+
+        if (isLoadingData && openPositions.length === 0 && pendingPositions.length === 0) {
             return <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin"/></div>
         }
-        if (openPositions.length === 0) {
+        if (openPositions.length === 0 && pendingPositions.length === 0) {
              return (
                 <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4 interactive-card">
                      <CardHeader>
@@ -582,16 +679,38 @@ export default function PortfolioPage() {
             );
         }
         return (
-            <div className="space-y-4">
-                {openPositions.map(pos => (
-                    <PositionCard
-                        key={pos.id}
-                        position={pos}
-                        currentPrice={livePrices[pos.symbol] ? parseFloat(livePrices[pos.symbol].lastPrice) : undefined}
-                        onClose={handleManualClose}
-                        isClosing={closingPositionId === pos.id}
-                    />
-                ))}
+            <div className="space-y-6">
+                {pendingPositions.length > 0 && (
+                    <div>
+                        <h2 className="text-xl font-headline text-tertiary mb-3">Pending Orders ({pendingPositions.length})</h2>
+                        <div className="space-y-4">
+                            {pendingPositions.map(pos => (
+                                <PendingPositionCard
+                                    key={pos.id}
+                                    position={pos}
+                                    onCancel={handleCancelOrder}
+                                    isCancelling={cancellingPositionId === pos.id}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
+                {openPositions.length > 0 && (
+                    <div>
+                        <h2 className="text-xl font-headline text-primary mb-3">Open Positions ({openPositions.length})</h2>
+                        <div className="space-y-4">
+                            {openPositions.map(pos => (
+                                <OpenPositionCard
+                                    key={pos.id}
+                                    position={pos}
+                                    currentPrice={livePrices[pos.symbol] ? parseFloat(livePrices[pos.symbol].lastPrice) : undefined}
+                                    onClose={handleManualClose}
+                                    isClosing={closingPositionId === pos.id}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         )
     };
@@ -660,7 +779,7 @@ export default function PortfolioPage() {
         />
          <Tabs defaultValue="open" className="mt-4">
             <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="open" className="data-[state=active]:shadow-active-tab-glow">Active Positions ({positions.filter(p => p.status === 'OPEN').length})</TabsTrigger>
+                <TabsTrigger value="open" className="data-[state=active]:shadow-active-tab-glow">Active Positions ({positions.length})</TabsTrigger>
                 <TabsTrigger value="history" className="data-[state=active]:shadow-active-tab-glow">Trade History ({tradeHistory.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="open" className="mt-4">
