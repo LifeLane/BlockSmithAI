@@ -326,7 +326,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
       </CardContent>
       <CardFooter className="flex-col items-center p-6 pt-4 border-t border-border/50">
         {!isHoldSignal && (
-          <div className="flex justify-center">
+          <div className="mb-6 flex justify-center">
             <Button asChild className="glow-button">
               <Link href={isCustomSignal ? '/signals' : '/pulse'}>
                 {isCustomSignal ? <><Route className="mr-2 h-4 w-4"/>Review & Execute Signal</> : <><BrainCircuit className="mr-2 h-4 w-4"/>Track Signal in Portfolio</>}
@@ -336,15 +336,14 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
         )}
 
         {strategy.disclaimer && (
-            <div className="mt-6 flex w-full items-start gap-4">
-                <div className="flex w-auto flex-shrink-0 flex-col items-center text-center text-tertiary">
+            <div className="w-full space-y-3">
+                <div className="flex flex-col items-center text-center text-tertiary">
                     <MessageSquareHeart className="h-6 w-6" />
                     <div className="mt-2 text-sm font-semibold font-headline">
-                        <p>SHADOW's</p>
-                        <p>Edict:</p>
+                        SHADOW's Edict
                     </div>
                 </div>
-                <p className="flex-1 text-xs text-muted-foreground font-code leading-relaxed">
+                <p className="text-xs text-muted-foreground font-code leading-relaxed text-center">
                     {strategy.disclaimer}
                 </p>
             </div>
