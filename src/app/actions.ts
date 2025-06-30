@@ -1,7 +1,7 @@
 
 "use server";
 // AI Flow Imports
-import { generateTradingStrategy as genCoreStrategy, type GenerateTradingStrategyInput, type GenerateTradingStrategyOutput as CoreOutput, type PromptInput as TradingStrategyPromptInput } from '@/ai/flows/generate-trading-strategy';
+import { generateTradingStrategy as genCoreStrategy, type PromptInput as TradingStrategyPromptInput } from '@/ai/flows/generate-trading-strategy';
 import { generateSarcasticDisclaimer } from '@/ai/flows/generate-sarcastic-disclaimer';
 import { shadowChat as shadowChatFlow, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
@@ -126,14 +126,14 @@ export interface PortfolioStats {
     lifetimeRewards: number;
     totalCapitalInvested: number;
 }
-export type GenerateTradingStrategyOutput = CoreOutput & {
-  id?: string;
+export type GenerateTradingStrategyOutput = Awaited<ReturnType<typeof genCoreStrategy>> & {
+  id: string;
   disclaimer: string;
   symbol: string;
-  tradingMode?: string;
+  tradingMode: string;
 };
 export type GenerateShadowChoiceStrategyOutput = ShadowChoiceStrategyCoreOutput & {
-  id?: string;
+  id: string;
   symbol: string;
   disclaimer: string;
 };
@@ -337,7 +337,7 @@ const timeframeMappings: { [key: string]: { short: string; medium: string; long:
     Swing: { short: '1h', medium: '4h', long: '1d' },
 };
 
-export async function generateTradingStrategyAction(input: GenerateTradingStrategyInput & { userId: string }): Promise<GenerateTradingStrategyOutput | { error: string }> {
+export async function generateTradingStrategyAction(input: Omit<TradingStrategyPromptInput, 'shortTermCandles' | 'mediumTermCandles' | 'longTermCandles'> & { userId: string }): Promise<GenerateTradingStrategyOutput | { error: string }> {
     try {
         // Determine timeframes
         const timeframes = timeframeMappings[input.tradingMode] || timeframeMappings.Intraday;
@@ -359,39 +359,39 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
         const [strategy, disclaimer] = await Promise.all([ genCoreStrategy(promptInput), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
 
-        const resultWithDisclaimer = { ...strategy, symbol: input.symbol, disclaimer: disclaimer.disclaimer, tradingMode: input.tradingMode };
-        const isHold = resultWithDisclaimer.signal.toUpperCase() === 'HOLD';
+        const isHold = strategy.signal.toUpperCase() === 'HOLD';
         
         // Save the generated signal to the database
-        await prisma.generatedSignal.create({
+        const savedSignal = await prisma.generatedSignal.create({
             data: {
                 userId: input.userId,
-                symbol: resultWithDisclaimer.symbol,
-                signal: resultWithDisclaimer.signal,
-                entry_zone: resultWithDisclaimer.entry_zone,
-                stop_loss: resultWithDisclaimer.stop_loss,
-                take_profit: resultWithDisclaimer.take_profit,
-                confidence: resultWithDisclaimer.confidence,
-                risk_rating: resultWithDisclaimer.risk_rating,
-                gpt_confidence_score: resultWithDisclaimer.gpt_confidence_score,
-                sentiment: resultWithDisclaimer.sentiment,
-                currentThought: resultWithDisclaimer.currentThought,
-                shortTermPrediction: resultWithDisclaimer.shortTermPrediction,
-                sentimentTransition: resultWithDisclaimer.sentimentTransition,
-                chosenTradingMode: resultWithDisclaimer.tradingMode || 'Intraday',
+                symbol: input.symbol,
+                signal: strategy.signal,
+                entry_zone: strategy.entry_zone,
+                stop_loss: strategy.stop_loss,
+                take_profit: strategy.take_profit,
+                confidence: strategy.confidence,
+                risk_rating: strategy.risk_rating,
+                gpt_confidence_score: strategy.gpt_confidence_score,
+                sentiment: strategy.sentiment,
+                currentThought: strategy.currentThought,
+                shortTermPrediction: strategy.shortTermPrediction,
+                sentimentTransition: strategy.sentimentTransition,
+                chosenTradingMode: input.tradingMode,
                 chosenRiskProfile: input.riskProfile,
                 strategyReasoning: 'Instant signal based on user-defined parameters.',
-                analysisSummary: resultWithDisclaimer.analysisSummary,
-                newsAnalysis: resultWithDisclaimer.newsAnalysis,
-                disclaimer: resultWithDisclaimer.disclaimer,
+                analysisSummary: strategy.analysisSummary,
+                newsAnalysis: strategy.newsAnalysis,
+                disclaimer: disclaimer.disclaimer,
                 type: SignalGenerationType.INSTANT,
                 status: isHold ? GeneratedSignalStatus.ARCHIVED : GeneratedSignalStatus.EXECUTED,
             }
         });
         
-        return resultWithDisclaimer;
+        return { ...strategy, id: savedSignal.id, symbol: input.symbol, disclaimer: disclaimer.disclaimer, tradingMode: input.tradingMode };
 
     } catch (error: any) {
+        console.error("Error in generateTradingStrategyAction:", error);
         return { error: `An unexpected error occurred in SHADOW's cognitive core: ${error.message}` };
     }
 }
@@ -416,39 +416,39 @@ export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStra
         const [strategy, disclaimer] = await Promise.all([ genShadowChoice(promptInput), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate an autonomous strategy." };
 
-        const resultWithDisclaimer = { ...strategy, symbol: input.symbol, disclaimer: disclaimer.disclaimer };
-        const isHold = resultWithDisclaimer.signal.toUpperCase() === 'HOLD';
+        const isHold = strategy.signal.toUpperCase() === 'HOLD';
         
         // Save the generated signal to the database
-        await prisma.generatedSignal.create({
+        const savedSignal = await prisma.generatedSignal.create({
             data: {
                 userId: userId,
-                symbol: resultWithDisclaimer.symbol,
-                signal: resultWithDisclaimer.signal,
-                entry_zone: resultWithDisclaimer.entry_zone,
-                stop_loss: resultWithDisclaimer.stop_loss,
-                take_profit: resultWithDisclaimer.take_profit,
-                confidence: resultWithDisclaimer.confidence,
-                risk_rating: resultWithDisclaimer.risk_rating,
-                gpt_confidence_score: resultWithDisclaimer.gpt_confidence_score,
-                sentiment: resultWithDisclaimer.sentiment,
-                currentThought: resultWithDisclaimer.currentThought,
-                shortTermPrediction: resultWithDisclaimer.shortTermPrediction,
-                sentimentTransition: resultWithDisclaimer.sentimentTransition,
-                chosenTradingMode: resultWithDisclaimer.chosenTradingMode,
-                chosenRiskProfile: resultWithDisclaimer.chosenRiskProfile,
-                strategyReasoning: resultWithDisclaimer.strategyReasoning,
-                analysisSummary: resultWithDisclaimer.analysisSummary,
-                newsAnalysis: resultWithDisclaimer.newsAnalysis,
-                disclaimer: resultWithDisclaimer.disclaimer,
+                symbol: input.symbol,
+                signal: strategy.signal,
+                entry_zone: strategy.entry_zone,
+                stop_loss: strategy.stop_loss,
+                take_profit: strategy.take_profit,
+                confidence: strategy.confidence,
+                risk_rating: strategy.risk_rating,
+                gpt_confidence_score: strategy.gpt_confidence_score,
+                sentiment: strategy.sentiment,
+                currentThought: strategy.currentThought,
+                shortTermPrediction: strategy.shortTermPrediction,
+                sentimentTransition: strategy.sentimentTransition,
+                chosenTradingMode: strategy.chosenTradingMode,
+                chosenRiskProfile: strategy.chosenRiskProfile,
+                strategyReasoning: strategy.strategyReasoning,
+                analysisSummary: strategy.analysisSummary,
+                newsAnalysis: strategy.newsAnalysis,
+                disclaimer: disclaimer.disclaimer,
                 type: SignalGenerationType.CUSTOM,
                 status: isHold ? GeneratedSignalStatus.ARCHIVED : GeneratedSignalStatus.PENDING_EXECUTION,
             }
         });
         
-        return resultWithDisclaimer;
+        return { ...strategy, id: savedSignal.id, symbol: input.symbol, disclaimer: disclaimer.disclaimer };
 
     } catch (error: any) {
+        console.error("Error in generateShadowChoiceStrategyAction:", error);
         return { error: `An unexpected error occurred in SHADOW's autonomous core: ${error.message}` };
     }
 }
@@ -557,7 +557,7 @@ export async function executeCustomSignalAction(
     }
 
     if (signal.status !== 'PENDING_EXECUTION') {
-        return { position: null, error: `Signal has already been ${signal.status.toLowerCase()}.` };
+        return { position: null, error: `Signal has already been ${signal.status.toLowerCase().replace(/_/g, " ")}.` };
     }
 
     const entryPrice = parsePrice(signal.entry_zone);
@@ -653,7 +653,7 @@ export async function fetchPendingAndOpenPositionsAction(userId: string): Promis
                 userId, 
                 status: { in: [PositionStatus.PENDING, PositionStatus.OPEN] }
             }, 
-            orderBy: { id: 'desc' } 
+            orderBy: { createdAt: 'desc' } 
         });
     } catch (error) { console.error(error); return []; }
 }
@@ -689,9 +689,9 @@ export async function fetchPortfolioStatsAction(userId: string): Promise<Portfol
         }
         
         const totalTrades = closedTrades.length;
-        const winningTrades = closedTrades.filter(t => t.pnl && t.pnl > 0).length;
+        const winningTrades = closedTrades.filter(t => t.pnl != null && t.pnl > 0).length;
         const totalPnl = closedTrades.reduce((acc, t) => acc + (t.pnl || 0), 0);
-        const pnls = closedTrades.map(t => t.pnl || 0);
+        const pnls = closedTrades.map(t => t.pnl || 0).filter(pnl => pnl !== 0);
 
         const totalCapitalInClosedTrades = closedTrades.reduce((acc, t) => acc + (t.entryPrice * t.size), 0);
         const totalPnlPercentage = totalCapitalInClosedTrades > 0 ? (totalPnl / totalCapitalInClosedTrades) * 100 : 0;
@@ -794,12 +794,15 @@ export async function upgradeAgentAction(userId: string, agentId: string): Promi
         }
         
         const newLevel = currentLevel + 1;
+        await prisma.user.update({ where: { id: userId }, data: { weeklyPoints: { decrement: currentLevelData.upgradeCost } } });
+        
         if (userAgent) {
             await prisma.userAgent.update({ where: { id: userAgent.id }, data: { level: newLevel } });
         } else {
+             // This case should ideally not happen if upgrading, but as a fallback:
             await prisma.userAgent.create({ data: { userId, agentId, level: newLevel, status: AgentStatus.IDLE } });
         }
-        await prisma.user.update({ where: { id: userId }, data: { weeklyPoints: { decrement: currentLevelData.upgradeCost } } });
+        
         return { success: true, message: `Agent upgraded to Level ${newLevel}!` };
     } catch (error: any) {
         return { success: false, message: `Upgrade failed: ${error.message}` };
