@@ -1,7 +1,7 @@
 
 "use server";
 // AI Flow Imports
-import { generateTradingStrategy as genCoreStrategy, type GenerateTradingStrategyInput, type GenerateTradingStrategyOutput as CoreOutput } from '@/ai/flows/generate-trading-strategy';
+import { generateTradingStrategy as genCoreStrategy, type GenerateTradingStrategyInput, type GenerateTradingStrategyOutput as CoreOutput, type PromptInput as TradingStrategyPromptInput } from '@/ai/flows/generate-trading-strategy';
 import { generateSarcasticDisclaimer } from '@/ai/flows/generate-sarcastic-disclaimer';
 import { shadowChat as shadowChatFlow, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
@@ -12,6 +12,7 @@ import {
     type PerformanceReviewInput, 
     type PerformanceReviewOutput 
 } from '@/ai/flows/generate-performance-review';
+import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
 
 
 // Node/Prisma Imports
@@ -329,9 +330,33 @@ export async function fetchTopSymbolsForTickerAction(): Promise<TickerSymbolData
     }
 }
 
+const timeframeMappings: { [key: string]: { short: string; medium: string; long: string; } } = {
+    Scalper: { short: '1m', medium: '5m', long: '15m' },
+    Sniper: { short: '5m', medium: '15m', long: '1h' },
+    Intraday: { short: '15m', medium: '1h', long: '4h' },
+    Swing: { short: '1h', medium: '4h', long: '1d' },
+};
+
 export async function generateTradingStrategyAction(input: GenerateTradingStrategyInput & { userId: string }): Promise<GenerateTradingStrategyOutput | { error: string }> {
     try {
-        const [strategy, disclaimer] = await Promise.all([ genCoreStrategy(input), generateSarcasticDisclaimer() ]);
+        // Determine timeframes
+        const timeframes = timeframeMappings[input.tradingMode] || timeframeMappings.Intraday;
+
+        // Fetch historical data for all three timeframes in parallel
+        const [shortTermResult, mediumTermResult, longTermResult] = await Promise.all([
+            fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.short }),
+            fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.medium }),
+            fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.long }),
+        ]);
+
+        const promptInput: TradingStrategyPromptInput = { 
+            ...input,
+            shortTermCandles: JSON.stringify(shortTermResult.candles || { error: shortTermResult.error }),
+            mediumTermCandles: JSON.stringify(mediumTermResult.candles || { error: mediumTermResult.error }),
+            longTermCandles: JSON.stringify(longTermResult.candles || { error: longTermResult.error }),
+        };
+        
+        const [strategy, disclaimer] = await Promise.all([ genCoreStrategy(promptInput), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
 
         const resultWithDisclaimer = { ...strategy, symbol: input.symbol, disclaimer: disclaimer.disclaimer, tradingMode: input.tradingMode };
@@ -373,7 +398,22 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
 
 export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStrategyInput, userId: string): Promise<GenerateShadowChoiceStrategyOutput | { error: string }> {
     try {
-        const [strategy, disclaimer] = await Promise.all([ genShadowChoice(input), generateSarcasticDisclaimer() ]);
+        const timeframes = { short: '15m', medium: '1h', long: '4h' };
+
+        const [shortTermResult, mediumTermResult, longTermResult] = await Promise.all([
+            fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.short }),
+            fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.medium }),
+            fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.long }),
+        ]);
+
+        const promptInput = {
+            ...input,
+            shortTermCandles: JSON.stringify(shortTermResult.candles || { error: shortTermResult.error }),
+            mediumTermCandles: JSON.stringify(mediumTermResult.candles || { error: mediumTermResult.error }),
+            longTermCandles: JSON.stringify(longTermResult.candles || { error: longTermResult.error }),
+        };
+        
+        const [strategy, disclaimer] = await Promise.all([ genShadowChoice(promptInput), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate an autonomous strategy." };
 
         const resultWithDisclaimer = { ...strategy, symbol: input.symbol, disclaimer: disclaimer.disclaimer };
@@ -991,5 +1031,3 @@ export async function dismissCustomSignalAction(signalId: string, userId: string
         return { success: false, error: `Failed to dismiss signal: ${error.message}` };
     }
 }
-
-    

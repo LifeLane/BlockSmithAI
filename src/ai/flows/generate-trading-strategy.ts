@@ -29,6 +29,8 @@ const PromptInputSchema = GenerateTradingStrategyInputSchema.extend({
     mediumTermCandles: z.string().describe("Stringified JSON of recent candlestick data for the medium-term timeframe, used for context."),
     longTermCandles: z.string().describe("Stringified JSON of recent candlestick data for the long-term timeframe, used to establish the primary trend."),
 });
+export type PromptInput = z.infer<typeof PromptInputSchema>;
+
 
 // Core output fields from the AI, now including thought process elements and analysis summaries
 const GenerateTradingStrategyCoreOutputSchema = z.object({
@@ -46,7 +48,7 @@ const GenerateTradingStrategyCoreOutputSchema = z.object({
   analysisSummary: z.string().describe("A brief summary of the technical analysis performed, mentioning key indicators like RSI, MACD, and Bollinger Bands."),
   newsAnalysis: z.string().optional().describe("A brief summary of how recent news and market sentiment influenced the trading decision."),
 });
-type GenerateTradingStrategyCoreOutput = z.infer<typeof GenerateTradingStrategyCoreOutputSchema>;
+export type GenerateTradingStrategyCoreOutput = z.infer<typeof GenerateTradingStrategyCoreOutputSchema>;
 
 // Final output schema including the disclaimer
 const GenerateTradingStrategyOutputSchema = GenerateTradingStrategyCoreOutputSchema.extend({
@@ -56,7 +58,7 @@ const GenerateTradingStrategyOutputSchema = GenerateTradingStrategyCoreOutputSch
 export type GenerateTradingStrategyOutput = z.infer<typeof GenerateTradingStrategyOutputSchema>;
 
 
-export async function generateTradingStrategy(input: GenerateTradingStrategyInput): Promise<GenerateTradingStrategyCoreOutput> {
+export async function generateTradingStrategy(input: PromptInput): Promise<GenerateTradingStrategyCoreOutput> {
   return generateTradingStrategyFlow(input);
 }
 
@@ -110,40 +112,15 @@ const generateTradingStrategyPrompt = ai.definePrompt({
 `,
 });
 
-const timeframeMappings: { [key: string]: { short: string; medium: string; long: string; } } = {
-    Scalper: { short: '1m', medium: '5m', long: '15m' },
-    Sniper: { short: '5m', medium: '15m', long: '1h' },
-    Intraday: { short: '15m', medium: '1h', long: '4h' },
-    Swing: { short: '1h', medium: '4h', long: '1d' },
-};
-
 const generateTradingStrategyFlow = ai.defineFlow(
   {
     name: 'generateTradingStrategyFlow',
-    inputSchema: GenerateTradingStrategyInputSchema,
+    inputSchema: PromptInputSchema, // The flow now expects the pre-fetched data
     outputSchema: GenerateTradingStrategyCoreOutputSchema,
     tools: [fetchHistoricalDataTool, fetchNewsTool],
   },
   async (input) => {
-    // Get the appropriate set of timeframes for the selected trading mode
-    const timeframes = timeframeMappings[input.tradingMode] || timeframeMappings.Intraday;
-
-    // Fetch historical data for all three timeframes in parallel
-    const [shortTermResult, mediumTermResult, longTermResult] = await Promise.all([
-        fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.short }),
-        fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.medium }),
-        fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.long }),
-    ]);
-
-    const promptInput = { 
-        ...input,
-        // Pass the stringified candle data (or an error message) to the prompt
-        shortTermCandles: JSON.stringify(shortTermResult.candles || { error: shortTermResult.error }),
-        mediumTermCandles: JSON.stringify(mediumTermResult.candles || { error: mediumTermResult.error }),
-        longTermCandles: JSON.stringify(longTermResult.candles || { error: longTermResult.error }),
-    };
-
-    const {output} = await generateTradingStrategyPrompt(promptInput);
+    const {output} = await generateTradingStrategyPrompt(input);
 
     if (!output) {
       console.error("SHADOW Core returned empty output for generateTradingStrategyPrompt with input:", input);
@@ -175,9 +152,8 @@ const generateTradingStrategyFlow = ai.defineFlow(
         ...output,
         gpt_confidence_score: score,
         risk_rating: output.risk_rating || "Medium", // Ensure risk_rating has a fallback
-        analysisSummary: output.analysisSummary || "Analysis summary was not generated."
+        analysisSummary: output.analysisSummary || "Analysis summary was not generated.",
+        newsAnalysis: output.newsAnalysis || "News context was not analyzed."
     };
   }
 );
-
-    

@@ -51,7 +51,7 @@ const ShadowChoiceStrategyCoreOutputSchema = z.object({
 export type ShadowChoiceStrategyCoreOutput = z.infer<typeof ShadowChoiceStrategyCoreOutputSchema>;
 
 // This is the main function that will be called by the server action.
-export async function generateShadowChoiceStrategy(input: ShadowChoiceStrategyInput): Promise<ShadowChoiceStrategyCoreOutput> {
+export async function generateShadowChoiceStrategy(input: PromptInputSchema): Promise<ShadowChoiceStrategyCoreOutput> {
   return shadowChoiceStrategyFlow(input);
 }
 
@@ -108,29 +108,12 @@ My output must be direct, complete, and reflect my superior analytical process. 
 const shadowChoiceStrategyFlow = ai.defineFlow(
   {
     name: 'shadowChoiceStrategyFlow',
-    inputSchema: ShadowChoiceStrategyInputSchema,
+    inputSchema: PromptInputSchema, // The flow now expects the pre-fetched data
     outputSchema: ShadowChoiceStrategyCoreOutputSchema,
     tools: [fetchHistoricalDataTool, fetchNewsTool],
   },
   async (input) => {
-    // For autonomous choice, we fetch a standard set of timeframes for analysis.
-    const timeframes = { short: '15m', medium: '1h', long: '4h' };
-
-    const [shortTermResult, mediumTermResult, longTermResult] = await Promise.all([
-        fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.short }),
-        fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.medium }),
-        fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.long }),
-    ]);
-
-    const promptInput = {
-        ...input,
-        shortTermCandles: JSON.stringify(shortTermResult.candles || { error: shortTermResult.error }),
-        mediumTermCandles: JSON.stringify(mediumTermResult.candles || { error: mediumTermResult.error }),
-        longTermCandles: JSON.stringify(longTermResult.candles || { error: longTermResult.error }),
-    };
-
-
-    const { output } = await prompt(promptInput);
+    const { output } = await prompt(input);
 
     if (!output) {
       console.error("SHADOW Core returned empty output for SHADOW's Choice strategy with input:", input);
@@ -172,5 +155,3 @@ const shadowChoiceStrategyFlow = ai.defineFlow(
     };
   }
 );
-
-    
