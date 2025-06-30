@@ -9,18 +9,21 @@ import { formatDistanceToNow } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PauseCircle, CheckCircle2, XCircle, Bot, PlayCircle, Wallet, Activity } from 'lucide-react';
+import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PauseCircle, CheckCircle2, XCircle, Bot, PlayCircle, Wallet, Activity, BrainCircuit } from 'lucide-react';
 import {
   fetchPendingAndOpenPositionsAction,
   closePositionAction,
   fetchMarketDataAction,
   fetchTradeHistoryAction,
   fetchPortfolioStatsAction,
+  generatePerformanceReviewAction,
   type Position,
   type LiveMarketData,
   type PortfolioStats,
+  type PerformanceReviewOutput,
 } from '@/app/actions';
 import { Button } from '@/components/ui/button';
+import PerformanceReviewModal from '@/components/blocksmith-ai/PerformanceReviewModal';
 
 const TimeLeft = ({ expiration, className }: { expiration?: Date | null, className?: string }) => {
     const [timeLeft, setTimeLeft] = useState('');
@@ -198,7 +201,7 @@ const StatCard = ({ title, value, subValue, icon, valueClassName }: { title: str
     </div>
 );
 
-const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl }: { stats: PortfolioStats | null, isLoading: boolean, realtimePnl: number }) => {
+const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview, isGeneratingReview }: { stats: PortfolioStats | null, isLoading: boolean, realtimePnl: number, onGenerateReview: () => void, isGeneratingReview: boolean }) => {
     if (isLoading && !stats) {
         return (
              <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30">
@@ -222,8 +225,15 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl }: { stats: Portf
 
     return (
         <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30">
-            <CardHeader className="pb-4">
-                <CardTitle className="text-lg flex items-center gap-2 text-accent"><Briefcase /> Performance Matrix</CardTitle>
+            <CardHeader className="flex-col sm:flex-row items-start sm:items-center justify-between pb-4">
+                <div className="space-y-1 mb-4 sm:mb-0">
+                    <CardTitle className="text-lg flex items-center gap-2 text-accent"><Briefcase /> Performance Matrix</CardTitle>
+                    <CardDescription>An overview of your closed trade performance.</CardDescription>
+                </div>
+                <Button size="sm" onClick={onGenerateReview} disabled={isGeneratingReview || !stats || stats.totalTrades < 5} className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground w-full sm:w-auto">
+                    {isGeneratingReview ? <Loader2 className="h-4 w-4 animate-spin"/> : <BrainCircuit className="h-4 w-4 mr-2"/>}
+                    Get SHADOW's Review
+                </Button>
             </CardHeader>
             <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <StatCard title="Capital Invested" value={`$${stats.totalCapitalInvested.toFixed(2)}`} icon={<Wallet size={14} />} valueClassName="text-tertiary" />
@@ -247,6 +257,13 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl }: { stats: Portf
                 <StatCard title="Worst Trade" value={`$${stats.worstTradePnl.toFixed(2)}`} icon={<ArrowDown size={14} />} valueClassName="text-red-400" />
                 <StatCard title="Lifetime Rewards" value={stats.lifetimeRewards.toLocaleString()} icon={<Gift size={14}/>} valueClassName="text-orange-400" />
             </CardContent>
+             <CardFooter className="pt-3">
+                {stats && stats.totalTrades < 5 && (
+                    <p className="text-xs text-muted-foreground w-full text-center py-2">
+                        At least 5 closed trades are required for a meaningful performance review.
+                    </p>
+                )}
+            </CardFooter>
         </Card>
     );
 };
@@ -262,9 +279,31 @@ export default function PortfolioPage() {
     const [isLoadingData, setIsLoadingData] = useState(true);
     const [realtimePnl, setRealtimePnl] = useState(0);
 
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [isGeneratingReview, setIsGeneratingReview] = useState(false);
+    const [reviewData, setReviewData] = useState<PerformanceReviewOutput | null>(null);
+    const [reviewError, setReviewError] = useState<string | null>(null);
+
     const { toast } = useToast();
     const isFetchingRef = useRef(false);
     const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+     const handleGenerateReview = useCallback(async () => {
+        if (!currentUser) return;
+        setIsGeneratingReview(true);
+        setReviewData(null);
+        setReviewError(null);
+        setIsReviewModalOpen(true);
+
+        const result = await generatePerformanceReviewAction(currentUser.id);
+        
+        if ('error' in result) {
+            setReviewError(result.error);
+        } else {
+            setReviewData(result);
+        }
+        setIsGeneratingReview(false);
+    }, [currentUser]);
 
     useEffect(() => {
         const openPositions = positions.filter(p => p.status === 'OPEN');
@@ -518,7 +557,13 @@ export default function PortfolioPage() {
     <>
       <AppHeader />
       <div className="container mx-auto px-4 py-8 pb-20">
-        <PortfolioStatsDisplay stats={portfolioStats} isLoading={isLoadingData && !portfolioStats} realtimePnl={realtimePnl} />
+        <PortfolioStatsDisplay 
+            stats={portfolioStats} 
+            isLoading={isLoadingData && !portfolioStats} 
+            realtimePnl={realtimePnl}
+            onGenerateReview={handleGenerateReview}
+            isGeneratingReview={isGeneratingReview}
+        />
          <Tabs defaultValue="open" className="mt-4">
             <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="open">Active Positions ({positions.filter(p => p.status === 'OPEN').length})</TabsTrigger>
@@ -532,6 +577,13 @@ export default function PortfolioPage() {
             </TabsContent>
         </Tabs>
       </div>
+       <PerformanceReviewModal 
+            isOpen={isReviewModalOpen}
+            onOpenChange={setIsReviewModalOpen}
+            reviewData={reviewData}
+            isLoading={isGeneratingReview}
+            error={reviewError}
+        />
     </>
   );
 }

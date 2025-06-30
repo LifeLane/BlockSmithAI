@@ -7,6 +7,12 @@ import { shadowChat as shadowChatFlow, type ShadowChatInput, type ShadowChatOutp
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
 import { generateShadowChoiceStrategy as genShadowChoice, type ShadowChoiceStrategyInput, type ShadowChoiceStrategyCoreOutput } from '@/ai/flows/generate-shadow-choice-strategy';
 import { generateMissionLog, type GenerateMissionLogInput } from '@/ai/flows/generate-mission-log';
+import { 
+    generatePerformanceReview as genPerformanceReview, 
+    type PerformanceReviewInput, 
+    type PerformanceReviewOutput 
+} from '@/ai/flows/generate-performance-review';
+
 
 // Node/Prisma Imports
 import { PrismaClient, type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, SignalType, PositionStatus } from '@prisma/client';
@@ -127,6 +133,7 @@ export type GenerateShadowChoiceStrategyOutput = ShadowChoiceStrategyCoreOutput 
   symbol: string;
   disclaimer: string;
 };
+export type { PerformanceReviewOutput };
 
 // --- Mission and Agent Data ---
 const missionRewards: { [key: string]: { xp: number; airdrop: number } } = {
@@ -650,5 +657,61 @@ export async function claimSpecialOpAction(userId: string, opId: string): Promis
         return { success: true, message: `Claimed ${op.bsaiReward} BSAI and ${op.xpReward} XP!` };
     } catch (error: any) {
         return { success: false, message: `Claim failed: ${error.message}` };
+    }
+}
+
+export async function generatePerformanceReviewAction(userId: string): Promise<PerformanceReviewOutput | { error: string }> {
+    if (!userId) {
+        return { error: 'User ID is required for a performance review.' };
+    }
+
+    try {
+        const [statsResult, tradeHistory] = await Promise.all([
+            fetchPortfolioStatsAction(userId),
+            fetchTradeHistoryAction(userId),
+        ]);
+
+        if ('error' in statsResult) {
+            return { error: `Could not fetch portfolio stats: ${statsResult.error}` };
+        }
+        
+        if (tradeHistory.length < 5) {
+            return { error: 'Insufficient trade history. At least 5 closed trades are required for a meaningful review.' };
+        }
+
+        // The stats action returns more fields than the AI needs. Let's narrow it down.
+        const statsForAI = {
+            totalTrades: statsResult.totalTrades,
+            winRate: statsResult.winRate,
+            winningTrades: statsResult.winningTrades,
+            totalPnl: statsResult.totalPnl,
+            bestTradePnl: statsResult.bestTradePnl,
+            worstTradePnl: statsResult.worstTradePnl,
+        };
+
+        // The trade history also needs to be cleaned up for the AI.
+        const historyForAI = tradeHistory.map(t => ({
+            id: t.id,
+            symbol: t.symbol,
+            signalType: t.signalType,
+            entryPrice: t.entryPrice,
+            closePrice: t.closePrice,
+            pnl: t.pnl,
+            openTimestamp: t.openTimestamp?.toISOString() || 'N/A',
+            closeTimestamp: t.closeTimestamp?.toISOString() || null,
+        }));
+
+        const input: PerformanceReviewInput = {
+            stats: statsForAI,
+            tradeHistory: historyForAI,
+        };
+        
+        const review = await genPerformanceReview(input);
+
+        return review;
+
+    } catch (error: any) {
+        console.error("Error generating performance review:", error);
+        return { error: `An unexpected error occurred in SHADOW's analytical core: ${error.message}` };
     }
 }
