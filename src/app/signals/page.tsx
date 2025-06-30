@@ -18,7 +18,7 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const GeneratedSignalCard = ({ signal, onExecute, onDismiss, isProcessing }: { signal: GeneratedSignal, onExecute: (s: GeneratedSignal) => void, onDismiss: (id: string) => void, isProcessing: boolean }) => {
     
-    const formatPrice = (priceString?: string): string => {
+    const formatPrice = (priceString?: string | null): string => {
         if (!priceString) return 'N/A';
         const price = parseFloat(priceString);
         if (isNaN(price)) {
@@ -72,7 +72,7 @@ const GeneratedSignalCard = ({ signal, onExecute, onDismiss, isProcessing }: { s
                     </>
                 ) : (
                     <div className="text-xs text-muted-foreground text-center w-full py-2">
-                        This signal has been {signal.status.toLowerCase()} and cannot be executed.
+                        This signal has been {signal.status.toLowerCase().replace(/_/g, ' ')} and cannot be executed.
                     </div>
                 )}
             </CardFooter>

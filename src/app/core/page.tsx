@@ -370,7 +370,6 @@ export default function CoreConsolePage() {
                         isLoading={isLoadingInstant || isLoadingCustom}
                         error={strategyError}
                         symbol={symbol}
-                        onChat={handleToggleChat}
                         isCustomSignal={isCustomSignal}
                     />
                 </div>

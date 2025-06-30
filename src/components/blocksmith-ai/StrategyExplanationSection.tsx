@@ -33,8 +33,8 @@ import Link from 'next/link';
 
 type CombinedStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
     id?: string;
-    analysisSummary?: string; 
-    newsAnalysis?: string;
+    analysisSummary?: string | null; 
+    newsAnalysis?: string | null;
 };
 
 interface StrategyExplanationSectionProps {
@@ -74,7 +74,7 @@ const sentimentConfig = {
   default: { icon: <Brain className="h-5 w-5 text-purple-400" />, color: 'text-purple-400 font-semibold' },
 };
 
-const getSentimentStyle = (sentiment?: string) => {
+const getSentimentStyle = (sentiment?: string | null) => {
   const lowerSentiment = sentiment?.toLowerCase() || '';
   if (lowerSentiment.includes('bullish')) return sentimentConfig.bullish;
   if (lowerSentiment.includes('bearish')) return sentimentConfig.bearish;
@@ -92,7 +92,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   isCustomSignal,
 }) => {
 
-  const formatPrice = (priceString?: string): string => {
+  const formatPrice = (priceString?: string | null): string => {
     if (!priceString) return 'N/A';
     const price = parseFloat(priceString);
     if (isNaN(price)) {
