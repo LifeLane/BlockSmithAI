@@ -11,61 +11,69 @@ datasource db {
 }
 
 model User {
-  id                String      @id @default(uuid())
+  id                String       @id @default(uuid())
   username          String
-  shadowId          String      @unique
+  shadowId          String       @unique
   status            String
-  weeklyPoints      Int         @default(0)
-  airdropPoints     Int         @default(0)
-  wallet_address    String?
-  wallet_type       String?
+  weeklyPoints      Int          @default(0)
+  airdropPoints     Int          @default(0)
+  claimedMissions   String[]
+  claimedSpecialOps String[]
+  createdAt         DateTime     @default(now()) @db.Timestamptz
+  updatedAt         DateTime     @default(now()) @updatedAt @db.Timestamptz
+
+  // Optional fields for Airdrop Registration
   email             String?
   phone             String?
   x_handle          String?
   telegram_handle   String?
   youtube_handle    String?
-  claimedMissions   String[]
-  claimedSpecialOps String[]
-  badges            Badge[]     @relation("UserBadges")
-  positions         Position[]
-  userAgents        UserAgent[]
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @default(now()) @updatedAt
-}
+  wallet_type       String?
+  wallet_address    String?
 
-model Badge {
-  id    String @id @default(uuid())
-  name  String
-  users User[] @relation("UserBadges")
+  positions Position[]
+  userAgents UserAgent[]
+  badges    Badge[]      @relation("UserBadges")
 }
 
 model Position {
   id                  String         @id @default(uuid())
   userId              String
-  user                User           @relation(fields: [userId], references: [id])
   symbol              String
   signalType          SignalType
-  status              PositionStatus
+  status              PositionStatus @default(OPEN)
   entryPrice          Float
   size                Float
   closePrice          Float?
   pnl                 Float?
-  openTimestamp       DateTime?
-  closeTimestamp      DateTime?
   stopLoss            Float?
   takeProfit          Float?
-  expirationTimestamp DateTime?
+  openTimestamp       DateTime?      @db.Timestamptz
+  closeTimestamp      DateTime?      @db.Timestamptz
+  expirationTimestamp DateTime?      @db.Timestamptz
   strategyId          String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model UserAgent {
-  id                String    @id @default(uuid())
-  userId            String
-  user              User      @relation(fields: [userId], references: [id])
-  agentId           String
-  level             Int
-  status            String // e.g., 'IDLE', 'DEPLOYED'
-  deploymentEndTime DateTime?
+    id String @id @default(uuid())
+    userId String
+    agentId String
+    level Int @default(1)
+    status String // 'IDLE' or 'DEPLOYED'
+    deploymentEndTime DateTime? @db.Timestamptz
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    @@unique([userId, agentId])
+}
+
+model Badge {
+  id      String @id @default(uuid())
+  name    String @unique
+  iconUrl String?
+
+  users User[] @relation("UserBadges")
 }
 
 enum SignalType {
