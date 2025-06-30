@@ -9,7 +9,6 @@ import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
 import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
-import ApiSettingsModal from '@/components/blocksmith-ai/ApiSettingsModal';
 import { Button } from '@/components/ui/button';
 import {
   generateTradingStrategyAction,
@@ -374,7 +373,6 @@ export default function CoreConsolePage() {
             userId={currentUser.id}
         />
       )}
-      <ApiSettingsModal />
     </>
   );
 }

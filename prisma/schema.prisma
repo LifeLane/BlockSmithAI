@@ -11,61 +11,58 @@ datasource db {
 }
 
 model User {
-  id                String   @id @default(uuid())
-  username          String   @unique
-  shadowId          String   @unique
-  status            String?
-  weeklyPoints      Int      @default(0)
-  airdropPoints     Int      @default(0)
-  claimedMissions   String[] @default([])
-  claimedSpecialOps String[] @default([])
-
-  // Airdrop registration fields
-  wallet_address  String?
-  wallet_type     String?
-  email           String? @unique
-  phone           String?
-  x_handle        String?
-  telegram_handle String?
-  youtube_handle  String?
-
-  positions  Position[]
-  userAgents UserAgent[]
-  badges     Badge[]     @relation("UserBadges")
-}
-
-model Position {
-  id                  String         @id @default(uuid())
-  userId              String
-  user                User           @relation(fields: [userId], references: [id])
-  symbol              String
-  signalType          SignalType
-  status              PositionStatus @default(OPEN)
-  openTimestamp       DateTime?
-  closeTimestamp      DateTime?
-  expirationTimestamp DateTime?
-  entryPrice          Float
-  closePrice          Float?
-  size                Float          @default(1)
-  stopLoss            Float
-  takeProfit          Float
-  pnl                 Float?
-  strategyId          String?
+  id                String      @id @default(uuid())
+  username          String
+  shadowId          String      @unique
+  status            String
+  weeklyPoints      Int         @default(0)
+  airdropPoints     Int         @default(0)
+  wallet_address    String?
+  wallet_type       String?
+  email             String?
+  phone             String?
+  x_handle          String?
+  telegram_handle   String?
+  youtube_handle    String?
+  claimedMissions   String[]
+  claimedSpecialOps String[]
+  badges            Badge[]
+  positions         Position[]
+  userAgents        UserAgent[]
 }
 
 model Badge {
   id    String @id @default(uuid())
-  name  String @unique
-  users User[] @relation("UserBadges")
+  name  String
+  users User[]
+}
+
+model Position {
+  id                  String          @id @default(uuid())
+  userId              String
+  user                User            @relation(fields: [userId], references: [id])
+  symbol              String
+  signalType          SignalType
+  status              PositionStatus
+  entryPrice          Float
+  size                Float           @default(1)
+  stopLoss            Float
+  takeProfit          Float
+  openTimestamp       DateTime        @default(now())
+  closeTimestamp      DateTime?
+  closePrice          Float?
+  pnl                 Float?
+  expirationTimestamp DateTime?
+  strategyId          String?
 }
 
 model UserAgent {
-  id                String    @id @default(uuid())
+  id                String      @id @default(uuid())
   userId            String
-  user              User      @relation(fields: [userId], references: [id])
+  user              User        @relation(fields: [userId], references: [id])
   agentId           String
-  level             Int       @default(1)
-  status            String // e.g., 'IDLE', 'DEPLOYED'
+  level             Int         @default(1)
+  status            AgentStatus @default(IDLE)
   deploymentEndTime DateTime?
 }
 
@@ -78,4 +75,9 @@ enum PositionStatus {
   PENDING
   OPEN
   CLOSED
+}
+
+enum AgentStatus {
+  IDLE
+  DEPLOYED
 }

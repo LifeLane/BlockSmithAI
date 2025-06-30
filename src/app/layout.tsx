@@ -3,7 +3,6 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import BottomNav from '@/components/layout/BottomNav';
-import { ApiKeyProvider } from '@/context/ApiKeyContext';
 import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
@@ -31,15 +30,13 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <ApiKeyProvider>
-            <div className="text-foreground bg-background min-h-screen flex flex-col">
-              <main className="flex-grow pb-16">
-                {children}
-              </main>
-              <BottomNav />
-            </div>
-            <Toaster />
-          </ApiKeyProvider>
+          <div className="text-foreground bg-background min-h-screen flex flex-col">
+            <main className="flex-grow pb-16">
+              {children}
+            </main>
+            <BottomNav />
+          </div>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

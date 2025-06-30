@@ -1,17 +1,12 @@
 
 'use client';
 
-import { FunctionComponent, useEffect, useRef } from 'react';
-import { Zap } from 'lucide-react';
+import { FunctionComponent } from 'react';
 import { ThemeToggle } from '@/components/theme-toggle';
 
-interface AppHeaderProps {
-  onApiSettingsClick?: () => void;
-}
-
-const AppHeader: FunctionComponent<AppHeaderProps> = ({ onApiSettingsClick }) => {
+const AppHeader: FunctionComponent = () => {
   return (
-    <header className="py-4 relative border-b border-border/50">
+    <header className="py-4 relative border-b border-transparent bg-gradient-to-r from-transparent via-primary/20 to-transparent">
       <div className="container mx-auto flex flex-col items-center justify-center">
         <div className="flex items-center">
           <div className="logo-container flex items-baseline text-3xl sm:text-4xl font-bold font-headline select-none">
