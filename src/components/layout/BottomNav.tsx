@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -29,7 +30,7 @@ export default function BottomNav() {
         const isActive = isMounted && pathname === item.href;
         return (
           <Link href={item.href} key={item.href} className="flex flex-col items-center justify-center w-full h-full text-muted-foreground hover:text-primary transition-colors">
-            <item.icon className={cn('h-6 w-6 mb-1', isActive ? 'text-primary' : '')} />
+            <item.icon className={cn('h-6 w-6 mb-1 transition-all', isActive ? 'text-primary nav-icon-active-glow' : '')} />
             <span className={cn('text-xs font-medium', isActive ? 'text-primary' : '')}>
               {item.label}
             </span>
