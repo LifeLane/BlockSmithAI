@@ -107,12 +107,19 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
     
     const pnlColor = pnl >= 0 ? 'text-green-400' : 'text-red-400';
     const isBuy = position.signalType === 'BUY';
+
+    const DataItem = ({ label, value, icon, valueClassName }: { label: string, value: React.ReactNode, icon?: React.ReactNode, valueClassName?: string }) => (
+        <div className="space-y-1">
+            <span className="text-xs text-muted-foreground flex items-center gap-1.5">{icon}{label}</span>
+            <div className={`font-mono font-semibold text-lg ${valueClassName || 'text-foreground'}`}>{value}</div>
+        </div>
+    );
     
     return (
         <Card className="bg-card/80 backdrop-blur-sm transition-all duration-300 interactive-card overflow-hidden">
             <CardHeader className="flex flex-row items-start justify-between pb-4">
                 <div>
-                    <CardTitle className="text-lg flex items-center font-headline">
+                    <CardTitle className="text-xl flex items-center font-headline">
                         <span className={`mr-2 font-bold ${isBuy ? 'text-green-400' : 'text-red-400'}`}>{isBuy ? 'LONG' : 'SHORT'}</span>
                         {position.symbol}
                     </CardTitle>
@@ -127,40 +134,43 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
                     )}
                 </div>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-                
-                <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">Current Price</span>
-                    <div className="font-mono font-semibold text-primary">{currentPrice ? `$${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`: <Loader2 className="h-4 w-4 animate-spin"/>}</div>
-                </div>
-
-                <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1"><LogIn size={12}/>Entry Price</span>
-                    <div className="font-mono font-semibold text-primary">${position.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</div>
-                </div>
-
-                <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1"><ShieldX size={12}/>Stop Loss</span>
-                    <div className="font-mono font-semibold text-red-400">{position.stopLoss ? `$${position.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : 'N/A'}</div>
-                </div>
-
-                <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1"><Target size={12}/>Take Profit</span>
-                    <div className="font-mono font-semibold text-green-400">{position.takeProfit ? `$${position.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : 'N/A'}</div>
-                </div>
-
-                <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">Unrealized PnL</span>
-                    <div className={`font-mono font-semibold ${pnlColor}`}>{currentPrice ? `$${pnl.toFixed(2)}` : '...'}</div>
-                </div>
-
-                 <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">Unrealized PnL %</span>
-                    <div className={`font-mono font-semibold ${pnlColor}`}>{currentPrice ? `${pnlPercent.toFixed(2)}%` : '...'}</div>
-                </div>
+            <CardContent className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
+                <DataItem
+                    label="Current Price"
+                    value={currentPrice ? `$${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : <Loader2 className="h-4 w-4 animate-spin"/>}
+                    valueClassName="text-primary"
+                />
+                 <DataItem
+                    label="Entry Price"
+                    icon={<LogIn size={12}/>}
+                    value={`$${position.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`}
+                    valueClassName="text-primary"
+                />
+                 <DataItem
+                    label="Stop Loss"
+                    icon={<ShieldX size={12}/>}
+                    value={position.stopLoss ? `$${position.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : 'N/A'}
+                    valueClassName="text-red-400"
+                />
+                <DataItem
+                    label="Take Profit"
+                    icon={<Target size={12}/>}
+                    value={position.takeProfit ? `$${position.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : 'N/A'}
+                    valueClassName="text-green-400"
+                />
+                <DataItem
+                    label="Unrealized PnL"
+                    value={currentPrice ? `$${pnl.toFixed(2)}` : '...'}
+                    valueClassName={pnlColor}
+                />
+                <DataItem
+                    label="Unrealized PnL %"
+                    value={currentPrice ? `${pnlPercent.toFixed(2)}%` : '...'}
+                    valueClassName={pnlColor}
+                />
             </CardContent>
-            <CardFooter className="pt-4">
-                <Button size="sm" variant="destructive" onClick={() => currentPrice && onClose(position.id, currentPrice)} disabled={isClosing || !currentPrice}>
+            <CardFooter className="pt-6">
+                <Button className="w-full" variant="destructive" onClick={() => currentPrice && onClose(position.id, currentPrice)} disabled={isClosing || !currentPrice}>
                     {isClosing ? <Loader2 className="h-4 w-4 animate-spin"/> : <LogOut className="h-4 w-4 mr-1"/>}
                     Close Manually
                 </Button>

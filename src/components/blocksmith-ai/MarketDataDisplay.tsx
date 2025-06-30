@@ -29,14 +29,13 @@ const formatNumber = (numStr: string) => {
     return num.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
 
-// A small component for each stat to avoid repetition, styled to match the image
 const StatBox = ({ title, value, icon, valueClassName }: { title: string; value: React.ReactNode; icon: React.ReactNode, valueClassName?: string }) => (
-    <div className="bg-secondary p-4 rounded-lg flex flex-col justify-start">
-        <div className="flex items-center text-sm text-muted-foreground">
+    <div className="bg-secondary p-3 rounded-lg">
+        <div className="flex items-center text-xs text-muted-foreground mb-1">
             {icon}
-            <span className="ml-2">{title}</span>
+            <span className="ml-1.5">{title}</span>
         </div>
-        <div className={`text-2xl font-bold mt-2 break-all ${valueClassName || 'text-foreground'}`}>
+        <div className={`text-xl font-bold font-mono break-all ${valueClassName || 'text-foreground'}`}>
             {value}
         </div>
     </div>
@@ -54,8 +53,8 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 
   if (isLoading) {
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-[92px] w-full bg-secondary" />)}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-[75px] w-full bg-secondary" />)}
         </div>
     );
   }
@@ -96,40 +95,40 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
   });
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <StatBox 
           title="Current Price"
-          icon={<DollarSign size={16} />}
+          icon={<DollarSign size={14} />}
           value={`$${lastPriceFormatted}`}
           valueClassName="text-primary"
         />
         <StatBox
           title="24h Change"
-          icon={<Percent size={16} />}
+          icon={<Percent size={14} />}
           value={formattedPriceChange}
           valueClassName={isPositiveChange ? "text-green-400" : "text-destructive"}
         />
         <StatBox
           title="24h High"
-          icon={<ArrowUp size={16} />}
+          icon={<ArrowUp size={14} />}
           value={`$${parseFloat(data.highPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}`}
-          valueClassName="text-primary"
+          valueClassName="text-green-400"
         />
         <StatBox
           title="24h Low"
-          icon={<ArrowDown size={16} />}
+          icon={<ArrowDown size={14} />}
           value={`$${parseFloat(data.lowPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}`}
-          valueClassName="text-primary"
+          valueClassName="text-destructive"
         />
         <StatBox
           title={`Volume (${actualBaseSymbol})`}
-          icon={<BarChart2 size={16} />}
+          icon={<BarChart2 size={14} />}
           value={formatNumber(data.volume)}
           valueClassName="text-primary"
         />
         <StatBox
           title="Volume (USDT)"
-          icon={<Activity size={16} />}
+          icon={<Activity size={14} />}
           value={`$${formatNumber(data.quoteVolume)}`}
           valueClassName="text-primary"
         />
