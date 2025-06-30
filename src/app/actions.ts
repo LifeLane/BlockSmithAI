@@ -691,8 +691,10 @@ export async function generatePerformanceReviewAction(userId: string): Promise<P
             return { error: `Could not fetch portfolio stats: ${statsResult.error}` };
         }
         
-        if (tradeHistory.length < 5) {
-            return { error: 'Insufficient trade history. At least 5 closed trades are required for a meaningful review.' };
+        const filteredTradeHistory = tradeHistory.filter(t => t.signalType === 'BUY' || t.signalType === 'SELL');
+
+        if (filteredTradeHistory.length < 5) {
+            return { error: 'Insufficient trade history. At least 5 closed trades (BUY/SELL) are required for a meaningful review.' };
         }
 
         // The stats action returns more fields than the AI needs. Let's narrow it down.
@@ -706,7 +708,7 @@ export async function generatePerformanceReviewAction(userId: string): Promise<P
         };
 
         // The trade history also needs to be cleaned up for the AI.
-        const historyForAI = tradeHistory.map(t => ({
+        const historyForAI = filteredTradeHistory.map(t => ({
             id: t.id,
             symbol: t.symbol,
             signalType: t.signalType,
