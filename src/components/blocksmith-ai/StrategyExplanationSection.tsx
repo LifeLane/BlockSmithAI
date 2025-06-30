@@ -28,7 +28,8 @@ import {
   BrainCircuit,
   Info,
   Newspaper,
-  PlayCircle
+  Orbit,
+  Route
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -419,22 +420,32 @@ Analysis Timestamp: ${currentDateTime}
           </div>
         )}
       </CardContent>
-       <CardFooter className="flex-col gap-2 pt-4">
-        <div className="text-center w-full">
-            <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
-                {isCustomSignal ? <PlayCircle className="h-4 w-4 text-tertiary" /> : <Zap className="h-4 w-4 text-tertiary" />}
-                {isCustomSignal ? (
-                    <Link href="/signals" className="hover:underline">
-                        Custom Signal stored. <strong className="text-primary">Execute it from the Signals page.</strong>
-                    </Link>
-                ) : isHoldSignal ? (
-                    "HOLD signal acknowledged. No position logged."
-                ) : (
-                    "Instant Signal automatically logged for simulation."
-                )}
+      <CardFooter className="flex-col gap-4 p-4 border-t border-border/50">
+        <div className="text-center w-full p-3 bg-secondary rounded-lg">
+            <p className="text-sm text-foreground flex items-center justify-center gap-2 font-semibold">
+                {isCustomSignal ? <Orbit className="h-5 w-5 text-tertiary" /> : <Zap className="h-5 w-5 text-tertiary" />}
+                {isCustomSignal ? 
+                    (isHoldSignal ? "HOLD signal archived." : "Custom Signal generated and saved.")
+                    : (isHoldSignal ? "HOLD signal acknowledged. No position logged." : "Instant Signal executed and logged to portfolio.")
+                }
+            </p>
+             <p className="text-xs text-muted-foreground mt-1">
+                {isCustomSignal ? 
+                    (isHoldSignal ? "This signal type cannot be executed." : "You can review and execute it from the Signals page.")
+                    : (isHoldSignal ? "No action is required." : "You can track its performance on the Portfolio page.")
+                }
             </p>
         </div>
-       </CardFooter>
+        {!isHoldSignal && (
+            <div className="mt-2">
+                <Button asChild className="glow-button">
+                    <Link href={isCustomSignal ? '/signals' : '/pulse'}>
+                         {isCustomSignal ? <><Route className="mr-2 h-4 w-4"/>Review & Execute Signal</> : <><BrainCircuit className="mr-2 h-4 w-4"/>Track Signal in Portfolio</>}
+                    </Link>
+                </Button>
+            </div>
+        )}
+      </CardFooter>
     </Card>
   );
 };

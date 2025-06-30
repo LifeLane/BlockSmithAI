@@ -15,7 +15,7 @@ import {
 
 
 // Node/Prisma Imports
-import { PrismaClient, type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, SignalType, PositionStatus, AgentStatus, GeneratedSignal, GeneratedSignalStatus } from '@prisma/client';
+import { PrismaClient, type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, SignalType, PositionStatus, AgentStatus, type GeneratedSignal as PrismaGeneratedSignal, GeneratedSignalStatus, SignalGenerationType } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { add, isBefore } from 'date-fns';
 
@@ -46,7 +46,7 @@ export type UserProfile = PrismaUser & {
     badges?: Badge[];
 };
 export type ChatMessage = AIChatMessage;
-export type { GeneratedSignal };
+export type GeneratedSignal = PrismaGeneratedSignal;
 export interface LeaderboardUser {
     id: string;
     username: string;
@@ -329,11 +329,43 @@ export async function fetchTopSymbolsForTickerAction(): Promise<TickerSymbolData
     }
 }
 
-export async function generateTradingStrategyAction(input: GenerateTradingStrategyInput): Promise<GenerateTradingStrategyOutput | { error: string }> {
+export async function generateTradingStrategyAction(input: GenerateTradingStrategyInput & { userId: string }): Promise<GenerateTradingStrategyOutput | { error: string }> {
     try {
         const [strategy, disclaimer] = await Promise.all([ genCoreStrategy(input), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
-        return { ...strategy, symbol: input.symbol, disclaimer: disclaimer.disclaimer, tradingMode: input.tradingMode };
+
+        const resultWithDisclaimer = { ...strategy, symbol: input.symbol, disclaimer: disclaimer.disclaimer, tradingMode: input.tradingMode };
+        const isHold = resultWithDisclaimer.signal.toUpperCase() === 'HOLD';
+        
+        // Save the generated signal to the database
+        await prisma.generatedSignal.create({
+            data: {
+                userId: input.userId,
+                symbol: resultWithDisclaimer.symbol,
+                signal: resultWithDisclaimer.signal,
+                entry_zone: resultWithDisclaimer.entry_zone,
+                stop_loss: resultWithDisclaimer.stop_loss,
+                take_profit: resultWithDisclaimer.take_profit,
+                confidence: resultWithDisclaimer.confidence,
+                risk_rating: resultWithDisclaimer.risk_rating,
+                gpt_confidence_score: resultWithDisclaimer.gpt_confidence_score,
+                sentiment: resultWithDisclaimer.sentiment,
+                currentThought: resultWithDisclaimer.currentThought,
+                shortTermPrediction: resultWithDisclaimer.shortTermPrediction,
+                sentimentTransition: resultWithDisclaimer.sentimentTransition,
+                chosenTradingMode: resultWithDisclaimer.tradingMode || 'Intraday',
+                chosenRiskProfile: input.riskProfile,
+                strategyReasoning: 'Instant signal based on user-defined parameters.',
+                analysisSummary: resultWithDisclaimer.analysisSummary,
+                newsAnalysis: resultWithDisclaimer.newsAnalysis,
+                disclaimer: resultWithDisclaimer.disclaimer,
+                type: SignalGenerationType.INSTANT,
+                status: isHold ? GeneratedSignalStatus.ARCHIVED : GeneratedSignalStatus.EXECUTED,
+            }
+        });
+        
+        return resultWithDisclaimer;
+
     } catch (error: any) {
         return { error: `An unexpected error occurred in SHADOW's cognitive core: ${error.message}` };
     }
@@ -345,6 +377,7 @@ export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStra
         if (!strategy) return { error: "SHADOW Core failed to generate an autonomous strategy." };
 
         const resultWithDisclaimer = { ...strategy, symbol: input.symbol, disclaimer: disclaimer.disclaimer };
+        const isHold = resultWithDisclaimer.signal.toUpperCase() === 'HOLD';
         
         // Save the generated signal to the database
         await prisma.generatedSignal.create({
@@ -368,6 +401,8 @@ export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStra
                 analysisSummary: resultWithDisclaimer.analysisSummary,
                 newsAnalysis: resultWithDisclaimer.newsAnalysis,
                 disclaimer: resultWithDisclaimer.disclaimer,
+                type: SignalGenerationType.CUSTOM,
+                status: isHold ? GeneratedSignalStatus.ARCHIVED : GeneratedSignalStatus.PENDING_EXECUTION,
             }
         });
         
@@ -873,7 +908,7 @@ export async function killSwitchAction(userId: string): Promise<{ success: boole
             return { success: false, message: 'Could not fetch live prices to close positions.' };
         }
 
-        return { success: true, message: `Kill Switch activated. Closed ${closedCount} position(s). Total PnL: $${totalPnl.toFixed(2)}.` };
+        return { success: true, message: `Closed ${closedCount} position(s). Total PnL: $${totalPnl.toFixed(2)}.` };
     } catch (error: any) {
         console.error("Error in killSwitchAction:", error);
         return { success: false, message: `Kill Switch failed: ${error.message}` };
@@ -915,7 +950,7 @@ export async function cancelPendingPositionAction(positionId: string): Promise<{
     }
 }
 
-export async function fetchPendingSignalsAction(userId: string): Promise<GeneratedSignal[] | { error: string }> {
+export async function fetchAllGeneratedSignalsAction(userId: string): Promise<GeneratedSignal[] | { error: string }> {
     if (!userId) {
         return { error: 'User not found.' };
     }
@@ -923,7 +958,6 @@ export async function fetchPendingSignalsAction(userId: string): Promise<Generat
         const signals = await prisma.generatedSignal.findMany({
             where: {
                 userId,
-                status: GeneratedSignalStatus.PENDING_EXECUTION
             },
             orderBy: {
                 createdAt: 'desc'
@@ -937,11 +971,14 @@ export async function fetchPendingSignalsAction(userId: string): Promise<Generat
 
 export async function dismissCustomSignalAction(signalId: string, userId: string): Promise<{ success: boolean, error?: string }> {
      try {
-        const result = await prisma.generatedSignal.deleteMany({
+        const result = await prisma.generatedSignal.updateMany({
             where: {
                 id: signalId,
                 userId: userId,
                 status: GeneratedSignalStatus.PENDING_EXECUTION
+            },
+            data: {
+                status: GeneratedSignalStatus.DISMISSED
             }
         });
 

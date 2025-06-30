@@ -1,4 +1,3 @@
-
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -12,12 +11,12 @@ datasource db {
 }
 
 model User {
-  id                String   @id @default(cuid())
+  id                String    @id @default(uuid())
   username          String
-  shadowId          String   @unique
+  shadowId          String    @unique
   status            String
-  weeklyPoints      Int      @default(0)
-  airdropPoints     Int      @default(0)
+  weeklyPoints      Int       @default(0)
+  airdropPoints     Int       @default(0)
   wallet_address    String?
   wallet_type       String?
   email             String?
@@ -27,22 +26,86 @@ model User {
   youtube_handle    String?
   claimedMissions   String[]
   claimedSpecialOps String[]
-
-  positions        Position[]
-  badges           Badge[]           @relation("UserBadges")
-  userAgents       UserAgent[]
-  generatedSignals GeneratedSignal[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  positions         Position[]
+  userAgents        UserAgent[]
+  generatedSignals  GeneratedSignal[]
+  badges            Badge[]   @relation("UserBadges")
 }
 
 model Badge {
-  id    String @id @default(cuid())
-  name  String @unique
-  users User[] @relation("UserBadges")
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  users       User[]   @relation("UserBadges")
+  createdAt   DateTime @default(now())
+}
+
+model Position {
+  id                  String         @id @default(uuid())
+  userId              String
+  user                User           @relation(fields: [userId], references: [id])
+  symbol              String
+  signalType          SignalType
+  status              PositionStatus
+  openTimestamp       DateTime?
+  closeTimestamp      DateTime?
+  entryPrice          Float
+  closePrice          Float?
+  size                Float          @default(1)
+  pnl                 Float?
+  stopLoss            Float?
+  takeProfit          Float?
+  expirationTimestamp DateTime?
+  strategyId          String?
+}
+
+model UserAgent {
+  id                String       @id @default(uuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id])
+  agentId           String
+  level             Int
+  status            AgentStatus
+  deploymentEndTime DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@unique([userId, agentId])
+}
+
+model GeneratedSignal {
+  id                     String                 @id @default(uuid())
+  userId                 String
+  user                   User                   @relation(fields: [userId], references: [id])
+  type                   SignalGenerationType   @default(CUSTOM)
+  status                 GeneratedSignalStatus  @default(PENDING_EXECUTION)
+  symbol                 String
+  signal                 String
+  entry_zone             String
+  stop_loss              String
+  take_profit            String
+  confidence             String
+  risk_rating            String
+  gpt_confidence_score   String
+  sentiment              String
+  currentThought         String
+  shortTermPrediction    String
+  sentimentTransition    String?
+  chosenTradingMode      String
+  chosenRiskProfile      String
+  strategyReasoning      String
+  analysisSummary        String
+  newsAnalysis           String?
+  disclaimer             String
+  createdAt              DateTime               @default(now())
 }
 
 enum SignalType {
   BUY
   SELL
+  HOLD
 }
 
 enum PositionStatus {
@@ -51,71 +114,19 @@ enum PositionStatus {
   CLOSED
 }
 
-model Position {
-  id                  String         @id @default(cuid())
-  userId              String
-  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  symbol              String
-  signalType          SignalType
-  status              PositionStatus
-  entryPrice          Float
-  size                Float          @default(1)
-  stopLoss            Float
-  takeProfit          Float
-  closePrice          Float?
-  pnl                 Float?
-  openTimestamp       DateTime?
-  closeTimestamp      DateTime?
-  expirationTimestamp DateTime?
-  strategyId          String?
-}
-
 enum AgentStatus {
   IDLE
   DEPLOYED
 }
 
-model UserAgent {
-  id                String      @id @default(cuid())
-  userId            String
-  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  agentId           String
-  level             Int
-  status            AgentStatus
-  deploymentEndTime DateTime?
-
-  @@unique([userId, agentId])
+enum SignalGenerationType {
+  INSTANT
+  CUSTOM
 }
 
 enum GeneratedSignalStatus {
   PENDING_EXECUTION
   EXECUTED
   DISMISSED
-}
-
-model GeneratedSignal {
-  id                   String                @id @default(cuid())
-  userId               String
-  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt            DateTime              @default(now())
-  status               GeneratedSignalStatus @default(PENDING_EXECUTION)
-  // Fields from the strategy output
-  symbol               String
-  signal               String // BUY, SELL, HOLD
-  entry_zone           String
-  stop_loss            String
-  take_profit          String
-  confidence           String
-  risk_rating          String
-  gpt_confidence_score String
-  sentiment            String
-  currentThought       String
-  shortTermPrediction  String
-  sentimentTransition  String?
-  chosenTradingMode    String
-  chosenRiskProfile    String
-  strategyReasoning    String
-  analysisSummary      String
-  newsAnalysis         String?
-  disclaimer           String
+  ARCHIVED
 }

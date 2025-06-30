@@ -211,7 +211,7 @@ export default function CoreConsolePage() {
     if (isCustom) {
         result = await generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString }, currentUser.id);
     } else {
-        result = await generateTradingStrategyAction({ symbol, tradingMode, riskProfile, marketData: marketDataForAIString });
+        result = await generateTradingStrategyAction({ symbol, tradingMode, riskProfile, marketData: marketDataForAIString, userId: currentUser.id });
     }
     
     if ('error' in result) {
@@ -376,14 +376,6 @@ export default function CoreConsolePage() {
                 </div>
             </div>
         )}
-        
-        {/* This block handles showing the tracker during/after generation */}
-        { showResults && aiStrategy && aiStrategy.signal?.toUpperCase() !== 'HOLD' && liveMarketData && !strategyError &&
-             <SignalTracker
-                aiStrategy={aiStrategy}
-                liveMarketData={liveMarketData}
-              />
-        }
         
       </div>
       <ChatbotPopup isOpen={isChatOpen} onOpenChange={setIsChatOpen} />

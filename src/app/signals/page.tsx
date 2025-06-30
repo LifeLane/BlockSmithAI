@@ -4,20 +4,19 @@ import { useState, useEffect, useCallback } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Loader2, Bot, BrainCircuit, Play, Trash2, LogIn, ShieldX, Target } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import {
-  fetchPendingSignalsAction,
+  fetchAllGeneratedSignalsAction,
   executeCustomSignalAction,
   dismissCustomSignalAction,
   type GeneratedSignal,
 } from '@/app/actions';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 
-type CustomSignal = GeneratedSignal;
-
-const CustomSignalCard = ({ signal, onExecute, onDismiss, isProcessing }: { signal: CustomSignal, onExecute: (s: CustomSignal) => void, onDismiss: (id: string) => void, isProcessing: boolean }) => {
+const GeneratedSignalCard = ({ signal, onExecute, onDismiss, isProcessing }: { signal: GeneratedSignal, onExecute: (s: GeneratedSignal) => void, onDismiss: (id: string) => void, isProcessing: boolean }) => {
     
     const formatPrice = (priceString?: string): string => {
         if (!priceString) return 'N/A';
@@ -32,14 +31,16 @@ const CustomSignalCard = ({ signal, onExecute, onDismiss, isProcessing }: { sign
         return price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
     
+    const canExecute = signal.type === 'CUSTOM' && signal.status === 'PENDING_EXECUTION' && signal.signal !== 'HOLD';
+
     return (
         <Card className="bg-card/80 backdrop-blur-sm transition-all duration-300 flex flex-col interactive-card">
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-lg">{signal.symbol}</CardTitle>
-                    <div className="text-xs p-1.5 px-2.5 bg-background rounded-md font-semibold border border-border">
-                        {signal.chosenTradingMode} / {signal.chosenRiskProfile} Risk
-                    </div>
+                    <Badge variant={signal.type === 'CUSTOM' ? 'outline' : 'secondary'} className={signal.type === 'CUSTOM' ? 'border-accent text-accent' : ''}>
+                        {signal.type}
+                    </Badge>
                 </div>
                  <p className="text-sm text-muted-foreground pt-2 italic line-clamp-2">"{signal.strategyReasoning}"</p>
             </CardHeader>
@@ -60,12 +61,20 @@ const CustomSignalCard = ({ signal, onExecute, onDismiss, isProcessing }: { sign
                 </div>
             </CardContent>
             <CardFooter className="mt-auto flex gap-2">
-                <Button variant="outline" size="sm" className="w-full" onClick={() => onDismiss(signal.id)} disabled={isProcessing}>
-                    <Trash2 className="h-4 w-4 mr-2"/> Dismiss
-                </Button>
-                <Button className="w-full glow-button" size="sm" onClick={() => onExecute(signal)} disabled={isProcessing}>
-                    {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Play className="h-4 w-4 mr-2"/>} Execute Manually
-                </Button>
+                {canExecute ? (
+                    <>
+                        <Button variant="outline" size="sm" className="w-full" onClick={() => onDismiss(signal.id)} disabled={isProcessing}>
+                            <Trash2 className="h-4 w-4 mr-2"/> Dismiss
+                        </Button>
+                        <Button className="w-full glow-button" size="sm" onClick={() => onExecute(signal)} disabled={isProcessing}>
+                            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Play className="h-4 w-4 mr-2"/>} Execute Manually
+                        </Button>
+                    </>
+                ) : (
+                    <div className="text-xs text-muted-foreground text-center w-full py-2">
+                        This signal has been {signal.status.toLowerCase()} and cannot be executed.
+                    </div>
+                )}
             </CardFooter>
         </Card>
     );
@@ -73,7 +82,7 @@ const CustomSignalCard = ({ signal, onExecute, onDismiss, isProcessing }: { sign
 
 
 export default function SignalsPage() {
-    const [signals, setSignals] = useState<CustomSignal[]>([]);
+    const [signals, setSignals] = useState<GeneratedSignal[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);
     const { user, isLoading: isUserLoading } = useCurrentUser();
@@ -81,7 +90,7 @@ export default function SignalsPage() {
 
     const fetchSignals = useCallback(async (userId: string) => {
         setIsLoading(true);
-        const result = await fetchPendingSignalsAction(userId);
+        const result = await fetchAllGeneratedSignalsAction(userId);
         if ('error' in result) {
             toast({ title: "Error", description: result.error, variant: 'destructive' });
             setSignals([]);
@@ -99,7 +108,7 @@ export default function SignalsPage() {
         }
     }, [user, isUserLoading, fetchSignals]);
 
-    const handleExecute = useCallback(async (signalToExecute: CustomSignal) => {
+    const handleExecute = useCallback(async (signalToExecute: GeneratedSignal) => {
         if (!user) {
             toast({ title: "Error", description: "You must be logged in to execute a signal.", variant: "destructive" });
             return;
@@ -170,9 +179,9 @@ export default function SignalsPage() {
                         <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">
                             <Bot className="h-10 w-10 text-primary" />
                         </div>
-                        <CardTitle className="mt-4">No Custom Signals</CardTitle>
+                        <CardTitle className="mt-4">No Generated Signals</CardTitle>
                         <CardDescription className="mt-2 text-base">
-                           Generate a "Custom Signal" from the Core Console to see it here.
+                           Generate a signal from the Core Console to see it here.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -189,7 +198,7 @@ export default function SignalsPage() {
         return (
             <div className="space-y-4">
                 {signals.map(signal => (
-                    <CustomSignalCard
+                    <GeneratedSignalCard
                         key={signal.id}
                         signal={signal}
                         onExecute={handleExecute}
@@ -209,10 +218,10 @@ export default function SignalsPage() {
             <CardHeader>
                 <CardTitle className="flex items-center text-lg text-primary">
                     <BrainCircuit className="mr-3 h-5 w-5"/>
-                    Custom Signal Bay
+                    Signal Log
                 </CardTitle>
                 <CardDescription>
-                    Review SHADOW's generated strategies here. Execute them manually to log them to your portfolio.
+                    A complete log of all signals generated by SHADOW. Custom signals can be executed from here.
                 </CardDescription>
             </CardHeader>
         </Card>
