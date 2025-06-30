@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 
 const navItems = [
   { href: '/pulse', icon: Briefcase, label: 'Portfolio' },
-  { href: '/terminal', icon: Terminal, label: 'Terminal' },
+  { href: '/signals', icon: Terminal, label: 'Signals' },
   { href: '/core', icon: Bot, label: 'Core' },
   { href: '/agents', icon: Cpu, label: 'Field Ops' },
   { href: '/profile', icon: Trophy, label: 'Profile' },

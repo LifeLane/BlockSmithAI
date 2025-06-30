@@ -18,15 +18,16 @@ import {
   logSimulatedPositionAction,
   type LiveMarketData,
   type FormattedSymbol,
-  type GenerateTradingStrategyOutput as AIOutputType,
+  type GenerateTradingStrategyOutput,
   type GenerateShadowChoiceStrategyOutput,
 } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { Loader2, Sparkles, BrainCircuit, Unlock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
-type AIStrategyOutput = (AIOutputType | GenerateShadowChoiceStrategyOutput) & { 
+type AIStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
   id?: string;
 };
 
@@ -45,8 +46,9 @@ export default function CoreConsolePage() {
   const [riskProfile, setRiskProfile] = useState<string>('Medium');
 
   const [aiStrategy, setAiStrategy] = useState<AIStrategyOutput | null>(null);
-  const [isLoadingStrategy, setIsLoadingStrategy] = useState<boolean>(false);
-  const [isLoadingShadowChoice, setIsLoadingShadowChoice] = useState<boolean>(false);
+  const [isLoadingInstant, setIsLoadingInstant] = useState<boolean>(false);
+  const [isLoadingCustom, setIsLoadingCustom] = useState<boolean>(false);
+  const [isCustomSignal, setIsCustomSignal] = useState(false);
   const [strategyError, setStrategyError] = useState<string | null>(null);
 
   const [liveMarketData, setLiveMarketData] = useState<LiveMarketData | null>(null);
@@ -150,7 +152,7 @@ export default function CoreConsolePage() {
   }, [symbol, fetchAndSetMarketData]);
 
 
-  const handleGenerateStrategy = useCallback(async (isShadowChoice = false) => {
+  const handleGenerateStrategy = useCallback(async ({ isCustom }: { isCustom: boolean }) => {
     setTimeout(() => {
         document.getElementById('results-block')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
@@ -174,9 +176,10 @@ export default function CoreConsolePage() {
       updateUsageData(currentCount + 1);
     }
 
-    if (isShadowChoice) setIsLoadingShadowChoice(true);
-    else setIsLoadingStrategy(true);
+    if (isCustom) setIsLoadingCustom(true);
+    else setIsLoadingInstant(true);
     
+    setIsCustomSignal(isCustom);
     setStrategyError(null);
     setAiStrategy(null);
 
@@ -186,8 +189,8 @@ export default function CoreConsolePage() {
       if ('error' in result) {
         setStrategyError("Market data unavailable. Strategy generation aborted.");
         if(currentUser?.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
-        if (isShadowChoice) setIsLoadingShadowChoice(false);
-        else setIsLoadingStrategy(false);
+        if (isCustom) setIsLoadingCustom(false);
+        else setIsLoadingInstant(false);
         return;
       }
       currentDataToUse = result;
@@ -196,7 +199,7 @@ export default function CoreConsolePage() {
     const marketDataForAIString = JSON.stringify(currentDataToUse);
     let result;
 
-    if (isShadowChoice) {
+    if (isCustom) {
         result = await generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString });
     } else {
         result = await generateTradingStrategyAction({ symbol, tradingMode, riskProfile, marketData: marketDataForAIString });
@@ -216,32 +219,46 @@ export default function CoreConsolePage() {
       setAiStrategy(resultWithId);
       localStorage.setItem('shadowMindData', JSON.stringify(resultWithId));
       
-      let toastDescription;
-      const isHold = result.signal?.toUpperCase() === 'HOLD';
-
-      if (currentUser && !isUserLoading) {
-        if (!isHold) {
-          const logResult = await logSimulatedPositionAction(currentUser.id, resultWithId);
-          if (logResult.error) {
-            toastDescription = <span className="text-foreground">Analysis generated, but <strong className="text-destructive">auto-logging failed:</strong> {logResult.error}</span>;
-          } else {
-            toastDescription = <span className="text-foreground">Analysis for <strong className="text-primary">{result.symbol}</strong> generated and <strong className="text-tertiary">auto-logged</strong> for simulation.</span>;
-          }
-        } else {
-          toastDescription = <span className="text-foreground">HOLD signal for <strong className="text-primary">{result.symbol}</strong> generated. No position logged.</span>;
-        }
+      if (isCustom) {
+        // Save to localStorage for the Signals page
+        const existingSignalsJSON = localStorage.getItem('customSignals');
+        const existingSignals = existingSignalsJSON ? JSON.parse(existingSignalsJSON) : [];
+        localStorage.setItem('customSignals', JSON.stringify([resultWithId, ...existingSignals]));
+        toast({
+          title: <span className="text-accent">Custom Signal Generated!</span>,
+          description: (
+             <Link href="/signals">
+                <span className="text-foreground hover:underline">Review and execute on the <strong className="text-primary">Signals</strong> page.</span>
+             </Link>
+          )
+        });
       } else {
-        toastDescription = <span className="text-foreground">New analysis for <strong className="text-primary">{result.symbol}</strong> has been generated.</span>;
+         // Instant Signal: Log the position immediately
+        const isHold = result.signal?.toUpperCase() === 'HOLD';
+        if (currentUser && !isUserLoading && !isHold) {
+            const logResult = await logSimulatedPositionAction(currentUser.id, resultWithId);
+            if (logResult.error) {
+                 toast({
+                    title: <span className="text-accent">Instant Signal Generated!</span>,
+                    description: <span className="text-foreground">Analysis generated, but <strong className="text-destructive">auto-logging failed:</strong> {logResult.error}</span>
+                });
+            } else {
+                 toast({
+                    title: <span className="text-accent">Instant Signal Executed!</span>,
+                    description:  <span className="text-foreground">Analysis for <strong className="text-primary">{result.symbol}</strong> generated and <strong className="text-tertiary">auto-logged</strong> for simulation.</span>
+                });
+            }
+        } else if (isHold) {
+            toast({
+                title: <span className="text-accent">HOLD Signal Generated</span>,
+                description: <span className="text-foreground">HOLD signal for <strong className="text-primary">{result.symbol}</strong> received. No position logged.</span>
+            });
+        }
       }
-
-      toast({
-        title: <span className="text-accent">SHADOW's Insight Materialized!</span>,
-        description: toastDescription,
-      });
     }
     
-    if (isShadowChoice) setIsLoadingShadowChoice(false);
-    else setIsLoadingStrategy(false);
+    if (isCustom) setIsLoadingCustom(false);
+    else setIsLoadingInstant(false);
   }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, isUserLoading, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast]);
 
 
@@ -255,8 +272,8 @@ export default function CoreConsolePage() {
     await refetchUser();
   };
 
-  const isButtonDisabled = isUserLoading || isLoadingStrategy || isLoadingShadowChoice || isLoadingSymbols;
-  const showResults = aiStrategy || isLoadingStrategy || isLoadingShadowChoice || strategyError;
+  const isButtonDisabled = isUserLoading || isLoadingInstant || isLoadingCustom || isLoadingSymbols;
+  const showResults = aiStrategy || isLoadingInstant || isLoadingCustom || strategyError;
   const isLimitReached = currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES;
 
   return (
@@ -302,23 +319,23 @@ export default function CoreConsolePage() {
                     ) : (
                         <>
                             <Button
-                                onClick={() => handleGenerateStrategy(false)}
+                                onClick={() => handleGenerateStrategy({ isCustom: false })}
                                 disabled={isButtonDisabled}
                                 className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button generate-buttons"
                             >
-                                {isLoadingStrategy ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                {isLoadingInstant ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                     : isUserLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                     : <Sparkles className="mr-2 h-5 w-5" />}
-                                {isLoadingStrategy ? "SHADOW is Analyzing..." : isUserLoading ? "Initializing Analyst Profile..." : "Generate Signal"}
+                                {isLoadingInstant ? "SHADOW is Analyzing..." : isUserLoading ? "Initializing..." : "Instant Signal"}
                             </Button>
 
                             <Button
-                                onClick={() => handleGenerateStrategy(true)}
+                                onClick={() => handleGenerateStrategy({ isCustom: true })}
                                 disabled={isButtonDisabled}
                                 className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out shadow-choice-button generate-buttons"
                             >
-                                {isLoadingShadowChoice ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
-                                {isLoadingShadowChoice ? "SHADOW is Deciding..." : "Invoke SHADOW's Choice"}
+                                {isLoadingCustom ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
+                                {isLoadingCustom ? "SHADOW is Deciding..." : "Custom Signal"}
                             </Button>
                         </>
                     )}
@@ -346,10 +363,11 @@ export default function CoreConsolePage() {
                     <StrategyExplanationSection
                         strategy={aiStrategy}
                         liveMarketData={liveMarketData} 
-                        isLoading={isLoadingStrategy || isLoadingShadowChoice}
+                        isLoading={isLoadingInstant || isLoadingCustom}
                         error={strategyError}
                         symbol={symbol}
                         onChat={handleToggleChat}
+                        isCustomSignal={isCustomSignal}
                     />
                 </div>
             </div>

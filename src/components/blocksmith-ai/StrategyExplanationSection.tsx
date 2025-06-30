@@ -28,7 +28,9 @@ import {
   BrainCircuit,
   Info,
   Newspaper,
+  PlayCircle
 } from 'lucide-react';
+import Link from 'next/link';
 
 type CombinedStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
     id?: string;
@@ -43,6 +45,7 @@ interface StrategyExplanationSectionProps {
   error?: string | null;
   symbol: string;
   onChat?: () => void;
+  isCustomSignal?: boolean;
 }
 
 interface StatCardProps {
@@ -89,6 +92,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
   error,
   symbol,
   onChat,
+  isCustomSignal,
 }) => {
   const { toast } = useToast();
 
@@ -334,7 +338,7 @@ Analysis Timestamp: ${currentDateTime}
             />
         </div>
         
-        {'strategyReasoning' in strategy && strategy.strategyReasoning && (
+        {('strategyReasoning' in strategy && strategy.strategyReasoning) && (
             <Card className="bg-secondary border-tertiary/70 shadow-inner">
                 <CardHeader className="pb-3">
                     <CardTitle className="flex items-center text-lg text-tertiary">
@@ -418,11 +422,16 @@ Analysis Timestamp: ${currentDateTime}
        <CardFooter className="flex-col gap-2 pt-4">
         <div className="text-center w-full">
             <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
-                <Zap className="h-4 w-4 text-tertiary" />
-                {isHoldSignal 
-                  ? "HOLD signal acknowledged. No position logged." 
-                  : "Signal automatically logged for simulation."
-                }
+                {isCustomSignal ? <PlayCircle className="h-4 w-4 text-tertiary" /> : <Zap className="h-4 w-4 text-tertiary" />}
+                {isCustomSignal ? (
+                    <Link href="/signals" className="hover:underline">
+                        Custom Signal stored. <strong className="text-primary">Execute it from the Signals page.</strong>
+                    </Link>
+                ) : isHoldSignal ? (
+                    "HOLD signal acknowledged. No position logged."
+                ) : (
+                    "Instant Signal automatically logged for simulation."
+                )}
             </p>
         </div>
        </CardFooter>
