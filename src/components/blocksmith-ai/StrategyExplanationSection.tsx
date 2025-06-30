@@ -103,14 +103,14 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
         </div>
 
         {strategy.disclaimer && (
-            <div className="w-full space-y-3 pt-4 border-t border-border/50">
-                <div className="flex flex-col items-center text-center text-tertiary">
+            <div className="shadow-edict-container">
+                <div className="shadow-edict-title-container">
                     <MessageSquareHeart className="h-6 w-6" />
-                    <div className="mt-2 text-sm font-semibold font-headline">
+                    <div className="shadow-edict-title">
                         <GlyphScramble text="SHADOW's Edict" />
                     </div>
                 </div>
-                <p className="text-xs text-muted-foreground font-code leading-relaxed text-center max-w-md mx-auto">
+                <p className="shadow-edict-body">
                     {strategy.disclaimer}
                 </p>
             </div>

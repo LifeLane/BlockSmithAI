@@ -52,22 +52,21 @@ const signupSchema = z.object({
   telegram_handle: z.string().min(1, { message: "Telegram handle is required." }).regex(/^@?[a-zA-Z0-9_]{5,32}$/, "Invalid Telegram handle format."),
   youtube_handle: z.string().optional(),
   wallet_type: z.enum(['ETH', 'SOL', 'TON'], { required_error: "You must select a wallet type."}),
-  wallet_address: z.string().min(32, { message: "Wallet address seems too short." }),
+  wallet_address: z.string().min(20, { message: "Wallet address seems too short." }).max(100, { message: "Wallet address seems too long." }),
 }).refine(data => {
     if (data.wallet_type === 'ETH') {
         return /^0x[a-fA-F0-9]{40}$/.test(data.wallet_address);
     }
-    return true;
-}, {
-    message: "Invalid Ethereum address format. Must be a 42-character hex string starting with 0x.",
-    path: ["wallet_address"],
-}).refine(data => {
     if (data.wallet_type === 'SOL') {
         return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(data.wallet_address);
     }
-    return true;
+    if (data.wallet_type === 'TON') {
+        // Basic TON address check (starts with UQ/EQ, 48 chars long)
+        return /^(UQ|EQ)[0-9a-zA-Z\-_]{46}$/.test(data.wallet_address);
+    }
+    return true; // Pass for other types if any, or if type isn't selected yet.
 }, {
-    message: "Invalid Solana address format.",
+    message: "Invalid address format for the selected wallet type.",
     path: ["wallet_address"],
 });
 
@@ -112,9 +111,9 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
 
   const getWalletPlaceholder = () => {
     switch (selectedWalletType) {
-        case 'ETH': return "0x...";
-        case 'SOL': return "Sol...";
-        case 'TON': return "TON...";
+        case 'ETH': return "0x... (ERC-20)";
+        case 'SOL': return "Solana address...";
+        case 'TON': return "TON address...";
         default: return "Your public wallet address";
     }
   }
@@ -231,5 +230,3 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
 };
 
 export default AirdropSignupModal;
-
-    

@@ -120,7 +120,16 @@ export default function SignalsPage() {
         if (result.error) {
             toast({ title: "Execution Failed", description: result.error, variant: "destructive" });
         } else {
-            toast({ title: "Signal Submitted!", description: `${signalToExecute.symbol} position is now pending execution.`, variant: "default" });
+            toast({
+                title: "Signal Submitted!",
+                description: (
+                    <Link href="/pulse">
+                        <span className="text-foreground hover:underline">
+                            {signalToExecute.symbol} position is now pending execution. <strong className="text-primary">Track it in your Portfolio.</strong>
+                        </span>
+                    </Link>
+                )
+            });
             fetchSignals(user.id); // Re-fetch signals
         }
         setProcessingId(null);
