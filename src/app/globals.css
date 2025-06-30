@@ -125,6 +125,38 @@
     }
 }
 
+/* New hypnotic text shadow pulse animation */
+@keyframes shadow-pulse-primary {
+  0% {
+    text-shadow: 0 0 2px hsl(var(--primary)/0.4), 0 0 5px hsl(var(--primary)/0.2), 0 0 10px hsl(var(--primary)/0.1);
+  }
+  50% {
+    text-shadow: 0 0 5px hsl(var(--primary)/0.6), 0 0 10px hsl(var(--primary)/0.4), 0 0 20px hsl(var(--primary)/0.2);
+  }
+  100% {
+    text-shadow: 0 0 2px hsl(var(--primary)/0.4), 0 0 5px hsl(var(--primary)/0.2), 0 0 10px hsl(var(--primary)/0.1);
+  }
+}
+@keyframes shadow-pulse-accent {
+  0% {
+    text-shadow: 0 0 2px hsl(var(--accent)/0.4), 0 0 5px hsl(var(--accent)/0.2), 0 0 10px hsl(var(--accent)/0.1);
+  }
+  50% {
+    text-shadow: 0 0 5px hsl(var(--accent)/0.6), 0 0 10px hsl(var(--accent)/0.4), 0 0 20px hsl(var(--accent)/0.2);
+  }
+  100% {
+    text-shadow: 0 0 2px hsl(var(--accent)/0.4), 0 0 5px hsl(var(--accent)/0.2), 0 0 10px hsl(var(--accent)/0.1);
+  }
+}
+
+.animate-shadow-pulse-primary {
+    animation: shadow-pulse-primary 4s ease-in-out infinite;
+}
+.animate-shadow-pulse-accent {
+    animation: shadow-pulse-accent 4s ease-in-out infinite;
+}
+
+
 .interactive-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
@@ -295,5 +327,3 @@
 .shadow-mind-line.footer-line {
     margin-top: -0.5rem;
 }
-
-    

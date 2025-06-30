@@ -36,10 +36,10 @@ const AppHeader: FunctionComponent = () => {
 
         <div className="flex-1 flex justify-center">
             <div className="logo-container flex items-baseline text-3xl sm:text-4xl font-bold font-headline select-none">
-                <div className="word-block flex text-primary">
+                <div className="word-block flex text-primary animate-shadow-pulse-primary">
                 Block
                 </div>
-                <div className="word-shadow flex ml-1 text-accent">
+                <div className="word-shadow flex ml-1 text-accent animate-shadow-pulse-accent">
                 SHADOW
                 </div>
             </div>
@@ -54,5 +54,3 @@ const AppHeader: FunctionComponent = () => {
 };
 
 export default AppHeader;
-
-    

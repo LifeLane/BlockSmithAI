@@ -9,6 +9,7 @@ import {
   Brain,
   AlertTriangle
 } from 'lucide-react';
+import GlyphScramble from './GlyphScramble';
 
 interface ShadowMindInterfaceProps {
   shadowScore?: string;
@@ -76,7 +77,9 @@ const ShadowMindInterface: FunctionComponent<ShadowMindInterfaceProps> = ({
         
         <div className="shadow-mind-line">
             <span className="shadow-mind-label">│ Current Thought   :</span>
-            <span className="shadow-mind-value thought">"{currentThought}"</span>
+            <span className="shadow-mind-value thought">
+                <GlyphScramble key={currentThought} text={currentThought} />
+            </span>
             <span>│</span>
         </div>
         
@@ -106,5 +109,3 @@ const ShadowMindInterface: FunctionComponent<ShadowMindInterfaceProps> = ({
 };
 
 export default ShadowMindInterface;
-
-    
