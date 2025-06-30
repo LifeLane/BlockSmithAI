@@ -19,6 +19,7 @@ import {
   type SpecialOp,
 } from '@/app/actions';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 
 const AGENT_ICONS: { [key: string]: React.ElementType } = {
     Binary: Binary,
@@ -202,7 +203,7 @@ const SpecialOpCard = ({ op, agents, onClaim }: { op: SpecialOp, agents: UserAge
             <CardHeader>
                 <div className="flex justify-between items-center">
                     <CardTitle className="flex items-center text-tertiary text-xl">
-                        <Star className="mr-3 h-6 w-6"/> Special Operation
+                        <Star className="mr-3 h-6 w-6"/> <GlyphScramble text="Special Operation" />
                     </CardTitle>
                     <Trophy className="h-8 w-8 text-orange-400"/>
                 </div>
@@ -326,7 +327,7 @@ export default function AgentsPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center text-lg text-tertiary">
                             <TrendingUp className="mr-3 h-5 w-5"/>
-                            Available Experience Points
+                            <GlyphScramble text="Available Experience Points" />
                         </CardTitle>
                         <CardDescription>
                             Use <strong className="text-tertiary">XP</strong> to upgrade your agents and unlock <strong className="text-accent">higher rewards</strong>.

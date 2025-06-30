@@ -16,6 +16,7 @@ import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 
 // Import JSON-based actions and types from app/actions.ts
 import { 
@@ -272,7 +273,7 @@ export default function ProfilePage() {
             <CardHeader>
                 <CardTitle className="flex items-center text-lg text-accent">
                     <Gift className="mr-3 h-5 w-5"/>
-                    Eligible Airdrop Balance
+                    <GlyphScramble text="Eligible Airdrop Balance" />
                 </CardTitle>
                 <CardDescription>
                     Your accumulated <strong className="text-orange-400">$BSAI</strong> points from all activities.
@@ -301,7 +302,7 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center"><User className="mr-2 h-5 w-5"/>Analyst Status</CardTitle>
+                            <CardTitle className="flex items-center"><User className="mr-2 h-5 w-5"/><GlyphScramble text="Analyst Status" /></CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                         <div>
@@ -326,7 +327,7 @@ export default function ProfilePage() {
                     
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center"><BarChart2 className="mr-2 h-5 w-5"/>Points Overview</CardTitle>
+                            <CardTitle className="flex items-center"><BarChart2 className="mr-2 h-5 w-5"/><GlyphScramble text="Points Overview" /></CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                              <div>
@@ -413,7 +414,7 @@ export default function ProfilePage() {
                     <CardHeader>
                         <CardTitle className="flex items-center text-xl text-accent">
                             <Award className="mr-3 h-6 w-6"/>
-                            Airdrop Initiative Dashboard
+                            <GlyphScramble text="Airdrop Initiative Dashboard" />
                         </CardTitle>
                         <CardDescription>
                             Complete missions to secure your <strong className="text-orange-400">$BSAI</strong> allocation.
@@ -454,7 +455,7 @@ export default function ProfilePage() {
             <TabsContent value="leaderboard" className="mt-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center"><Users className="mr-2 h-5 w-5"/>Top 10 Analysts</CardTitle>
+                        <CardTitle className="flex items-center"><Users className="mr-2 h-5 w-5"/><GlyphScramble text="Top 10 Analysts" /></CardTitle>
                         <CardDescription>Weekly leaders based on XP.</CardDescription>
                     </CardHeader>
                     <CardContent>

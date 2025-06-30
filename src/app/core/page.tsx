@@ -28,6 +28,7 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 
 type AIStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
   id?: string;
@@ -402,7 +403,7 @@ export default function CoreConsolePage() {
                                 {isLoadingInstant ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                     : isUserLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                     : <Sparkles className="mr-2 h-5 w-5" />}
-                                {isLoadingInstant ? "SHADOW is Analyzing..." : isUserLoading ? "Initializing..." : "Instant Signal"}
+                                {isLoadingInstant ? "SHADOW is Analyzing..." : isUserLoading ? "Initializing..." : <GlyphScramble text="Instant Signal" />}
                             </Button>
 
                             <Button
@@ -411,7 +412,7 @@ export default function CoreConsolePage() {
                                 className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out shadow-choice-button generate-buttons"
                             >
                                 {isLoadingCustom ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
-                                {isLoadingCustom ? "SHADOW is Deciding..." : "Custom Signal"}
+                                {isLoadingCustom ? "SHADOW is Deciding..." : <GlyphScramble text="Custom Signal" />}
                             </Button>
                         </>
                     )}

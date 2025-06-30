@@ -24,10 +24,6 @@ const ParticleBackground = () => {
         () => {
             const isDark = theme === 'dark';
             
-            const particleColors = isDark 
-                ? ["#60a5fa", "#a78bfa", "#fb923c", "#f8fafc"]
-                : ["#2563eb", "#7c3aed", "#f97316", "#0f172a"];
-
             return {
                 background: {
                     color: {
@@ -39,34 +35,25 @@ const ParticleBackground = () => {
                     events: {
                         onHover: {
                             enable: true,
-                            mode: "repulse",
+                            mode: "bubble",
                         },
                         resize: true,
                     },
                     modes: {
-                        repulse: {
-                            distance: 80,
-                            duration: 0.4,
+                        bubble: {
+                            distance: 200,
+                            duration: 2,
+                            opacity: 0.8,
+                            size: 6,
                         },
                     },
                 },
                 particles: {
                     color: {
-                        value: particleColors,
+                        value: isDark ? "#ffffff" : "#000000",
                     },
                     links: {
-                        color: "random",
-                        distance: 120,
-                        enable: true,
-                        opacity: 0.15,
-                        width: 1,
-                        triangles: {
-                            enable: true,
-                            color: {
-                                value: isDark ? "#111827" : "#f3f4f6"
-                            },
-                            opacity: 0.03
-                        }
+                        enable: false, // Disabled for a starfield look
                     },
                     move: {
                         direction: "none",
@@ -75,7 +62,7 @@ const ParticleBackground = () => {
                             default: "out",
                         },
                         random: true,
-                        speed: 1.5,
+                        speed: 0.2, // Very slow cosmic drift
                         straight: false,
                     },
                     number: {
@@ -83,13 +70,13 @@ const ParticleBackground = () => {
                             enable: true,
                             area: 800,
                         },
-                        value: 200,
+                        value: 250, // More particles for a denser starfield
                     },
                     opacity: {
-                        value: { min: 0.1, max: 0.5 },
+                        value: { min: 0.1, max: 0.8 }, // Twinkling effect
                         animation: {
                             enable: true,
-                            speed: 0.8,
+                            speed: 0.5,
                             sync: false,
                         }
                     },
@@ -97,7 +84,12 @@ const ParticleBackground = () => {
                         type: "circle",
                     },
                     size: {
-                        value: { min: 1, max: 2 },
+                        value: { min: 0.5, max: 2 }, // Twinkling effect
+                        animation: {
+                            enable: true,
+                            speed: 2,
+                            sync: false,
+                        }
                     },
                 },
                 detectRetina: true,
@@ -122,5 +114,3 @@ const ParticleBackground = () => {
 };
 
 export default ParticleBackground;
-
-    

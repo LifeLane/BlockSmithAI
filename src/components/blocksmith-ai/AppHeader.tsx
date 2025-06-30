@@ -6,6 +6,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { Gift, Fingerprint } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import GlyphScramble from './GlyphScramble';
 
 const AppHeader: FunctionComponent = () => {
   const { user, isLoading } = useCurrentUser();
@@ -39,8 +40,8 @@ const AppHeader: FunctionComponent = () => {
                 <div className="word-block flex text-primary animate-shadow-pulse-primary">
                 Block
                 </div>
-                <div className="word-shadow flex ml-1 text-accent animate-shadow-pulse-accent">
-                SHADOW
+                <div className="word-shadow flex ml-1 text-accent">
+                  <GlyphScramble text="SHADOW" />
                 </div>
             </div>
         </div>

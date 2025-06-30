@@ -12,6 +12,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import Link from 'next/link';
+import GlyphScramble from './GlyphScramble';
 
 type CombinedStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
     id?: string;
@@ -106,7 +107,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
                 <div className="flex flex-col items-center text-center text-tertiary">
                     <MessageSquareHeart className="h-6 w-6" />
                     <div className="mt-2 text-sm font-semibold font-headline">
-                        SHADOW's Edict
+                        <GlyphScramble text="SHADOW's Edict" />
                     </div>
                 </div>
                 <p className="text-xs text-muted-foreground font-code leading-relaxed text-center max-w-md mx-auto">

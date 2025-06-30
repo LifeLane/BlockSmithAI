@@ -78,7 +78,7 @@ const ShadowMindInterface: FunctionComponent<ShadowMindInterfaceProps> = ({
         <div className="shadow-mind-line">
             <span className="shadow-mind-label">│ Current Thought   :</span>
             <span className="shadow-mind-value thought">
-                <GlyphScramble key={currentThought} text={currentThought} />
+                {currentThought}
             </span>
             <span>│</span>
         </div>

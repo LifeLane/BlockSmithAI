@@ -38,6 +38,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
   } from "@/components/ui/alert-dialog";
+import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 
 const TimeLeft = ({ expiration, className }: { expiration?: Date | null, className?: string }) => {
     const [timeLeft, setTimeLeft] = useState('');
@@ -311,7 +312,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
         return (
              <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30">
                 <CardHeader className="pb-4">
-                    <CardTitle className="text-lg flex items-center gap-2 text-accent font-headline"><Briefcase /> Performance Matrix</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2 text-accent font-headline"><Briefcase /> <GlyphScramble text="Performance Matrix" /></CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="flex justify-center items-center h-24">
@@ -332,7 +333,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
         <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30 interactive-card">
             <CardHeader className="flex-col sm:flex-row items-start sm:items-center justify-between pb-4">
                 <div className="space-y-1 mb-4 sm:mb-0">
-                    <CardTitle className="text-lg flex items-center gap-2 text-accent font-headline"><Briefcase /> Performance Matrix</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2 text-accent font-headline"><Briefcase /> <GlyphScramble text="Performance Matrix" /></CardTitle>
                     <CardDescription>An overview of your <strong className="text-accent">closed trade</strong> performance.</CardDescription>
                 </div>
                 <Button size="sm" onClick={onGenerateReview} disabled={isGeneratingReview} className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground w-full sm:w-auto">
