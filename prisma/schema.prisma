@@ -6,65 +6,65 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id                String     @id @default(uuid())
-  username          String     @unique
-  shadowId          String     @unique
-  status            String     @default("Guest") // e.g., Guest, Registered, Active Analyst
-  weeklyPoints      Int        @default(0)
-  airdropPoints     Int        @default(0)
-  wallet_address    String?
-  wallet_type       String?
-  email             String?    @unique
+  id                String   @id @default(uuid())
+  username          String
+  shadowId          String   @unique
+  status            String
+  email             String?
   phone             String?
   x_handle          String?
   telegram_handle   String?
   youtube_handle    String?
-  claimedMissions   String[]
-  claimedSpecialOps String[]
-  badges            Badge[]    @relation("UserBadges")
-  positions         Position[]
-  userAgents        UserAgent[]
+  wallet_type       String?
+  wallet_address    String?
+  weeklyPoints      Int      @default(0)
+  airdropPoints     Int      @default(0)
+  claimedMissions   String[] @default([])
+  claimedSpecialOps String[] @default([])
+
+  positions Position[]
+  agents    UserAgent[]
+  badges    Badge[]    @relation("UserBadges")
 }
 
 model Badge {
-  id      String   @id @default(uuid())
-  name    String
-  users   User[]   @relation("UserBadges")
+  id    String @id @default(uuid())
+  name  String
+  users User[] @relation("UserBadges")
 }
 
 model Position {
   id                  String         @id @default(uuid())
-  user                User           @relation(fields: [userId], references: [id])
   userId              String
+  user                User           @relation(fields: [userId], references: [id])
   symbol              String
   signalType          SignalType
   entryPrice          Float
   size                Float
   status              PositionStatus @default(OPEN)
-  openTimestamp       DateTime?      @default(now())
-  closeTimestamp      DateTime?
-  expirationTimestamp DateTime?
-  closePrice          Float?
+  openTimestamp       DateTime       @default(now()) @db.Timestamp(3)
+  closeTimestamp      DateTime?      @db.Timestamp(3)
   pnl                 Float?
+  closePrice          Float?
   stopLoss            Float?
   takeProfit          Float?
+  expirationTimestamp DateTime?      @db.Timestamp(3)
   strategyId          String?
 }
 
 model UserAgent {
   id                String    @id @default(uuid())
-  user              User      @relation(fields: [userId], references: [id])
   userId            String
+  user              User      @relation(fields: [userId], references: [id])
   agentId           String
   level             Int       @default(1)
-  status            String    @default("IDLE") // IDLE, DEPLOYED
-  deploymentEndTime DateTime?
+  status            String // 'IDLE', 'DEPLOYED'
+  deploymentEndTime DateTime? @db.Timestamp(3)
 
   @@unique([userId, agentId])
 }
@@ -72,6 +72,7 @@ model UserAgent {
 enum SignalType {
   BUY
   SELL
+  HOLD
 }
 
 enum PositionStatus {
