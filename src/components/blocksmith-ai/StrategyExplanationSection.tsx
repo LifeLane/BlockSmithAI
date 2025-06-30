@@ -255,7 +255,7 @@ Analysis Timestamp: ${currentDateTime}
 
 
   return (
-    <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out">
+    <Card className="shadow-xl w-full bg-card border-border transition-all duration-300 ease-in-out animated-border-glow">
       <CardHeader className="text-center pb-4 pt-5">
         <CardTitle className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground flex items-center justify-center flex-wrap font-headline break-words">
            <Unlock className="mr-1.5 sm:mr-3 h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 text-primary shrink-0" />

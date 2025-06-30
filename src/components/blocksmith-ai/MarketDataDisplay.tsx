@@ -82,7 +82,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 
   if (!liveMarketData) {
      return (
-      <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-tertiary hover:shadow-[0_0_15px_3px_hsl(var(--accent)/0.5)]">
+      <Card className="shadow-md transition-all duration-300 ease-in-out animated-border-glow">
         <CardHeader className="items-center text-center">
           <CardTitle className="text-xl font-headline text-foreground">
             Market <span className="text-primary">Pulse</span>
@@ -108,7 +108,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 
 
   return (
-    <Card className="shadow-lg transition-all duration-300 ease-in-out hover:border-primary/70 hover:shadow-[0_0_18px_4px_hsl(var(--primary)/0.5)]">
+    <Card className="shadow-lg transition-all duration-300 ease-in-out animated-border-glow">
       <CardHeader className="items-center text-center pb-4">
         <CardTitle className="text-xl font-headline text-foreground">
           Market Pulse: <span className="text-accent">{actualBaseSymbol}/USDT</span>
