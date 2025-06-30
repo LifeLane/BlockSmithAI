@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { FunctionComponent} from 'react';
@@ -35,7 +36,7 @@ const LivePriceTicker: FunctionComponent = () => {
           const changePercent = parseFloat(item.priceChangePercent);
           return {
             symbol: item.symbol.replace('USDT', '/USDT'),
-            price: `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: Math.max(2, (price.toString().split('.')[1]?.length || 0)) })}`,
+            price: `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
             change: `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`,
             positive: changePercent >= 0,
           };

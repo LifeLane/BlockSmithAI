@@ -114,19 +114,19 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
             <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                  <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-xs text-muted-foreground">Current Price</span>
-                    <span className="font-mono font-semibold text-primary">{currentPrice ? `$${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`: <Loader2 className="h-4 w-4 animate-spin"/>}</span>
+                    <span className="font-mono font-semibold text-primary">{currentPrice ? `$${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`: <Loader2 className="h-4 w-4 animate-spin"/>}</span>
                 </div>
                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-xs text-muted-foreground flex items-center gap-1"><LogIn size={12}/>Entry Price</span>
-                    <span className="font-mono font-semibold text-primary">${position.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+                    <span className="font-mono font-semibold text-primary">${position.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-xs text-muted-foreground flex items-center gap-1"><ShieldX size={12}/>Stop Loss</span>
-                    <span className="font-mono font-semibold text-red-400">${position.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+                    <span className="font-mono font-semibold text-red-400">${position.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-xs text-muted-foreground flex items-center gap-1"><Target size={12}/>Take Profit</span>
-                    <span className="font-mono font-semibold text-green-400">${position.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+                    <span className="font-mono font-semibold text-green-400">${position.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-xs text-muted-foreground">Unrealized PnL</span>
