@@ -2,13 +2,13 @@
 'use client';
 
 import type { FunctionComponent } from 'react';
+import Link from 'next/link';
 
 interface ShadowMindInterfaceProps {
   signalConfidence?: string; // Percentage string e.g., "82" or "82%"
   currentThought?: string;
   sentimentMemory?: string;
   prediction?: string;
-  onSynchronize?: () => void; // Optional: for future functionality
 }
 
 const ShadowMindInterface: FunctionComponent<ShadowMindInterfaceProps> = ({
@@ -16,7 +16,6 @@ const ShadowMindInterface: FunctionComponent<ShadowMindInterfaceProps> = ({
   currentThought = "Awaiting neural synchronization...",
   sentimentMemory = "State: Nominal",
   prediction = "Calculating future vectors...",
-  onSynchronize,
 }) => {
   const confidenceValue = parseInt(signalConfidence.replace('%', ''), 10) || 0;
 
@@ -73,9 +72,9 @@ const ShadowMindInterface: FunctionComponent<ShadowMindInterfaceProps> = ({
 
 
       <div className="shadow-mind-footer">
-        <button className="glow-button" onClick={onSynchronize} disabled={!onSynchronize}>
-        ▷ [ Synchronize Thoughts ]
-        </button>
+        <Link href="/core" className="glow-button">
+            ▷ [ Synchronize Thoughts ]
+        </Link>
       </div>
        <div className="shadow-mind-line footer-line">
           <span>└───────────────────</span>

@@ -172,9 +172,17 @@ const PositionCard = ({ position, currentPrice, onClose, isClosing }: { position
 const HistoryCard = ({ position }: { position: Position }) => {
     const isWin = position.pnl != null && position.pnl >= 0;
     const pnl = position.pnl ?? 0;
+    const isBuy = position.signalType === 'BUY';
+    const entryPrice = position.entryPrice;
+    const closePrice = position.closePrice ?? 0;
+    let pnlPercent = 0;
+    if (entryPrice > 0) {
+        pnlPercent = (pnl / (entryPrice * (position.size || 1))) * 100;
+    }
 
     const icon = isWin ? <CheckCircle2 className="h-6 w-6 text-green-400"/> : <XCircle className="h-6 w-6 text-red-400"/>;
     const titleColor = isWin ? 'text-green-400' : 'text-red-400';
+    const pnlColor = isWin ? 'text-green-400' : 'text-red-400';
 
     const closeDate = position.closeTimestamp ? new Date(position.closeTimestamp) : null;
     const isValidDate = closeDate && !isNaN(closeDate.getTime());
@@ -182,28 +190,37 @@ const HistoryCard = ({ position }: { position: Position }) => {
 
     return (
         <Card className="bg-card/80 backdrop-blur-sm interactive-card">
-             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <div className="flex items-center gap-4">
+             <CardHeader className="flex flex-row items-start justify-between pb-3">
+                <div className="flex items-center gap-3">
                     {icon}
                     <div>
-                        <CardTitle className="text-base font-headline">{position.signalType} {position.symbol}</CardTitle>
+                        <CardTitle className="text-base font-headline flex items-center gap-2">
+                           <span className={`font-bold ${isBuy ? 'text-tertiary' : 'text-orange-500'}`}>{isBuy ? 'LONG' : 'SHORT'}</span>
+                           {position.symbol}
+                        </CardTitle>
                         <CardDescription className="text-xs">
                             Closed {closeTimestampText} ago
                         </CardDescription>
                     </div>
                 </div>
-                <div className={`font-bold font-mono text-lg ${titleColor}`}>
-                    {pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}
-                </div>
+                <Badge variant="outline">CLOSED</Badge>
              </CardHeader>
-             <CardContent className="grid grid-cols-2 gap-2 text-xs pt-2">
-                <div className="flex justify-between p-2 bg-background/50 rounded-md">
-                    <span className="text-muted-foreground">Entry:</span>
-                    <span className="font-mono">${position.entryPrice.toFixed(2)}</span>
+             <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2">
+                <div className="flex flex-col p-2 bg-background/50 rounded-md">
+                    <span className="text-muted-foreground flex items-center gap-1"><LogIn size={12}/> Entry</span>
+                    <span className="font-mono text-sm font-semibold mt-1">${entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
                 </div>
-                 <div className="flex justify-between p-2 bg-background/50 rounded-md">
-                    <span className="text-muted-foreground">Exit:</span>
-                    <span className="font-mono">${position.closePrice?.toFixed(2) ?? 'N/A'}</span>
+                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
+                    <span className="text-muted-foreground flex items-center gap-1"><LogOut size={12}/> Exit</span>
+                    <span className="font-mono text-sm font-semibold mt-1">${closePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+                </div>
+                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
+                    <span className="text-muted-foreground flex items-center gap-1"><DollarSign size={12}/> PnL</span>
+                    <span className={`font-mono text-sm font-semibold mt-1 ${pnlColor}`}>{pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}</span>
+                </div>
+                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
+                    <span className="text-muted-foreground flex items-center gap-1"><Percent size={12}/> PnL %</span>
+                    <span className={`font-mono text-sm font-semibold mt-1 ${pnlColor}`}>{pnlPercent.toFixed(2)}%</span>
                 </div>
              </CardContent>
         </Card>
