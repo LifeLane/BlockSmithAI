@@ -320,7 +320,7 @@ const StatCard = ({ title, value, subValue, icon, valueClassName }: { title: str
 const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview, isGeneratingReview, onKillSwitch, isKilling }: { stats: PortfolioStats | null, isLoading: boolean, realtimePnl: number, onGenerateReview: () => void, isGeneratingReview: boolean, onKillSwitch: () => void, isKilling: boolean }) => {
     if (isLoading && !stats) {
         return (
-             <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30">
+             <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30 interactive-card">
                 <CardHeader className="pb-4">
                     <CardTitle className="text-lg flex items-center gap-2 text-accent font-headline"><Briefcase /> <GlyphScramble text="Performance Matrix" /></CardTitle>
                 </CardHeader>

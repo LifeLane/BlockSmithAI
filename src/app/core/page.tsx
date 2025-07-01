@@ -26,7 +26,7 @@ import {
 import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-react';
+import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
@@ -376,11 +376,18 @@ export default function CoreConsolePage() {
                                     className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out shadow-choice-button generate-buttons"
                                 >
                                     {isLoadingCustom ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
-                                    {isLoadingCustom ? "SHADOW is Deciding..." : <GlyphScramble text="SHADOW's Choice" />}
+                                    {isLoadingCustom ? "SHADOW is Deciding..." : <GlyphScramble text="SHADOW's Signal" />}
                                 </Button>
                             </div>
                         </>
                     )}
+                     <div className="flex items-start justify-center gap-3 mt-4 text-muted-foreground text-xs p-3 bg-secondary rounded-lg">
+                        <Lightbulb className="h-5 w-5 text-tertiary flex-shrink-0 mt-0.5" />
+                        <p>
+                            <strong className="text-primary">Instant Signal:</strong> Executes immediately with your selected parameters. <br />
+                            <strong className="text-accent">SHADOW's Signal:</strong> SHADOW autonomously determines the best strategy and provides a custom limit order for you to simulate.
+                        </p>
+                    </div>
                     
                     {currentUser?.status === 'Guest' && (
                         <p className="text-xs text-center text-muted-foreground mt-2">

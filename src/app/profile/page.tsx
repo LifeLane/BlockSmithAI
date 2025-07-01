@@ -96,7 +96,7 @@ const RankIcon = ({ rank }: { rank: number }) => {
 // ---- Helper Components ----
 const MissionCard = ({ mission, onClaim, isClaimed, isLocked }: { mission: typeof missionsList[0], onClaim: (id: string) => void, isClaimed: boolean, isLocked: boolean }) => {
     const cardContent = (
-        <Card className={`bg-card/80 backdrop-blur-sm transition-all duration-300 flex flex-col h-full ${isLocked ? 'opacity-60' : 'hover:border-primary/50'} ${mission.type === 'social' ? 'border-primary' : ''}`}>
+        <Card className={`bg-card/80 backdrop-blur-sm transition-all duration-300 flex flex-col h-full ${isLocked ? 'opacity-60' : 'interactive-card'} ${mission.type === 'social' ? 'border-primary' : ''}`}>
             <CardHeader className="flex flex-row items-start gap-4">
                 <div className={`p-2 bg-background rounded-lg ${mission.type === 'social' ? 'border border-primary/50' : ''}`}>{mission.icon}</div>
                 <div>
@@ -238,7 +238,7 @@ export default function ProfilePage() {
          <>
             <AppHeader />
              <div className="container mx-auto px-4 py-8 text-center">
-                 <Card className="max-w-lg mx-auto border-destructive">
+                 <Card className="max-w-lg mx-auto border-destructive interactive-card">
                     <CardHeader>
                          <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
                             <AlertTriangle className="h-10 w-10 text-destructive" />
@@ -269,7 +269,7 @@ export default function ProfilePage() {
       <AppHeader />
       <div className="container mx-auto px-4 py-8 pb-24">
         
-        <Card className="mb-8 bg-card/80 backdrop-blur-sm border-accent/50 shadow-lg shadow-accent/10">
+        <Card className="mb-8 bg-card/80 backdrop-blur-sm border-accent/50 shadow-lg shadow-accent/10 interactive-card">
             <CardHeader>
                 <CardTitle className="flex items-center text-lg text-accent">
                     <Gift className="mr-3 h-5 w-5"/>
@@ -292,15 +292,15 @@ export default function ProfilePage() {
         <Tabs defaultValue="missions" className="w-full">
             <div className="flex justify-center">
                 <TabsList className="bg-card/80 grid w-full max-w-md grid-cols-3">
-                    <TabsTrigger value="profile">Profile</TabsTrigger>
-                    <TabsTrigger value="missions">Missions</TabsTrigger>
-                    <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+                    <TabsTrigger value="profile" className="data-[state=active]:shadow-active-tab-glow">Profile</TabsTrigger>
+                    <TabsTrigger value="missions" className="data-[state=active]:shadow-active-tab-glow">Missions</TabsTrigger>
+                    <TabsTrigger value="leaderboard" className="data-[state=active]:shadow-active-tab-glow">Leaderboard</TabsTrigger>
                 </TabsList>
             </div>
 
             <TabsContent value="profile" className="mt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <Card>
+                    <Card className="interactive-card">
                         <CardHeader>
                             <CardTitle className="flex items-center"><User className="mr-2 h-5 w-5"/><GlyphScramble text="Analyst Status" /></CardTitle>
                         </CardHeader>
@@ -325,7 +325,7 @@ export default function ProfilePage() {
                         </CardContent>
                     </Card>
                     
-                    <Card>
+                    <Card className="interactive-card">
                         <CardHeader>
                             <CardTitle className="flex items-center"><BarChart2 className="mr-2 h-5 w-5"/><GlyphScramble text="Points Overview" /></CardTitle>
                         </CardHeader>
@@ -341,7 +341,7 @@ export default function ProfilePage() {
                         </CardContent>
                     </Card>
                     
-                    <Card className="md:col-span-2">
+                    <Card className="md:col-span-2 interactive-card">
                         <CardHeader>
                             <CardTitle className="flex items-center text-tertiary">
                                 {rankDetails.icon}
@@ -370,7 +370,7 @@ export default function ProfilePage() {
                     </Card>
 
 
-                     <Card className="md:col-span-2">
+                     <Card className="md:col-span-2 interactive-card">
                         <CardHeader>
                             <CardTitle className="flex items-center"><Award className="mr-2 h-5 w-5"/>Earned Badges</CardTitle>
                         </CardHeader>
@@ -386,7 +386,7 @@ export default function ProfilePage() {
                     </Card>
                 </div>
 
-                <Card className="mb-8">
+                <Card className="mb-8 interactive-card">
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="space-y-1">
                     <CardTitle>Settings</CardTitle>
@@ -410,7 +410,7 @@ export default function ProfilePage() {
             </TabsContent>
 
             <TabsContent value="missions" className="mt-6">
-                <Card className="mb-8 bg-card/80 backdrop-blur-sm border-accent/50 shadow-lg shadow-accent/10">
+                <Card className="mb-8 bg-card/80 backdrop-blur-sm border-accent/50 shadow-lg shadow-accent/10 interactive-card">
                     <CardHeader>
                         <CardTitle className="flex items-center text-xl text-accent">
                             <Award className="mr-3 h-6 w-6"/>
@@ -453,7 +453,7 @@ export default function ProfilePage() {
             </TabsContent>
             
             <TabsContent value="leaderboard" className="mt-6">
-                <Card>
+                <Card className="interactive-card">
                     <CardHeader>
                         <CardTitle className="flex items-center"><Users className="mr-2 h-5 w-5"/><GlyphScramble text="Top 10 Analysts" /></CardTitle>
                         <CardDescription>Weekly leaders based on XP.</CardDescription>

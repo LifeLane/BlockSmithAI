@@ -239,7 +239,7 @@ export default function SignalsPage() {
     <>
       <AppHeader />
       <div className="container mx-auto px-4 py-8">
-        <Card className="mb-8 bg-card/80 backdrop-blur-sm border-primary/50 shadow-lg shadow-primary/10">
+        <Card className="mb-8 bg-card/80 backdrop-blur-sm border-primary/50 shadow-lg shadow-primary/10 interactive-card">
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                     <CardTitle className="flex items-center text-lg text-primary">
