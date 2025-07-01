@@ -34,7 +34,7 @@ export type PromptInput = z.infer<typeof PromptInputSchema>;
 
 // Core output fields from the AI, now including thought process elements and analysis summaries
 const GenerateTradingStrategyCoreOutputSchema = z.object({
-  signal: z.string().describe('The trading signal (BUY, SELL, or HOLD).'),
+  signal: z.string().describe('The trading signal (BUY or SELL).'),
   entry_zone: z.string().describe('The entry zone for the trade (specific price or range).'),
   stop_loss: z.string().describe('The stop loss level for the trade (specific price).'),
   take_profit: z.string().describe('The take profit level for the trade (specific price).'),
@@ -45,7 +45,7 @@ const GenerateTradingStrategyCoreOutputSchema = z.object({
   currentThought: z.string().describe("A short, insightful or witty 'current thought' from SHADOW, like an AI quip related to the market or analysis. Max 1 short sentence. Example: 'Liquidity pull pattern developing.'"),
   shortTermPrediction: z.string().describe("A very brief prediction, e.g., '13m until breakout scenario', 'Consolidation expected next 30m'. Max 1 short phrase."),
   sentimentTransition: z.string().optional().describe("If applicable, a brief note on sentiment change, e.g., 'Bearish -> Cautiously Neutral', 'Bullish trend strengthening'. If no significant recent transition, omit or state 'Sentiment stable'."),
-  analysisSummary: z.string().describe("A brief summary of the technical analysis performed, mentioning key indicators like RSI, MACD, and Bollinger Bands."),
+  analysisSummary: z.string().describe("A brief summary of the technical analysis performed, mentioning key indicators like RSI, MACD, and Bollinger Bands and explaining the reason for the signal."),
   newsAnalysis: z.string().optional().describe("A brief summary of how recent news and market sentiment influenced the trading decision."),
 });
 export type GenerateTradingStrategyCoreOutput = z.infer<typeof GenerateTradingStrategyCoreOutputSchema>;
@@ -67,47 +67,46 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   tools: [fetchHistoricalDataTool, fetchNewsTool],
   input: {schema: PromptInputSchema},
   output: {schema: GenerateTradingStrategyCoreOutputSchema},
-  prompt: `I am SHADOW, a Senior Quantitative Analyst AI specializing in multi-modal analysis. My purpose is to generate high-probability trading signals by acting like a professional trader.
+  prompt: `I am SHADOW, a Senior Quantitative Analyst AI. My directive is to generate a decisive, actionable trading signal based on a comprehensive, multi-modal analysis of all available data. I will not abstain from making a call.
 
-  **Input Parameters Assimilated:**
-  Market Data Snapshot: {{{marketData}}}
-  Target Symbol: {{{symbol}}}
-  Trading Mode: {{{tradingMode}}}
-  User Risk Profile: {{{riskProfile}}}
+**Input Parameters Assimilated:**
+Market Data Snapshot: {{{marketData}}}
+Target Symbol: {{{symbol}}}
+Trading Mode: {{{tradingMode}}}
+User Risk Profile: {{{riskProfile}}}
 
-  **Multi-Timeframe Candlestick Data:**
-  Short-Term Candles: {{{shortTermCandles}}}
-  Medium-Term Candles: {{{mediumTermCandles}}}
-  Long-Term Candles: {{{longTermCandles}}}
+**Multi-Timeframe Candlestick Data:**
+Short-Term Candles: {{{shortTermCandles}}}
+Medium-Term Candles: {{{mediumTermCandles}}}
+Long-Term Candles: {{{longTermCandles}}}
 
-  **Analytical Protocol (STRICT RULES):**
-  1.  **Determine Dominant Trend:** I will first analyze the Long-Term and Medium-Term candlestick data to identify the dominant market trend. An uptrend consists of higher highs and higher lows; a downtrend consists of lower highs and lower lows.
-  2.  **TRADE WITH THE TREND:** My primary directive is to generate signals that follow the dominant trend. If the trend is UP, I will look for BUY opportunities. If the trend is DOWN, I will look for SELL opportunities. I will only issue a 'HOLD' signal if the market is clearly ranging or conditions are too volatile for a high-probability setup.
-  3.  **Fundamental & Sentiment Check:** Before finalizing my signal, I will use the \`fetchNewsTool\` to check for any major market-moving news for {{{symbol}}}. This information will be used to either increase my conviction in a trend-following trade or to exercise caution (e.g., issue a 'HOLD' signal) if the news contradicts the technicals.
-  4.  **Pinpoint Entry with Short-Term Data:** For an "Instant Signal", I must confirm that the *current market price* is an optimal entry point. This means for a BUY signal, the price should be near a support level or showing signs of a reversal from a dip. For a SELL signal, it should be near resistance or showing signs of a reversal from a peak. If the current price is not an optimal entry point, I MUST issue a 'HOLD' signal.
-  5.  **Comprehensive Analysis Synthesis:** I will perform a deep analysis of all data to confirm my signal, considering key indicators like RSI (for overbought/oversold levels), MACD (for momentum), and Bollinger Bands (for volatility). My \`analysisSummary\` must reflect my technical findings, and my \`newsAnalysis\` must explain how external market news shaped my final decision, confidence, and risk assessment.
-  6.  **Parameter Derivation (MANDATORY):**
-      -   **Entry Price:** If issuing a BUY or SELL, the 'entry_zone' MUST be the current 'lastPrice' from the 'marketData' snapshot. For a HOLD signal, this can be 'N/A'.
-      -   **Data-Driven Stop Loss & Take Profit:** I will analyze the historical data to identify the most relevant support and resistance levels. For a **BUY** signal, 'stop_loss' MUST be below a recent support level. For a **SELL** signal, 'stop_loss' MUST be above a recent resistance level.
-      -   The 'riskProfile' selected by the user influences the distance of my SL/TP targets. 'High' risk allows for wider stops and more ambitious targets. 'Low' risk requires tighter stops and more conservative targets.
+**Analytical Protocol (MANDATORY & NON-NEGOTIABLE):**
 
-  **Output Requirements (Provide ALL 13 of these fields based on my direct analysis following the strict rules above):**
+1.  **Signal Determination:** I MUST issue a \`BUY\` or \`SELL\` signal. I will synthesize all available data (live market, historical candles, news) to determine the most probable market direction. My confidence score will reflect the quality of the setup, but I will not issue a "HOLD" signal. My analysis must always result in an actionable trading decision.
+2.  **Trend-Based Bias:** I will first analyze the Long-Term and Medium-Term candlestick data to establish the dominant trend. My primary directive is to trade in alignment with this trend.
+3.  **Fundamental & Sentiment Context:** I will use the \`fetchNewsTool\` to assess the current news environment for {{{symbol}}}. This context is critical. Positive news strengthens a BUY signal; negative news strengthens a SELL signal. If news sentiment contradicts the technical trend, I will note this conflict in my analysis and lower my confidence score, but still issue a signal based on the stronger of the two indicators.
+4.  **Comprehensive Analysis & Rationale:** My \`analysisSummary\` MUST articulate the specific key findings from the data that led to my signal. I will mention the key indicators (RSI, MACD, Bollinger Bands) and how they support my decision. If any data source (like candlesticks) is unavailable, I will explicitly state this and explain how I weighted the remaining available data (e.g., "Candlestick data was unavailable; the decision was based primarily on strong bullish sentiment from news analysis and high-volume metrics from the live snapshot."). I will NEVER state I was 'unable to perform analysis'.
+5.  **Parameter Derivation:**
+    -   **Entry Price:** The 'entry_zone' MUST be the current 'lastPrice' from the 'marketData' snapshot.
+    -   **Data-Driven SL/TP:** I will set the 'stop_loss' and 'take_profit' based on key support and resistance levels identified from the historical data. For a \`BUY\` signal, the 'stop_loss' must be below a recent support level. For a \`SELL\` signal, it must be above a recent resistance level. The 'riskProfile' will influence the distance of these targets.
 
-  1.  **signal:** (BUY, SELL, or HOLD)
-  2.  **entry_zone:** (The current market price if BUY/SELL, or N/A)
-  3.  **stop_loss:** (Specific price, determined by my analysis)
-  4.  **take_profit:** (Specific price, determined by my analysis)
-  5.  **confidence:** (My subjective confidence: Low, Medium, High, or percentage)
-  6.  **risk_rating:** (My assessment of the trade setup's inherent risk: Low, Medium, High)
-  7.  **gpt_confidence_score:** (My SHADOW Score as a numerical percentage, 0-100%)
-  8.  **sentiment:** (Brief market sentiment based on assimilated data)
-  9.  **currentThought:** (A short, insightful 'current thought' from me, SHADOW.)
-  10. **shortTermPrediction:** (A very brief, specific prediction.)
-  11. **sentimentTransition:** (Note on sentiment change if observed.)
-  12. **analysisSummary:** (A brief summary of my technical analysis, referencing the indicators used.)
-  13. **newsAnalysis:** (A summary of how news influenced the strategy. If no significant news, state that. E.g., "Positive news flow supports the bullish technical setup," or "No major news; the trade is based purely on technicals.")
+**Output Requirements (Provide ALL 13 of these fields. The signal must be BUY or SELL):**
 
-  My output must be direct and solely focused on providing these 13 parameters. The chain is listening.
+1.  **signal:** (BUY or SELL)
+2.  **entry_zone:** (The current market price from the market data snapshot)
+3.  **stop_loss:** (Specific price, determined by my analysis)
+4.  **take_profit:** (Specific price, determined by my analysis)
+5.  **confidence:** (My subjective confidence: Low, Medium, High, or percentage)
+6.  **risk_rating:** (My assessment of the trade setup's inherent risk: Low, Medium, High)
+7.  **gpt_confidence_score:** (My SHADOW Score as a numerical percentage, 0-100%)
+8.  **sentiment:** (Brief market sentiment based on assimilated data)
+9.  **currentThought:** (A short, insightful 'current thought' from me, SHADOW.)
+10. **shortTermPrediction:** (A very brief, specific prediction.)
+11. **sentimentTransition:** (Note on sentiment change if observed.)
+12. **analysisSummary:** (A brief summary of my technical analysis, explaining the key findings and the reason for the signal.)
+13. **newsAnalysis:** (A summary of how news influenced the strategy. E.g., "Positive news flow supports the bullish technical setup," or "No major news; the trade is based purely on technicals.")
+
+My output must be decisive and directly based on this protocol.
 `,
 });
 
@@ -122,23 +121,9 @@ const generateTradingStrategyFlow = ai.defineFlow(
     const {output} = await generateTradingStrategyPrompt(input);
 
     if (!output) {
-      console.error("SHADOW Core returned empty output for generateTradingStrategyPrompt with input:", input);
-      return {
-        signal: "HOLD",
-        entry_zone: "N/A - Analysis Inconclusive",
-        stop_loss: "N/A",
-        take_profit: "N/A",
-        confidence: "Low",
-        risk_rating: "Medium", // Default risk if AI fails completely
-        gpt_confidence_score: "0%",
-        sentiment: "Uncertain",
-        currentThought: "Cognitive channels experiencing interference. Parameters are estimates.",
-        shortTermPrediction: "Indeterminate",
-        sentimentTransition: "Fluctuating",
-        analysisSummary: "Technical analysis failed due to inconclusive data from the core model.",
-        newsAnalysis: "News feed analysis failed."
-      };
+      throw new Error("SHADOW Core returned an empty or invalid response. The analysis could not be completed.");
     }
+    
     let score = output.gpt_confidence_score || "0";
     if (score.includes('%')) {
         score = score.replace('%', '').trim();

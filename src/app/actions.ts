@@ -350,8 +350,6 @@ export async function generateTradingStrategyAction(input: Omit<TradingStrategyP
         const [strategy, disclaimer] = await Promise.all([ genCoreStrategy(promptInput), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
         
-        const isHold = strategy.signal.toUpperCase() === 'HOLD';
-        
         // Save the generated signal to the database
         const savedSignal = await prisma.generatedSignal.create({
             data: {
@@ -375,14 +373,12 @@ export async function generateTradingStrategyAction(input: Omit<TradingStrategyP
                 newsAnalysis: strategy.newsAnalysis,
                 disclaimer: disclaimer.disclaimer,
                 type: SignalGenerationType.INSTANT,
-                status: isHold ? GeneratedSignalStatus.ARCHIVED : GeneratedSignalStatus.EXECUTED,
+                status: GeneratedSignalStatus.EXECUTED,
             }
         });
 
-        // If not a HOLD signal, immediately log the position
-        if (!isHold) {
-            await logInstantPositionAction(input.userId, { ...strategy, id: savedSignal.id, tradingMode: input.tradingMode, symbol: input.symbol, disclaimer: disclaimer.disclaimer });
-        }
+        // Always log the position for an instant signal
+        await logInstantPositionAction(input.userId, { ...strategy, id: savedSignal.id, tradingMode: input.tradingMode, symbol: input.symbol, disclaimer: disclaimer.disclaimer });
         
         return { ...strategy, id: savedSignal.id, symbol: input.symbol, disclaimer: disclaimer.disclaimer, tradingMode: input.tradingMode };
 
