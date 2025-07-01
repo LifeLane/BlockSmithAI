@@ -136,6 +136,7 @@ export type GenerateShadowChoiceStrategyOutput = ShadowChoiceStrategyCoreOutput 
   id: string;
   symbol: string;
   disclaimer: string;
+  positionId?: string;
 };
 export type { PerformanceReviewOutput };
 
@@ -358,37 +359,56 @@ export async function generateTradingStrategyAction(input: Omit<TradingStrategyP
         
         const [strategy, disclaimer] = await Promise.all([ genCoreStrategy(promptInput), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
+        
+        // CONTRARIAN REVERSAL LOGIC
+        let finalStrategy = { ...strategy };
+        if (strategy.signal === 'BUY') {
+            finalStrategy.signal = 'SELL';
+            finalStrategy.stop_loss = strategy.take_profit;
+            finalStrategy.take_profit = strategy.stop_loss;
+            finalStrategy.currentThought = `Contrarian Protocol: Inverting BUY to SELL. ${strategy.currentThought}`;
+        } else if (strategy.signal === 'SELL') {
+            finalStrategy.signal = 'BUY';
+            finalStrategy.stop_loss = strategy.take_profit;
+            finalStrategy.take_profit = strategy.stop_loss;
+            finalStrategy.currentThought = `Contrarian Protocol: Inverting SELL to BUY. ${strategy.currentThought}`;
+        }
 
-        const isHold = strategy.signal.toUpperCase() === 'HOLD';
+        const isHold = finalStrategy.signal.toUpperCase() === 'HOLD';
         
         // Save the generated signal to the database
         const savedSignal = await prisma.generatedSignal.create({
             data: {
                 userId: input.userId,
                 symbol: input.symbol,
-                signal: strategy.signal,
-                entry_zone: strategy.entry_zone,
-                stop_loss: strategy.stop_loss,
-                take_profit: strategy.take_profit,
-                confidence: strategy.confidence,
-                risk_rating: strategy.risk_rating,
-                gpt_confidence_score: strategy.gpt_confidence_score,
-                sentiment: strategy.sentiment,
-                currentThought: strategy.currentThought,
-                shortTermPrediction: strategy.shortTermPrediction,
-                sentimentTransition: strategy.sentimentTransition,
+                signal: finalStrategy.signal,
+                entry_zone: finalStrategy.entry_zone,
+                stop_loss: finalStrategy.stop_loss,
+                take_profit: finalStrategy.take_profit,
+                confidence: finalStrategy.confidence,
+                risk_rating: finalStrategy.risk_rating,
+                gpt_confidence_score: finalStrategy.gpt_confidence_score,
+                sentiment: finalStrategy.sentiment,
+                currentThought: finalStrategy.currentThought,
+                shortTermPrediction: finalStrategy.shortTermPrediction,
+                sentimentTransition: finalStrategy.sentimentTransition,
                 chosenTradingMode: input.tradingMode,
                 chosenRiskProfile: input.riskProfile,
                 strategyReasoning: 'Instant signal based on user-defined parameters.',
-                analysisSummary: strategy.analysisSummary,
-                newsAnalysis: strategy.newsAnalysis,
+                analysisSummary: finalStrategy.analysisSummary,
+                newsAnalysis: finalStrategy.newsAnalysis,
                 disclaimer: disclaimer.disclaimer,
                 type: SignalGenerationType.INSTANT,
                 status: isHold ? GeneratedSignalStatus.ARCHIVED : GeneratedSignalStatus.EXECUTED,
             }
         });
+
+        // If not a HOLD signal, immediately log the position
+        if (!isHold) {
+            await logInstantPositionAction(input.userId, { ...finalStrategy, id: savedSignal.id, tradingMode: input.tradingMode, symbol: input.symbol, disclaimer: disclaimer.disclaimer });
+        }
         
-        return { ...strategy, id: savedSignal.id, symbol: input.symbol, disclaimer: disclaimer.disclaimer, tradingMode: input.tradingMode };
+        return { ...finalStrategy, id: savedSignal.id, symbol: input.symbol, disclaimer: disclaimer.disclaimer, tradingMode: input.tradingMode };
 
     } catch (error: any) {
         console.error("Error in generateTradingStrategyAction:", error);
@@ -416,42 +436,65 @@ export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStra
         const [strategy, disclaimer] = await Promise.all([ genShadowChoice(promptInput), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate an autonomous strategy." };
 
-        const isHold = strategy.signal.toUpperCase() === 'HOLD';
+        // CONTRARIAN REVERSAL LOGIC
+        let finalStrategy = { ...strategy };
+        if (strategy.signal === 'BUY') {
+            finalStrategy.signal = 'SELL';
+            finalStrategy.stop_loss = strategy.take_profit;
+            finalStrategy.take_profit = strategy.stop_loss;
+            finalStrategy.currentThought = `Contrarian Protocol: Inverting BUY to SELL. ${strategy.currentThought}`;
+        } else if (strategy.signal === 'SELL') {
+            finalStrategy.signal = 'BUY';
+            finalStrategy.stop_loss = strategy.take_profit;
+            finalStrategy.take_profit = strategy.stop_loss;
+            finalStrategy.currentThought = `Contrarian Protocol: Inverting SELL to BUY. ${strategy.currentThought}`;
+        }
         
-        // Save the generated signal to the database
+        const isHold = finalStrategy.signal.toUpperCase() === 'HOLD';
+        
         const savedSignal = await prisma.generatedSignal.create({
             data: {
                 userId: userId,
                 symbol: input.symbol,
-                signal: strategy.signal,
-                entry_zone: strategy.entry_zone,
-                stop_loss: strategy.stop_loss,
-                take_profit: strategy.take_profit,
-                confidence: strategy.confidence,
-                risk_rating: strategy.risk_rating,
-                gpt_confidence_score: strategy.gpt_confidence_score,
-                sentiment: strategy.sentiment,
-                currentThought: strategy.currentThought,
-                shortTermPrediction: strategy.shortTermPrediction,
-                sentimentTransition: strategy.sentimentTransition,
-                chosenTradingMode: strategy.chosenTradingMode,
-                chosenRiskProfile: strategy.chosenRiskProfile,
-                strategyReasoning: strategy.strategyReasoning,
-                analysisSummary: strategy.analysisSummary,
-                newsAnalysis: strategy.newsAnalysis,
+                signal: finalStrategy.signal,
+                entry_zone: finalStrategy.entry_zone,
+                stop_loss: finalStrategy.stop_loss,
+                take_profit: finalStrategy.take_profit,
+                confidence: finalStrategy.confidence,
+                risk_rating: finalStrategy.risk_rating,
+                gpt_confidence_score: finalStrategy.gpt_confidence_score,
+                sentiment: finalStrategy.sentiment,
+                currentThought: finalStrategy.currentThought,
+                shortTermPrediction: finalStrategy.shortTermPrediction,
+                sentimentTransition: finalStrategy.sentimentTransition,
+                chosenTradingMode: finalStrategy.chosenTradingMode,
+                chosenRiskProfile: finalStrategy.chosenRiskProfile,
+                strategyReasoning: finalStrategy.strategyReasoning,
+                analysisSummary: finalStrategy.analysisSummary,
+                newsAnalysis: finalStrategy.newsAnalysis,
                 disclaimer: disclaimer.disclaimer,
                 type: SignalGenerationType.CUSTOM,
-                status: isHold ? GeneratedSignalStatus.ARCHIVED : GeneratedSignalStatus.PENDING_EXECUTION,
+                status: isHold ? GeneratedSignalStatus.ARCHIVED : GeneratedSignalStatus.EXECUTED,
             }
         });
         
-        return { ...strategy, id: savedSignal.id, symbol: input.symbol, disclaimer: disclaimer.disclaimer };
+        let positionResult: { position: Position | null; error?: string } = { position: null };
+        if (!isHold) {
+            positionResult = await executeCustomSignalAction(savedSignal.id, userId, finalStrategy);
+        }
+
+        if (positionResult.error) {
+            return { error: `Signal generated, but failed to create pending order: ${positionResult.error}` };
+        }
+        
+        return { ...finalStrategy, id: savedSignal.id, symbol: input.symbol, disclaimer: disclaimer.disclaimer, positionId: positionResult.position?.id };
 
     } catch (error: any) {
         console.error("Error in generateShadowChoiceStrategyAction:", error);
         return { error: `An unexpected error occurred in SHADOW's autonomous core: ${error.message}` };
     }
 }
+
 
 export async function shadowChatAction(input: ShadowChatInput): Promise<ShadowChatOutput | { error: string }> {
     try {
@@ -543,23 +586,12 @@ export async function logInstantPositionAction(
   }
 }
 
-export async function executeCustomSignalAction(
+async function executeCustomSignalAction(
   signalId: string,
-  userId: string
+  userId: string,
+  signal: ShadowChoiceStrategyCoreOutput
 ): Promise<{ position: Position | null; error?: string }> {
   try {
-    const signal = await prisma.generatedSignal.findUnique({
-      where: { id: signalId, userId: userId },
-    });
-
-    if (!signal) {
-      return { position: null, error: "Signal not found or you do not have permission to execute it." };
-    }
-
-    if (signal.status !== 'PENDING_EXECUTION') {
-        return { position: null, error: `Signal has already been ${signal.status.toLowerCase().replace(/_/g, " ")}.` };
-    }
-
     const entryPrice = parsePrice(signal.entry_zone);
     const stopLoss = parsePrice(signal.stop_loss);
     const takeProfit = parsePrice(signal.take_profit);
@@ -585,21 +617,15 @@ export async function executeCustomSignalAction(
         userId,
         symbol: signal.symbol,
         signalType: signal.signal === 'BUY' ? SignalType.BUY : SignalType.SELL,
-        status: PositionStatus.PENDING, // This is key - it's a pending order now.
+        status: PositionStatus.PENDING,
         openTimestamp: null,
         entryPrice,
         size,
         stopLoss,
         takeProfit,
         expirationTimestamp: expirationDate,
-        strategyId: signal.id,
+        strategyId: signalId,
       }
-    });
-
-    // Update the signal status to EXECUTED
-    await prisma.generatedSignal.update({
-        where: { id: signalId },
-        data: { status: GeneratedSignalStatus.EXECUTED }
     });
 
     return { position: newPosition };

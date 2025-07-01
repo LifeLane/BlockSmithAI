@@ -2,7 +2,7 @@
 'use client';
 
 import type { FunctionComponent } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   AreaChart,
@@ -17,12 +17,20 @@ import {
   CircleDotDashed,
   Info,
   Loader2,
+  MessageSquareHeart,
+  BrainCircuit,
+  Newspaper
 } from 'lucide-react';
 import type { GenerateTradingStrategyOutput, GenerateShadowChoiceStrategyOutput } from '@/app/actions';
 import type { LiveMarketData } from '@/app/actions';
+import GlyphScramble from './GlyphScramble';
+import { Button } from '../ui/button';
+import Link from 'next/link';
 
 type AIStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
   id?: string;
+  analysisSummary?: string | null;
+  newsAnalysis?: string | null;
 };
 
 interface SignalTrackerProps {
@@ -113,9 +121,10 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="outcome" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="outcome">Real-time Outcome</TabsTrigger>
             <TabsTrigger value="parameters">Signal Parameters</TabsTrigger>
+            <TabsTrigger value="analysis">SHADOW's Analysis</TabsTrigger>
           </TabsList>
           
           <TabsContent value="outcome" className="mt-4 space-y-3">
@@ -159,8 +168,53 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
                 valueClassName="text-green-400"
             />
           </TabsContent>
+          <TabsContent value="analysis" className="mt-4 space-y-4">
+             <div className="w-full space-y-2">
+                <div className="flex items-center text-primary">
+                    <BrainCircuit className="h-5 w-5 mr-2" />
+                    <h4 className="font-semibold font-headline">AI Reasoning</h4>
+                </div>
+                <p className="text-xs text-muted-foreground pl-1 italic">"{aiStrategy.currentThought}"</p>
+            </div>
+            {aiStrategy.analysisSummary && (
+                <div className="w-full space-y-2">
+                    <div className="flex items-center text-primary">
+                        <AreaChart className="h-5 w-5 mr-2" />
+                        <h4 className="font-semibold font-headline">Technical Analysis</h4>
+                    </div>
+                    <p className="text-xs text-muted-foreground pl-1">{aiStrategy.analysisSummary}</p>
+                </div>
+            )}
+            {aiStrategy.newsAnalysis && (
+                <div className="w-full space-y-2">
+                    <div className="flex items-center text-primary">
+                        <Newspaper className="h-5 w-5 mr-2" />
+                        <h4 className="font-semibold font-headline">News Context</h4>
+                    </div>
+                    <p className="text-xs text-muted-foreground pl-1">{aiStrategy.newsAnalysis}</p>
+                </div>
+            )}
+          </TabsContent>
         </Tabs>
       </CardContent>
+      <CardFooter className="flex flex-col gap-4 p-4 border-t border-border/50">
+        <Button asChild className="w-full glow-button">
+            <Link href="/pulse">Track in Portfolio</Link>
+        </Button>
+        {aiStrategy.disclaimer && (
+            <div className="shadow-edict-container">
+                <div className="shadow-edict-title-container">
+                    <MessageSquareHeart className="h-6 w-6" />
+                    <div className="shadow-edict-title">
+                        <GlyphScramble text="SHADOW's Edict" />
+                    </div>
+                </div>
+                <p className="shadow-edict-body">
+                    {aiStrategy.disclaimer}
+                </p>
+            </div>
+        )}
+      </CardFooter>
     </Card>
   );
 };

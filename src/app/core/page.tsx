@@ -10,14 +10,12 @@ import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import ShadowMindInterface from '@/components/blocksmith-ai/ShadowMindInterface';
-import StrategyExplanationSection from '@/components/blocksmith-ai/StrategyExplanationSection';
+import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import {
   generateTradingStrategyAction,
   generateShadowChoiceStrategyAction,
   fetchMarketDataAction,
   fetchAllTradingSymbolsAction,
-  logInstantPositionAction,
   type LiveMarketData,
   type FormattedSymbol,
   type GenerateTradingStrategyOutput,
@@ -32,15 +30,6 @@ import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 
 type AIStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
   id?: string;
-  gpt_confidence_score?: string;
-  confidence?: string;
-  sentiment?: string;
-  risk_rating?: string;
-  currentThought?: string;
-  shortTermPrediction?: string;
-  analysisSummary?: string | null;
-  newsAnalysis?: string | null;
-  strategyReasoning?: string | null;
 };
 
 const DEFAULT_SYMBOLS: FormattedSymbol[] = [
@@ -60,7 +49,6 @@ export default function CoreConsolePage() {
   const [aiStrategy, setAiStrategy] = useState<AIStrategyOutput | null>(null);
   const [isLoadingInstant, setIsLoadingInstant] = useState<boolean>(false);
   const [isLoadingCustom, setIsLoadingCustom] = useState<boolean>(false);
-  const [isCustomSignal, setIsCustomSignal] = useState(false);
   const [strategyError, setStrategyError] = useState<string | null>(null);
 
   const [liveMarketData, setLiveMarketData] = useState<LiveMarketData | null>(null);
@@ -200,7 +188,6 @@ export default function CoreConsolePage() {
     if (isCustom) setIsLoadingCustom(true);
     else setIsLoadingInstant(true);
     
-    setIsCustomSignal(isCustom);
     setStrategyError(null);
     setAiStrategy(null);
 
@@ -238,35 +225,36 @@ export default function CoreConsolePage() {
     } else {
       setAiStrategy(result);
       
+      const isHold = result.signal?.toUpperCase() === 'HOLD';
+
       if (isCustom) {
-        toast({
-          title: <span className="text-accent">Custom Signal Generated!</span>,
-          description: (
-             <Link href="/signals">
-                <span className="text-foreground hover:underline">Review and execute on the <strong className="text-primary">Signals</strong> page.</span>
-             </Link>
-          )
-        });
-      } else {
-         // Instant Signal: Log the position immediately
-        const isHold = result.signal?.toUpperCase() === 'HOLD';
-        if (!isHold) {
-            const logResult = await logInstantPositionAction(currentUser.id, result as GenerateTradingStrategyOutput);
-            if (logResult.error) {
-                 toast({
-                    title: <span className="text-accent">Instant Signal Generated!</span>,
-                    description: <span className="text-foreground">Analysis generated, but <strong className="text-destructive">auto-logging failed:</strong> {logResult.error}</span>
-                });
-            } else {
-                 toast({
-                    title: <span className="text-accent">Instant Signal Executed!</span>,
-                    description:  <span className="text-foreground">Analysis for <strong className="text-primary">{result.symbol}</strong> generated and <strong className="text-tertiary">auto-logged</strong> for simulation.</span>
-                });
-            }
-        } else if (isHold) {
+        if (isHold) {
+             toast({
+                title: <span className="text-accent">HOLD Signal Generated</span>,
+                description: "SHADOW advises holding. No pending order was created."
+            });
+        } else {
+            toast({
+                title: <span className="text-accent">Custom Order Submitted!</span>,
+                description: (
+                    <Link href="/pulse">
+                        <span className="text-foreground hover:underline">
+                            Your pending order for <strong className="text-primary">{result.symbol}</strong> is live. <strong className="text-tertiary">Track it in your Portfolio.</strong>
+                        </span>
+                    </Link>
+                )
+            });
+        }
+      } else { // Instant Signal
+        if (isHold) {
             toast({
                 title: <span className="text-accent">HOLD Signal Generated</span>,
                 description: <span className="text-foreground">HOLD signal for <strong className="text-primary">{result.symbol}</strong> received. No position logged.</span>
+            });
+        } else {
+            toast({
+                title: <span className="text-accent">Instant Signal Executed!</span>,
+                description:  <span className="text-foreground">Position for <strong className="text-primary">{result.symbol}</strong> has been opened. <strong className="text-tertiary">Track it in your Portfolio.</strong></span>
             });
         }
       }
@@ -330,23 +318,10 @@ export default function CoreConsolePage() {
   
     if (aiStrategy) {
       return (
-        <>
-            <ShadowMindInterface
-              shadowScore={aiStrategy.gpt_confidence_score}
-              confidence={aiStrategy.confidence}
-              sentiment={aiStrategy.sentiment}
-              riskRating={aiStrategy.risk_rating}
-              currentThought={aiStrategy.currentThought}
-              prediction={aiStrategy.shortTermPrediction}
-            />
-            <StrategyExplanationSection
-                strategy={aiStrategy}
-                liveMarketData={liveMarketData}
-                isLoading={isLoadingInstant || isLoadingCustom}
-                symbol={symbol}
-                isCustomSignal={isCustomSignal}
-            />
-        </>
+        <SignalTracker
+            aiStrategy={aiStrategy}
+            liveMarketData={liveMarketData}
+        />
       );
     }
   

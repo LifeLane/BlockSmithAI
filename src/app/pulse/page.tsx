@@ -39,6 +39,7 @@ import {
     AlertDialogTrigger,
   } from "@/components/ui/alert-dialog";
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
+import { cn } from '@/lib/utils';
 
 const TimeLeft = ({ expiration, className }: { expiration?: Date | null, className?: string }) => {
     const [timeLeft, setTimeLeft] = useState('');
@@ -251,7 +252,6 @@ const HistoryCard = ({ position }: { position: Position }) => {
     }
 
     const icon = isWin ? <CheckCircle2 className="h-6 w-6 text-green-400"/> : <XCircle className="h-6 w-6 text-red-400"/>;
-    const titleColor = isWin ? 'text-green-400' : 'text-red-400';
     const pnlColor = isWin ? 'text-green-400' : 'text-red-400';
 
     const closeDate = position.closeTimestamp ? new Date(position.closeTimestamp) : null;
@@ -259,7 +259,10 @@ const HistoryCard = ({ position }: { position: Position }) => {
     const closeTimestampText = isValidDate ? formatDistanceToNow(closeDate) : 'an unknown time';
 
     return (
-        <Card className="bg-card/80 backdrop-blur-sm interactive-card">
+        <Card className={cn(
+            "bg-card/80 backdrop-blur-sm interactive-card",
+            isWin ? "bg-green-500/5 border-green-500/20" : "bg-red-500/5 border-red-500/20"
+        )}>
              <CardHeader className="flex flex-row items-start justify-between pb-3">
                 <div className="flex items-center gap-3">
                     {icon}
@@ -286,11 +289,11 @@ const HistoryCard = ({ position }: { position: Position }) => {
                 </div>
                  <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-muted-foreground flex items-center gap-1"><DollarSign size={12}/> PnL</span>
-                    <span className={`font-mono text-sm font-semibold mt-1 ${pnlColor}`}>{pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}</span>
+                    <span className={`font-mono text-lg font-bold mt-1 ${pnlColor}`}>{pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}</span>
                 </div>
                  <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-muted-foreground flex items-center gap-1"><Percent size={12}/> PnL %</span>
-                    <span className={`font-mono text-sm font-semibold mt-1 ${pnlColor}`}>{pnlPercent.toFixed(2)}%</span>
+                    <span className={`font-mono text-lg font-bold mt-1 ${pnlColor}`}>{pnlPercent.toFixed(2)}%</span>
                 </div>
              </CardContent>
         </Card>
@@ -549,7 +552,7 @@ export default function PortfolioPage() {
             if (initialLoad) setIsLoadingData(false);
             isFetchingRef.current = false;
         }
-    }, [showCloseToast, toast]);
+    }, [showCloseToast, toast, positions.length, tradeHistory.length]);
 
     const handleManualClose = useCallback(async (positionId: string, closePrice: number) => {
         if (!currentUser) return;

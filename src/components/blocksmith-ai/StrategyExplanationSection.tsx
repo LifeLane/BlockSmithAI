@@ -1,4 +1,5 @@
 
+'use client';
 import { FunctionComponent } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -97,7 +98,7 @@ const StrategyExplanationSection: FunctionComponent<StrategyExplanationSectionPr
             <Button asChild className="glow-button px-8 py-6 text-base">
               <Link href={isCustomSignal ? '/signals' : '/pulse'}>
                 <Route className="mr-2 h-5 w-5"/>
-                {isCustomSignal ? "Review & Execute Signal" : "Track in Portfolio"}
+                {isCustomSignal ? "Review Signal Log" : "Track in Portfolio"}
               </Link>
             </Button>
         </div>

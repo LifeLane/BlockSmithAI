@@ -5,19 +5,36 @@ import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Bot, BrainCircuit, Play, Trash2, LogIn, ShieldX, Target } from 'lucide-react';
+import { Loader2, Bot, BrainCircuit, Play, Trash2, LogIn, ShieldX, Target, CheckCircle2, AlertCircle, Hourglass, Archive } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import {
   fetchAllGeneratedSignalsAction,
-  executeCustomSignalAction,
   dismissCustomSignalAction,
   type GeneratedSignal,
 } from '@/app/actions';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
-const GeneratedSignalCard = ({ signal, onExecute, onDismiss, isProcessing }: { signal: GeneratedSignal, onExecute: (s: GeneratedSignal) => void, onDismiss: (id: string) => void, isProcessing: boolean }) => {
+const StatusBadge = ({ status }: { status: GeneratedSignal['status'] }) => {
+    const statusMap = {
+        PENDING_EXECUTION: { icon: <Hourglass className="h-3 w-3 mr-1.5"/>, text: 'Awaiting Execution', className: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
+        EXECUTED: { icon: <CheckCircle2 className="h-3 w-3 mr-1.5"/>, text: 'Executed', className: 'bg-green-500/10 text-green-400 border-green-500/20' },
+        DISMISSED: { icon: <Trash2 className="h-3 w-3 mr-1.5"/>, text: 'Dismissed', className: 'bg-gray-500/10 text-gray-400 border-gray-500/20' },
+        ARCHIVED: { icon: <Archive className="h-3 w-3 mr-1.5"/>, text: 'Archived (Hold)', className: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
+        ERROR: { icon: <AlertCircle className="h-3 w-3 mr-1.5"/>, text: 'Error', className: 'bg-red-500/10 text-red-400 border-red-500/20' },
+    };
+    const currentStatus = statusMap[status] || statusMap.ARCHIVED;
+    return (
+        <Badge variant="outline" className={cn("text-xs", currentStatus.className)}>
+            {currentStatus.icon} {currentStatus.text}
+        </Badge>
+    );
+}
+
+const GeneratedSignalCard = ({ signal, onDismiss, isProcessing }: { signal: GeneratedSignal, onDismiss: (id: string) => void, isProcessing: boolean }) => {
     
     const formatPrice = (priceString?: string | null): string => {
         if (!priceString) return 'N/A';
@@ -32,18 +49,26 @@ const GeneratedSignalCard = ({ signal, onExecute, onDismiss, isProcessing }: { s
         return price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
     
-    const canExecute = signal.type === 'CUSTOM' && signal.status === 'PENDING_EXECUTION' && signal.signal !== 'HOLD';
+    const canDismiss = signal.status === 'PENDING_EXECUTION';
+    const isBuy = signal.signal === 'BUY';
 
     return (
         <Card className="bg-card/80 backdrop-blur-sm transition-all duration-300 flex flex-col interactive-card">
             <CardHeader>
-                <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{signal.symbol}</CardTitle>
-                    <Badge variant={signal.type === 'CUSTOM' ? 'outline' : 'secondary'} className={signal.type === 'CUSTOM' ? 'border-accent text-accent' : ''}>
-                        {signal.type}
-                    </Badge>
+                <div className="flex items-start justify-between">
+                    <div>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                             <span className={cn("font-bold", isBuy ? 'text-green-400' : 'text-red-400')}>{signal.signal}</span>
+                            {signal.symbol}
+                        </CardTitle>
+                        <CardDescription className="text-xs">{format(new Date(signal.createdAt), "MMM d, yyyy 'at' h:mm a")}</CardDescription>
+                    </div>
+                     <StatusBadge status={signal.status} />
                 </div>
-                 <p className="text-sm text-muted-foreground pt-2 italic line-clamp-2">"{signal.strategyReasoning}"</p>
+                 <p className="text-sm text-muted-foreground pt-2 italic line-clamp-2">
+                    <BrainCircuit className="inline h-4 w-4 mr-2 text-tertiary"/>
+                    {signal.currentThought}
+                 </p>
             </CardHeader>
             <CardContent className="space-y-3">
                  <div className="text-xs p-3 bg-background/50 rounded-md grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -61,22 +86,13 @@ const GeneratedSignalCard = ({ signal, onExecute, onDismiss, isProcessing }: { s
                     </div>
                 </div>
             </CardContent>
-            <CardFooter className="mt-auto flex gap-2">
-                {canExecute ? (
-                    <>
+            {(signal.type === 'CUSTOM' && signal.status === 'PENDING_EXECUTION') && (
+                <CardFooter className="mt-auto flex gap-2">
                         <Button variant="outline" size="sm" className="w-full" onClick={() => onDismiss(signal.id)} disabled={isProcessing}>
-                            <Trash2 className="h-4 w-4 mr-2"/> Dismiss
+                            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Trash2 className="h-4 w-4 mr-2"/>} Dismiss
                         </Button>
-                        <Button className="w-full glow-button" size="sm" onClick={() => onExecute(signal)} disabled={isProcessing}>
-                            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Play className="h-4 w-4 mr-2"/>} Execute Manually
-                        </Button>
-                    </>
-                ) : (
-                    <div className="text-xs text-muted-foreground text-center w-full py-2">
-                        This signal has been {signal.status.toLowerCase().replace(/_/g, ' ')} and cannot be executed.
-                    </div>
-                )}
-            </CardFooter>
+                </CardFooter>
+            )}
         </Card>
     );
 };
@@ -108,32 +124,6 @@ export default function SignalsPage() {
             setIsLoading(false);
         }
     }, [user, isUserLoading, fetchSignals]);
-
-    const handleExecute = useCallback(async (signalToExecute: GeneratedSignal) => {
-        if (!user) {
-            toast({ title: "Error", description: "You must be logged in to execute a signal.", variant: "destructive" });
-            return;
-        }
-        setProcessingId(signalToExecute.id);
-        const result = await executeCustomSignalAction(signalToExecute.id, user.id);
-
-        if (result.error) {
-            toast({ title: "Execution Failed", description: result.error, variant: "destructive" });
-        } else {
-            toast({
-                title: "Signal Submitted!",
-                description: (
-                    <Link href="/pulse">
-                        <span className="text-foreground hover:underline">
-                            {signalToExecute.symbol} position is now pending execution. <strong className="text-primary">Track it in your Portfolio.</strong>
-                        </span>
-                    </Link>
-                )
-            });
-            fetchSignals(user.id); // Re-fetch signals
-        }
-        setProcessingId(null);
-    }, [user, toast, fetchSignals]);
 
     const handleDismiss = useCallback(async (signalId: string) => {
         if (!user) return;
@@ -211,7 +201,6 @@ export default function SignalsPage() {
                     <GeneratedSignalCard
                         key={signal.id}
                         signal={signal}
-                        onExecute={handleExecute}
                         onDismiss={handleDismiss}
                         isProcessing={processingId === signal.id}
                     />
@@ -231,7 +220,7 @@ export default function SignalsPage() {
                     <GlyphScramble text="Signal Log" />
                 </CardTitle>
                 <CardDescription>
-                    A complete log of all signals generated by <strong className="text-accent">SHADOW</strong>. <strong className="text-primary">Custom signals</strong> can be executed from here.
+                    A complete log of all signals generated by <strong className="text-accent">SHADOW</strong>. <strong className="text-primary">Custom signals</strong> that have been executed can be tracked in your Portfolio.
                 </CardDescription>
             </CardHeader>
         </Card>
