@@ -278,15 +278,15 @@ export async function fetchLeaderboardDataJson(): Promise<LeaderboardUser[]> {
 
 
 const timeframeMappings: { [key: string]: { short: string; medium: string; long: string; } } = {
-    Scalper: { short: '1m', medium: '5m', long: '15m' },
-    Sniper: { short: '5m', medium: '15m', long: '1h' },
-    Intraday: { short: '15m', medium: '1h', long: '4h' },
+    Scalper: { short: '1m', medium: '3m', long: '5m' },
+    Sniper: { short: '5m', medium: '15m', long: '30m' },
+    Intraday: { short: '15m', medium: '30m', long: '1h' },
     Swing: { short: '1h', medium: '4h', long: '1d' },
 };
 
 export async function generateTradingStrategyAction(input: Omit<TradingStrategyPromptInput, 'shortTermCandles' | 'mediumTermCandles' | 'longTermCandles'> & { userId: string }): Promise<GenerateTradingStrategyOutput | { error: string }> {
     try {
-        // Determine timeframes
+        // Determine timeframes based on the user's selected trading mode.
         const timeframes = timeframeMappings[input.tradingMode] || timeframeMappings.Intraday;
 
         // Fetch historical data for all three timeframes in parallel
@@ -467,8 +467,8 @@ export async function logInstantPositionAction(
     const tradingMode = strategy.tradingMode || 'Intraday';
     let expirationDate: Date;
     switch (tradingMode) {
-      case 'Scalper': expirationDate = add(new Date(), { hours: 1 }); break;
-      case 'Sniper': expirationDate = add(new Date(), { hours: 4 }); break;
+      case 'Scalper': expirationDate = add(new Date(), { minutes: 30 }); break;
+      case 'Sniper': expirationDate = add(new Date(), { hours: 3 }); break;
       case 'Intraday': expirationDate = add(new Date(), { hours: 12 }); break;
       case 'Swing': expirationDate = add(new Date(), { days: 3 }); break;
       default: expirationDate = add(new Date(), { hours: 24 }); break;
@@ -517,15 +517,8 @@ export async function executeCustomSignalAction(
     
     const size = entryPrice < 1 ? 10000 : 1;
     
-    const tradingMode = signal.chosenTradingMode;
-    let expirationDate: Date;
-    switch (tradingMode) {
-      case 'Scalper': expirationDate = add(new Date(), { hours: 1 }); break;
-      case 'Sniper': expirationDate = add(new Date(), { hours: 4 }); break;
-      case 'Intraday': expirationDate = add(new Date(), { hours: 12 }); break;
-      case 'Swing': expirationDate = add(new Date(), { days: 3 }); break;
-      default: expirationDate = add(new Date(), { hours: 24 }); break;
-    }
+    // For all custom "SHADOW's Choice" signals, the pending order is valid for 24 hours.
+    const expirationDate = add(new Date(), { hours: 24 });
 
     const newPosition = await prisma.position.create({
       data: {

@@ -2,7 +2,7 @@
 "use client";
 import type { FunctionComponent} from 'react';
 import { useState, useEffect } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button"
 import {
   Command,
@@ -18,7 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Label } from "@/components/ui/label";
-import { Check, ChevronsUpDown, Target as TargetIcon, Zap, Shield } from "lucide-react" 
+import { Check, ChevronsUpDown, Target, Zap, Clock, TrendingUp, Shield } from "lucide-react" 
 import { cn } from "@/lib/utils"
 import type { FormattedSymbol } from '@/app/actions';
 
@@ -34,16 +34,16 @@ interface StrategySelectorsProps {
 }
 
 const TRADING_MODES = [
-  { value: "Scalper", label: "Scalper" },
-  { value: "Sniper", label: "Sniper" },
-  { value: "Intraday", label: "Intraday" },
-  { value: "Swing", label: "Swing" },
+  { value: "Scalper", label: "Scalper", icon: <Zap className="h-4 w-4" /> },
+  { value: "Sniper", label: "Sniper", icon: <Target className="h-4 w-4" /> },
+  { value: "Intraday", label: "Intraday", icon: <Clock className="h-4 w-4" /> },
+  { value: "Swing", label: "Swing", icon: <TrendingUp className="h-4 w-4" /> },
 ];
 
 const RISK_PROFILES = [
-  { value: "Low", label: "Low Risk" },
-  { value: "Medium", label: "Medium Risk" },
-  { value: "High", label: "High Risk" },
+  { value: "Low", label: "Low" },
+  { value: "Medium", label: "Medium" },
+  { value: "High", label: "High" },
 ];
 
 const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
@@ -79,10 +79,10 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
   }, [symbol, symbols, isLoadingSymbols]);
 
   return (
-    <div className="grid grid-cols-1 gap-4 p-4 bg-card rounded-lg border border-border/50 interactive-card">
+    <div className="grid grid-cols-1 gap-6 p-4 bg-card rounded-lg border border-border/50 interactive-card">
       <div>
         <Label htmlFor="symbol-select" className="mb-2 block text-sm font-medium text-muted-foreground flex items-center">
-          <TargetIcon className="mr-2 h-4 w-4 text-primary" />
+          <Target className="mr-2 h-4 w-4 text-primary" />
           Target <span className="text-primary ml-1 font-semibold">Asset</span>
         </Label>
         <Popover open={openPopover} onOpenChange={setOpenPopover}>
@@ -91,7 +91,7 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
               variant="outline"
               role="combobox"
               aria-expanded={openPopover}
-              className="w-full justify-between text-sm bg-background text-foreground border-input hover:border-accent focus:border-accent focus:ring-accent"
+              className="w-full justify-between text-base bg-background text-foreground border-input hover:border-accent focus:border-accent focus:ring-accent font-semibold"
               id="symbol-select"
               disabled={isLoadingSymbols && symbols.length === 0}
             >
@@ -143,51 +143,38 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
         </Popover>
       </div>
       <div>
-        <Label htmlFor="trading-mode-select" className="mb-2 block text-sm font-medium text-muted-foreground flex items-center">
+        <Label className="mb-2 block text-sm font-medium text-muted-foreground flex items-center">
           <Zap className="mr-2 h-4 w-4 text-primary" />
           Trading <span className="text-primary ml-1 font-semibold">Mode</span>
         </Label>
-        <Select value={tradingMode} onValueChange={onTradingModeChange}>
-          <SelectTrigger 
-            id="trading-mode-select" 
-            className="w-full text-sm bg-background text-foreground border-input hover:border-accent focus:border-accent focus:ring-accent"
-          >
-            <SelectValue placeholder="Select mode" />
-          </SelectTrigger>
-          <SelectContent>
-            {TRADING_MODES.map((i) => (
-              <SelectItem key={i.value} value={i.value} className="text-sm">
-                {i.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Tabs value={tradingMode} onValueChange={onTradingModeChange} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
+                {TRADING_MODES.map((mode) => (
+                    <TabsTrigger key={mode.value} value={mode.value} className="flex flex-col sm:flex-row gap-1.5 py-2 h-auto text-xs sm:text-sm">
+                        {mode.icon}
+                        {mode.label}
+                    </TabsTrigger>
+                ))}
+            </TabsList>
+        </Tabs>
       </div>
       <div>
-        <Label htmlFor="risk-profile-select" className="mb-2 block text-sm font-medium text-muted-foreground flex items-center">
+        <Label className="mb-2 block text-sm font-medium text-muted-foreground flex items-center">
           <Shield className="mr-2 h-4 w-4 text-primary" />
           Risk <span className="text-primary ml-1 font-semibold">Profile</span>
         </Label>
-        <Select value={riskProfile} onValueChange={onRiskProfileChange}>
-          <SelectTrigger 
-            id="risk-profile-select" 
-            className="w-full text-sm bg-background text-foreground border-input hover:border-accent focus:border-accent focus:ring-accent"
-          >
-            <SelectValue placeholder="Select risk profile" />
-          </SelectTrigger>
-          <SelectContent>
-            {RISK_PROFILES.map((i) => (
-              <SelectItem key={i.value} value={i.value} className="text-sm">
-                {i.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+         <Tabs value={riskProfile} onValueChange={onRiskProfileChange} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 h-12">
+                {RISK_PROFILES.map((profile) => (
+                    <TabsTrigger key={profile.value} value={profile.value} className="text-sm h-full">
+                        {profile.label}
+                    </TabsTrigger>
+                ))}
+            </TabsList>
+        </Tabs>
       </div>
     </div>
   );
 };
 
 export default StrategySelectors;
-
-    
