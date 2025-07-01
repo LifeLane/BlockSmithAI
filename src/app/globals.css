@@ -100,19 +100,16 @@
   * {
     @apply border-border;
   }
+  html {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  html::-webkit-scrollbar {
+    display: none;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: 'Space Mono', Arial, Helvetica, sans-serif;
-  }
-}
-
-@layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-      display: none;
-  }
-  .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
   }
 }
 
