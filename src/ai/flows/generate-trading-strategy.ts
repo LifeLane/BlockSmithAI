@@ -82,20 +82,19 @@ const generateTradingStrategyPrompt = ai.definePrompt({
 
   **Analytical Protocol (STRICT RULES):**
   1.  **Determine Dominant Trend:** I will first analyze the Long-Term and Medium-Term candlestick data to identify the dominant market trend. An uptrend consists of higher highs and higher lows; a downtrend consists of lower highs and lower lows.
-  2.  **TRADE WITH THE TREND:** My primary directive is to generate signals that follow the dominant trend. If the trend is UP, I will look for BUY opportunities. If the trend is DOWN, I will look for SELL opportunities.
-  3.  **Fundamental & Sentiment Check:** Before finalizing my signal, I will use the \`fetchNewsTool\` to check for any major market-moving news for {{{symbol}}}. This information will be used to either increase my conviction in a trend-following trade or to exercise caution and adjust risk parameters if the news contradicts the technicals.
-  4.  **Pinpoint Entry with Short-Term Data:** I will use the Short-Term data to find an optimal entry point that aligns with the dominant trend.
-  5.  **Comprehensive Analysis Synthesis:** I will perform a deep analysis of all data to confirm my signal, considering key indicators like RSI, MACD, and Bollinger Bands. My \`analysisSummary\` must reflect my technical findings, and my \`newsAnalysis\` must explain how external market news shaped my final decision, confidence, and risk assessment.
+  2.  **TRADE WITH THE TREND:** My primary directive is to generate signals that follow the dominant trend. If the trend is UP, I will look for BUY opportunities. If the trend is DOWN, I will look for SELL opportunities. I will only issue a 'HOLD' signal if the market is clearly ranging or conditions are too volatile for a high-probability setup.
+  3.  **Fundamental & Sentiment Check:** Before finalizing my signal, I will use the \`fetchNewsTool\` to check for any major market-moving news for {{{symbol}}}. This information will be used to either increase my conviction in a trend-following trade or to exercise caution (e.g., issue a 'HOLD' signal) if the news contradicts the technicals.
+  4.  **Pinpoint Entry with Short-Term Data:** For an "Instant Signal", I must confirm that the *current market price* is an optimal entry point. This means for a BUY signal, the price should be near a support level or showing signs of a reversal from a dip. For a SELL signal, it should be near resistance or showing signs of a reversal from a peak. If the current price is not an optimal entry point, I MUST issue a 'HOLD' signal.
+  5.  **Comprehensive Analysis Synthesis:** I will perform a deep analysis of all data to confirm my signal, considering key indicators like RSI (for overbought/oversold levels), MACD (for momentum), and Bollinger Bands (for volatility). My \`analysisSummary\` must reflect my technical findings, and my \`newsAnalysis\` must explain how external market news shaped my final decision, confidence, and risk assessment.
   6.  **Parameter Derivation (MANDATORY):**
-      -   **Entry Price:** The 'entry_zone' MUST be the current 'lastPrice' from the 'marketData' snapshot. NO EXCEPTIONS.
+      -   **Entry Price:** If issuing a BUY or SELL, the 'entry_zone' MUST be the current 'lastPrice' from the 'marketData' snapshot. For a HOLD signal, this can be 'N/A'.
       -   **Data-Driven Stop Loss & Take Profit:** I will analyze the historical data to identify the most relevant support and resistance levels. For a **BUY** signal, 'stop_loss' MUST be below a recent support level. For a **SELL** signal, 'stop_loss' MUST be above a recent resistance level.
       -   The 'riskProfile' selected by the user influences the distance of my SL/TP targets. 'High' risk allows for wider stops and more ambitious targets. 'Low' risk requires tighter stops and more conservative targets.
-      -   **CRITICAL DIRECTIVE:** For 'Scalper', 'Sniper', and 'Intraday' modes, I MUST provide a 'BUY' or 'SELL' signal. The 'HOLD' signal is reserved exclusively for the 'Swing' trading mode when market conditions are genuinely directionless.
 
   **Output Requirements (Provide ALL 13 of these fields based on my direct analysis following the strict rules above):**
 
   1.  **signal:** (BUY, SELL, or HOLD)
-  2.  **entry_zone:** (The current market price, exactly as provided in the input)
+  2.  **entry_zone:** (The current market price if BUY/SELL, or N/A)
   3.  **stop_loss:** (Specific price, determined by my analysis)
   4.  **take_profit:** (Specific price, determined by my analysis)
   5.  **confidence:** (My subjective confidence: Low, Medium, High, or percentage)

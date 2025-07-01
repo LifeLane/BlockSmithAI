@@ -31,7 +31,6 @@ import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Lightbulb, Info
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
-import DailyGreeting from '@/components/blocksmith-ai/DailyGreeting';
 
 type AIStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
   id?: string;
@@ -325,7 +324,6 @@ export default function CoreConsolePage() {
             !showResults ? 'flex-grow flex flex-col justify-center' : ''
         )}>
             <div className="space-y-4">
-                <DailyGreeting />
                 <div id="market-data-display">
                     <MarketDataDisplay
                         liveMarketData={liveMarketData}
@@ -416,15 +414,6 @@ export default function CoreConsolePage() {
                         </>
                     )}
                     
-                    <div className="flex w-full items-start gap-2.5 rounded-lg border border-border/50 bg-secondary/50 p-3 text-xs text-muted-foreground mt-4">
-                        <Lightbulb className="h-4 w-4 shrink-0 mt-0.5 text-tertiary" />
-                        <p className="leading-relaxed">
-                            <strong className="text-tertiary">Instant Signal</strong> executes a trade immediately using your selected parameters.
-                            <br />
-                            <strong className="text-accent">SHADOW's Choice</strong> has the AI autonomously create and propose a complete strategy for you to review.
-                        </p>
-                    </div>
-
                     {currentUser?.status === 'Guest' && (
                         <p className="text-xs text-center text-muted-foreground mt-2">
                         {isLimitReached ? (
