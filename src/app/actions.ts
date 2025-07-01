@@ -555,31 +555,21 @@ export async function executeCustomSignalAction(
     
     const size = entryPrice < 1 ? 10000 : 1;
     
-    // Custom signal expiration is now based on the trading mode used to generate it.
-    const tradingMode = signal.chosenTradingMode || 'Intraday';
-    let expirationDate: Date;
-    switch (tradingMode) {
-      case 'Scalper': expirationDate = add(new Date(), { minutes: 30 }); break;
-      case 'Sniper': expirationDate = add(new Date(), { hours: 3 }); break;
-      case 'Intraday': expirationDate = add(new Date(), { hours: 12 }); break;
-      case 'Swing': expirationDate = add(new Date(), { days: 3 }); break;
-      default: expirationDate = add(new Date(), { hours: 24 }); break;
-    }
+    // PENDING orders expire in 24 hours if not filled
+    const expirationDate = add(new Date(), { hours: 24 });
 
-
-    // Create an OPEN position immediately, simulating a perfect limit order fill.
     const newPosition = await prisma.position.create({
       data: {
         userId,
         symbol: signal.symbol,
         signalType: signal.signal === 'BUY' ? SignalType.BUY : SignalType.SELL,
-        status: PositionStatus.OPEN,
-        openTimestamp: new Date(), // Position is opened now
-        entryPrice, // Use the signal's calculated entry price
+        status: PositionStatus.PENDING,
+        openTimestamp: null,
+        entryPrice,
         size,
         stopLoss,
         takeProfit,
-        expirationTimestamp: expirationDate,
+        expirationTimestamp: expirationDate, // This is for the PENDING order
         strategyId: signalId,
       }
     });
@@ -592,7 +582,7 @@ export async function executeCustomSignalAction(
     return { position: newPosition };
   } catch (error: any) {
     console.error("Error in executeCustomSignalAction:", error);
-    return { position: null, error: `Failed to execute signal: ${error.message}` };
+    return { position: null, error: `Failed to create pending order: ${error.message}` };
   }
 }
 
@@ -603,11 +593,10 @@ export async function closePositionAction(positionId: string, closePrice: number
             return { error: 'Position not found or already closed.' };
         }
 
-        // The entry price is fixed when the position is created and should not change.
         const entry = position.entryPrice;
         
         const pnl = position.signalType === 'BUY' ? (closePrice - entry) * position.size : (entry - closePrice) * position.size;
-        const airdropPointsEarned = Math.max(0, Math.floor(pnl * 10)); // Example: 10 points per dollar of PnL
+        const airdropPointsEarned = Math.max(0, Math.floor(pnl * 10));
         
         const updatedPosition = await prisma.position.update({
             where: { id: positionId },
@@ -621,7 +610,6 @@ export async function closePositionAction(positionId: string, closePrice: number
                     data: { airdropPoints: { increment: airdropPointsEarned } }
                 });
             } catch (userUpdateError: any) {
-                // Log the error but don't fail the entire action. The position is already closed.
                 console.warn(`Could not update airdrop points for user ${position.userId}: ${userUpdateError.message}`);
             }
         }
@@ -638,7 +626,7 @@ export async function fetchPendingAndOpenPositionsAction(userId: string): Promis
         return await prisma.position.findMany({ 
             where: { 
                 userId, 
-                status: { in: [PositionStatus.OPEN] } // PENDING status is no longer used for active trades.
+                status: { in: [PositionStatus.OPEN, PositionStatus.PENDING] }
             }, 
             orderBy: { createdAt: 'desc' } 
         });
@@ -996,5 +984,63 @@ export async function fetchAllGeneratedSignalsAction(userId: string): Promise<Ge
         return signals;
     } catch (error: any) {
         return { error: `Failed to fetch signals: ${error.message}` };
+    }
+}
+
+
+export async function openPendingPositionAction(positionId: string): Promise<{ position: Position | null, error?: string }> {
+    try {
+        const pendingPosition = await prisma.position.findUnique({
+            where: { id: positionId, status: 'PENDING' },
+            include: { strategy: true }
+        });
+
+        if (!pendingPosition) return { position: null, error: 'Pending position not found or already open.' };
+        if (!pendingPosition.strategy) return { position: null, error: 'Associated strategy data not found for the position.' };
+
+        const tradingMode = pendingPosition.strategy.chosenTradingMode || 'Intraday';
+        let expirationDate: Date;
+        switch (tradingMode) {
+            case 'Scalper': expirationDate = add(new Date(), { hours: 1 }); break;
+            case 'Sniper': expirationDate = add(new Date(), { hours: 3 }); break;
+            case 'Intraday': expirationDate = add(new Date(), { hours: 12 }); break;
+            case 'Swing': expirationDate = add(new Date(), { days: 3 }); break;
+            default: expirationDate = add(new Date(), { hours: 24 }); break;
+        }
+
+        const openedPosition = await prisma.position.update({
+            where: { id: positionId },
+            data: {
+                status: PositionStatus.OPEN,
+                openTimestamp: new Date(),
+                expirationTimestamp: expirationDate
+            }
+        });
+
+        return { position: openedPosition };
+    } catch (error: any) {
+        console.error('Error opening pending position:', error);
+        return { position: null, error: `Failed to open position: ${error.message}` };
+    }
+}
+
+export async function archivePositionAction(positionId: string): Promise<{ success: boolean, error?: string }> {
+    try {
+        const position = await prisma.position.findUnique({ where: { id: positionId, status: 'PENDING' } });
+        if (!position) return { success: false, error: 'Pending position not found to archive.' };
+
+        await prisma.position.update({
+            where: { id: positionId },
+            data: {
+                status: PositionStatus.CLOSED,
+                closeTimestamp: new Date(),
+                pnl: 0,
+                closePrice: position.entryPrice,
+            }
+        });
+        return { success: true };
+    } catch (error: any) {
+        console.error('Error archiving position:', error);
+        return { success: false, error: `Failed to archive position: ${error.message}` };
     }
 }

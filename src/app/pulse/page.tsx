@@ -9,7 +9,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle, Wallet, Activity, BrainCircuit, ShieldAlert, CheckCircle2, XCircle, Bot } from 'lucide-react';
+import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle, Wallet, Activity, BrainCircuit, ShieldAlert, CheckCircle2, XCircle, Bot, Hourglass } from 'lucide-react';
 import {
   fetchPendingAndOpenPositionsAction,
   closePositionAction,
@@ -17,6 +17,8 @@ import {
   fetchPortfolioStatsAction,
   generatePerformanceReviewAction,
   killSwitchAction,
+  openPendingPositionAction,
+  archivePositionAction,
   type Position,
   type LiveMarketData,
   type PortfolioStats,
@@ -94,11 +96,12 @@ const DataItem = ({ label, value, icon, valueClassName }: { label: string, value
 );
 
 const OpenPositionCard = ({ position, currentPrice, onClose, isClosing }: { position: Position, currentPrice?: number, onClose: (positionId: string, closePrice: number) => void, isClosing: boolean }) => {
+    const isPending = position.status === 'PENDING';
     let pnl = 0;
     let pnlPercent = 0;
     const positionSize = position.size || 1;
 
-    if (currentPrice) {
+    if (currentPrice && !isPending) {
         const priceDiff = position.signalType === 'BUY' 
             ? (currentPrice - position.entryPrice) 
             : (position.entryPrice - currentPrice);
@@ -126,11 +129,15 @@ const OpenPositionCard = ({ position, currentPrice, onClose, isClosing }: { posi
                         {position.symbol}
                     </CardTitle>
                      <CardDescription className="text-xs">
-                        Opened: {openTimestampText}
+                        {isPending ? 'Order Placed' : 'Opened'}: {openTimestampText}
                     </CardDescription>
                 </div>
                  <div className="flex flex-col items-end">
-                     <Badge className={'border-blue-500/50 bg-blue-900/60 text-blue-300'}><PlayCircle className="h-4 w-4 mr-1 text-blue-400"/>OPEN</Badge>
+                    {isPending ? (
+                        <Badge className={'border-yellow-500/50 bg-yellow-900/60 text-yellow-300'}><Hourglass className="h-4 w-4 mr-1 text-yellow-400"/>PENDING</Badge>
+                    ) : (
+                        <Badge className={'border-blue-500/50 bg-blue-900/60 text-blue-300'}><PlayCircle className="h-4 w-4 mr-1 text-blue-400"/>OPEN</Badge>
+                    )}
                     {position.expirationTimestamp && (
                         <TimeLeft expiration={new Date(position.expirationTimestamp)} className="text-xs text-muted-foreground mt-2"/>
                     )}
@@ -143,20 +150,20 @@ const OpenPositionCard = ({ position, currentPrice, onClose, isClosing }: { posi
                     valueClassName="text-primary"
                 />
                  <DataItem
-                    label="Entry Price"
+                    label={isPending ? "Limit Price" : "Entry Price"}
                     icon={<LogIn size={12}/>}
                     value={`$${position.entryPrice.toFixed(2)}`}
                 />
                 <DataItem
                     label="Unrealized PnL"
                     icon={<DollarSign size={12}/>}
-                    value={currentPrice ? `$${pnl.toFixed(2)}` : '...'}
+                    value={isPending ? 'N/A' : (currentPrice ? `$${pnl.toFixed(2)}` : '...')}
                     valueClassName={pnlColor}
                 />
                 <DataItem
                     label="Unrealized PnL %"
                     icon={<Percent size={12}/>}
-                    value={currentPrice ? `${pnlPercent.toFixed(2)}%` : '...'}
+                    value={isPending ? 'N/A' : (currentPrice ? `${pnlPercent.toFixed(2)}%` : '...')}
                     valueClassName={pnlColor}
                 />
                  <DataItem
@@ -173,9 +180,9 @@ const OpenPositionCard = ({ position, currentPrice, onClose, isClosing }: { posi
                 />
             </CardContent>
             <CardFooter className="pt-6">
-                <Button className="w-full" variant="destructive" onClick={() => currentPrice && onClose(position.id, currentPrice)} disabled={isClosing || !currentPrice}>
+                <Button className="w-full" variant="destructive" onClick={() => currentPrice && onClose(position.id, currentPrice)} disabled={isClosing || !currentPrice || isPending}>
                     {isClosing ? <Loader2 className="h-4 w-4 animate-spin"/> : <LogOut className="h-4 w-4 mr-1"/>}
-                    Close Manually
+                    {isPending ? "Cancel Order" : "Close Manually"}
                 </Button>
             </CardFooter>
         </Card>
@@ -384,6 +391,21 @@ export default function PortfolioPage() {
         });
     }, [toast]);
     
+    const showFilledToast = useCallback((filledPosition: Position) => {
+        toast({
+            title: <span className="text-primary">Order Filled!</span>,
+            description: `Your ${filledPosition.signalType} order for ${filledPosition.symbol} at $${filledPosition.entryPrice} has been executed.`
+        });
+    }, [toast]);
+
+    const showExpiredToast = useCallback((expiredPosition: Position) => {
+        toast({
+            title: <span className="text-muted-foreground">Order Expired</span>,
+            description: `Your pending ${expiredPosition.signalType} order for ${expiredPosition.symbol} at $${expiredPosition.entryPrice} has expired.`
+        });
+    }, [toast]);
+
+
     const runSimulationCycle = useCallback(async (userId: string) => {
         if (isFetchingRef.current) return;
         isFetchingRef.current = true;
@@ -429,7 +451,27 @@ export default function PortfolioPage() {
                 
                 const currentPrice = parseFloat(livePriceData.lastPrice);
                 
-                if (pos.status === 'OPEN') {
+                if (pos.status === 'PENDING') {
+                    if (pos.expirationTimestamp && new Date(pos.expirationTimestamp) < new Date()) {
+                        await archivePositionAction(pos.id);
+                        showExpiredToast(pos);
+                        needsReFetch = true;
+                        continue;
+                    }
+
+                    let triggered = false;
+                    if (pos.signalType === 'BUY' && currentPrice <= pos.entryPrice) triggered = true;
+                    else if (pos.signalType === 'SELL' && currentPrice >= pos.entryPrice) triggered = true;
+
+                    if (triggered) {
+                        const result = await openPendingPositionAction(pos.id);
+                        if (result.position) {
+                            showFilledToast(result.position);
+                            needsReFetch = true;
+                        }
+                    }
+
+                } else if (pos.status === 'OPEN') {
                     let closeReason: string | null = null;
                     let closePrice = 0;
                     
@@ -477,20 +519,26 @@ export default function PortfolioPage() {
             if (initialLoad) setIsLoadingData(false);
             isFetchingRef.current = false;
         }
-    }, [showCloseToast, toast, positions.length, tradeHistory.length]);
+    }, [showCloseToast, showFilledToast, showExpiredToast, toast, positions.length, tradeHistory.length]);
 
     const handleManualClose = useCallback(async (positionId: string, closePrice: number) => {
         if (!currentUser) return;
         setClosingPositionId(positionId);
-        const result = await closePositionAction(positionId, closePrice);
-        if (result.position) {
-            showCloseToast(result.position, result.airdropPointsEarned || 0, 'Position Closed Manually');
-            await runSimulationCycle(currentUser.id);
+        const positionToClose = positions.find(p => p.id === positionId);
+        if (positionToClose?.status === 'PENDING') {
+            await archivePositionAction(positionId);
+            showExpiredToast(positionToClose); // Re-use toast
         } else {
-            toast({ title: "Error Closing Position", description: result.error, variant: "destructive" });
+            const result = await closePositionAction(positionId, closePrice);
+            if (result.position) {
+                showCloseToast(result.position, result.airdropPointsEarned || 0, 'Position Closed Manually');
+            } else {
+                toast({ title: "Error Closing Position", description: result.error, variant: "destructive" });
+            }
         }
+        await runSimulationCycle(currentUser.id);
         setClosingPositionId(null);
-    }, [showCloseToast, toast, currentUser, runSimulationCycle]);
+    }, [positions, showCloseToast, showExpiredToast, toast, currentUser, runSimulationCycle]);
     
     const handleGenerateReview = useCallback(async () => {
         if (!currentUser) return;
@@ -567,12 +615,12 @@ export default function PortfolioPage() {
     }, [positions, livePrices]);
     
     const renderActivePositions = () => {
-        const openPositions = positions.filter(p => p.status === 'OPEN');
+        const activePositions = positions.filter(p => p.status === 'OPEN' || p.status === 'PENDING');
 
-        if (isLoadingData && openPositions.length === 0) {
+        if (isLoadingData && activePositions.length === 0) {
             return <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin"/></div>
         }
-        if (openPositions.length === 0) {
+        if (activePositions.length === 0) {
              return (
                 <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4 interactive-card">
                      <CardHeader>
@@ -596,7 +644,7 @@ export default function PortfolioPage() {
         }
         return (
             <div className="space-y-4">
-                {openPositions.map(pos => (
+                {activePositions.map(pos => (
                     <OpenPositionCard
                         key={pos.id}
                         position={pos}
@@ -673,7 +721,7 @@ export default function PortfolioPage() {
         />
          <Tabs defaultValue="open" className="mt-4">
             <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="open" className="data-[state=active]:shadow-active-tab-glow">Active Positions ({positions.length})</TabsTrigger>
+                <TabsTrigger value="open" className="data-[state=active]:shadow-active-tab-glow">Active Positions ({positions.filter(p => p.status !== 'CLOSED').length})</TabsTrigger>
                 <TabsTrigger value="history" className="data-[state=active]:shadow-active-tab-glow">Trade History ({tradeHistory.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="open" className="mt-4">

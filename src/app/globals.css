@@ -45,38 +45,29 @@
   }
 
   .dark {
-    --background: 240 10% 4%;
-    --foreground: 210 40% 98%;
+    --background: 265 39% 12%;
+    --foreground: 270 20% 90%;
+    --card: 265 30% 15%;
+    --card-foreground: 270 20% 90%;
+    --popover: 265 30% 10%;
+    --popover-foreground: 270 20% 90%;
+    --primary: 198 93% 60%; /* Electric Cyan */
+    --primary-foreground: 198 93% 5%;
+    --secondary: 265 30% 22%;
+    --secondary-foreground: 270 20% 85%;
+    --muted: 265 30% 20%;
+    --muted-foreground: 270 15% 55%;
+    --accent: 320 100% 65%; /* Vibrant Pink */
+    --accent-foreground: 320 100% 5%;
+    --tertiary: 50 100% 50%; /* Warm Yellow */
+    --tertiary-foreground: 50 100% 5%;
+    --destructive: 20 100% 60%; /* Piercing Orange */
+    --destructive-foreground: 20 100% 98%;
+    --border: 265 39% 25%;
+    --input: 265 39% 20%;
+    --ring: hsl(var(--primary));
     
-    --card: 240 5% 11%;
-    --card-foreground: 210 40% 98%;
-    
-    --popover: 240 5% 8%;
-    --popover-foreground: 210 40% 98%;
-    
-    --primary: 45 100% 51%; /* Rich Gold */
-    --primary-foreground: 45 100% 5%; /* Dark text for gold buttons */
-    
-    --secondary: 220 10% 20%;
-    --secondary-foreground: 210 40% 90%;
-    
-    --muted: 220 10% 15%;
-    --muted-foreground: 220 15% 55%;
-    
-    --accent: 45 100% 75%; /* Pale Gold */
-    --accent-foreground: 45 100% 5%;
-    
-    --tertiary: 210 100% 65%; /* Switched to a cool blue for contrast */
-    --tertiary-foreground: 210 100% 10%;
-    
-    --destructive: 0 63% 50%; /* Crimson Red */
-    --destructive-foreground: 0 0% 98%;
-    
-    --border: 220 10% 25%;
-    --input: 220 10% 15%;
-    --ring: hsl(var(--primary)); /* Gold focus ring */
-    
-    --sidebar-background: 220 20% 7%;
+    --sidebar-background: 265 39% 10%;
     --sidebar-foreground: hsl(var(--foreground));
     --sidebar-primary: hsl(var(--primary));
     --sidebar-primary-foreground: hsl(var(--primary-foreground));

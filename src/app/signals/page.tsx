@@ -153,8 +153,8 @@ export default function SignalsPage() {
         
         if (result.position) {
             toast({
-                title: "Signal Executed",
-                description: "Your pending order has been created. Redirecting to portfolio...",
+                title: "Pending Order Created",
+                description: "Your custom order has been placed and will execute when the market price meets your entry price. Redirecting to portfolio...",
             });
             router.push('/pulse');
         } else {
