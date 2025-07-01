@@ -41,7 +41,7 @@ export async function fetchCandlestickData(
   params: FetchCandlestickDataParams
 ): Promise<Candlestick[] | { error: string }> {
   const apiKey = process.env.POLYGON_API_KEY;
-  if (!apiKey || apiKey === "YOUR_POLYGON_API_KEY_REPLACE_ME" || apiKey === "Oy3AY6oE7Iu6xMw7jJKYnPllvondCPmN_INVALID") { // Added check for invalid placeholder
+  if (!apiKey || apiKey === "YOUR_POLYGON_API_KEY_REPLACE_ME" || apiKey.includes("_INVALID")) { 
     console.error('Polygon API key is not configured or is invalid on the server.');
     return { error: 'Polygon API key is not configured or is invalid on the server. Historical data cannot be fetched.' };
   }
@@ -87,7 +87,7 @@ export async function fetchCandlestickData(
     return data.results as Candlestick[];
   } catch (error) {
     console.error(`Network or parsing error fetching data from Polygon for ${params.symbol} (as ${polygonTicker}). URL: ${url}:`, error);
-    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
     return { error: `Error connecting to Polygon API for ${params.symbol}: ${errorMessage}` };
   }
 }
