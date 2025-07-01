@@ -26,7 +26,7 @@ import {
 import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-react';
+import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
@@ -374,11 +374,20 @@ export default function CoreConsolePage() {
                                 className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out shadow-choice-button generate-buttons"
                             >
                                 {isLoadingCustom ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
-                                {isLoadingCustom ? "SHADOW is Deciding..." : <GlyphScramble text="Custom Signal" />}
+                                {isLoadingCustom ? "SHADOW is Deciding..." : <GlyphScramble text="SHADOW's Choice" />}
                             </Button>
                         </>
                     )}
                     
+                    <div className="flex w-full items-start gap-2.5 rounded-lg border border-border/50 bg-secondary/50 p-3 text-xs text-muted-foreground mt-4">
+                        <Lightbulb className="h-4 w-4 shrink-0 mt-0.5 text-tertiary" />
+                        <p className="leading-relaxed">
+                            <strong className="text-tertiary">Instant Signal</strong> executes a trade immediately using your selected parameters.
+                            <br />
+                            <strong className="text-accent">SHADOW's Choice</strong> has the AI autonomously create and propose a complete strategy for you to review.
+                        </p>
+                    </div>
+
                     {currentUser?.status === 'Guest' && (
                         <p className="text-xs text-center text-muted-foreground mt-2">
                         {isLimitReached ? (
