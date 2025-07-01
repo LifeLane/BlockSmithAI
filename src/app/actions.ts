@@ -17,7 +17,7 @@ import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
 
 // Node/Prisma Imports
 import prisma from '@/lib/prisma';
-import { type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, SignalType, PositionStatus, AgentStatus, type GeneratedSignal as PrismaGeneratedSignal, GeneratedSignalStatus, SignalGenerationType } from '@prisma/client';
+import { type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, SignalType, PositionStatus, AgentStatus, type GeneratedSignal as PrismaGeneratedSignal, GeneratedSignalStatus, SignalGenerationType, type Agent as PrismaAgent, type AgentLevel as PrismaAgentLevel, type SpecialOp as PrismaSpecialOp } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { add, isBefore } from 'date-fns';
 import { fetchMarketDataAction } from '@/services/market-data-service';
@@ -71,20 +71,11 @@ export interface LiveMarketData {
     lowPrice: string;
     quoteVolume: string;
 }
-export interface AgentLevel {
-  level: number;
-  deployDuration: number;
-  xpReward: number;
-  bsaiReward: number;
-  upgradeCost: number;
-}
-export interface Agent {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  levels: AgentLevel[];
-}
+// Updated Agent types to reflect Prisma schema
+export type Agent = PrismaAgent & { levels: PrismaAgentLevel[] };
+export type AgentLevel = PrismaAgentLevel;
+export type SpecialOp = PrismaSpecialOp;
+
 export interface UserAgent {
   id: string;
   userId: string;
@@ -96,17 +87,7 @@ export interface UserAgent {
 export interface UserAgentData extends Agent {
   userState: UserAgent | null;
 }
-export interface SpecialOp {
-    id: string;
-    title: string;
-    description: string;
-    requiredAgentId: string;
-    requiredAgentLevel: number;
-    xpReward: number;
-    bsaiReward: number;
-    isActive: boolean;
-    claimedBy: string[];
-}
+
 export interface FormattedSymbol {
   value: string;
   label: string;
@@ -136,7 +117,7 @@ export type GenerateShadowChoiceStrategyOutput = ShadowChoiceStrategyCoreOutput 
 };
 export type { PerformanceReviewOutput };
 
-// --- Mission and Agent Data ---
+// --- Mission and Agent Data (for seeding) ---
 const missionRewards: { [key: string]: { xp: number; airdrop: number } } = {
   mission_x: { xp: 0, airdrop: 100 },
   mission_telegram: { xp: 0, airdrop: 100 },
@@ -149,7 +130,7 @@ const missionRewards: { [key: string]: { xp: number; airdrop: number } } = {
   mission_top_trader: { xp: 2000, airdrop: 10000 },
 };
 
-const agentDefinitions: Agent[] = [
+const agentDefinitionsForSeeding = [
     {
       "id": "agent-001", "name": "Data Scraper Drone", "description": "Scans low-frequency data streams for market anomalies and sentiment shifts.", "icon": "Binary",
       "levels": [
@@ -184,12 +165,75 @@ const agentDefinitions: Agent[] = [
     }
 ];
 
-const specialOpsDefinitions: SpecialOp[] = [
+const specialOpsDefinitionsForSeeding = [
     {
       "id": "so-001", "title": "Quantum Entanglement", "description": "The Quantum Predictor has detected a rare market resonance. Claim this reward if your agent is sufficiently advanced to interpret the data.",
-      "requiredAgentId": "agent-003", "requiredAgentLevel": 2, "xpReward": 1000, "bsaiReward": 2500, "isActive": true, "claimedBy": []
+      "requiredAgentId": "agent-003", "requiredAgentLevel": 2, "xpReward": 1000, "bsaiReward": 2500, "isActive": true
     }
-]
+];
+
+// --- Seeding Logic ---
+async function seedDatabase() {
+  try {
+    for (const agentDef of agentDefinitionsForSeeding) {
+      await prisma.agent.upsert({
+        where: { id: agentDef.id },
+        update: {
+          name: agentDef.name,
+          description: agentDef.description,
+          icon: agentDef.icon,
+        },
+        create: {
+          id: agentDef.id,
+          name: agentDef.name,
+          description: agentDef.description,
+          icon: agentDef.icon,
+          levels: {
+            create: agentDef.levels.map(l => ({
+              level: l.level,
+              deployDuration: l.deployDuration,
+              xpReward: l.xpReward,
+              bsaiReward: l.bsaiReward,
+              upgradeCost: l.upgradeCost,
+            })),
+          },
+        },
+      });
+    }
+
+    for (const opDef of specialOpsDefinitionsForSeeding) {
+        await prisma.specialOp.upsert({
+            where: { id: opDef.id },
+            update: {
+                title: opDef.title,
+                description: opDef.description,
+            },
+            create: {
+                id: opDef.id,
+                title: opDef.title,
+                description: opDef.description,
+                requiredAgentId: opDef.requiredAgentId,
+                requiredAgentLevel: opDef.requiredAgentLevel,
+                xpReward: opDef.xpReward,
+                bsaiReward: opDef.bsaiReward,
+                isActive: opDef.isActive,
+            },
+        });
+    }
+  } catch (error) {
+    console.error("Database seeding failed:", error);
+    // Do not re-throw, as we don't want to fail actions if seeding has a concurrent issue.
+  }
+}
+
+let seedingPromise: Promise<void> | null = null;
+const ensureSeeded = () => {
+    if (!seedingPromise) {
+        seedingPromise = seedDatabase();
+    }
+    return seedingPromise;
+};
+
 
 // --- Actions ---
 
@@ -656,10 +700,15 @@ export async function fetchPortfolioStatsAction(userId: string): Promise<Portfol
 
 export async function fetchAgentDataAction(userId: string): Promise<{ agents: UserAgentData[], userXp: number } | { error: string }> {
     try {
+        await ensureSeeded();
         const user = await prisma.user.findUnique({ where: { id: userId }, select: { weeklyPoints: true } });
         if (!user) return { error: "User not found." };
         
-        const userAgents = await prisma.userAgent.findMany({ where: { userId } });
+        const [userAgents, agentDefinitions] = await Promise.all([
+            prisma.userAgent.findMany({ where: { userId } }),
+            prisma.agent.findMany({ include: { levels: { orderBy: { level: 'asc' } } } })
+        ]);
+
         const agents = agentDefinitions.map(def => {
             const userState = userAgents.find(ua => ua.agentId === def.id) || null;
             return { ...def, userState: userState ? { ...userState, deploymentEndTime: userState.deploymentEndTime?.toISOString() || null } : null };
@@ -672,7 +721,7 @@ export async function fetchAgentDataAction(userId: string): Promise<{ agents: Us
 
 export async function deployAgentAction(userId: string, agentId: string): Promise<{ success: boolean, error?: string }> {
     try {
-        const agentDef = agentDefinitions.find(a => a.id === agentId);
+        const agentDef = await prisma.agent.findUnique({ where: { id: agentId }, include: { levels: true } });
         if (!agentDef) return { success: false, error: "Agent definition not found." };
 
         let userAgent = await prisma.userAgent.findFirst({ where: { userId, agentId } });
@@ -696,18 +745,18 @@ export async function deployAgentAction(userId: string, agentId: string): Promis
 
 export async function claimAgentRewardsAction(userId: string, agentId: string): Promise<{ success: boolean; log?: string, message?: string }> {
     try {
-        const userAgent = await prisma.userAgent.findFirst({ where: { userId, agentId } });
+        const userAgent = await prisma.userAgent.findFirst({ where: { userId, agentId }, include: { agent: { include: { levels: true } } } });
         if (!userAgent || userAgent.status !== 'DEPLOYED' || !userAgent.deploymentEndTime || !isBefore(new Date(userAgent.deploymentEndTime), new Date())) {
             return { success: false, message: "Agent is not ready to be claimed." };
         }
-        const agentDef = agentDefinitions.find(a => a.id === agentId);
-        const levelData = agentDef?.levels.find(l => l.level === userAgent.level);
-        if (!agentDef || !levelData) return { success: false, message: "Agent data not found." };
+        
+        const levelData = userAgent.agent.levels.find(l => l.level === userAgent.level);
+        if (!levelData) return { success: false, message: "Agent level data not found." };
 
         await prisma.userAgent.update({ where: { id: userAgent.id }, data: { status: AgentStatus.IDLE, deploymentEndTime: null } });
         await prisma.user.update({ where: { id: userId }, data: { weeklyPoints: { increment: levelData.xpReward }, airdropPoints: { increment: levelData.bsaiReward } } });
         
-        const logResult = await generateMissionLog({ agentName: agentDef.name, agentLevel: userAgent.level });
+        const logResult = await generateMissionLog({ agentName: userAgent.agent.name, agentLevel: userAgent.level });
         return { success: true, log: logResult.log, message: `Claimed ${levelData.bsaiReward} BSAI and ${levelData.xpReward} XP.` };
     } catch (error: any) {
         return { success: false, message: `Claim failed: ${error.message}` };
@@ -719,8 +768,8 @@ export async function upgradeAgentAction(userId: string, agentId: string): Promi
         const user = await prisma.user.findUnique({ where: { id: userId } });
         if (!user) return { success: false, message: "User not found." };
 
-        const userAgent = await prisma.userAgent.findFirst({ where: { userId, agentId } });
-        const agentDef = agentDefinitions.find(a => a.id === agentId);
+        const userAgent = await prisma.userAgent.findFirst({ where: { userId, agentId }, include: { agent: { include: { levels: true } } } });
+        const agentDef = userAgent?.agent;
         if (!agentDef) return { success: false, message: "Agent data not found." };
         
         const currentLevel = userAgent?.level || 1;
@@ -750,17 +799,24 @@ export async function upgradeAgentAction(userId: string, agentId: string): Promi
 
 export async function fetchSpecialOpsAction(userId: string): Promise<SpecialOp[]> {
     try {
-        const user = await prisma.user.findUnique({ where: {id: userId }, select: { claimedSpecialOps: true }});
-        if (!user) return specialOpsDefinitions; // Return all if user not found, they can't claim anyway
-        return specialOpsDefinitions.filter(op => !user?.claimedSpecialOps.includes(op.id));
+        await ensureSeeded();
+        const [user, specialOps] = await Promise.all([
+            prisma.user.findUnique({ where: {id: userId }, select: { claimedSpecialOps: true }}),
+            prisma.specialOp.findMany({ where: { isActive: true }})
+        ]);
+
+        if (!user) return specialOps;
+        
+        return specialOps.filter(op => !user.claimedSpecialOps.includes(op.id));
     } catch (error: any) {
+        console.error("Error fetching special ops:", error);
         return [];
     }
 }
 
 export async function claimSpecialOpAction(userId: string, opId: string): Promise<{ success: boolean; message: string; }> {
     try {
-        const op = specialOpsDefinitions.find(o => o.id === opId);
+        const op = await prisma.specialOp.findUnique({ where: { id: opId } });
         if (!op) return { success: false, message: "Special Op not found." };
 
         const user = await prisma.user.findUnique({ where: { id: userId } });
