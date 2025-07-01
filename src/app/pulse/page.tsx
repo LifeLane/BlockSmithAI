@@ -13,7 +13,6 @@ import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSig
 import {
   fetchPendingAndOpenPositionsAction,
   closePositionAction,
-  fetchMarketDataAction,
   fetchTradeHistoryAction,
   fetchPortfolioStatsAction,
   generatePerformanceReviewAction,
@@ -25,6 +24,7 @@ import {
   type PortfolioStats,
   type PerformanceReviewOutput,
 } from '@/app/actions';
+import { fetchMarketDataAction } from '@/services/market-data-service';
 import { Button } from '@/components/ui/button';
 import PerformanceReviewModal from '@/components/blocksmith-ai/PerformanceReviewModal';
 import {

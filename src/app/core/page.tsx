@@ -14,13 +14,15 @@ import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import {
   generateTradingStrategyAction,
   generateShadowChoiceStrategyAction,
-  fetchMarketDataAction,
-  fetchAllTradingSymbolsAction,
-  type LiveMarketData,
-  type FormattedSymbol,
   type GenerateTradingStrategyOutput,
   type GenerateShadowChoiceStrategyOutput,
 } from '@/app/actions';
+import { 
+    fetchMarketDataAction, 
+    fetchAllTradingSymbolsAction, 
+    type FormattedSymbol,
+    type LiveMarketData,
+} from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-react';

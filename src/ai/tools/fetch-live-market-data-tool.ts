@@ -4,7 +4,8 @@
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { fetchMarketDataAction, type LiveMarketData } from '@/app/actions';
+import { fetchMarketDataAction } from '@/services/market-data-service';
+import type { LiveMarketData } from '@/app/actions';
 
 const FetchMarketDataInputSchema = z.object({
   symbol: z.string().describe('The trading symbol (e.g., BTCUSDT).'),

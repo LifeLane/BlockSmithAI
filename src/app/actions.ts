@@ -16,15 +16,12 @@ import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
 
 
 // Node/Prisma Imports
-import { PrismaClient, type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, SignalType, PositionStatus, AgentStatus, type GeneratedSignal as PrismaGeneratedSignal, GeneratedSignalStatus, SignalGenerationType } from '@prisma/client';
+import prisma from '@/lib/prisma';
+import { type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, SignalType, PositionStatus, AgentStatus, type GeneratedSignal as PrismaGeneratedSignal, GeneratedSignalStatus, SignalGenerationType } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { add, isBefore } from 'date-fns';
+import { fetchMarketDataAction } from '@/services/market-data-service';
 
-
-// Initialize Prisma
-const prisma = new PrismaClient({
-    datasourceUrl: process.env.DATABASE_URL,
-});
 
 // Helper function to robustly parse price strings, which could be a single number or a range.
 const parsePrice = (priceStr: string | undefined): number => {
@@ -280,56 +277,6 @@ export async function fetchLeaderboardDataJson(): Promise<LeaderboardUser[]> {
     }
 }
 
-export async function fetchMarketDataAction({ symbol }: { symbol: string }): Promise<LiveMarketData | { error: string }> {
-  try {
-    const response = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol.toUpperCase()}`);
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return { error: `Failed to fetch market data for ${symbol} from Binance: ${response.statusText} - ${errorData.msg || 'Unknown API error'}` };
-    }
-    const data = await response.json();
-    return {
-      symbol: data.symbol,
-      lastPrice: data.lastPrice,
-      priceChangePercent: data.priceChangePercent,
-      volume: data.volume,
-      highPrice: data.highPrice,
-      lowPrice: data.lowPrice,
-      quoteVolume: data.quoteVolume,
-    };
-  } catch (error: any) {
-    console.error(`Error in fetchMarketDataAction for ${symbol}:`, error);
-    return { error: `Network error or failed to parse market data for ${symbol}: ${error.message}` };
-  }
-}
-
-export async function fetchAllTradingSymbolsAction(): Promise<FormattedSymbol[] | { error: string }> {
-  try {
-    const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return { error: `Failed to fetch symbols from Binance: ${response.statusText} - ${errorData.message || 'Unknown API error'}` };
-    }
-    const data: any[] = await response.json();
-    const topSymbols = data.filter(d => d.symbol.endsWith('USDT') && !d.symbol.includes('_')).sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)).slice(0, 50);
-    return topSymbols.map(s => ({ value: s.symbol, label: `${s.symbol.replace('USDT', '')}/USDT` }));
-  } catch (error: any) {
-    return { error: `Network error or failed to parse symbols: ${error.message}` };
-  }
-}
-
-export async function fetchTopSymbolsForTickerAction(): Promise<TickerSymbolData[] | { error: string }> {
-    try {
-        const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-        if (!response.ok) return { error: 'Failed to fetch symbols from Binance.' };
-        const data: LiveMarketData[] = await response.json();
-        const usdtPairs = data.filter(d => d.symbol.endsWith('USDT') && !d.symbol.includes('_'));
-        const sortedByVolume = usdtPairs.sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume));
-        return sortedByVolume.slice(0, 15).map(d => ({ symbol: d.symbol, lastPrice: d.lastPrice, priceChangePercent: d.priceChangePercent, }));
-    } catch (error: any) {
-        return { error: `Network error while fetching symbols: ${error.message}` };
-    }
-}
 
 const timeframeMappings: { [key: string]: { short: string; medium: string; long: string; } } = {
     Scalper: { short: '1m', medium: '5m', long: '15m' },
@@ -474,13 +421,13 @@ export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStra
                 newsAnalysis: finalStrategy.newsAnalysis,
                 disclaimer: disclaimer.disclaimer,
                 type: SignalGenerationType.CUSTOM,
-                status: isHold ? GeneratedSignalStatus.ARCHIVED : GeneratedSignalStatus.EXECUTED,
+                status: isHold ? GeneratedSignalStatus.ARCHIVED : GeneratedSignalStatus.PENDING_EXECUTION,
             }
         });
         
         let positionResult: { position: Position | null; error?: string } = { position: null };
         if (!isHold) {
-            positionResult = await executeCustomSignalAction(savedSignal.id, userId, finalStrategy);
+            positionResult = await executeCustomSignalAction(savedSignal.id, userId, { ...finalStrategy, symbol: input.symbol });
         }
 
         if (positionResult.error) {
@@ -589,7 +536,7 @@ export async function logInstantPositionAction(
 async function executeCustomSignalAction(
   signalId: string,
   userId: string,
-  signal: ShadowChoiceStrategyCoreOutput
+  signal: ShadowChoiceStrategyCoreOutput & { symbol: string }
 ): Promise<{ position: Position | null; error?: string }> {
   try {
     const entryPrice = parsePrice(signal.entry_zone);
@@ -991,11 +938,19 @@ export async function activatePendingPositionAction(positionId: string): Promise
             return { error: 'Position not found or is not a pending order.' };
         }
 
-        const updatedPosition = await prisma.position.update({
+        await prisma.position.update({
             where: { id: positionId },
             data: { status: PositionStatus.OPEN, openTimestamp: new Date() }
         });
-        return { position: updatedPosition };
+
+        await prisma.generatedSignal.updateMany({
+             where: { id: position.strategyId || '' },
+             data: { status: GeneratedSignalStatus.EXECUTED }
+        });
+
+        const activatedPosition = await prisma.position.findUnique({ where: { id: positionId } });
+        return { position: activatedPosition || undefined };
+
     } catch (error: any) {
         console.error("Error in activatePendingPositionAction:", error);
         return { error: `Failed to activate position: ${error.message}` };
@@ -1008,6 +963,11 @@ export async function cancelPendingPositionAction(positionId: string): Promise<{
         if (!position || position.status !== 'PENDING') {
             return { success: false, error: 'Position not found or is not a pending order.' };
         }
+
+        await prisma.generatedSignal.updateMany({
+            where: { id: position.strategyId || '' },
+            data: { status: GeneratedSignalStatus.DISMISSED }
+        });
 
         await prisma.position.delete({
             where: { id: positionId }
