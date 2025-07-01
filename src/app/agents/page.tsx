@@ -357,7 +357,7 @@ export default function AgentsPage() {
     <>
       <AppHeader />
       <div className="container mx-auto px-4 py-8">
-        <ScrollArea className="h-[calc(100vh-160px)] pr-4">
+        <ScrollArea className="h-[calc(100vh-160px)]">
             {renderContent()}
         </ScrollArea>
       </div>

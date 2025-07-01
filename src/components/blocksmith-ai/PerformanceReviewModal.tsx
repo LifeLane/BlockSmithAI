@@ -91,7 +91,7 @@ const PerformanceReviewModal: FunctionComponent<PerformanceReviewModalProps> = (
             A cognitive analysis of your recent <strong className="text-tertiary">trading patterns</strong>.
           </DialogDescription>
         </DialogHeader>
-        <div className="max-h-[60vh] overflow-y-auto px-6 pb-6">
+        <div className="max-h-[60vh] overflow-y-auto px-6 pb-6 no-scrollbar">
             {renderContent()}
         </div>
       </DialogContent>

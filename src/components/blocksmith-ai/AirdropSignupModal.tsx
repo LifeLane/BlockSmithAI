@@ -160,7 +160,7 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-4 py-2 max-h-[60vh] overflow-y-auto pr-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-4 py-2 max-h-[60vh] overflow-y-auto no-scrollbar">
             <FormField control={form.control} name="email" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-muted-foreground"><Mail className="mr-2 h-4 w-4 text-primary" /> Email Address (Optional)</FormLabel> <FormControl><Input placeholder="you@example.com" {...field} className="bg-background focus:border-accent focus:ring-accent"/></FormControl> <FormMessage /> </FormItem> )}/>
             <FormField control={form.control} name="phone" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-muted-foreground"><Phone className="mr-2 h-4 w-4 text-primary" /> Phone Number (Optional)</FormLabel> <FormControl><Input placeholder="+1 555 123 4567" {...field} className="bg-background focus:border-accent focus:ring-accent"/></FormControl> <FormMessage /> </FormItem> )}/>
             

@@ -115,7 +115,7 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea ref={scrollAreaRef} className="flex-grow p-4 space-y-4 overflow-y-auto">
+        <ScrollArea ref={scrollAreaRef} className="flex-grow p-4 space-y-4">
           {messages.map((msg, index) => (
             <div
               key={index}
