@@ -29,6 +29,7 @@ import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-r
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
+import DailyGreeting from '@/components/blocksmith-ai/DailyGreeting';
 
 type AIStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
   id?: string;
@@ -340,6 +341,7 @@ export default function CoreConsolePage() {
             !showResults ? 'flex-grow flex flex-col justify-center' : ''
         )}>
             <div className="space-y-4">
+                <DailyGreeting />
                 <div id="market-data-display">
                     <MarketDataDisplay
                         liveMarketData={liveMarketData}
