@@ -334,7 +334,7 @@ export default function AgentsPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-4xl lg:text-5xl font-bold text-tertiary font-mono tracking-wider">
+                        <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-tertiary font-mono tracking-wider">
                             {userXp.toLocaleString()} XP
                         </p>
                     </CardContent>

@@ -280,7 +280,7 @@ export default function ProfilePage() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <p className="text-4xl lg:text-5xl font-bold text-orange-400 font-mono tracking-wider">
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-orange-400 font-mono tracking-wider">
                     {currentUser.airdropPoints?.toLocaleString() || 0}
                 </p>
                  <p className="text-xs text-muted-foreground mt-1">
@@ -459,30 +459,50 @@ export default function ProfilePage() {
                         <CardDescription>Weekly leaders based on XP.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                <TableHead className="w-[80px] text-center">Rank</TableHead>
-                                <TableHead>Analyst</TableHead>
-                                <TableHead className="text-right">Weekly XP</TableHead>
-                                <TableHead className="text-right">Airdrop Points</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {leaderboardData.map((user) => (
-                                <TableRow key={user.id} className="hover:bg-primary/10">
-                                    <TableCell className="text-center font-bold">
-                                        <div className="flex justify-center items-center h-full">
-                                            {user.rank && <RankIcon rank={user.rank}/>}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="font-medium text-foreground">{user.username}</TableCell>
-                                    <TableCell className="text-right font-mono text-tertiary">{user.weeklyPoints?.toLocaleString() || 0}</TableCell>
-                                    <TableCell className="text-right font-mono text-orange-400">{user.airdropPoints?.toLocaleString() || 0}</TableCell>
-                                </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                         {/* Desktop Table (hidden on mobile) */}
+                        <div className="hidden md:block">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                    <TableHead className="w-[80px] text-center">Rank</TableHead>
+                                    <TableHead>Analyst</TableHead>
+                                    <TableHead className="text-right">Weekly XP</TableHead>
+                                    <TableHead className="text-right">Airdrop Points</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {leaderboardData.map((user) => (
+                                    <TableRow key={user.id} className="hover:bg-primary/10">
+                                        <TableCell className="text-center font-bold">
+                                            <div className="flex justify-center items-center h-full">
+                                                {user.rank && <RankIcon rank={user.rank}/>}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="font-medium text-foreground">{user.username}</TableCell>
+                                        <TableCell className="text-right font-mono text-tertiary">{user.weeklyPoints?.toLocaleString() || 0}</TableCell>
+                                        <TableCell className="text-right font-mono text-orange-400">{user.airdropPoints?.toLocaleString() || 0}</TableCell>
+                                    </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                         {/* Mobile Card List (hidden on desktop) */}
+                        <div className="block md:hidden space-y-3">
+                            {leaderboardData.map((user) => (
+                                <Card key={user.id} className="flex items-center p-3 bg-secondary/50">
+                                    <div className="w-12 text-center font-bold text-lg">
+                                        {user.rank && <RankIcon rank={user.rank} />}
+                                    </div>
+                                    <div className="flex-grow ml-3">
+                                        <p className="font-semibold text-foreground truncate">{user.username}</p>
+                                    </div>
+                                    <div className="text-right ml-2">
+                                        <p className="font-mono text-sm text-tertiary whitespace-nowrap">{user.weeklyPoints?.toLocaleString() || 0} XP</p>
+                                        <p className="font-mono text-xs text-orange-400 whitespace-nowrap">{user.airdropPoints?.toLocaleString() || 0} $BSAI</p>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
                     </CardContent>
                 </Card>
             </TabsContent>

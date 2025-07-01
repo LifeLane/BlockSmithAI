@@ -278,7 +278,7 @@ const HistoryCard = ({ position }: { position: Position }) => {
                 </div>
                 <Badge variant="outline">CLOSED</Badge>
              </CardHeader>
-             <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2">
+             <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs pt-2">
                 <div className="flex flex-col p-2 bg-background/50 rounded-md">
                     <span className="text-muted-foreground flex items-center gap-1"><LogIn size={12}/> Entry</span>
                     <span className="font-mono text-sm font-semibold mt-1">${entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
