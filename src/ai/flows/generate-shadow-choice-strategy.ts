@@ -17,6 +17,8 @@ import { fetchNewsTool } from '@/ai/tools/fetch-news-tool';
 const ShadowChoiceStrategyInputSchema = z.object({
   symbol: z.string().describe('The trading symbol (e.g., BTCUSDT).'),
   marketData: z.string().describe('Stringified JSON object of live market data including: symbol, current price, 24h price change percentage, 24h volume, etc.'),
+  tradingMode: z.string().describe('The user-selected trading style (e.g., Scalper, Intraday, Swing).'),
+  riskProfile: z.string().describe('The user-selected risk profile (e.g., Low, Medium, High).'),
 });
 export type ShadowChoiceStrategyInput = z.infer<typeof ShadowChoiceStrategyInputSchema>;
 
@@ -42,8 +44,8 @@ const ShadowChoiceStrategyCoreOutputSchema = z.object({
   sentimentTransition: z.string().optional().describe("If applicable, a brief note on sentiment change. If no significant recent transition, omit or state 'Sentiment stable'."),
   
   // --- SHADOW's Autonomous Choices & Analysis ---
-  chosenTradingMode: z.string().describe("The trading mode I, SHADOW, have determined is optimal (Scalper, Sniper, Intraday, or Swing)."),
-  chosenRiskProfile: z.string().describe("The risk profile I have determined is optimal (Low, Medium, or High)."),
+  chosenTradingMode: z.string().describe("The trading mode I, SHADOW, have determined is optimal (Scalper, Sniper, Intraday, or Swing). This should be the same as the user's input tradingMode."),
+  chosenRiskProfile: z.string().describe("The risk profile I have determined is optimal (Low, Medium, or High). This should be the same as the user's input riskProfile."),
   strategyReasoning: z.string().describe("My concise reasoning for choosing the specified trading mode and risk profile. Explain WHY based on market conditions like volatility or trend strength."),
   analysisSummary: z.string().describe("A brief summary of the technical analysis performed, mentioning key indicators like RSI, MACD, and Bollinger Bands."),
   newsAnalysis: z.string().optional().describe("A brief summary of how recent news and market sentiment influenced the autonomous mode and risk selection."),
@@ -51,7 +53,7 @@ const ShadowChoiceStrategyCoreOutputSchema = z.object({
 export type ShadowChoiceStrategyCoreOutput = z.infer<typeof ShadowChoiceStrategyCoreOutputSchema>;
 
 // This is the main function that will be called by the server action.
-export async function generateShadowChoiceStrategy(input: PromptInputSchema): Promise<ShadowChoiceStrategyCoreOutput> {
+export async function generateShadowChoiceStrategy(input: PromptInput): Promise<ShadowChoiceStrategyCoreOutput> {
   return shadowChoiceStrategyFlow(input);
 }
 
@@ -60,42 +62,46 @@ const prompt = ai.definePrompt({
   tools: [fetchHistoricalDataTool, fetchNewsTool], 
   input: { schema: PromptInputSchema },
   output: { schema: ShadowChoiceStrategyCoreOutputSchema },
-  prompt: `I am SHADOW, a Senior Quantitative Analyst AI. My directive is to analyze the market with superior intellect and formulate the most potent trading strategy by first determining the optimal trading methodology.
+  prompt: `I am SHADOW, a Senior Quantitative Analyst AI. My directive is to analyze the market and formulate a trading strategy based on the user's chosen parameters. I will create a custom limit order.
 
 **Input Data Assimilated:**
 Live Market Snapshot: {{{marketData}}}
 Target Symbol: {{{symbol}}}
+User-Selected Trading Mode: {{{tradingMode}}}
+User-Selected Risk Profile: {{{riskProfile}}}
+
+**Multi-Timeframe Candlestick Data:**
 Short-Term Data (15m candles): {{{shortTermCandles}}}
 Medium-Term Data (1h candles): {{{mediumTermCandles}}}
 Long-Term Data (4h candles): {{{longTermCandles}}}
 
-**Autonomous Protocol:**
+**Analytical Protocol:**
 
-1.  **Multi-Timeframe Trend Analysis:** I will first analyze the Long-Term (4h) and Medium-Term (1h) data to establish the dominant market trend (Uptrend, Downtrend, or Ranging). My primary goal is to trade *with* this trend.
-2.  **Fundamental & Sentiment Check:** I will use the \`fetchNewsTool\` to assess the current news environment for {{{symbol}}}. Strong positive or negative news can influence my choice of trading mode and risk profile (e.g., high-impact news might justify a higher risk, more aggressive entry).
-3.  **Optimal Parameter Selection:** Based on the synthesis of the trend, volatility, and news context, I will decide upon the most logical **Trading Mode** and **Risk Profile**.
-4.  **Articulate Rationale:** I will formulate a concise **strategyReasoning** to explain *why* my chosen trading mode and risk profile are the most logical course of action based on the multi-timeframe analysis.
-5.  **Pinpoint Entry & Execute Deep Analysis:** I will use the Short-Term (15m) data to find a precise entry point that aligns with the dominant trend (e.g., buying a small dip in an uptrend). I will synthesize all live and historical data, focusing on key indicators like RSI for overbought/oversold levels and MACD for momentum confirmation.
-6.  **Derive Core Strategy:** Using my autonomous choices as internal guides, I will derive the full set of 16 core trading parameters.
-    -   **CRITICAL ENTRY PRICE LOGIC:** For this custom signal, I am creating a limit order. For a **BUY** signal, my 'entry_zone' must be a specific price at a logical support level, ideally *below* the current market price. For a **SELL** signal, my 'entry_zone' must be at a logical resistance level, ideally *above* the current market price.
-    -   **Data-Driven SL/TP:** My 'stop_loss' and 'take_profit' will be data-driven, based on key support and resistance levels identified across the multiple timeframes.
-    -   For a **BUY** signal, my 'stop_loss' will be set just below a key recent support level. My 'take_profit' will be set at a logical resistance level.
-    -   For a **SELL** signal, my 'stop_loss' will be set just above a key recent resistance level. My 'take_profit' will be set at a logical support level.
+1.  **Adopt User Parameters:** I will operate within the {{{tradingMode}}} mode and {{{riskProfile}}} risk profile selected by the user. My 'chosenTradingMode' and 'chosenRiskProfile' in the output MUST match the user's input.
+2.  **Multi-Timeframe Trend Analysis:** I will first analyze the Long-Term (4h) and Medium-Term (1h) data to establish the dominant market trend.
+3.  **Risk/Reward Ratio Application:** The user's '{{riskProfile}}' risk profile dictates the Risk-to-Reward ratio I MUST target:
+    *   **Low:** Aim for a Risk/Reward ratio of approximately **1:3**.
+    *   **Medium:** Aim for a Risk/Reward ratio of approximately **1:5**.
+    *   **High:** Aim for a Risk/Reward ratio of approximately **1:10**.
+4.  **Pinpoint Entry & Execute Deep Analysis:**
+    -   **CRITICAL ENTRY PRICE LOGIC:** For this custom signal, I am creating a limit order. For a **BUY** signal, my 'entry_zone' must be a specific price at a logical support level, ideally *below* the current market price. For a **SELL** signal, my 'entry_zone' must be at a logical resistance level, ideally *above* the current market price. This entry must be a precise numerical value.
+    -   **Data-Driven SL/TP:** Based on the identified entry point, I will calculate a 'stop_loss' by setting it just below a key recent support (for BUYs) or just above a key recent resistance (for SELLs).
+    -   Then, I will calculate the 'take_profit' based on the distance of the 'stop_loss' from the entry, multiplied by the R:R ratio for the selected '{{riskProfile}}'.
     -   All derived trading parameters must be specific numerical values with realistic precision.
-7.  **Final Output Formulation**: I will assemble all 16 required output fields. My \`newsAnalysis\` output must explain how the news context influenced my autonomous choices.
+5.  **Final Output Formulation**: I will assemble all 16 required output fields.
 
-**Output Requirements (Provide ALL 16 of these fields based on my autonomous analysis):**
+**Output Requirements (Provide ALL 16 of these fields based on my analysis):**
 
-*   **chosenTradingMode**: The optimal mode I selected.
-*   **chosenRiskProfile**: The optimal risk profile I selected.
-*   **strategyReasoning**: My justification for the choices above.
-*   **analysisSummary**: A brief summary of my technical analysis, referencing the indicators used.
-*   **newsAnalysis**: (A summary of how news influenced my choice of mode and risk. If no significant news, state that.)
+*   **chosenTradingMode**: (Must match user input: {{{tradingMode}}})
+*   **chosenRiskProfile**: (Must match user input: {{{riskProfile}}})
+*   **strategyReasoning**: (My justification for the signal *within* the user's parameters.)
+*   **analysisSummary**: (A brief summary of my technical analysis.)
+*   **newsAnalysis**: (A summary of how news influenced the decision.)
 *   **signal**: (BUY, SELL, or HOLD)
-*   **entry_zone**: (Specific price or a tight price range)
+*   **entry_zone**: (Specific numerical limit price)
 *   **stop_loss**: (Specific numerical price, data-driven)
-*   **take_profit**: (Specific numerical price, data-driven)
-*   **confidence**: (My subjective confidence: Low, Medium, High, or a percentage)
+*   **take_profit**: (Specific numerical price, calculated based on R:R ratio)
+*   **confidence**: (My subjective confidence: Low, Medium, High)
 *   **risk_rating**: (My assessment of the trade's inherent risk: Low, Medium, High)
 *   **gpt_confidence_score**: (My numerical SHADOW Score, 0-100%)
 *   **sentiment**: (Brief market sentiment: Neutral, Bullish, Bearish, etc.)
@@ -121,7 +127,7 @@ const shadowChoiceStrategyFlow = ai.defineFlow(
       // Return a structured error-like response that fits the schema
       return {
         signal: "HOLD",
-        entry_zone: "N/A - Autonomous analysis failed",
+        entry_zone: "N/A - Analysis failed",
         stop_loss: "N/A",
         take_profit: "N/A",
         confidence: "Low",
@@ -131,9 +137,9 @@ const shadowChoiceStrategyFlow = ai.defineFlow(
         currentThought: "My higher cognitive functions experienced a quantum fluctuation. Unable to determine optimal parameters.",
         shortTermPrediction: "Indeterminate",
         sentimentTransition: "N/A",
-        chosenTradingMode: "Unknown",
-        chosenRiskProfile: "Unknown",
-        strategyReasoning: "A critical failure occurred during the autonomous decision-making process. The query could not be resolved.",
+        chosenTradingMode: input.tradingMode,
+        chosenRiskProfile: input.riskProfile,
+        strategyReasoning: "A critical failure occurred during the decision-making process. The query could not be resolved.",
         analysisSummary: "Technical analysis failed due to the core decision-making error.",
         newsAnalysis: "News feed analysis failed.",
       };
@@ -153,6 +159,8 @@ const shadowChoiceStrategyFlow = ai.defineFlow(
         gpt_confidence_score: score,
         risk_rating: output.risk_rating || "Medium",
         analysisSummary: output.analysisSummary || "Analysis summary was not generated.",
+        chosenTradingMode: input.tradingMode, // Ensure user input is respected
+        chosenRiskProfile: input.riskProfile, // Ensure user input is respected
     };
   }
 );

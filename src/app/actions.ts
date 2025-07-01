@@ -5,7 +5,7 @@ import { generateTradingStrategy as genCoreStrategy, type PromptInput as Trading
 import { generateSarcasticDisclaimer } from '@/ai/flows/generate-sarcastic-disclaimer';
 import { shadowChat as shadowChatFlow, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
-import { generateShadowChoiceStrategy as genShadowChoice, type ShadowChoiceStrategyInput, type ShadowChoiceStrategyCoreOutput } from '@/ai/flows/generate-shadow-choice-strategy';
+import { generateShadowChoiceStrategy as genShadowChoice, type ShadowChoiceStrategyInput } from '@/ai/flows/generate-shadow-choice-strategy';
 import { generateMissionLog, type GenerateMissionLogInput } from '@/ai/flows/generate-mission-log';
 import { 
     generatePerformanceReview as genPerformanceReview, 
@@ -110,7 +110,7 @@ export type GenerateTradingStrategyOutput = Awaited<ReturnType<typeof genCoreStr
   symbol: string;
   tradingMode: string;
 };
-export type GenerateShadowChoiceStrategyOutput = ShadowChoiceStrategyCoreOutput & {
+export type GenerateShadowChoiceStrategyOutput = Awaited<ReturnType<typeof genShadowChoice>> & {
   id: string;
   symbol: string;
   disclaimer: string;
@@ -388,9 +388,9 @@ export async function generateTradingStrategyAction(input: Omit<TradingStrategyP
     }
 }
 
-export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStrategyInput, userId: string): Promise<GenerateShadowChoiceStrategyOutput | { error: string }> {
+export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStrategyInput & { userId: string }): Promise<GenerateShadowChoiceStrategyOutput | { error: string }> {
     try {
-        const timeframes = { short: '15m', medium: '1h', long: '4h' };
+        const timeframes = timeframeMappings[input.tradingMode] || timeframeMappings.Intraday;
 
         const [shortTermResult, mediumTermResult, longTermResult] = await Promise.all([
             fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.short }),
@@ -412,7 +412,7 @@ export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStra
         
         const savedSignal = await prisma.generatedSignal.create({
             data: {
-                userId: userId,
+                userId: input.userId,
                 symbol: input.symbol,
                 signal: strategy.signal,
                 entry_zone: strategy.entry_zone,
@@ -435,8 +435,6 @@ export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStra
                 status: isHold ? GeneratedSignalStatus.ARCHIVED : GeneratedSignalStatus.PENDING_EXECUTION,
             }
         });
-        
-        // Do NOT create a position automatically. The user will do this manually.
         
         return { ...strategy, id: savedSignal.id, symbol: input.symbol, disclaimer: disclaimer.disclaimer };
 
@@ -557,17 +555,27 @@ export async function executeCustomSignalAction(
     
     const size = entryPrice < 1 ? 10000 : 1;
     
-    // For all custom "SHADOW's Choice" signals, the pending order is valid for 24 hours.
-    const expirationDate = add(new Date(), { hours: 24 });
+    // Custom signal expiration is now based on the trading mode used to generate it.
+    const tradingMode = signal.chosenTradingMode || 'Intraday';
+    let expirationDate: Date;
+    switch (tradingMode) {
+      case 'Scalper': expirationDate = add(new Date(), { minutes: 30 }); break;
+      case 'Sniper': expirationDate = add(new Date(), { hours: 3 }); break;
+      case 'Intraday': expirationDate = add(new Date(), { hours: 12 }); break;
+      case 'Swing': expirationDate = add(new Date(), { days: 3 }); break;
+      default: expirationDate = add(new Date(), { hours: 24 }); break;
+    }
 
+
+    // Create an OPEN position immediately, simulating a perfect limit order fill.
     const newPosition = await prisma.position.create({
       data: {
         userId,
         symbol: signal.symbol,
         signalType: signal.signal === 'BUY' ? SignalType.BUY : SignalType.SELL,
-        status: PositionStatus.PENDING,
-        openTimestamp: null,
-        entryPrice,
+        status: PositionStatus.OPEN,
+        openTimestamp: new Date(), // Position is opened now
+        entryPrice, // Use the signal's calculated entry price
         size,
         stopLoss,
         takeProfit,
@@ -630,7 +638,7 @@ export async function fetchPendingAndOpenPositionsAction(userId: string): Promis
         return await prisma.position.findMany({ 
             where: { 
                 userId, 
-                status: { in: [PositionStatus.PENDING, PositionStatus.OPEN] }
+                status: { in: [PositionStatus.OPEN] } // PENDING status is no longer used for active trades.
             }, 
             orderBy: { createdAt: 'desc' } 
         });
@@ -949,73 +957,6 @@ export async function killSwitchAction(userId: string): Promise<{ success: boole
     }
 }
 
-export async function activatePendingPositionAction(positionId: string): Promise<{ position?: Position; error?: string; }> {
-    try {
-        const position = await prisma.position.findUnique({ where: { id: positionId } });
-        if (!position || position.status !== 'PENDING') {
-            return { error: 'Position not found or is not a pending order.' };
-        }
-
-        await prisma.position.update({
-            where: { id: positionId },
-            data: { status: PositionStatus.OPEN, openTimestamp: new Date() }
-        });
-
-        await prisma.generatedSignal.updateMany({
-             where: { id: position.strategyId || '' },
-             data: { status: GeneratedSignalStatus.EXECUTED }
-        });
-
-        const activatedPosition = await prisma.position.findUnique({ where: { id: positionId } });
-        return { position: activatedPosition || undefined };
-
-    } catch (error: any) {
-        console.error("Error in activatePendingPositionAction:", error);
-        return { error: `Failed to activate position: ${error.message}` };
-    }
-}
-
-export async function cancelPendingPositionAction(positionId: string): Promise<{ success: boolean; error?: string; }> {
-    try {
-        const position = await prisma.position.findUnique({ where: { id: positionId } });
-        if (!position || position.status !== 'PENDING') {
-            return { success: false, error: 'Position not found or is not a pending order.' };
-        }
-
-        await prisma.generatedSignal.updateMany({
-            where: { id: position.strategyId || '' },
-            data: { status: GeneratedSignalStatus.DISMISSED }
-        });
-
-        await prisma.position.delete({
-            where: { id: positionId }
-        });
-        return { success: true };
-    } catch (error: any) {
-        console.error("Error in cancelPendingPositionAction:", error);
-        return { success: false, error: `Failed to cancel position: ${error.message}` };
-    }
-}
-
-export async function fetchAllGeneratedSignalsAction(userId: string): Promise<GeneratedSignal[] | { error: string }> {
-    if (!userId) {
-        return { error: 'User not found.' };
-    }
-    try {
-        const signals = await prisma.generatedSignal.findMany({
-            where: {
-                userId,
-            },
-            orderBy: {
-                createdAt: 'desc'
-            }
-        });
-        return signals;
-    } catch (error: any) {
-        return { error: `Failed to fetch signals: ${error.message}` };
-    }
-}
-
 export async function dismissCustomSignalAction(signalId: string, userId: string): Promise<{ success: boolean, error?: string }> {
      try {
         const result = await prisma.generatedSignal.updateMany({
@@ -1036,5 +977,24 @@ export async function dismissCustomSignalAction(signalId: string, userId: string
         return { success: true };
     } catch (error: any) {
         return { success: false, error: `Failed to dismiss signal: ${error.message}` };
+    }
+}
+
+export async function fetchAllGeneratedSignalsAction(userId: string): Promise<GeneratedSignal[] | { error: string }> {
+    if (!userId) {
+        return { error: 'User not found.' };
+    }
+    try {
+        const signals = await prisma.generatedSignal.findMany({
+            where: {
+                userId,
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+        return signals;
+    } catch (error: any) {
+        return { error: `Failed to fetch signals: ${error.message}` };
     }
 }

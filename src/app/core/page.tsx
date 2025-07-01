@@ -211,10 +211,18 @@ export default function CoreConsolePage() {
     const marketDataForAIString = JSON.stringify(currentDataToUse);
     let result;
 
+    const commonInput = { 
+        symbol, 
+        tradingMode, 
+        riskProfile, 
+        marketData: marketDataForAIString, 
+        userId: currentUser.id 
+    };
+
     if (isCustom) {
-        result = await generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString }, currentUser.id);
+        result = await generateShadowChoiceStrategyAction(commonInput);
     } else {
-        result = await generateTradingStrategyAction({ symbol, tradingMode, riskProfile, marketData: marketDataForAIString, userId: currentUser.id });
+        result = await generateTradingStrategyAction(commonInput);
     }
     
     if ('error' in result) {
@@ -381,8 +389,8 @@ export default function CoreConsolePage() {
                             </div>
                         </>
                     )}
-                     <div className="flex items-start justify-center gap-3 mt-4 text-muted-foreground text-xs p-3 bg-secondary rounded-lg">
-                        <Lightbulb className="h-5 w-5 text-tertiary flex-shrink-0 mt-0.5" />
+                     <div className="flex items-start justify-center gap-3 mt-4 text-xs p-3 bg-secondary rounded-lg">
+                        <Lightbulb className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                         <p>
                             <strong className="text-primary">Instant Signal:</strong> Executes immediately with your selected parameters. <br />
                             <strong className="text-accent">SHADOW's Signal:</strong> SHADOW autonomously determines the best strategy and provides a custom limit order for you to simulate.

@@ -18,8 +18,8 @@ import {
   Zap,
   PlayCircle,
   Loader2,
-  MessageSquareHeart,
   Route,
+  MessageCircleWarning
 } from 'lucide-react';
 import { executeCustomSignalAction, type GenerateTradingStrategyOutput, type GenerateShadowChoiceStrategyOutput } from '@/app/actions';
 import type { LiveMarketData } from '@/app/actions';
@@ -33,6 +33,7 @@ type AIStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStr
   analysisSummary?: string | null;
   newsAnalysis?: string | null;
   chosenTradingMode?: string;
+  disclaimer: string;
 };
 
 interface SignalTrackerProps {
@@ -68,7 +69,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
     if (result.position) {
         toast({
             title: <span className="text-accent">Signal Simulated!</span>,
-            description: <span className="text-foreground">Your pending order for <strong className="text-primary">{aiStrategy.symbol}</strong> is now active. You are being redirected to your portfolio.</span>,
+            description: <span className="text-foreground">Your position for <strong className="text-primary">{aiStrategy.symbol}</strong> is now active. You are being redirected to your portfolio.</span>,
         });
         onSimulateSuccess();
     } else {
@@ -174,14 +175,14 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
             </div>
         )}
 
-        {!isHold && isCustomSignal ? (
+        {isCustomSignal && !isHold ? (
           <div className="pt-2">
              <Button className="w-full glow-button" onClick={handleSimulate} disabled={isSimulating}>
                 {isSimulating ? <Loader2 className="h-4 w-4 animate-spin"/> : <PlayCircle className="h-4 w-4 mr-2"/>}
                 Simulate Signal
              </Button>
           </div>
-        ) : !isHold && !isCustomSignal ? (
+        ) : !isCustomSignal && !isHold ? (
             <div className="pt-2">
                 <Button asChild className="w-full shadow-choice-button">
                     <Link href="/pulse">
@@ -195,12 +196,12 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
         {disclaimer && (
             <div className="shadow-edict-container">
                 <div className="shadow-edict-title-container">
-                    <MessageSquareHeart className="h-6 w-6" />
-                    <div className="shadow-edict-title">
-                        <GlyphScramble text="SHADOW's Edict" />
+                    <MessageCircleWarning className="h-6 w-6 text-orange-400" />
+                    <div className="shadow-edict-title text-orange-400">
+                        <GlyphScramble text="SHADOW's Disclaimer" />
                     </div>
                 </div>
-                <p className="shadow-edict-body">
+                <p className="shadow-edict-body text-muted-foreground">
                     {disclaimer}
                 </p>
             </div>
