@@ -348,7 +348,7 @@ export default function CoreConsolePage() {
                     {isLimitReached ? (
                         <Button
                             onClick={() => setShowAirdropModal(true)}
-                            className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out glow-button generate-buttons"
+                            className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out glow-button"
                         >
                             <Unlock className="mr-2 h-5 w-5" />
                             Join Network for Unlimited Signals
@@ -359,7 +359,7 @@ export default function CoreConsolePage() {
                                 <Button
                                     onClick={() => handleGenerateStrategy({ isCustom: false })}
                                     disabled={isButtonDisabled}
-                                    className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out generate-signal-button generate-buttons"
+                                    className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
                                 >
                                     {isLoadingInstant ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                         : isUserLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -373,7 +373,7 @@ export default function CoreConsolePage() {
                                 <Button
                                     onClick={() => handleGenerateStrategy({ isCustom: true })}
                                     disabled={isButtonDisabled}
-                                    className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out shadow-choice-button generate-buttons"
+                                    className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out shadow-choice-button"
                                 >
                                     {isLoadingCustom ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
                                     {isLoadingCustom ? "SHADOW is Deciding..." : <GlyphScramble text="SHADOW's Signal" />}
