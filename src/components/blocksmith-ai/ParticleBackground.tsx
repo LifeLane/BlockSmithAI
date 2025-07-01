@@ -22,8 +22,11 @@ const ParticleBackground = () => {
 
     const options: ISourceOptions = useMemo(
         () => {
-            const isDark = theme === 'dark';
-            
+            // "Gilded Sentinel" is the 'dark' theme, "Monochrome Matrix" is the 'light' theme
+            const particleColor = theme === 'dark'
+                ? ["#FFD580", "#F9FAFC"] // Pale Gold & White for Gilded Sentinel
+                : ["#29a35d", "#57e68c"]; // Green shades for Monochrome Matrix
+
             return {
                 background: {
                     color: {
@@ -50,7 +53,7 @@ const ParticleBackground = () => {
                 },
                 particles: {
                     color: {
-                        value: isDark ? "#ffffff" : "#000000",
+                        value: particleColor,
                     },
                     links: {
                         enable: false, // Disabled for a starfield look
@@ -62,7 +65,7 @@ const ParticleBackground = () => {
                             default: "out",
                         },
                         random: true,
-                        speed: 0.2, // Very slow cosmic drift
+                        speed: 0.6, // Increased speed
                         straight: false,
                     },
                     number: {
@@ -70,7 +73,7 @@ const ParticleBackground = () => {
                             enable: true,
                             area: 800,
                         },
-                        value: 250, // More particles for a denser starfield
+                        value: 400, // Increased particle count
                     },
                     opacity: {
                         value: { min: 0.1, max: 0.8 }, // Twinkling effect
