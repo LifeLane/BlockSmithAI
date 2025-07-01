@@ -328,3 +328,28 @@
 .shadow-edict-body {
     @apply text-xs text-muted-foreground font-code leading-relaxed text-center max-w-md mx-auto;
 }
+
+.risk-profile-tabs-list {
+  @apply grid w-full grid-cols-3 h-12 items-center justify-center p-0;
+  @apply rounded-lg border border-primary/30 bg-background overflow-hidden;
+  box-shadow: 0 1px 3px hsl(var(--background)), inset 0 1px 2px hsl(var(--background));
+}
+
+.risk-profile-tabs-trigger {
+  @apply relative flex h-full w-full items-center justify-center text-sm font-semibold;
+  @apply ring-offset-background transition-colors duration-200;
+  @apply focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+}
+
+/* Vertical separator line */
+.risk-profile-tabs-trigger:not(:first-child) {
+  @apply border-l border-muted/20;
+}
+
+.risk-profile-tabs-trigger.is-active-segment {
+  /* This is a marker class, but we use direct logic in the component for simplicity */
+}
+/* Change separator color on active (gold) segments */
+.risk-profile-tabs-trigger.is-active-segment:not(:first-child) {
+    @apply border-l-primary-foreground/20;
+}

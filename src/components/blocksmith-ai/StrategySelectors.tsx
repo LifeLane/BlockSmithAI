@@ -41,9 +41,9 @@ const TRADING_MODES = [
 ];
 
 const RISK_PROFILES = [
-  { value: "Low", label: "Low" },
-  { value: "Medium", label: "Medium" },
-  { value: "High", label: "High" },
+  { value: "Low", label: "Low", level: 1 },
+  { value: "Medium", label: "Medium", level: 2 },
+  { value: "High", label: "High", level: 3 },
 ];
 
 const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
@@ -77,6 +77,8 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
       setCurrentSymbolLabel(symbol || "Select asset...");
     }
   }, [symbol, symbols, isLoadingSymbols]);
+
+  const selectedRiskLevel = RISK_PROFILES.find(p => p.value === riskProfile)?.level || 2;
 
   return (
     <div className="grid grid-cols-1 gap-6 p-4 bg-card rounded-lg border border-border/50 interactive-card">
@@ -168,12 +170,25 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
           Risk <span className="text-primary ml-1 font-semibold">Profile</span>
         </Label>
          <Tabs value={riskProfile} onValueChange={onRiskProfileChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 h-12">
-                {RISK_PROFILES.map((profile) => (
-                    <TabsTrigger key={profile.value} value={profile.value} className="text-sm h-full">
-                        {profile.label}
-                    </TabsTrigger>
-                ))}
+            <TabsList className="risk-profile-tabs-list">
+                {RISK_PROFILES.map((profile) => {
+                    const isActiveSegment = selectedRiskLevel >= profile.level;
+                    return (
+                        <TabsTrigger
+                            key={profile.value}
+                            value={profile.value}
+                            className={cn(
+                                'risk-profile-tabs-trigger',
+                                { 'is-active-segment': isActiveSegment },
+                                isActiveSegment
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                            )}
+                        >
+                            {profile.label}
+                        </TabsTrigger>
+                    );
+                })}
             </TabsList>
         </Tabs>
       </div>
