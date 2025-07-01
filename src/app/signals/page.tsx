@@ -11,12 +11,14 @@ import Link from 'next/link';
 import {
   fetchAllGeneratedSignalsAction,
   dismissCustomSignalAction,
+  executeCustomSignalAction,
   type GeneratedSignal,
 } from '@/app/actions';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { useRouter } from 'next/navigation';
 
 const StatusBadge = ({ status }: { status: GeneratedSignal['status'] }) => {
     const statusMap = {
@@ -34,7 +36,7 @@ const StatusBadge = ({ status }: { status: GeneratedSignal['status'] }) => {
     );
 }
 
-const GeneratedSignalCard = ({ signal, onDismiss, isProcessing }: { signal: GeneratedSignal, onDismiss: (id: string) => void, isProcessing: boolean }) => {
+const GeneratedSignalCard = ({ signal, onDismiss, onExecute, isProcessing }: { signal: GeneratedSignal, onDismiss: (id: string) => void, onExecute: (id: string) => void, isProcessing: boolean }) => {
     
     const formatPrice = (priceString?: string | null): string => {
         if (!priceString) return 'N/A';
@@ -88,7 +90,10 @@ const GeneratedSignalCard = ({ signal, onDismiss, isProcessing }: { signal: Gene
             {signal.status === 'PENDING_EXECUTION' && (
                 <CardFooter className="mt-auto flex gap-2">
                         <Button variant="outline" size="sm" className="w-full" onClick={() => onDismiss(signal.id)} disabled={isProcessing}>
-                            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Trash2 className="h-4 w-4 mr-2"/>} Dismiss Signal
+                            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Trash2 className="h-4 w-4 mr-2"/>} Dismiss
+                        </Button>
+                        <Button size="sm" className="w-full glow-button" onClick={() => onExecute(signal.id)} disabled={isProcessing}>
+                            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Play className="h-4 w-4 mr-2"/>} Execute
                         </Button>
                 </CardFooter>
             )}
@@ -103,6 +108,7 @@ export default function SignalsPage() {
     const [processingId, setProcessingId] = useState<string | null>(null);
     const { user, isLoading: isUserLoading } = useCurrentUser();
     const { toast } = useToast();
+    const router = useRouter();
 
     const fetchSignals = useCallback(async (userId: string) => {
         setIsLoading(true);
@@ -138,6 +144,25 @@ export default function SignalsPage() {
         }
         setProcessingId(null);
     }, [user, toast, fetchSignals]);
+    
+    const handleExecute = useCallback(async (signalId: string) => {
+        if (!user) return;
+        setProcessingId(signalId);
+        
+        const result = await executeCustomSignalAction(signalId, user.id);
+        
+        if (result.position) {
+            toast({
+                title: "Signal Executed",
+                description: "Your pending order has been created. Redirecting to portfolio...",
+            });
+            router.push('/pulse');
+        } else {
+            toast({ title: "Execution Failed", description: result.error || "Could not execute the signal.", variant: 'destructive' });
+        }
+        setProcessingId(null);
+    }, [user, toast, router]);
+
 
     const renderContent = () => {
         if (isLoading || isUserLoading) {
@@ -202,6 +227,7 @@ export default function SignalsPage() {
                         key={signal.id}
                         signal={signal}
                         onDismiss={handleDismiss}
+                        onExecute={handleExecute}
                         isProcessing={processingId === signal.id}
                     />
                 ))}
