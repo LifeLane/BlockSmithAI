@@ -148,9 +148,13 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
           Trading <span className="text-primary ml-1 font-semibold">Mode</span>
         </Label>
         <Tabs value={tradingMode} onValueChange={onTradingModeChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
+            <TabsList className="grid w-full grid-cols-2 gap-2 p-0 bg-transparent h-auto">
                 {TRADING_MODES.map((mode) => (
-                    <TabsTrigger key={mode.value} value={mode.value} className="flex flex-col sm:flex-row gap-1.5 py-2 h-auto text-xs sm:text-sm">
+                    <TabsTrigger
+                        key={mode.value}
+                        value={mode.value}
+                        className="flex flex-col gap-1.5 py-3 h-auto text-base font-semibold rounded-lg transition-all duration-200 ease-in-out border-2 border-transparent focus:!ring-0 focus-visible:!ring-0 !shadow-none !bg-primary !text-primary-foreground hover:!bg-primary/80 data-[state=active]:!bg-card data-[state=active]:!text-primary data-[state=active]:border-primary"
+                    >
                         {mode.icon}
                         {mode.label}
                     </TabsTrigger>
