@@ -23,9 +23,13 @@ const ParticleBackground = () => {
     const options: ISourceOptions = useMemo(
         () => {
             // "Gilded Sentinel" is the 'dark' theme, "Monochrome Matrix" is the 'light' theme
-            const particleColor = theme === 'dark'
-                ? ["#FFD580", "#F9FAFC"] // Pale Gold & White for Gilded Sentinel
-                : ["#29a35d", "#57e68c"]; // Green shades for Monochrome Matrix
+            const isGildedSentinel = theme === 'dark';
+            
+            const particleColor = isGildedSentinel
+                ? ["#ffc300", "#ffebb3", "#4da6ff"] // Gold, Pale Gold, Cool Blue for Gilded Sentinel
+                : ["#42f38c", "#a3b1cc", "#fafdff"]; // Bright Green, Cool Gray, White for Monochrome Matrix
+                
+            const linkColor = isGildedSentinel ? "#7a8194" : "#a1a3ac";
 
             return {
                 background: {
@@ -38,16 +42,14 @@ const ParticleBackground = () => {
                     events: {
                         onHover: {
                             enable: true,
-                            mode: "bubble",
+                            mode: "repulse",
                         },
                         resize: true,
                     },
                     modes: {
-                        bubble: {
-                            distance: 200,
-                            duration: 2,
-                            opacity: 0.8,
-                            size: 6,
+                        repulse: {
+                            distance: 150,
+                            duration: 0.4,
                         },
                     },
                 },
@@ -56,7 +58,11 @@ const ParticleBackground = () => {
                         value: particleColor,
                     },
                     links: {
-                        enable: false, // Disabled for a starfield look
+                        color: linkColor,
+                        distance: 150,
+                        enable: true,
+                        opacity: 0.15,
+                        width: 1,
                     },
                     move: {
                         direction: "none",
@@ -65,7 +71,7 @@ const ParticleBackground = () => {
                             default: "out",
                         },
                         random: true,
-                        speed: 0.6, // Increased speed
+                        speed: 1,
                         straight: false,
                     },
                     number: {
@@ -73,10 +79,10 @@ const ParticleBackground = () => {
                             enable: true,
                             area: 800,
                         },
-                        value: 400, // Increased particle count
+                        value: 80,
                     },
                     opacity: {
-                        value: { min: 0.1, max: 0.8 }, // Twinkling effect
+                        value: { min: 0.1, max: 0.7 },
                         animation: {
                             enable: true,
                             speed: 0.5,
@@ -87,7 +93,7 @@ const ParticleBackground = () => {
                         type: "circle",
                     },
                     size: {
-                        value: { min: 0.5, max: 2 }, // Twinkling effect
+                        value: { min: 1, max: 2.5 },
                         animation: {
                             enable: true,
                             speed: 2,
