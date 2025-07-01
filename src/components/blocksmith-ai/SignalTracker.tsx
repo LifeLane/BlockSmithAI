@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import type { FunctionComponent } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,204 +18,150 @@ import {
   CircleDotDashed,
   Info,
   Loader2,
-  MessageSquareHeart,
   BrainCircuit,
-  Newspaper
+  Newspaper,
+  PlayCircle
 } from 'lucide-react';
-import type { GenerateTradingStrategyOutput, GenerateShadowChoiceStrategyOutput } from '@/app/actions';
+import { executeCustomSignalAction, type GenerateTradingStrategyOutput, type GenerateShadowChoiceStrategyOutput } from '@/app/actions';
 import type { LiveMarketData } from '@/app/actions';
-import GlyphScramble from './GlyphScramble';
+import { useToast } from "@/hooks/use-toast";
+import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
-import Link from 'next/link';
 
 type AIStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
   id?: string;
   analysisSummary?: string | null;
   newsAnalysis?: string | null;
+  chosenTradingMode?: string;
 };
 
 interface SignalTrackerProps {
   aiStrategy: AIStrategyOutput | null;
   liveMarketData: LiveMarketData | null;
+  userId: string;
+  onSimulateSuccess: () => void;
 }
 
-const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, liveMarketData }) => {
-  if (!aiStrategy) {
+const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, liveMarketData, userId, onSimulateSuccess }) => {
+  const [isSimulating, setIsSimulating] = useState(false);
+  const { toast } = useToast();
+
+  if (!aiStrategy || !aiStrategy.id) {
     return null;
   }
   
-  if (!liveMarketData) {
-     return (
-        <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-tertiary">
-            <CardHeader className="pb-3">
-                <CardTitle className="flex items-center text-lg font-semibold text-foreground">
-                    <AreaChart className="mr-2 h-5 w-5 text-tertiary" />
-                    Signal Tracker: <span className="text-tertiary ml-1">{aiStrategy.symbol || 'N/A'}</span>
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="flex justify-center items-center h-24 text-muted-foreground">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Awaiting live market data...
-            </CardContent>
-        </Card>
-     )
-  }
-
-  // Data for Outcome and Parameters tabs
-  const { signal, entry_zone, stop_loss, take_profit } = aiStrategy;
-  const currentPrice = parseFloat(liveMarketData.lastPrice);
-  const entryPrice = parseFloat(entry_zone?.replace(/[^0-9.-]/g, '') || '0');
-  const slPrice = parseFloat(stop_loss || '0');
-  const tpPrice = parseFloat(take_profit || '0');
-
-  let status = 'Monitoring';
-  let statusIcon = <Hourglass className="h-5 w-5 text-purple-400" />;
-  let statusColor = 'text-purple-400';
-  let pnl = 0;
-  let pnlPercent = 0;
-  let outcomeDescription = "Awaiting price movement relative to signal parameters.";
-  
-  if (!isNaN(currentPrice) && !isNaN(entryPrice)) {
-    if (signal?.toLowerCase().includes('buy')) {
-        if (!isNaN(tpPrice) && tpPrice > 0 && currentPrice >= tpPrice) {
-            status = 'Target Hit'; statusIcon = <CheckCircle2 className="h-5 w-5 text-green-400" />; statusColor = 'text-green-400'; pnl = tpPrice - entryPrice; outcomeDescription = "Price reached the Take Profit target."
-        } else if (!isNaN(slPrice) && slPrice > 0 && currentPrice <= slPrice) {
-            status = 'Stopped Out'; statusIcon = <XCircle className="h-5 w-5 text-red-400" />; statusColor = 'text-red-400'; pnl = slPrice - entryPrice; outcomeDescription = "Price hit the Stop Loss level."
-        } else {
-            pnl = currentPrice - entryPrice; outcomeDescription = `Currently in trade. Price is ${currentPrice > entryPrice ? 'above' : 'below'} entry.`
-        }
-    } else if (signal?.toLowerCase().includes('sell')) {
-        if (!isNaN(tpPrice) && tpPrice > 0 && currentPrice <= tpPrice) {
-            status = 'Target Hit'; statusIcon = <CheckCircle2 className="h-5 w-5 text-green-400" />; statusColor = 'text-green-400'; pnl = entryPrice - tpPrice; outcomeDescription = "Price reached the Take Profit target."
-        } else if (!isNaN(slPrice) && slPrice > 0 && currentPrice >= slPrice) {
-            status = 'Stopped Out'; statusIcon = <XCircle className="h-5 w-5 text-red-400" />; statusColor = 'text-red-400'; pnl = entryPrice - slPrice; outcomeDescription = "Price hit the Stop Loss level."
-        } else {
-            pnl = entryPrice - currentPrice; outcomeDescription = `Currently in trade. Price is ${currentPrice < entryPrice ? 'below' : 'above'} entry.`
-        }
-    } else { // HOLD signal
-        status = 'On Hold'; statusIcon = <CircleDotDashed className="h-5 w-5 text-muted-foreground" />; statusColor = 'text-muted-foreground'; outcomeDescription = "The signal is 'HOLD'. No active trade to monitor."; pnl = 0;
+  const handleSimulate = async () => {
+    if (!userId || !aiStrategy.id) {
+        toast({ title: "Error", description: "User or Signal ID not found.", variant: "destructive" });
+        return;
     }
-  }
-  
-  if (!isNaN(entryPrice) && entryPrice > 0) {
-      pnlPercent = (pnl / entryPrice) * 100;
-  } else {
-      pnlPercent = 0;
-  }
+    setIsSimulating(true);
+    const result = await executeCustomSignalAction(aiStrategy.id, userId);
+    if (result.position) {
+        toast({
+            title: <span className="text-accent">Signal Simulated!</span>,
+            description: <span className="text-foreground">Your pending order for <strong className="text-primary">{aiStrategy.symbol}</strong> is now active. You are being redirected to your portfolio.</span>,
+        });
+        onSimulateSuccess();
+    } else {
+        toast({ title: "Simulation Failed", description: result.error, variant: "destructive" });
+    }
+    setIsSimulating(false);
+  };
 
-  const pnlColor = pnl >= 0 ? 'text-green-400' : 'text-red-400';
+  const { signal, entry_zone, stop_loss, take_profit, currentThought, analysisSummary, newsAnalysis } = aiStrategy;
 
   const ParameterRow = ({ label, value, icon, valueClassName }: { label: string, value: string, icon: React.ReactNode, valueClassName?: string }) => (
-    <div className="flex items-center justify-between p-3 bg-background/30 rounded-md shadow-sm border border-border/50">
+    <div className="flex items-center justify-between p-3 bg-background/50 rounded-md shadow-sm border border-border/50">
         <span className="text-sm font-medium text-muted-foreground flex items-center">{icon}{label}</span>
         <span className={`font-mono text-sm font-semibold ${valueClassName}`}>{value}</span>
     </div>
   );
 
+  // A 'custom' signal is one generated by Shadow's Choice, which needs manual simulation.
+  const isCustomSignal = !!aiStrategy.chosenTradingMode;
+  const isHoldSignal = signal?.toUpperCase() === 'HOLD';
+
+
   return (
-    <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-tertiary">
+    <Card className="shadow-md transition-all duration-300 ease-in-out hover:border-tertiary interactive-card">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center text-lg font-semibold text-foreground">
           <AreaChart className="mr-2 h-5 w-5 text-tertiary" />
-          Signal Tracker: <span className="text-tertiary ml-1">{aiStrategy.symbol || 'N/A'}</span>
+          Signal Analysis: <span className="text-tertiary ml-1">{aiStrategy.symbol || 'N/A'}</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="outcome" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="outcome">Real-time Outcome</TabsTrigger>
-            <TabsTrigger value="parameters">Signal Parameters</TabsTrigger>
-            <TabsTrigger value="analysis">SHADOW's Analysis</TabsTrigger>
+        <Tabs defaultValue="parameters" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="parameters" className="data-[state=active]:shadow-active-tab-glow">Signal Parameters</TabsTrigger>
+            <TabsTrigger value="analysis" className="data-[state=active]:shadow-active-tab-glow">SHADOW's Analysis</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="outcome" className="mt-4 space-y-3">
-             <div className="flex items-center justify-between p-3 bg-background/30 rounded-md shadow-sm border border-border/50">
-                <span className="text-sm font-medium text-muted-foreground">Status</span>
-                <div className={`flex items-center text-sm font-bold ${statusColor}`}>
-                {statusIcon}
-                <span className="ml-2">{status}</span>
-                </div>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-background/30 rounded-md shadow-sm border border-border/50">
-                <span className="text-sm font-medium text-muted-foreground">Est. P/L</span>
-                <div className={`flex items-center text-sm font-bold ${pnlColor}`}>
-                {pnl >= 0 ? <TrendingUp className="h-5 w-5 mr-2" /> : <TrendingDown className="h-5 w-5 mr-2" />}
-                <span>{isNaN(pnlPercent) ? 'N/A' : `${pnlPercent.toFixed(2)}%`}</span>
-                </div>
-            </div>
-            <div className="flex items-start p-3 bg-background/30 rounded-md shadow-sm border border-border/50 text-xs text-muted-foreground">
-                <Info className="h-4 w-4 mr-2 mt-px shrink-0"/>
-                <p>{outcomeDescription}</p>
-            </div>
-          </TabsContent>
-
           <TabsContent value="parameters" className="mt-4 space-y-3">
             <ParameterRow 
+                label="Signal"
+                value={signal || 'N/A'}
+                icon={<Info className="h-4 w-4 mr-2" />}
+                valueClassName={cn(signal === 'BUY' ? 'text-green-400' : signal === 'SELL' ? 'text-red-400' : 'text-muted-foreground')}
+            />
+            <ParameterRow 
                 label="Entry Zone" 
-                value={aiStrategy.entry_zone || 'N/A'}
+                value={entry_zone ? `$${parseFloat(entry_zone).toFixed(2)}` : 'N/A'}
                 icon={<LogIn className="h-4 w-4 mr-2 text-primary"/>}
                 valueClassName="text-primary"
             />
             <ParameterRow 
                 label="Stop Loss" 
-                value={aiStrategy.stop_loss || 'N/A'}
+                value={stop_loss ? `$${parseFloat(stop_loss).toFixed(2)}` : 'N/A'}
                 icon={<ShieldX className="h-4 w-4 mr-2 text-red-400"/>}
                 valueClassName="text-red-400"
             />
             <ParameterRow 
                 label="Take Profit" 
-                value={aiStrategy.take_profit || 'N/A'}
+                value={take_profit ? `$${parseFloat(take_profit).toFixed(2)}` : 'N/A'}
                 icon={<Target className="h-4 w-4 mr-2 text-green-400"/>}
                 valueClassName="text-green-400"
             />
           </TabsContent>
+
           <TabsContent value="analysis" className="mt-4 space-y-4">
              <div className="w-full space-y-2">
                 <div className="flex items-center text-primary">
                     <BrainCircuit className="h-5 w-5 mr-2" />
-                    <h4 className="font-semibold font-headline">AI Reasoning</h4>
+                    <h4 className="font-semibold font-headline">Current Thought</h4>
                 </div>
-                <p className="text-xs text-muted-foreground pl-1 italic">"{aiStrategy.currentThought}"</p>
+                <p className="text-xs text-muted-foreground pl-1 italic">"{currentThought}"</p>
             </div>
-            {aiStrategy.analysisSummary && (
+            {analysisSummary && (
                 <div className="w-full space-y-2">
                     <div className="flex items-center text-primary">
                         <AreaChart className="h-5 w-5 mr-2" />
                         <h4 className="font-semibold font-headline">Technical Analysis</h4>
                     </div>
-                    <p className="text-xs text-muted-foreground pl-1">{aiStrategy.analysisSummary}</p>
+                    <p className="text-xs text-muted-foreground pl-1">{analysisSummary}</p>
                 </div>
             )}
-            {aiStrategy.newsAnalysis && (
+            {newsAnalysis && (
                 <div className="w-full space-y-2">
                     <div className="flex items-center text-primary">
                         <Newspaper className="h-5 w-5 mr-2" />
                         <h4 className="font-semibold font-headline">News Context</h4>
                     </div>
-                    <p className="text-xs text-muted-foreground pl-1">{aiStrategy.newsAnalysis}</p>
+                    <p className="text-xs text-muted-foreground pl-1">{newsAnalysis}</p>
                 </div>
             )}
           </TabsContent>
         </Tabs>
       </CardContent>
-      <CardFooter className="flex flex-col gap-4 p-4 border-t border-border/50">
-        <Button asChild className="w-full glow-button">
-            <Link href="/pulse">Track in Portfolio</Link>
-        </Button>
-        {aiStrategy.disclaimer && (
-            <div className="shadow-edict-container">
-                <div className="shadow-edict-title-container">
-                    <MessageSquareHeart className="h-6 w-6" />
-                    <div className="shadow-edict-title">
-                        <GlyphScramble text="SHADOW's Edict" />
-                    </div>
-                </div>
-                <p className="shadow-edict-body">
-                    {aiStrategy.disclaimer}
-                </p>
-            </div>
-        )}
-      </CardFooter>
+      {!isHoldSignal && isCustomSignal && (
+          <CardFooter className="pt-4 border-t border-border/50">
+             <Button className="w-full glow-button" onClick={handleSimulate} disabled={isSimulating}>
+                {isSimulating ? <Loader2 className="h-4 w-4 animate-spin"/> : <PlayCircle className="h-4 w-4 mr-2"/>}
+                Simulate Signal
+             </Button>
+          </CardFooter>
+      )}
     </Card>
   );
 };

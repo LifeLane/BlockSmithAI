@@ -2,13 +2,14 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import StrategySelectors from '@/components/blocksmith-ai/StrategySelectors';
 import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
 import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import {
@@ -19,10 +20,10 @@ import {
 } from '@/app/actions';
 import { 
     fetchMarketDataAction, 
-    fetchAllTradingSymbolsAction, 
     type FormattedSymbol,
     type LiveMarketData,
 } from '@/services/market-data-service';
+import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-react';
@@ -65,6 +66,7 @@ export default function CoreConsolePage() {
   const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
   
   const { user: currentUser, isLoading: isUserLoading, refetch: refetchUser } = useCurrentUser();
+  const router = useRouter();
   
   const [analysisCount, setAnalysisCount] = useState<number>(0);
   const [lastAnalysisDate, setLastAnalysisDate] = useState<string>('');
@@ -229,38 +231,17 @@ export default function CoreConsolePage() {
       setAiStrategy(result);
       
       const isHold = result.signal?.toUpperCase() === 'HOLD';
+      const toastTitle = isCustom ? "Custom Signal Generated!" : "Instant Signal Executed!";
+      const toastDescription = isHold 
+          ? `HOLD signal for ${result.symbol} received. No position logged.`
+          : isCustom
+              ? `Your custom signal for ${result.symbol} is ready to be simulated.`
+              : `Position for ${result.symbol} has been opened. Track it in your Portfolio.`;
 
-      if (isCustom) {
-        if (isHold) {
-             toast({
-                title: <span className="text-accent">HOLD Signal Generated</span>,
-                description: "SHADOW advises holding. No pending order was created."
-            });
-        } else {
-            toast({
-                title: <span className="text-accent">Custom Order Submitted!</span>,
-                description: (
-                    <Link href="/pulse">
-                        <span className="text-foreground hover:underline">
-                            Your pending order for <strong className="text-primary">{result.symbol}</strong> is live. <strong className="text-tertiary">Track it in your Portfolio.</strong>
-                        </span>
-                    </Link>
-                )
-            });
-        }
-      } else { // Instant Signal
-        if (isHold) {
-            toast({
-                title: <span className="text-accent">HOLD Signal Generated</span>,
-                description: <span className="text-foreground">HOLD signal for <strong className="text-primary">{result.symbol}</strong> received. No position logged.</span>
-            });
-        } else {
-            toast({
-                title: <span className="text-accent">Instant Signal Executed!</span>,
-                description:  <span className="text-foreground">Position for <strong className="text-primary">{result.symbol}</strong> has been opened. <strong className="text-tertiary">Track it in your Portfolio.</strong></span>
-            });
-        }
-      }
+      toast({
+          title: <span className="text-accent">{toastTitle}</span>,
+          description: <span className="text-foreground">{toastDescription}</span>,
+      });
     }
     
     if (isCustom) setIsLoadingCustom(false);
@@ -324,6 +305,8 @@ export default function CoreConsolePage() {
         <SignalTracker
             aiStrategy={aiStrategy}
             liveMarketData={liveMarketData}
+            userId={currentUser?.id || ''}
+            onSimulateSuccess={() => router.push('/pulse')}
         />
       );
     }

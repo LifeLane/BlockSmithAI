@@ -133,7 +133,6 @@ export type GenerateShadowChoiceStrategyOutput = ShadowChoiceStrategyCoreOutput 
   id: string;
   symbol: string;
   disclaimer: string;
-  positionId?: string;
 };
 export type { PerformanceReviewOutput };
 
@@ -425,16 +424,9 @@ export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStra
             }
         });
         
-        let positionResult: { position: Position | null; error?: string } = { position: null };
-        if (!isHold) {
-            positionResult = await executeCustomSignalAction(savedSignal.id, userId, { ...finalStrategy, symbol: input.symbol });
-        }
-
-        if (positionResult.error) {
-            return { error: `Signal generated, but failed to create pending order: ${positionResult.error}` };
-        }
+        // Do NOT create a position automatically. The user will do this manually.
         
-        return { ...finalStrategy, id: savedSignal.id, symbol: input.symbol, disclaimer: disclaimer.disclaimer, positionId: positionResult.position?.id };
+        return { ...finalStrategy, id: savedSignal.id, symbol: input.symbol, disclaimer: disclaimer.disclaimer };
 
     } catch (error: any) {
         console.error("Error in generateShadowChoiceStrategyAction:", error);
@@ -533,12 +525,16 @@ export async function logInstantPositionAction(
   }
 }
 
-async function executeCustomSignalAction(
+export async function executeCustomSignalAction(
   signalId: string,
-  userId: string,
-  signal: ShadowChoiceStrategyCoreOutput & { symbol: string }
+  userId: string
 ): Promise<{ position: Position | null; error?: string }> {
   try {
+    const signal = await prisma.generatedSignal.findUnique({ where: { id: signalId }});
+    if (!signal) return { position: null, error: 'Signal not found.'};
+    if (signal.userId !== userId) return { position: null, error: 'Unauthorized.'};
+    if (signal.status !== 'PENDING_EXECUTION') return { position: null, error: `Signal is not pending execution (Status: ${signal.status})`};
+
     const entryPrice = parsePrice(signal.entry_zone);
     const stopLoss = parsePrice(signal.stop_loss);
     const takeProfit = parsePrice(signal.take_profit);
@@ -573,6 +569,11 @@ async function executeCustomSignalAction(
         expirationTimestamp: expirationDate,
         strategyId: signalId,
       }
+    });
+    
+    await prisma.generatedSignal.update({
+        where: { id: signalId },
+        data: { status: GeneratedSignalStatus.EXECUTED }
     });
 
     return { position: newPosition };

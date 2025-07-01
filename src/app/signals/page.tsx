@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import {
   fetchAllGeneratedSignalsAction,
-  cancelPendingPositionAction,
+  dismissCustomSignalAction,
   type GeneratedSignal,
 } from '@/app/actions';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
@@ -34,7 +34,7 @@ const StatusBadge = ({ status }: { status: GeneratedSignal['status'] }) => {
     );
 }
 
-const GeneratedSignalCard = ({ signal, onCancel, isProcessing }: { signal: GeneratedSignal, onCancel: (id: string) => void, isProcessing: boolean }) => {
+const GeneratedSignalCard = ({ signal, onDismiss, isProcessing }: { signal: GeneratedSignal, onDismiss: (id: string) => void, isProcessing: boolean }) => {
     
     const formatPrice = (priceString?: string | null): string => {
         if (!priceString) return 'N/A';
@@ -46,7 +46,7 @@ const GeneratedSignalCard = ({ signal, onCancel, isProcessing }: { signal: Gener
             }
             return priceString;
         }
-        return price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return price.toFixed(2);
     };
     
     const isBuy = signal.signal === 'BUY';
@@ -87,8 +87,8 @@ const GeneratedSignalCard = ({ signal, onCancel, isProcessing }: { signal: Gener
             </CardContent>
             {signal.status === 'PENDING_EXECUTION' && (
                 <CardFooter className="mt-auto flex gap-2">
-                        <Button variant="outline" size="sm" className="w-full" onClick={() => onCancel(signal.id)} disabled={isProcessing}>
-                            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Trash2 className="h-4 w-4 mr-2"/>} Cancel Order
+                        <Button variant="outline" size="sm" className="w-full" onClick={() => onDismiss(signal.id)} disabled={isProcessing}>
+                            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Trash2 className="h-4 w-4 mr-2"/>} Dismiss Signal
                         </Button>
                 </CardFooter>
             )}
@@ -124,19 +124,17 @@ export default function SignalsPage() {
         }
     }, [user, isUserLoading, fetchSignals]);
 
-    const handleCancel = useCallback(async (signalId: string) => {
+    const handleDismiss = useCallback(async (signalId: string) => {
         if (!user) return;
         setProcessingId(signalId);
         
-        // In our setup, the pending position ID is the same as the signal ID that created it.
-        // This might need to change in a more complex system.
-        const result = await cancelPendingPositionAction(signalId);
+        const result = await dismissCustomSignalAction(signalId, user.id);
         
         if (result.success) {
-            toast({ title: "Order Cancelled", description: "The pending order associated with this signal has been removed." });
+            toast({ title: "Signal Dismissed", description: "This signal will no longer be available for execution." });
             fetchSignals(user.id); // Re-fetch signals to update its status
         } else {
-            toast({ title: "Cancellation Failed", description: result.error || "Could not cancel the order.", variant: 'destructive' });
+            toast({ title: "Dismissal Failed", description: result.error || "Could not dismiss the signal.", variant: 'destructive' });
         }
         setProcessingId(null);
     }, [user, toast, fetchSignals]);
@@ -203,7 +201,7 @@ export default function SignalsPage() {
                     <GeneratedSignalCard
                         key={signal.id}
                         signal={signal}
-                        onCancel={handleCancel}
+                        onDismiss={handleDismiss}
                         isProcessing={processingId === signal.id}
                     />
                 ))}
