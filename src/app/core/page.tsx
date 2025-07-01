@@ -10,6 +10,7 @@ import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
 import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Skeleton } from '@/components/ui/skeleton';
 import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import {
@@ -26,7 +27,7 @@ import {
 import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Lightbulb } from 'lucide-react';
+import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Lightbulb, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
@@ -357,25 +358,61 @@ export default function CoreConsolePage() {
                         </Button>
                     ) : (
                         <>
-                            <Button
-                                onClick={() => handleGenerateStrategy({ isCustom: false })}
-                                disabled={isButtonDisabled}
-                                className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button generate-buttons"
-                            >
-                                {isLoadingInstant ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                    : isUserLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                    : <Sparkles className="mr-2 h-5 w-5" />}
-                                {isLoadingInstant ? "SHADOW is Analyzing..." : isUserLoading ? "Initializing..." : <GlyphScramble text="Instant Signal" />}
-                            </Button>
+                            <div className="relative w-full">
+                                <Button
+                                    onClick={() => handleGenerateStrategy({ isCustom: false })}
+                                    disabled={isButtonDisabled}
+                                    className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out generate-signal-button generate-buttons pr-12"
+                                >
+                                    {isLoadingInstant ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                        : isUserLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                        : <Sparkles className="mr-2 h-5 w-5" />}
+                                    {isLoadingInstant ? "SHADOW is Analyzing..." : isUserLoading ? "Initializing..." : <GlyphScramble text="Instant Signal" />}
+                                </Button>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <button
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+                                            aria-label="Info about Instant Signal"
+                                        >
+                                            <Info className="h-4 w-4" />
+                                        </button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-80" side="top" align="end">
+                                        <h4 className="font-semibold text-tertiary">Instant Signal</h4>
+                                        <p className="text-sm text-muted-foreground mt-1">
+                                            Executes a trade immediately using your selected parameters (Asset, Trading Mode, Risk Profile). The position is logged directly to your portfolio.
+                                        </p>
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
 
-                            <Button
-                                onClick={() => handleGenerateStrategy({ isCustom: true })}
-                                disabled={isButtonDisabled}
-                                className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out shadow-choice-button generate-buttons"
-                            >
-                                {isLoadingCustom ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
-                                {isLoadingCustom ? "SHADOW is Deciding..." : <GlyphScramble text="SHADOW's Choice" />}
-                            </Button>
+                            <div className="relative w-full">
+                                <Button
+                                    onClick={() => handleGenerateStrategy({ isCustom: true })}
+                                    disabled={isButtonDisabled}
+                                    className="w-full font-semibold py-3 text-sm sm:text-base shadow-lg transition-all duration-300 ease-in-out shadow-choice-button generate-buttons pr-12"
+                                >
+                                    {isLoadingCustom ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
+                                    {isLoadingCustom ? "SHADOW is Deciding..." : <GlyphScramble text="SHADOW's Choice" />}
+                                </Button>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <button
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+                                            aria-label="Info about SHADOW's Choice"
+                                        >
+                                            <Info className="h-4 w-4" />
+                                        </button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-80" side="top" align="end">
+                                        <h4 className="font-semibold text-accent">SHADOW's Choice</h4>
+                                        <p className="text-sm text-muted-foreground mt-1">
+                                            The AI autonomously determines the optimal trading mode and risk profile based on its deep analysis of market conditions, then proposes a full strategy for you to review and simulate.
+                                        </p>
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
                         </>
                     )}
                     
