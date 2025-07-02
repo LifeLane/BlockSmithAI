@@ -22,14 +22,13 @@ const ParticleBackground = () => {
 
     const options: ISourceOptions = useMemo(
         () => {
-            // "Gilded Sentinel" is the 'dark' theme, "Monochrome Matrix" is the 'light' theme
-            const isGildedSentinel = theme === 'dark';
+            const isLightCyberpunk = theme === 'dark';
             
-            const particleColor = isGildedSentinel
-                ? ["#ffc300", "#ffebb3", "#4da6ff"] // Gold, Pale Gold, Cool Blue for Gilded Sentinel
-                : ["#42f38c", "#a3b1cc", "#fafdff"]; // Bright Green, Cool Gray, White for Monochrome Matrix
+            const particleColor = isLightCyberpunk
+                ? ["#22b2d4", "#f01cac", "#f2c00c"] // Cyan, Pink, Yellow for Light Cyberpunk
+                : ["#1f9e4f", "#4cfa85", "#f7fafc"]; // Green, Bright Green, White for Monochrome Matrix
                 
-            const linkColor = isGildedSentinel ? "#7a8194" : "#a1a3ac";
+            const linkColor = isLightCyberpunk ? "#d6d0e8" : "#336644"; // Light lavender vs dark green link
 
             return {
                 background: {

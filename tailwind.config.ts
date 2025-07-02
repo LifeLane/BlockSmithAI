@@ -11,9 +11,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Space Mono', 'monospace'],
-        headline: ['Orbitron', 'sans-serif'],
-        code: ['Space Mono', 'monospace'],
+        body: ['var(--font-space-mono)', 'monospace'],
+        headline: ['var(--font-orbitron)', 'sans-serif'],
+        code: ['var(--font-space-mono)', 'monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -102,5 +102,3 @@ export default {
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;
-
-    
