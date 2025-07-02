@@ -70,6 +70,10 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
+        'stat-yellow': 'hsl(var(--stat-yellow))',
+        'stat-green': 'hsl(var(--stat-green))',
+        'stat-blue': 'hsl(var(--stat-blue))',
+        'stat-orange': 'hsl(var(--stat-orange))',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -102,3 +106,5 @@ export default {
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;
+
+    

@@ -41,6 +41,11 @@
     --sidebar-accent-foreground: hsl(var(--accent-foreground));
     --sidebar-border: hsl(var(--border));
     --sidebar-ring: hsl(var(--ring));
+
+    --stat-yellow: 50 95% 60%;
+    --stat-green: 140 80% 60%;
+    --stat-blue: 200 90% 65%;
+    --stat-orange: 30 95% 60%;
   }
 
   .dark {
@@ -74,6 +79,11 @@
     --sidebar-accent-foreground: hsl(var(--accent-foreground));
     --sidebar-border: hsl(var(--border));
     --sidebar-ring: hsl(var(--ring));
+
+    --stat-yellow: 45 95% 40%;
+    --stat-green: 140 80% 30%;
+    --stat-blue: 200 80% 35%;
+    --stat-orange: 25 95% 45%;
   }
 }
 
@@ -348,3 +358,5 @@
 .risk-profile-tabs-trigger.is-active-segment:not(:first-child) {
     @apply border-l-primary-foreground/20;
 }
+
+    

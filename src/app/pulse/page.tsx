@@ -258,30 +258,23 @@ const HistoryCard = ({ position }: { position: Position }) => {
 const StatItem = ({
   title,
   value,
-  subValue,
   icon,
   valueClassName,
 }: {
   title: string;
   value: React.ReactNode;
-  subValue?: React.ReactNode;
   icon: React.ReactNode;
   valueClassName?: string;
 }) => (
-  <div className="bg-secondary p-2 rounded-lg flex flex-col justify-between h-[75px] glow-border-box">
+  <div className="bg-secondary p-2 rounded-lg flex flex-col justify-center items-center h-[80px] glow-border-box">
     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
       {icon}
       <span className="truncate">{title}</span>
     </div>
-    <div className="text-left mt-auto">
-      <span className={cn("text-lg sm:text-xl font-bold font-mono", valueClassName)}>
+    <div className="mt-1">
+      <span className={cn("text-xl font-bold font-mono", valueClassName)}>
         {value}
       </span>
-       {subValue && (
-        <span className="text-xs text-muted-foreground ml-1 font-mono">
-          {subValue}
-        </span>
-      )}
     </div>
   </div>
 );
@@ -305,9 +298,8 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
 
     if (!stats) return null;
 
-    const pnlColor = realtimePnl >= 0 ? 'text-green-400' : 'text-red-400';
-    const closedPnlColor = stats.totalPnl >= 0 ? 'text-green-400' : 'text-red-400';
-    const winRateColor = stats.winRate >= 50 ? 'text-green-400' : 'text-red-400';
+    const pnlColor = realtimePnl >= 0 ? 'text-stat-green' : 'text-destructive';
+    const closedPnlColor = stats.totalPnl >= 0 ? 'text-stat-green' : 'text-destructive';
 
     return (
         <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30 interactive-card">
@@ -321,12 +313,12 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                     Get SHADOW's Review
                 </Button>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3">
                  <StatItem
                     title="Invested"
                     value={`$${stats.totalCapitalInvested.toLocaleString(undefined, {maximumFractionDigits: 0})}`}
                     icon={<Wallet size={14} />}
-                    valueClassName="text-yellow-400"
+                    valueClassName="text-stat-yellow"
                 />
                 <StatItem
                     title="Live PnL"
@@ -338,13 +330,13 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                     title="Trades"
                     value={stats.totalTrades.toLocaleString()}
                     icon={<History size={14} />}
-                    valueClassName="text-blue-400"
+                    valueClassName="text-stat-blue"
                 />
                 <StatItem
                     title="Winning Trades"
                     icon={<CheckCircle2 size={14} />}
                     value={stats.winningTrades.toLocaleString()}
-                    valueClassName={winRateColor}
+                    valueClassName="text-stat-green"
                 />
                 <StatItem
                     title="Total PnL"
@@ -356,7 +348,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                     title="Best Trade"
                     value={`$${stats.bestTradePnl.toFixed(2)}`}
                     icon={<ArrowUp size={14} />}
-                    valueClassName="text-green-400"
+                    valueClassName="text-stat-green"
                 />
                 <StatItem
                     title="Worst Trade"
@@ -368,7 +360,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                     title="Rewards"
                     value={stats.lifetimeRewards.toLocaleString()}
                     icon={<Gift size={14}/>}
-                    valueClassName="text-orange-400"
+                    valueClassName="text-stat-orange"
                 />
             </CardContent>
              <CardFooter className="pt-6 flex-col sm:flex-row items-center justify-between gap-4 border-t border-border/20 mt-4">
@@ -805,3 +797,5 @@ export default function PortfolioPage() {
     </>
   );
 }
+
+    
