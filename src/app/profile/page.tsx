@@ -1,3 +1,4 @@
+
 'use client';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -46,9 +47,9 @@ const YouTubeIcon = () => (
 );
 
 const missionsList = [
-  { id: 'mission_x', title: 'Follow on X', description: 'Follow BlockShadow on X to unlock airdrop.', reward: '100 Airdrop Points', icon: <TwitterIcon />, type: 'social', url: 'https://x.com/Firebase' },
-  { id: 'mission_telegram', title: 'Join Telegram', description: 'Join the official Telegram community.', reward: '100 Airdrop Points', icon: <TelegramIcon />, type: 'social', url: 'https://t.me/firebase' },
-  { id: 'mission_youtube', title: 'Subscribe on YouTube', description: 'Subscribe to the BlockShadow channel.', reward: '100 Airdrop Points', icon: <YouTubeIcon />, type: 'social', url: 'https://youtube.com/firebase' },
+  { id: 'mission_x', title: 'Follow on X', description: 'Follow BlockShadow on X to unlock airdrop.', reward: '100 Airdrop Points', icon: <TwitterIcon />, type: 'social', url: '#' },
+  { id: 'mission_telegram', title: 'Join Telegram', description: 'Join the official Telegram community.', reward: '100 Airdrop Points', icon: <TelegramIcon />, type: 'social', url: '#' },
+  { id: 'mission_youtube', title: 'Subscribe on YouTube', description: 'Subscribe to the BlockShadow channel.', reward: '100 Airdrop Points', icon: <YouTubeIcon />, type: 'social', url: '#' },
   { id: 'mission_first_signal', title: 'First Signal', description: 'Generate your first trading signal using the Core Console.', reward: '100 XP & 500 Airdrop Points', icon: <Zap className="h-8 w-8 text-primary"/>, type: 'action' },
   { id: 'mission_analyst', title: 'The Analyst', description: 'Generate signals for 3 different assets (e.g., BTC, ETH, SOL).', reward: '250 XP & 1000 Airdrop Points', icon: <ShieldCheck className="h-8 w-8 text-tertiary"/>, type: 'action' },
   { id: 'mission_prolific_trader', title: 'Prolific Trader', description: 'Execute 10 simulated trades (open or close).', reward: '150 XP & 750 Airdrop Points', icon: <Repeat className="h-8 w-8 text-primary"/>, type: 'action' },
@@ -394,7 +395,7 @@ export default function ProfilePage() {
                     </div>
                     <Button variant="outline" size="sm" onClick={() => setSettingsOpen(!settingsOpen)}>
                     <Settings className="h-4 w-4 mr-2" />
-                    {settingsOpen ? 'Close' : 'Open'} Settings
+                    {settingsOpen ? 'Close' : 'Open Settings'}
                     </Button>
                 </CardHeader>
                 {settingsOpen && (

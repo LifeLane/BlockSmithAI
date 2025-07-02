@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,22 +9,14 @@ import { formatDistanceToNow } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle, Wallet, Activity, BrainCircuit, ShieldAlert, CheckCircle2, XCircle, Bot, Hourglass } from 'lucide-react';
+import { Loader2, Briefcase, AlertTriangle, LogOut, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle, Wallet, Activity, BrainCircuit, ShieldAlert, CheckCircle2, XCircle, Bot, Hourglass } from 'lucide-react';
+import { usePortfolioManager } from '@/hooks/usePortfolioManager';
 import {
-  fetchPendingAndOpenPositionsAction,
-  closePositionAction,
-  fetchTradeHistoryAction,
-  fetchPortfolioStatsAction,
   generatePerformanceReviewAction,
   killSwitchAction,
-  openPendingPositionAction,
-  archivePositionAction,
   type Position,
-  type LiveMarketData,
-  type PortfolioStats,
   type PerformanceReviewOutput,
 } from '@/app/actions';
-import { fetchMarketDataAction } from '@/services/market-data-service';
 import { Button } from '@/components/ui/button';
 import PerformanceReviewModal from '@/components/blocksmith-ai/PerformanceReviewModal';
 import {
@@ -281,7 +273,7 @@ const StatItem = ({
 );
 
 
-const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview, isGeneratingReview, onKillSwitch, isKilling }: { stats: PortfolioStats | null, isLoading: boolean, realtimePnl: number, onGenerateReview: () => void, isGeneratingReview: boolean, onKillSwitch: () => void, isKilling: boolean }) => {
+const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview, isGeneratingReview, onKillSwitch, isKilling }: { stats: any, isLoading: boolean, realtimePnl: number, onGenerateReview: () => void, isGeneratingReview: boolean, onKillSwitch: () => void, isKilling: boolean }) => {
     if (isLoading && !stats) {
         return (
              <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30 interactive-card">
@@ -398,13 +390,16 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
 
 export default function PortfolioPage() {
     const { user: currentUser, isLoading: isUserLoading, error: userError } = useCurrentUser();
-    const [positions, setPositions] = useState<Position[]>([]);
-    const [tradeHistory, setTradeHistory] = useState<Position[]>([]);
-    const [portfolioStats, setPortfolioStats] = useState<PortfolioStats | null>(null);
-    const [livePrices, setLivePrices] = useState<Record<string, LiveMarketData>>({});
-    const [closingPositionId, setClosingPositionId] = useState<string | null>(null);
-    const [isLoadingData, setIsLoadingData] = useState(true);
-    const [realtimePnl, setRealtimePnl] = useState(0);
+    const {
+        positions,
+        tradeHistory,
+        portfolioStats,
+        livePrices,
+        closingPositionId,
+        isLoadingData,
+        realtimePnl,
+        handleManualClose
+    } = usePortfolioManager(currentUser?.id);
 
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [isGeneratingReview, setIsGeneratingReview] = useState(false);
@@ -413,175 +408,6 @@ export default function PortfolioPage() {
     const [isKilling, setIsKilling] = useState(false);
 
     const { toast } = useToast();
-    const isFetchingRef = useRef(false);
-    const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    
-    const showCloseToast = useCallback((closedPosition: Position, airdropPoints: number, reason: string) => {
-        const pnl = closedPosition.pnl || 0;
-        toast({
-            title: <span className="text-accent">{reason}</span>,
-            description: (
-                <div className="text-foreground">
-                    <div>Your position resulted in a PnL of <strong className={pnl >= 0 ? 'text-stat-green' : 'text-red-400'}>${pnl.toFixed(2)}</strong>.</div>
-                    {airdropPoints > 0 && (
-                        <div className="flex items-center mt-1">
-                            <Sparkles className="h-4 w-4 mr-2 text-stat-orange"/>
-                            You've earned <strong className="text-stat-orange">{airdropPoints} $BSAI</strong> airdrop points!
-                        </div>
-                    )}
-                </div>
-            ),
-        });
-    }, [toast]);
-    
-    const showFilledToast = useCallback((filledPosition: Position) => {
-        toast({
-            title: <span className="text-primary">Order Filled!</span>,
-            description: `Your ${filledPosition.signalType} order for ${filledPosition.symbol} at $${filledPosition.entryPrice} has been executed.`
-        });
-    }, [toast]);
-
-    const showExpiredToast = useCallback((expiredPosition: Position) => {
-        toast({
-            title: <span className="text-muted-foreground">Order Expired</span>,
-            description: `Your pending ${expiredPosition.signalType} order for ${expiredPosition.symbol} at $${expiredPosition.entryPrice} has expired.`
-        });
-    }, [toast]);
-
-
-    const runSimulationCycle = useCallback(async (userId: string) => {
-        if (isFetchingRef.current) return;
-        isFetchingRef.current = true;
-        
-        const initialLoad = positions.length === 0 && tradeHistory.length === 0;
-        if (initialLoad) {
-            setIsLoadingData(true);
-        }
-
-        try {
-            const [currentPositions, history, statsResult] = await Promise.all([
-                fetchPendingAndOpenPositionsAction(userId),
-                fetchTradeHistoryAction(userId),
-                fetchPortfolioStatsAction(userId),
-            ]);
-            
-            setTradeHistory(history);
-            if (!('error' in statsResult)) setPortfolioStats(statsResult);
-
-            if (currentPositions.length === 0) {
-                 isFetchingRef.current = false;
-                 if (initialLoad) setIsLoadingData(false);
-                 setPositions([]);
-                 return;
-            }
-
-            const symbols = [...new Set(currentPositions.map(p => p.symbol))];
-            const pricePromises = symbols.map(symbol => fetchMarketDataAction({ symbol }));
-            const priceResults = await Promise.all(pricePromises);
-
-            const updatedLivePrices: Record<string, LiveMarketData> = {};
-            priceResults.forEach((result, index) => {
-                if (!('error' in result)) {
-                    updatedLivePrices[symbols[index]] = result;
-                }
-            });
-            setLivePrices(current => ({ ...current, ...updatedLivePrices }));
-
-            let needsReFetch = false;
-            for (const pos of currentPositions) {
-                const livePriceData = updatedLivePrices[pos.symbol];
-                if (!livePriceData) continue;
-                
-                const currentPrice = parseFloat(livePriceData.lastPrice);
-                
-                if (pos.status === 'PENDING') {
-                    if (pos.expirationTimestamp && new Date(pos.expirationTimestamp) < new Date()) {
-                        await archivePositionAction(pos.id);
-                        showExpiredToast(pos);
-                        needsReFetch = true;
-                        continue;
-                    }
-
-                    let triggered = false;
-                    if (pos.signalType === 'BUY' && currentPrice <= pos.entryPrice) triggered = true;
-                    else if (pos.signalType === 'SELL' && currentPrice >= pos.entryPrice) triggered = true;
-
-                    if (triggered) {
-                        const result = await openPendingPositionAction(pos.id);
-                        if (result.position) {
-                            showFilledToast(result.position);
-                            needsReFetch = true;
-                        }
-                    }
-
-                } else if (pos.status === 'OPEN') {
-                    let closeReason: string | null = null;
-                    let closePrice = 0;
-                    
-                    if (pos.takeProfit != null && pos.stopLoss != null) {
-                        if (pos.signalType === 'BUY') {
-                            if (currentPrice >= pos.takeProfit) { closeReason = 'Take Profit Hit'; closePrice = pos.takeProfit; } 
-                            else if (currentPrice <= pos.stopLoss) { closeReason = 'Stop Loss Hit'; closePrice = pos.stopLoss; }
-                        } else { // SELL
-                            if (currentPrice <= pos.takeProfit) { closeReason = 'Take Profit Hit'; closePrice = pos.takeProfit; }
-                            else if (currentPrice >= pos.stopLoss) { closeReason = 'Stop Loss Hit'; closePrice = pos.stopLoss; }
-                        }
-                    }
-                    
-                    if (!closeReason && pos.expirationTimestamp && new Date(pos.expirationTimestamp) < new Date()) {
-                        closeReason = 'Position Expired';
-                        closePrice = currentPrice;
-                    }
-
-                    if (closeReason) {
-                        const result = await closePositionAction(pos.id, closePrice);
-                        if (result.position) {
-                            showCloseToast(result.position, result.airdropPointsEarned || 0, closeReason);
-                            needsReFetch = true;
-                        }
-                    }
-                }
-            }
-            
-            if (needsReFetch) {
-                 const [finalPositions, finalHistory, finalStats] = await Promise.all([
-                    fetchPendingAndOpenPositionsAction(userId),
-                    fetchTradeHistoryAction(userId),
-                    fetchPortfolioStatsAction(userId),
-                ]);
-                setPositions(finalPositions);
-                setTradeHistory(finalHistory);
-                if (!('error' in finalStats)) setPortfolioStats(finalStats);
-            } else {
-                setPositions(currentPositions);
-            }
-
-        } catch (e: any) {
-             console.error("Error in simulation cycle:", e);
-        } finally {
-            if (initialLoad) setIsLoadingData(false);
-            isFetchingRef.current = false;
-        }
-    }, [showCloseToast, showFilledToast, showExpiredToast, toast, positions.length, tradeHistory.length]);
-
-    const handleManualClose = useCallback(async (positionId: string, closePrice: number) => {
-        if (!currentUser) return;
-        setClosingPositionId(positionId);
-        const positionToClose = positions.find(p => p.id === positionId);
-        if (positionToClose?.status === 'PENDING') {
-            await archivePositionAction(positionId);
-            showExpiredToast(positionToClose); // Re-use toast
-        } else {
-            const result = await closePositionAction(positionId, closePrice);
-            if (result.position) {
-                showCloseToast(result.position, result.airdropPointsEarned || 0, 'Position Closed Manually');
-            } else {
-                toast({ title: "Error Closing Position", description: result.error, variant: "destructive" });
-            }
-        }
-        await runSimulationCycle(currentUser.id);
-        setClosingPositionId(null);
-    }, [positions, showCloseToast, showExpiredToast, toast, currentUser, runSimulationCycle]);
     
     const handleGenerateReview = useCallback(async () => {
         if (!currentUser) return;
@@ -610,8 +436,6 @@ export default function PortfolioPage() {
                 description: result.message,
                 variant: "default",
             });
-            if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
-            await runSimulationCycle(currentUser.id);
         } else {
             toast({
                 title: "Kill Switch Failed",
@@ -620,42 +444,8 @@ export default function PortfolioPage() {
             });
         }
         setIsKilling(false);
-    }, [currentUser, toast, runSimulationCycle]);
+    }, [currentUser, toast]);
     
-    useEffect(() => {
-        if (currentUser?.id) {
-            const run = async () => {
-                await runSimulationCycle(currentUser.id);
-                if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
-                pollingTimeoutRef.current = setTimeout(run, 15000);
-            };
-            run();
-        }
-        return () => { if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current); }
-    }, [currentUser?.id, runSimulationCycle]); 
-
-    useEffect(() => {
-        const openPositions = positions.filter(p => p.status === 'OPEN');
-        if (openPositions.length === 0) {
-            setRealtimePnl(0);
-            return;
-        }
-
-        const totalPnl = openPositions.reduce((acc, pos) => {
-            const livePriceData = livePrices[pos.symbol];
-            if (!livePriceData) return acc;
-
-            const currentPrice = parseFloat(livePriceData.lastPrice);
-            const positionSize = pos.size || 1;
-            const priceDiff = pos.signalType === 'BUY'
-                ? (currentPrice - pos.entryPrice)
-                : (pos.entryPrice - currentPrice);
-            
-            return acc + (priceDiff * positionSize);
-        }, 0);
-
-        setRealtimePnl(totalPnl);
-    }, [positions, livePrices]);
     
     const renderActivePositions = () => {
         const activePositions = positions.filter(p => p.status === 'OPEN' || p.status === 'PENDING');
