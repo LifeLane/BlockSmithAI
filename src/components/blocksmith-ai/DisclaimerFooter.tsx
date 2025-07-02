@@ -1,4 +1,3 @@
-
 'use client';
 
 import { BrainCircuit, AlertTriangle } from 'lucide-react';
@@ -37,10 +36,6 @@ const DisclaimerFooter = () => {
                             <Skeleton className="h-5 w-10/12 max-w-md mx-auto bg-muted/50" />
                         </div>
                     )}
-                    <p className="flex items-center justify-center gap-2 text-sm font-bold text-destructive">
-                        <AlertTriangle className="h-4 w-4" />
-                        Always Do Your Own Research.
-                    </p>
                 </div>
             </div>
         </footer>
