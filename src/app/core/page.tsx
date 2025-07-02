@@ -17,9 +17,9 @@ import {
   generateShadowChoiceStrategyAction,
   type GenerateTradingStrategyOutput,
   type GenerateShadowChoiceStrategyOutput,
-  type GenerateTradingStrategyInput,
-  type ShadowChoiceStrategyInput
 } from '@/app/actions';
+import type { GenerateTradingStrategyInput, ShadowChoiceStrategyInput } from '@/ai/flows/generate-trading-strategy';
+
 import { 
     fetchMarketDataAction, 
     type FormattedSymbol,
@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import DisclaimerFooter from '@/components/blocksmith-ai/DisclaimerFooter';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type AIStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
   id?: string;
@@ -225,7 +226,8 @@ export default function CoreConsolePage() {
     if (isCustom) {
         result = await generateShadowChoiceStrategyAction(commonInput);
     } else {
-        result = await generateTradingStrategyAction(commonInput);
+        const instantInput: GenerateTradingStrategyInput = { ...commonInput };
+        result = await generateTradingStrategyAction(instantInput);
     }
     
     if ('error' in result) {
@@ -366,7 +368,17 @@ export default function CoreConsolePage() {
                         </Button>
                     ) : (
                         <>
-                            <div className="relative w-full">
+                            <div className="relative w-full text-center">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Lightbulb className="h-5 w-5 text-muted-foreground hover:text-primary mb-2 cursor-help inline-block" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Executes immediately with your selected parameters.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                                 <Button
                                     onClick={() => handleGenerateStrategy({ isCustom: false })}
                                     disabled={isButtonDisabled}
@@ -380,7 +392,17 @@ export default function CoreConsolePage() {
                                 
                             </div>
 
-                            <div className="relative w-full">
+                            <div className="relative w-full text-center">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Lightbulb className="h-5 w-5 text-muted-foreground hover:text-accent mb-2 cursor-help inline-block" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>SHADOW autonomously determines the best strategy and provides a custom limit order for you to simulate.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                                 <Button
                                     onClick={() => handleGenerateStrategy({ isCustom: true })}
                                     disabled={isButtonDisabled}
@@ -392,13 +414,6 @@ export default function CoreConsolePage() {
                             </div>
                         </>
                     )}
-                     <div className="flex items-start justify-center gap-3 mt-4 text-xs p-3 bg-secondary rounded-lg">
-                        <Lightbulb className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                        <p>
-                            <strong className="text-primary">Instant Signal:</strong> Executes immediately with your selected parameters. <br />
-                            <strong className="text-accent">SHADOW's Signal:</strong> SHADOW autonomously determines the best strategy and provides a custom limit order for you to simulate.
-                        </p>
-                    </div>
                     
                     {currentUser?.status === 'Guest' && (
                         <p className="text-xs text-center text-muted-foreground mt-2">
