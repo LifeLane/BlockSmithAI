@@ -29,7 +29,7 @@ const DisclaimerFooter = () => {
                 </div>
                 <div className="shadow-edict-body">
                    {disclaimer ? (
-                        <p className="italic">"{disclaimer}"</p>
+                        <p className="font-semibold text-foreground">"{disclaimer}"</p>
                     ) : (
                         <Skeleton className="h-4 w-10/12 max-w-sm mx-auto bg-muted/50" />
                     )}
