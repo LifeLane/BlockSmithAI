@@ -721,9 +721,9 @@ export default function PortfolioPage() {
             isKilling={isKilling}
         />
          <Tabs defaultValue="open" className="mt-4">
-            <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="open" className="data-[state=active]:shadow-active-tab-glow">Active Positions ({positions.filter(p => p.status !== 'CLOSED').length})</TabsTrigger>
-                <TabsTrigger value="history" className="data-[state=active]:shadow-active-tab-glow">Trade History ({tradeHistory.length})</TabsTrigger>
+            <TabsList className="flex w-full h-auto">
+                <TabsTrigger value="open" className="flex-1 whitespace-normal h-auto data-[state=active]:shadow-active-tab-glow">Active Positions ({positions.filter(p => p.status !== 'CLOSED').length})</TabsTrigger>
+                <TabsTrigger value="history" className="flex-1 whitespace-normal h-auto data-[state=active]:shadow-active-tab-glow">Trade History ({tradeHistory.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="open" className="mt-4">
                 {renderActivePositions()}
@@ -744,3 +744,5 @@ export default function PortfolioPage() {
     </>
   );
 }
+
+    
