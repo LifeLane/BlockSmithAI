@@ -36,7 +36,7 @@ const DisclaimerFooter = () => {
                     )}
                     <p className="flex items-center justify-center gap-2 text-sm font-bold text-destructive">
                         <AlertTriangle className="h-4 w-4" />
-                        Always Do Your Own Research (DYOR).
+                        Always Do Your Own Research.
                     </p>
                 </div>
             </div>

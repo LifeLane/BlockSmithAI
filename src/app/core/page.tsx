@@ -31,7 +31,6 @@ import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-r
 import { cn } from '@/lib/utils';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import DisclaimerFooter from '@/components/blocksmith-ai/DisclaimerFooter';
-import DailyGreeting from '@/components/blocksmith-ai/DailyGreeting';
 import {
   Tooltip,
   TooltipContent,
@@ -325,7 +324,6 @@ export default function CoreConsolePage() {
             "w-full space-y-4 transition-all duration-500",
             !showResults ? 'flex-grow flex flex-col justify-center' : ''
         )}>
-             {!showResults && <DailyGreeting />}
 
             <div className="space-y-4">
                 <div id="market-data-display">
