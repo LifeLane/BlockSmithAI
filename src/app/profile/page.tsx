@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Crown, Shield, Trophy, Settings, Award, AlertTriangle, User, BarChart2, TrendingUp, TrendingDown, Zap, ShieldCheck, Gift, Clock, CheckCircle, Users, Repeat } from 'lucide-react';
+import { Crown, Shield, Trophy, Settings, Award, AlertTriangle, User, BarChart2, TrendingUp, Zap, ShieldCheck, Gift, Clock, CheckCircle, Users, Repeat } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,15 +47,15 @@ const YouTubeIcon = () => (
 );
 
 const missionsList = [
-  { id: 'mission_x', title: 'Follow on X', description: 'Follow BlockShadow on X to unlock airdrop.', reward: '100 Airdrop Points', icon: <TwitterIcon />, type: 'social', url: '#' },
-  { id: 'mission_telegram', title: 'Join Telegram', description: 'Join the official Telegram community.', reward: '100 Airdrop Points', icon: <TelegramIcon />, type: 'social', url: '#' },
-  { id: 'mission_youtube', title: 'Subscribe on YouTube', description: 'Subscribe to the BlockShadow channel.', reward: '100 Airdrop Points', icon: <YouTubeIcon />, type: 'social', url: '#' },
+  { id: 'mission_x', title: 'Follow on X', description: 'Follow BlockShadow on X to unlock airdrop.', reward: '100 Airdrop Points', icon: <TwitterIcon />, type: 'social', url: 'https://x.com/BlockShadowAI' },
+  { id: 'mission_telegram', title: 'Join Telegram', description: 'Join the official Telegram community.', reward: '100 Airdrop Points', icon: <TelegramIcon />, type: 'social', url: 'https://t.me/BlockShadowAI' },
+  { id: 'mission_youtube', title: 'Subscribe on YouTube', description: 'Subscribe to the BlockShadow channel.', reward: '100 Airdrop Points', icon: <YouTubeIcon />, type: 'social', url: 'https://youtube.com' },
   { id: 'mission_first_signal', title: 'First Signal', description: 'Generate your first trading signal using the Core Console.', reward: '100 XP & 500 Airdrop Points', icon: <Zap className="h-8 w-8 text-primary"/>, type: 'action' },
   { id: 'mission_analyst', title: 'The Analyst', description: 'Generate signals for 3 different assets (e.g., BTC, ETH, SOL).', reward: '250 XP & 1000 Airdrop Points', icon: <ShieldCheck className="h-8 w-8 text-tertiary"/>, type: 'action' },
   { id: 'mission_prolific_trader', title: 'Prolific Trader', description: 'Execute 10 simulated trades (open or close).', reward: '150 XP & 750 Airdrop Points', icon: <Repeat className="h-8 w-8 text-primary"/>, type: 'action' },
   { id: 'mission_winning_streak', title: 'Winning Streak', description: 'Close 3 profitable trades in a row.', reward: '300 XP & 1500 Airdrop Points', icon: <TrendingUp className="h-8 w-8 text-stat-green"/>, type: 'action' },
   { id: 'mission_top_trader', title: 'Top Trader', description: 'Achieve Rank #1 on the weekly XP leaderboard.', reward: '2000 XP & 10000 Airdrop Points', icon: <Crown className="h-8 w-8 text-stat-yellow"/>, type: 'locked' },
-  { id: 'mission_streak', title: 'Weekly Streak', description: 'Generate at least one signal every day for 7 consecutive days.', reward: '1000 XP & 5000 Airdrop Points', icon: <Gift className="h-8 w-8 text-stat-orange"/>, type: 'locked' },
+  { id: 'mission_streak', title: 'Weekly Streak', description: 'Generate at least one signal every day for 7 consecutive days.', reward: '1000 XP & 5000 Airdrop Points', icon: <Gift className="h-8 w-8 text-tertiary"/>, type: 'locked' },
 ];
 
 const ranks = [
@@ -88,7 +88,7 @@ const getRankDetails = (xp: number) => {
 };
 
 const RankIcon = ({ rank }: { rank: number }) => {
-    if (rank === 1) return <Crown className="h-6 w-6 text-stat-yellow" />;
+    if (rank === 1) return <Crown className="h-6 w-6 text-tertiary" />;
     if (rank === 2) return <Trophy className="h-6 w-6 text-gray-400" />;
     if (rank === 3) return <Shield className="h-6 w-6 text-orange-600" />;
     return <span className="font-bold text-lg text-muted-foreground">{rank}</span>;
@@ -239,12 +239,12 @@ export default function ProfilePage() {
          <>
             <AppHeader />
              <div className="container mx-auto px-4 py-8 text-center">
-                 <Card className="max-w-lg mx-auto border-destructive interactive-card">
+                 <Card className="max-w-lg mx-auto border-destructive interactive-card bg-card/80 backdrop-blur-sm">
                     <CardHeader>
                          <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
                             <AlertTriangle className="h-10 w-10 text-destructive" />
                         </div>
-                        <CardTitle className="text-destructive mt-4">{userError ? 'Profile Error' : 'User Not Found'}</CardTitle>
+                        <CardTitle className="text-destructive mt-4 font-headline">{userError ? 'Profile Error' : 'User Not Found'}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-muted-foreground">{userError || "Please visit the Core Console to initialize your session."}</p>
@@ -272,16 +272,16 @@ export default function ProfilePage() {
         
         <Card className="mb-8 bg-card/80 backdrop-blur-sm border-accent/50 shadow-lg shadow-accent/10 interactive-card">
             <CardHeader>
-                <CardTitle className="flex items-center text-lg text-accent">
+                <CardTitle className="flex items-center text-lg text-accent font-headline">
                     <Gift className="mr-3 h-5 w-5"/>
                     <GlyphScramble text="Eligible Airdrop Balance" />
                 </CardTitle>
                 <CardDescription>
-                    Your accumulated <strong className="text-orange-400">$BSAI</strong> points from all activities.
+                    Your accumulated <strong className="text-tertiary">$BSAI</strong> points from all activities.
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-orange-400 font-mono tracking-wider">
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-tertiary font-mono tracking-wider">
                     {currentUser.airdropPoints?.toLocaleString() || 0}
                 </p>
                  <p className="text-xs text-muted-foreground mt-1">
@@ -301,9 +301,9 @@ export default function ProfilePage() {
 
             <TabsContent value="profile" className="mt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <Card className="interactive-card">
+                    <Card className="interactive-card bg-card/80 backdrop-blur-sm">
                         <CardHeader>
-                            <CardTitle className="flex items-center"><User className="mr-2 h-5 w-5"/><GlyphScramble text="Analyst Status" /></CardTitle>
+                            <CardTitle className="flex items-center font-headline"><User className="mr-2 h-5 w-5"/><GlyphScramble text="Analyst Status" /></CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                         <div className="min-w-0">
@@ -326,54 +326,54 @@ export default function ProfilePage() {
                         </CardContent>
                     </Card>
                     
-                    <Card className="interactive-card">
+                    <Card className="interactive-card bg-card/80 backdrop-blur-sm">
                         <CardHeader>
-                            <CardTitle className="flex items-center"><BarChart2 className="mr-2 h-5 w-5"/><GlyphScramble text="Points Overview" /></CardTitle>
+                            <CardTitle className="flex items-center font-headline"><BarChart2 className="mr-2 h-5 w-5"/><GlyphScramble text="Points Overview" /></CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                              <div>
                                 <p className="text-sm font-medium text-muted-foreground flex items-center"><TrendingUp className="mr-1.5 h-4 w-4"/>Available XP (for Agent Upgrades):</p>
-                                <p className="text-lg font-semibold text-tertiary">{currentUser.weeklyPoints?.toLocaleString() || 0}</p>
+                                <p className="text-lg font-semibold text-accent">{currentUser.weeklyPoints?.toLocaleString() || 0}</p>
                             </div>
                              <div>
                                 <p className="text-sm font-medium text-muted-foreground flex items-center"><Gift className="mr-1.5 h-4 w-4"/>Total Airdrop Points:</p>
-                                <p className="text-lg font-semibold text-stat-orange">{currentUser.airdropPoints?.toLocaleString() || 0}</p>
+                                <p className="text-lg font-semibold text-tertiary">{currentUser.airdropPoints?.toLocaleString() || 0}</p>
                             </div>
                         </CardContent>
                     </Card>
                     
-                    <Card className="md:col-span-2 interactive-card">
+                    <Card className="md:col-span-2 interactive-card bg-card/80 backdrop-blur-sm">
                         <CardHeader>
-                            <CardTitle className="flex items-center text-tertiary">
+                            <CardTitle className="flex items-center text-accent font-headline">
                                 {rankDetails.icon}
                                 <span className="ml-2">Analyst Rank: {rankDetails.name}</span>
                             </CardTitle>
                              <CardDescription>
-                                Level {rankDetails.level} - Based on your <strong className="text-tertiary">Weekly XP</strong>.
+                                Level {rankDetails.level} - Based on your <strong className="text-accent">Weekly XP</strong>.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <Progress value={rankDetails.progress} className="w-full h-3 bg-background [&>*]:bg-tertiary" />
+                            <Progress value={rankDetails.progress} className="w-full h-3 bg-background [&>*]:bg-accent" />
                             <div className="flex justify-between items-center mt-2 text-sm text-muted-foreground">
                             <span>Progress</span>
                             {rankDetails.nextRank ? (
-                                <span className="font-mono text-tertiary font-bold">{rankDetails.xpInCurrentLevel} / {rankDetails.xpNeededForNextLevel} XP</span>
+                                <span className="font-mono text-accent font-bold">{rankDetails.xpInCurrentLevel} / {rankDetails.xpNeededForNextLevel} XP</span>
                             ) : (
-                                <span className="font-mono text-tertiary font-bold">Max Level Reached</span>
+                                <span className="font-mono text-accent font-bold">Max Level Reached</span>
                             )}
                             </div>
                             {rankDetails.nextRank && (
                                 <p className="text-center text-xs text-muted-foreground mt-3">
-                                    You are <strong className="text-tertiary">{(parseInt(rankDetails.xpNeededForNextLevel.replace(/,/g,'')) - parseInt(rankDetails.xpInCurrentLevel.replace(/,/g,''))).toLocaleString()} XP</strong> away from becoming a <strong className="text-tertiary">{rankDetails.nextRank.name}</strong>.
+                                    You are <strong className="text-accent">{(parseInt(rankDetails.xpNeededForNextLevel.replace(/,/g,'')) - parseInt(rankDetails.xpInCurrentLevel.replace(/,/g,''))).toLocaleString()} XP</strong> away from becoming a <strong className="text-accent">{rankDetails.nextRank.name}</strong>.
                                 </p>
                             )}
                         </CardContent>
                     </Card>
 
 
-                     <Card className="md:col-span-2 interactive-card">
+                     <Card className="md:col-span-2 interactive-card bg-card/80 backdrop-blur-sm">
                         <CardHeader>
-                            <CardTitle className="flex items-center"><Award className="mr-2 h-5 w-5"/>Earned Badges</CardTitle>
+                            <CardTitle className="flex items-center font-headline"><Award className="mr-2 h-5 w-5"/>Earned Badges</CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-wrap gap-2">
                         {currentUser.badges && currentUser.badges.length > 0 ? currentUser.badges.map((badge: any, index: number) => (
@@ -387,10 +387,10 @@ export default function ProfilePage() {
                     </Card>
                 </div>
 
-                <Card className="mb-8 interactive-card">
+                <Card className="mb-8 interactive-card bg-card/80 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="space-y-1">
-                    <CardTitle>Settings</CardTitle>
+                    <CardTitle className="font-headline">Settings</CardTitle>
                     <CardDescription>Manage your <strong className="text-primary">profile information</strong>.</CardDescription>
                     </div>
                     <Button variant="outline" size="sm" onClick={() => setSettingsOpen(!settingsOpen)}>
@@ -413,12 +413,12 @@ export default function ProfilePage() {
             <TabsContent value="missions" className="mt-6">
                 <Card className="mb-8 bg-card/80 backdrop-blur-sm border-accent/50 shadow-lg shadow-accent/10 interactive-card">
                     <CardHeader>
-                        <CardTitle className="flex items-center text-xl text-accent">
+                        <CardTitle className="flex items-center text-xl text-accent font-headline">
                             <Award className="mr-3 h-6 w-6"/>
                             <GlyphScramble text="Airdrop Initiative Dashboard" />
                         </CardTitle>
                         <CardDescription>
-                            Complete missions to secure your <strong className="text-orange-400">$BSAI</strong> allocation.
+                            Complete missions to secure your <strong className="text-tertiary">$BSAI</strong> allocation.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -430,7 +430,7 @@ export default function ProfilePage() {
                             <Progress value={progress} className="w-full h-3 bg-background [&>*]:bg-accent" />
                         </div>
                         <p className="text-xs text-muted-foreground">
-                           You must complete all <strong className="text-primary">mandatory missions</strong> and submit your details to be eligible for the <strong className="text-orange-400">airdrop</strong>.
+                           You must complete all <strong className="text-primary">mandatory missions</strong> and submit your details to be eligible for the <strong className="text-tertiary">airdrop</strong>.
                         </p>
                     </CardContent>
                     <CardFooter>
@@ -454,9 +454,9 @@ export default function ProfilePage() {
             </TabsContent>
             
             <TabsContent value="leaderboard" className="mt-6">
-                <Card className="interactive-card">
+                <Card className="interactive-card bg-card/80 backdrop-blur-sm">
                     <CardHeader>
-                        <CardTitle className="flex items-center"><Users className="mr-2 h-5 w-5"/><GlyphScramble text="Top 10 Analysts" /></CardTitle>
+                        <CardTitle className="flex items-center font-headline"><Users className="mr-2 h-5 w-5"/><GlyphScramble text="Top 10 Analysts" /></CardTitle>
                         <CardDescription>Weekly leaders based on XP.</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -480,8 +480,8 @@ export default function ProfilePage() {
                                             </div>
                                         </TableCell>
                                         <TableCell className="font-medium text-foreground truncate">{user.username}</TableCell>
-                                        <TableCell className="text-right font-mono text-tertiary">{user.weeklyPoints?.toLocaleString() || 0}</TableCell>
-                                        <TableCell className="text-right font-mono text-stat-orange">{user.airdropPoints?.toLocaleString() || 0}</TableCell>
+                                        <TableCell className="text-right font-mono text-accent">{user.weeklyPoints?.toLocaleString() || 0}</TableCell>
+                                        <TableCell className="text-right font-mono text-tertiary">{user.airdropPoints?.toLocaleString() || 0}</TableCell>
                                     </TableRow>
                                     ))}
                                 </TableBody>
@@ -498,8 +498,8 @@ export default function ProfilePage() {
                                         <p className="font-semibold text-foreground truncate">{user.username}</p>
                                     </div>
                                     <div className="text-right ml-2 flex-shrink-0">
-                                        <p className="font-mono text-sm text-tertiary whitespace-nowrap">{user.weeklyPoints?.toLocaleString() || 0} XP</p>
-                                        <p className="font-mono text-xs text-stat-orange whitespace-nowrap">{user.airdropPoints?.toLocaleString() || 0} $BSAI</p>
+                                        <p className="font-mono text-sm text-accent whitespace-nowrap">{user.weeklyPoints?.toLocaleString() || 0} XP</p>
+                                        <p className="font-mono text-xs text-tertiary whitespace-nowrap">{user.airdropPoints?.toLocaleString() || 0} $BSAI</p>
                                     </div>
                                 </Card>
                             ))}

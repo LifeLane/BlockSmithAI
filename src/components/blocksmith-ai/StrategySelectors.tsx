@@ -81,7 +81,7 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
   const selectedRiskLevel = RISK_PROFILES.find(p => p.value === riskProfile)?.level || 2;
 
   return (
-    <div className="grid grid-cols-1 gap-6 p-4 bg-card rounded-lg border border-border/50 interactive-card">
+    <div className="grid grid-cols-1 gap-6 p-4 bg-card/80 backdrop-blur-sm rounded-lg border border-border/50 interactive-card">
       <div>
         <Label htmlFor="symbol-select" className="mb-2 block text-sm font-medium text-muted-foreground flex items-center">
           <Target className="mr-2 h-4 w-4 text-primary" />
@@ -150,12 +150,12 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
           Trading <span className="text-primary ml-1 font-semibold">Mode</span>
         </Label>
         <Tabs value={tradingMode} onValueChange={onTradingModeChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 gap-2 p-0 bg-transparent h-auto">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 p-0 bg-transparent h-auto">
                 {TRADING_MODES.map((mode) => (
                     <TabsTrigger
                         key={mode.value}
                         value={mode.value}
-                        className="flex flex-col gap-1.5 py-3 h-auto text-base font-semibold rounded-lg transition-all duration-200 ease-in-out border-2 border-transparent focus:!ring-0 focus-visible:!ring-0 !shadow-none !bg-primary !text-primary-foreground hover:!bg-primary/80 data-[state=active]:!bg-card data-[state=active]:!text-primary data-[state=active]:border-primary"
+                        className="flex flex-col gap-1.5 py-3 h-auto text-base font-semibold rounded-lg transition-all duration-200 ease-in-out border-2 border-transparent focus:!ring-0 focus-visible:!ring-0 !shadow-none bg-primary/20 text-primary-foreground/80 hover:!bg-primary/40 data-[state=active]:!bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary-foreground/50"
                     >
                         {mode.icon}
                         {mode.label}
@@ -181,7 +181,7 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
                                 'risk-profile-tabs-trigger',
                                 { 'is-active-segment': isActiveSegment },
                                 isActiveSegment
-                                    ? 'bg-primary text-primary-foreground'
+                                    ? 'bg-tertiary text-tertiary-foreground'
                                     : 'bg-transparent text-muted-foreground hover:bg-muted/50'
                             )}
                         >

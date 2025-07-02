@@ -19,7 +19,6 @@ import {
   PlayCircle,
   Loader2,
   Route,
-  MessageCircleWarning
 } from 'lucide-react';
 import { executeCustomSignalAction, type GenerateTradingStrategyOutput, type GenerateShadowChoiceStrategyOutput } from '@/app/actions';
 import type { LiveMarketData } from '@/app/actions';
@@ -107,7 +106,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
                 label="SHADOW Signal"
                 value={isHold ? 'HOLD' : signalText}
                 icon={isHold ? <Activity className="mr-2 h-4 w-4" /> : signalIcon}
-                valueClassName={isHold ? 'text-muted-foreground' : isBuy ? 'text-green-400' : 'text-red-400'}
+                valueClassName={isHold ? 'text-muted-foreground' : isBuy ? 'text-stat-green' : 'text-destructive'}
             />
              <ParameterCard 
                 isLarge
@@ -121,7 +120,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
                 label="Sentiment Scan"
                 value={sentiment || 'N/A'}
                 icon={<Activity className="mr-2 h-4 w-4" />}
-                valueClassName={sentiment === 'Bullish' ? 'text-green-400' : sentiment === 'Bearish' ? 'text-red-400' : 'text-muted-foreground'}
+                valueClassName={sentiment === 'Bullish' ? 'text-stat-green' : sentiment === 'Bearish' ? 'text-destructive' : 'text-muted-foreground'}
             />
         </div>
 
@@ -136,13 +135,13 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
                 label="Stop Loss" 
                 value={isHold ? 'N/A' : `$${formatPrice(stop_loss)}`}
                 icon={<ShieldX className="mr-2 h-3 w-3" />}
-                valueClassName="text-red-400"
+                valueClassName="text-destructive"
             />
             <ParameterCard 
                 label="Take Profit" 
                 value={isHold ? 'N/A' : `$${formatPrice(take_profit)}`}
                 icon={<Target className="mr-2 h-3 w-3" />}
-                valueClassName="text-green-400"
+                valueClassName="text-stat-green"
             />
         </div>
         
@@ -151,19 +150,19 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
                 label="Confidence Level" 
                 value={confidence || 'N/A'}
                 icon={<ShieldCheck className="mr-2 h-3 w-3" />}
-                valueClassName="text-tertiary"
+                valueClassName="text-accent"
             />
              <ParameterCard 
                 label="SHADOW Score" 
                 value={`${gpt_confidence_score || '0'}%`}
                 icon={<Percent className="mr-2 h-3 w-3" />}
-                valueClassName="text-tertiary"
+                valueClassName="text-accent"
             />
             <ParameterCard 
                 label="Risk Rating" 
                 value={risk_rating || 'N/A'}
                 icon={<AlertTriangle className="mr-2 h-3 w-3" />}
-                valueClassName="text-orange-400"
+                valueClassName="text-tertiary"
             />
         </div>
 

@@ -27,11 +27,11 @@ import {
 import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Lightbulb } from 'lucide-react';
+import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import DisclaimerFooter from '@/components/blocksmith-ai/DisclaimerFooter';
+import DailyGreeting from '@/components/blocksmith-ai/DailyGreeting';
 import {
   Tooltip,
   TooltipContent,
@@ -190,7 +190,7 @@ export default function CoreConsolePage() {
         setShowAirdropModal(true);
         toast({
           title: "Daily Limit Reached",
-          description: <span className="text-foreground">Guests are limited to <strong className="text-accent">{MAX_GUEST_ANALYSES} analyses per day</strong>. <strong className="text-primary">Sign up</strong> for <strong className="text-tertiary">unlimited access</strong> & the <strong className="text-orange-400">$BSAI airdrop!</strong></span>,
+          description: <span className="text-foreground">Guests are limited to <strong className="text-accent">{MAX_GUEST_ANALYSES} analyses per day</strong>. <strong className="text-primary">Sign up</strong> for <strong className="text-tertiary">unlimited access</strong> & the <strong className="text-tertiary">$BSAI airdrop!</strong></span>,
         });
         return;
       }
@@ -256,7 +256,7 @@ export default function CoreConsolePage() {
     setShowAirdropModal(false);
     toast({
       title: <span className="text-accent">BlockShadow Registration Complete!</span>,
-      description: <span className="text-foreground">You're confirmed for the <strong className="text-orange-400">$BSAI airdrop</strong>. <strong className="text-primary">Unlimited SHADOW analyses</strong> unlocked!</span>,
+      description: <span className="text-foreground">You're confirmed for the <strong className="text-tertiary">$BSAI airdrop</strong>. <strong className="text-primary">Unlimited SHADOW analyses</strong> unlocked!</span>,
     });
     await refetchUser();
   };
@@ -285,7 +285,7 @@ export default function CoreConsolePage() {
   
     if (strategyError) {
       return (
-        <Card className="shadow-lg border border-destructive/50 w-full bg-card transition-all duration-300 ease-in-out">
+        <Card className="shadow-lg border border-destructive/50 w-full bg-card/80 backdrop-blur-sm transition-all duration-300 ease-in-out">
           <CardHeader className="items-center text-center">
             <CardTitle className="flex items-center text-destructive text-xl font-headline">
               <AlertTriangle className="mr-2 h-6 w-6" />
@@ -325,6 +325,8 @@ export default function CoreConsolePage() {
             "w-full space-y-4 transition-all duration-500",
             !showResults ? 'flex-grow flex flex-col justify-center' : ''
         )}>
+             {!showResults && <DailyGreeting />}
+
             <div className="space-y-4">
                 <div id="market-data-display">
                     <MarketDataDisplay
@@ -408,7 +410,7 @@ export default function CoreConsolePage() {
                             </>
                         ) : (
                             <>
-                                Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Register</button> for <strong className="text-orange-400">unlimited</strong>.
+                                Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Register</button> for <strong className="text-tertiary">unlimited</strong>.
                             </>
                         )}
                         </p>

@@ -110,7 +110,7 @@ const OpenPositionCard = ({ position, currentPrice, onClose, isClosing }: { posi
     const isValidOpenDate = openDate && !isNaN(openDate.getTime());
     const openTimestampText = isValidOpenDate ? `${formatDistanceToNow(openDate)} ago` : 'N/A';
     
-    const pnlColor = pnl >= 0 ? 'text-stat-green' : 'text-red-400';
+    const pnlColor = pnl >= 0 ? 'text-stat-green' : 'text-destructive';
     const isBuy = position.signalType === 'BUY';
     
     return (
@@ -118,7 +118,7 @@ const OpenPositionCard = ({ position, currentPrice, onClose, isClosing }: { posi
             <CardHeader className="flex flex-row items-start justify-between pb-4">
                 <div>
                     <CardTitle className="text-xl flex items-center font-headline">
-                        <span className={`mr-2 font-bold ${isBuy ? 'text-stat-green' : 'text-red-400'}`}>{isBuy ? 'LONG' : 'SHORT'}</span>
+                        <span className={`mr-2 font-bold ${isBuy ? 'text-stat-green' : 'text-destructive'}`}>{isBuy ? 'LONG' : 'SHORT'}</span>
                         {position.symbol}
                     </CardTitle>
                      <CardDescription className="text-xs">
@@ -127,9 +127,9 @@ const OpenPositionCard = ({ position, currentPrice, onClose, isClosing }: { posi
                 </div>
                  <div className="flex flex-col items-end">
                     {isPending ? (
-                        <Badge className={'border-yellow-500/50 bg-yellow-900/60 text-yellow-300'}><Hourglass className="h-4 w-4 mr-1 text-yellow-400"/>PENDING</Badge>
+                        <Badge className={'border-yellow-500/50 bg-yellow-900/60 text-tertiary'}><Hourglass className="h-4 w-4 mr-1 text-tertiary"/>PENDING</Badge>
                     ) : (
-                        <Badge className={'border-blue-500/50 bg-blue-900/60 text-blue-300'}><PlayCircle className="h-4 w-4 mr-1 text-blue-400"/>OPEN</Badge>
+                        <Badge className={'border-blue-500/50 bg-blue-900/60 text-primary'}><PlayCircle className="h-4 w-4 mr-1 text-primary"/>OPEN</Badge>
                     )}
                     {position.expirationTimestamp && (
                         <TimeLeft expiration={new Date(position.expirationTimestamp)} className="text-xs text-muted-foreground mt-2"/>
@@ -163,7 +163,7 @@ const OpenPositionCard = ({ position, currentPrice, onClose, isClosing }: { posi
                     label="Stop Loss"
                     icon={<ShieldX size={12}/>}
                     value={position.stopLoss ? `$${position.stopLoss.toFixed(2)}` : 'N/A'}
-                    valueClassName="text-red-400"
+                    valueClassName="text-destructive"
                 />
                 <DataItem
                     label="Take Profit"
@@ -193,8 +193,8 @@ const HistoryCard = ({ position }: { position: Position }) => {
         pnlPercent = (pnl / (entryPrice * (position.size || 1))) * 100;
     }
 
-    const icon = isWin ? <CheckCircle2 className="h-6 w-6 text-stat-green"/> : <XCircle className="h-6 w-6 text-red-400"/>;
-    const pnlColor = isWin ? 'text-stat-green' : 'text-red-400';
+    const icon = isWin ? <CheckCircle2 className="h-6 w-6 text-stat-green"/> : <XCircle className="h-6 w-6 text-destructive"/>;
+    const pnlColor = isWin ? 'text-stat-green' : 'text-destructive';
 
     const closeDate = position.closeTimestamp ? new Date(position.closeTimestamp) : null;
     const isValidDate = closeDate && !isNaN(closeDate.getTime());
@@ -311,7 +311,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                     title="Invested"
                     value={`$${stats.totalCapitalInvested.toLocaleString(undefined, {maximumFractionDigits: 0})}`}
                     icon={<Wallet size={14} />}
-                    valueClassName="text-stat-yellow"
+                    valueClassName="text-tertiary"
                 />
                 <StatItem
                     title="Live PnL"
@@ -353,7 +353,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                     title="Rewards"
                     value={stats.lifetimeRewards.toLocaleString()}
                     icon={<Gift size={14}/>}
-                    valueClassName="text-stat-orange"
+                    valueClassName="text-tertiary"
                 />
             </CardContent>
              <CardFooter className="pt-6 flex-col sm:flex-row items-center justify-between gap-4 border-t border-border/20 mt-4">
@@ -460,7 +460,7 @@ export default function PortfolioPage() {
                         <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">
                             <Bot className="h-10 w-10 text-primary" />
                         </div>
-                        <CardTitle className="mt-4">No Active Positions</CardTitle>
+                        <CardTitle className="mt-4 font-headline">No Active Positions</CardTitle>
                         <CardDescription className="mt-2 text-base">
                            Generate a signal from the <strong className="text-primary">Core Console</strong> to begin.
                         </CardDescription>
@@ -525,7 +525,7 @@ export default function PortfolioPage() {
                             <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
                                 <AlertTriangle className="h-10 w-10 text-destructive" />
                             </div>
-                            <CardTitle className="mt-4 text-destructive">Access Denied</CardTitle>
+                            <CardTitle className="mt-4 text-destructive font-headline">Access Denied</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <p className="text-base text-destructive-foreground">{userError || "Please visit the Core Console to initialize a user session."}</p>
@@ -553,22 +553,12 @@ export default function PortfolioPage() {
             isKilling={isKilling}
         />
          <Tabs defaultValue="open" className="mt-4">
-            <TabsList className="grid w-full grid-cols-2 gap-4 h-auto p-0 bg-transparent">
-                <TabsTrigger
-                    value="open"
-                    className="flex flex-col rounded-lg h-auto p-3 text-white bg-primary/80 hover:bg-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
-                >
-                    <span className="font-bold sm:text-lg">Positions</span>
-                    <span className="text-sm">({positions.filter(p => p.status !== 'CLOSED').length})</span>
-                </TabsTrigger>
-                <TabsTrigger
-                    value="history"
-                    className="flex flex-col rounded-lg h-auto p-3 text-white bg-primary/80 hover:bg-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
-                >
-                    <span className="font-bold sm:text-lg">History</span>
-                    <span className="text-sm">({tradeHistory.length})</span>
-                </TabsTrigger>
-            </TabsList>
+             <div className="flex justify-center">
+                 <TabsList className="profile-tabs-list">
+                    <TabsTrigger value="open" className="profile-tabs-trigger">Active ({positions.filter(p => p.status !== 'CLOSED').length})</TabsTrigger>
+                    <TabsTrigger value="history" className="profile-tabs-trigger">History ({tradeHistory.length})</TabsTrigger>
+                </TabsList>
+            </div>
             <TabsContent value="open" className="mt-4">
                 {renderActivePositions()}
             </TabsContent>

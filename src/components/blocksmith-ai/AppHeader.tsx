@@ -28,8 +28,8 @@ const AppHeader: FunctionComponent = () => {
                 <span className="font-mono">{user.shadowId}</span>
               </div>
               <div className="flex items-center gap-1.5 text-muted-foreground">
-                <Gift className="h-4 w-4 text-orange-400" />
-                <span className="font-mono font-bold text-orange-400">{user.airdropPoints?.toLocaleString() || 0}</span>
+                <Gift className="h-4 w-4 text-tertiary" />
+                <span className="font-mono font-bold text-tertiary">{user.airdropPoints?.toLocaleString() || 0}</span>
               </div>
             </>
           ) : null}

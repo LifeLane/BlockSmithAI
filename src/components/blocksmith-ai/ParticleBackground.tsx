@@ -22,13 +22,13 @@ const ParticleBackground = () => {
 
     const options: ISourceOptions = useMemo(
         () => {
-            const isLightCyberpunk = theme === 'dark';
+            const isLightCyberpunk = theme === 'light';
             
             const particleColor = isLightCyberpunk
-                ? ["#22b2d4", "#f01cac", "#f2c00c"] // Cyan, Pink, Yellow for Light Cyberpunk
-                : ["#1f9e4f", "#4cfa85", "#f7fafc"]; // Green, Bright Green, White for Monochrome Matrix
+                ? ["#4f46e5", "#d946ef", "#db2777"] // Indigo, Fuchsia, Pink for Light
+                : ["#22d3ee", "#a78bfa", "#f472b6"]; // Cyan, Violet, Pink for Dark
                 
-            const linkColor = isLightCyberpunk ? "#d6d0e8" : "#336644"; // Light lavender vs dark green link
+            const linkColor = isLightCyberpunk ? "#a5b4fc" : "#3b3858"; // Lavender vs dark purple link
 
             return {
                 background: {
