@@ -1,6 +1,7 @@
+
 'use client';
 
-import { BrainCircuit } from 'lucide-react';
+import { BrainCircuit, AlertTriangle } from 'lucide-react';
 import GlyphScramble from './GlyphScramble';
 import { generateSarcasticDisclaimer } from '@/ai/flows/generate-sarcastic-disclaimer';
 import { useEffect, useState } from 'react';
@@ -27,12 +28,16 @@ const DisclaimerFooter = () => {
                         <GlyphScramble text="SHADOW's Edict" />
                     </h3>
                 </div>
-                <div className="shadow-edict-body">
+                <div className="shadow-edict-body text-center space-y-2">
                    {disclaimer ? (
-                        <p className="font-semibold text-foreground">"{disclaimer}"</p>
+                        <p className="font-semibold text-foreground italic">"{disclaimer}"</p>
                     ) : (
                         <Skeleton className="h-4 w-10/12 max-w-sm mx-auto bg-muted/50" />
                     )}
+                    <p className="flex items-center justify-center gap-2 text-sm font-bold text-destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        Always Do Your Own Research (DYOR).
+                    </p>
                 </div>
             </div>
         </footer>

@@ -363,7 +363,7 @@ export default function CoreConsolePage() {
                                     <TooltipTrigger asChild>
                                         <p className="text-sm font-bold text-center text-primary mb-2 cursor-help">Executes immediately at market price.</p>
                                     </TooltipTrigger>
-                                    <TooltipContent>
+                                    <TooltipContent className="max-w-xs text-center">
                                         <p>SHADOW generates a trade based on your exact parameters and opens a position instantly.</p>
                                     </TooltipContent>
                                  </Tooltip>
@@ -384,7 +384,7 @@ export default function CoreConsolePage() {
                                     <TooltipTrigger asChild>
                                         <p className="text-sm font-bold text-center text-accent mb-2 cursor-help">SHADOW finds the optimal entry.</p>
                                     </TooltipTrigger>
-                                    <TooltipContent>
+                                    <TooltipContent className="max-w-xs text-center">
                                         <p>SHADOW analyzes the order book to find a better entry price, providing a limit order signal.</p>
                                     </TooltipContent>
                                 </Tooltip>
