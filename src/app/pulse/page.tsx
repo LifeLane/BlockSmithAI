@@ -269,17 +269,17 @@ const StatItem = ({
   icon: React.ReactNode;
   valueClassName?: string;
 }) => (
-  <div className="bg-secondary p-4 rounded-lg flex flex-col justify-between h-[120px]">
-    <div className="flex items-start gap-1.5 text-sm text-muted-foreground">
+  <div className="bg-secondary p-3 rounded-lg flex flex-col justify-between h-[90px] glow-border-box">
+    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
       {icon}
-      <span>{title}</span>
+      <span className="truncate">{title}</span>
     </div>
-    <div className="text-left">
-      <span className={cn("text-3xl font-bold font-mono", valueClassName)}>
+    <div className="text-left mt-auto">
+      <span className={cn("text-2xl font-bold font-mono", valueClassName)}>
         {value}
       </span>
        {subValue && (
-        <span className="text-sm text-muted-foreground ml-1 font-mono">
+        <span className="text-xs text-muted-foreground ml-1 font-mono">
           {subValue}
         </span>
       )}
@@ -306,9 +306,9 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
 
     if (!stats) return null;
 
-    const pnlColor = realtimePnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
-    const closedPnlColor = stats.totalPnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
-    const winRateColor = stats.winRate >= 50 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+    const pnlColor = realtimePnl >= 0 ? 'text-green-400' : 'text-red-400';
+    const closedPnlColor = stats.totalPnl >= 0 ? 'text-green-400' : 'text-red-400';
+    const winRateColor = stats.winRate >= 50 ? 'text-green-400' : 'text-red-400';
 
     return (
         <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30 interactive-card">
@@ -322,24 +322,24 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                     Get SHADOW's Review
                 </Button>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3">
                  <StatItem
-                    title="Capital Invested"
+                    title="Invested"
                     value={`$${stats.totalCapitalInvested.toLocaleString(undefined, {maximumFractionDigits: 0})}`}
                     icon={<Wallet size={14} />}
-                    valueClassName="text-yellow-600 dark:text-yellow-400"
+                    valueClassName="text-yellow-400"
                 />
                 <StatItem
-                    title="Real-time PnL"
-                    value={`$${realtimePnl.toFixed(2)}`}
+                    title="Live PnL"
                     icon={<Activity size={14} />}
+                    value={`$${realtimePnl.toFixed(2)}`}
                     valueClassName={pnlColor}
                 />
                 <StatItem
-                    title="Total Trades"
+                    title="Trades"
                     value={stats.totalTrades.toLocaleString()}
                     icon={<History size={14} />}
-                    valueClassName="text-blue-600 dark:text-blue-400"
+                    valueClassName="text-blue-400"
                 />
                 <StatItem
                     title="Win Rate"
@@ -349,7 +349,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                     valueClassName={winRateColor}
                 />
                 <StatItem
-                    title="Total Closed PnL"
+                    title="Total PnL"
                     icon={<DollarSign size={14} />}
                     value={`$${stats.totalPnl.toFixed(2)}`}
                     subValue={stats.totalTrades > 0 ? `(${stats.totalPnlPercentage.toFixed(2)}%)` : undefined}
@@ -359,7 +359,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                     title="Best Trade"
                     value={`$${stats.bestTradePnl.toFixed(2)}`}
                     icon={<ArrowUp size={14} />}
-                    valueClassName="text-green-600 dark:text-green-400"
+                    valueClassName="text-green-400"
                 />
                 <StatItem
                     title="Worst Trade"
@@ -368,10 +368,10 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                     valueClassName="text-destructive"
                 />
                 <StatItem
-                    title="Lifetime Rewards"
+                    title="Rewards"
                     value={stats.lifetimeRewards.toLocaleString()}
                     icon={<Gift size={14}/>}
-                    valueClassName="text-orange-500 dark:text-orange-400"
+                    valueClassName="text-orange-400"
                 />
             </CardContent>
              <CardFooter className="pt-6 flex-col sm:flex-row items-center justify-between gap-4 border-t border-border/20 mt-4">
@@ -773,20 +773,20 @@ export default function PortfolioPage() {
             isKilling={isKilling}
         />
          <Tabs defaultValue="open" className="mt-4">
-            <TabsList className="grid w-full grid-cols-2 h-auto rounded-lg bg-primary p-0 border border-primary/30">
+            <TabsList className="grid w-full grid-cols-2 h-auto rounded-lg bg-primary p-1">
                 <TabsTrigger
                     value="open"
-                    className="flex flex-col h-auto py-3 px-1 rounded-l-md text-primary-foreground !shadow-none !bg-transparent data-[state=active]:opacity-100 opacity-75 data-[state=active]:!bg-transparent focus:!ring-0 transition-opacity data-[state=inactive]:hover:bg-black/20"
+                    className="flex flex-col rounded-md h-auto p-2 text-foreground !shadow-none !bg-transparent data-[state=inactive]:opacity-60 focus-visible:!ring-0 focus-visible:!ring-offset-0 focus:!ring-0 transition-opacity"
                 >
                     <span className="font-bold text-lg">Positions</span>
-                    <span className="font-bold">({positions.filter(p => p.status !== 'CLOSED').length})</span>
+                    <span className="text-sm">({positions.filter(p => p.status !== 'CLOSED').length})</span>
                 </TabsTrigger>
                 <TabsTrigger
                     value="history"
-                    className="flex flex-col h-auto py-3 px-1 rounded-r-md text-primary-foreground !shadow-none !bg-transparent data-[state=active]:opacity-100 opacity-75 data-[state=active]:!bg-transparent focus:!ring-0 transition-opacity data-[state=inactive]:hover:bg-black/20"
+                    className="flex flex-col rounded-md h-auto p-2 text-foreground !shadow-none !bg-transparent data-[state=inactive]:opacity-60 focus-visible:!ring-0 focus-visible:!ring-offset-0 focus:!ring-0 transition-opacity"
                 >
                     <span className="font-bold text-lg">History</span>
-                    <span className="font-bold">({tradeHistory.length})</span>
+                    <span className="text-sm">({tradeHistory.length})</span>
                 </TabsTrigger>
             </TabsList>
             <TabsContent value="open" className="mt-4">
