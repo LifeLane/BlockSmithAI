@@ -853,18 +853,19 @@ export async function killSwitchAction(userId: string): Promise<{ success: boole
 
         const symbols = [...new Set(openPositions.map(p => p.symbol))];
         const pricePromises = symbols.map(symbol => fetchMarketDataAction({ symbol }));
-        const priceResults = await Promise.all(pricePromises);
+        const priceResults = await Promise.allSettled(pricePromises);
 
         const livePrices: Record<string, number> = {};
         for (const result of priceResults) {
-            if (!('error' in result) && result.symbol && result.lastPrice) {
-                livePrices[result.symbol] = parseFloat(result.lastPrice);
+            if (result.status === 'fulfilled' && !('error' in result.value)) {
+                livePrices[result.value.symbol] = parseFloat(result.value.lastPrice);
             }
         }
         
         let totalPnl = 0;
         let totalAirdropPoints = 0;
         let closedCount = 0;
+        let failedToCloseCount = 0;
 
         for (const position of openPositions) {
             const closePrice = livePrices[position.symbol];
@@ -881,6 +882,8 @@ export async function killSwitchAction(userId: string): Promise<{ success: boole
                     data: { status: PositionStatus.CLOSED, closePrice: closePrice, closeTimestamp: new Date(), pnl: pnl }
                 });
                 closedCount++;
+            } else {
+                failedToCloseCount++;
             }
         }
 
@@ -892,10 +895,15 @@ export async function killSwitchAction(userId: string): Promise<{ success: boole
         }
         
         if (closedCount === 0) {
-            return { success: false, message: 'Could not fetch live prices to close positions.' };
+            return { success: false, message: `Kill Switch failed. Could not fetch live prices for any of the ${openPositions.length} open positions.` };
         }
 
-        return { success: true, message: `Closed ${closedCount} position(s). Total PnL: $${totalPnl.toFixed(2)}.` };
+        let message = `Successfully closed ${closedCount} position(s). Total PnL: $${totalPnl.toFixed(2)}.`;
+        if (failedToCloseCount > 0) {
+            message += ` Failed to close ${failedToCloseCount} position(s) due to missing price data.`;
+        }
+        return { success: true, message };
+
     } catch (error: any) {
         console.error("Error in killSwitchAction:", error);
         return { success: false, message: `Kill Switch failed: ${error.message}` };
