@@ -28,12 +28,11 @@ import {
 import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Lightbulb } from 'lucide-react';
+import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import DisclaimerFooter from '@/components/blocksmith-ai/DisclaimerFooter';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type AIStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
   id?: string;
@@ -357,7 +356,7 @@ export default function CoreConsolePage() {
                     />
                 </div>
                 
-                <div className="flex flex-col items-center gap-4 pt-4">
+                <div className="pt-4">
                     {isLimitReached ? (
                         <Button
                             onClick={() => setShowAirdropModal(true)}
@@ -367,56 +366,37 @@ export default function CoreConsolePage() {
                             Join Network for Unlimited Signals
                         </Button>
                     ) : (
-                        <>
-                            <div className="relative w-full text-center">
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Lightbulb className="h-5 w-5 text-muted-foreground hover:text-primary mb-2 cursor-help inline-block" />
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>Executes immediately with your selected parameters.</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
+                        <div className="flex flex-col md:flex-row items-stretch gap-6">
+                            <div className="w-full md:w-1/2 flex flex-col">
+                                <p className="text-xs text-center text-muted-foreground mb-2">Executes immediately with your selected parameters.</p>
                                 <Button
                                     onClick={() => handleGenerateStrategy({ isCustom: false })}
                                     disabled={isButtonDisabled}
-                                    className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
+                                    className="w-full flex-grow font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
                                 >
                                     {isLoadingInstant ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                         : isUserLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                         : <Sparkles className="mr-2 h-5 w-5" />}
                                     {isLoadingInstant ? "SHADOW is Analyzing..." : isUserLoading ? "Initializing..." : <GlyphScramble text="Instant Signal" />}
                                 </Button>
-                                
                             </div>
 
-                            <div className="relative w-full text-center">
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Lightbulb className="h-5 w-5 text-muted-foreground hover:text-accent mb-2 cursor-help inline-block" />
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>SHADOW autonomously determines the best strategy and provides a custom limit order for you to simulate.</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
+                            <div className="w-full md:w-1/2 flex flex-col">
+                                 <p className="text-xs text-center text-muted-foreground mb-2">SHADOW finds the optimal entry and provides a limit order.</p>
                                 <Button
                                     onClick={() => handleGenerateStrategy({ isCustom: true })}
                                     disabled={isButtonDisabled}
-                                    className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out shadow-choice-button"
+                                    className="w-full flex-grow font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out shadow-choice-button"
                                 >
                                     {isLoadingCustom ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
                                     {isLoadingCustom ? "SHADOW is Deciding..." : <GlyphScramble text="SHADOW's Signal" />}
                                 </Button>
                             </div>
-                        </>
+                        </div>
                     )}
                     
                     {currentUser?.status === 'Guest' && (
-                        <p className="text-xs text-center text-muted-foreground mt-2">
+                        <p className="text-xs text-center text-muted-foreground mt-4">
                         {isLimitReached ? (
                             <>
                                 You've reached your daily limit of <strong className="text-primary">{MAX_GUEST_ANALYSES} analyses</strong>.
