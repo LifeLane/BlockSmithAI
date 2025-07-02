@@ -18,7 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Label } from "@/components/ui/label";
-import { Check, ChevronsUpDown, Target, Zap, Clock, TrendingUp, Shield } from "lucide-react" 
+import { Check, ChevronsUpDown, Target, Zap, Clock, TrendingUp, Shield, CircleDot } from "lucide-react" 
 import { cn } from "@/lib/utils"
 import type { FormattedSymbol } from '@/app/actions';
 
@@ -35,7 +35,7 @@ interface StrategySelectorsProps {
 
 const TRADING_MODES = [
   { value: "Scalper", label: "Scalper", icon: <Zap className="h-4 w-4" /> },
-  { value: "Sniper", label: "Sniper", icon: <Target className="h-4 w-4" /> },
+  { value: "Sniper", label: "Sniper", icon: <CircleDot className="h-4 w-4" /> },
   { value: "Intraday", label: "Intraday", icon: <Clock className="h-4 w-4" /> },
   { value: "Swing", label: "Swing", icon: <TrendingUp className="h-4 w-4" /> },
 ];
@@ -150,7 +150,7 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
           Trading <span className="text-primary ml-1 font-semibold">Mode</span>
         </Label>
         <Tabs value={tradingMode} onValueChange={onTradingModeChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 gap-2 p-0 bg-transparent h-auto">
+            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 gap-2 p-0 bg-transparent h-auto">
                 {TRADING_MODES.map((mode) => (
                     <TabsTrigger
                         key={mode.value}
