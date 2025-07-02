@@ -5,27 +5,27 @@
 
 @layer base {
   :root {
-    --background: 140 15% 5%;
-    --foreground: 140 80% 85%;
-    --card: 140 15% 8%;
-    --card-foreground: 140 80% 85%;
-    --popover: 140 15% 5%;
-    --popover-foreground: 140 80% 85%;
-    --primary: 140 80% 60%;
-    --primary-foreground: 140 80% 5%;
-    --secondary: 140 15% 12%;
-    --secondary-foreground: 140 80% 85%;
-    --muted: 140 15% 12%;
-    --muted-foreground: 140 40% 60%;
-    --accent: 140 80% 75%;
-    --accent-foreground: 140 80% 5%;
+    --background: 0 0% 98%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 140 76% 42%;
+    --primary-foreground: 140 80% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 140 80% 60%;
+    --accent-foreground: 240 5.9% 10%;
     --tertiary: 140 60% 40%;
     --tertiary-foreground: 140 60% 95%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 84% 98%;
-    --border: 140 30% 20%;
-    --input: 140 20% 15%;
-    --ring: hsl(var(--primary));
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 140 76% 42%;
 
     --chart-1: hsl(var(--primary));
     --chart-2: hsl(var(--accent));
@@ -33,7 +33,7 @@
     --chart-4: 140 70% 50%;
     --chart-5: 140 90% 80%;
     
-    --sidebar-background: 140 15% 7%;
+    --sidebar-background: 240 4.8% 95.9%;
     --sidebar-foreground: hsl(var(--foreground));
     --sidebar-primary: hsl(var(--primary));
     --sidebar-primary-foreground: hsl(var(--primary-foreground));
@@ -42,10 +42,10 @@
     --sidebar-border: hsl(var(--border));
     --sidebar-ring: hsl(var(--ring));
 
-    --stat-yellow: 140 80% 75%;
-    --stat-green: 140 80% 60%;
-    --stat-blue: 140 60% 40%;
-    --stat-orange: 140 50% 50%;
+    --stat-yellow: 48 96% 51%;
+    --stat-green: 140 80% 40%;
+    --stat-blue: 217 91% 60%;
+    --stat-orange: 25 95% 53%;
   }
 
   .dark {
@@ -69,7 +69,13 @@
     --destructive-foreground: 0 84% 98%;
     --border: 140 30% 20%;
     --input: 140 20% 15%;
-    --ring: hsl(var(--ring));
+    --ring: hsl(var(--primary));
+    
+    --chart-1: hsl(var(--primary));
+    --chart-2: hsl(var(--accent));
+    --chart-3: hsl(var(--tertiary));
+    --chart-4: 140 70% 50%;
+    --chart-5: 140 90% 80%;
     
     --sidebar-background: 140 15% 7%;
     --sidebar-foreground: hsl(var(--foreground));
@@ -358,4 +364,5 @@
 .profile-tabs-trigger[data-state='active'] {
   @apply bg-primary text-primary-foreground font-bold shadow-lg rounded-md;
 }
+    
     
