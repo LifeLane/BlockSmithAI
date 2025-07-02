@@ -256,15 +256,37 @@ const HistoryCard = ({ position }: { position: Position }) => {
     )
 }
 
-const StatCard = ({ title, value, subValue, icon, valueClassName }: { title: string; value: React.ReactNode; subValue?: React.ReactNode; icon: React.ReactNode; valueClassName?: string }) => (
-    <div className="flex flex-col items-center justify-center p-3 bg-secondary rounded-lg text-center">
-        <span className="text-xs text-muted-foreground flex items-center gap-1.5">{icon} {title}</span>
-        <div className="mt-1 flex items-baseline gap-1">
-            <span className={`text-xl font-bold font-mono ${valueClassName || 'text-primary'}`}>{value}</span>
-            {subValue && <span className="text-xs text-muted-foreground font-mono">{subValue}</span>}
-        </div>
+const StatItem = ({
+  title,
+  value,
+  subValue,
+  icon,
+  valueClassName,
+}: {
+  title: string;
+  value: React.ReactNode;
+  subValue?: React.ReactNode;
+  icon: React.ReactNode;
+  valueClassName?: string;
+}) => (
+  <div className="bg-secondary p-4 rounded-lg flex flex-col text-center h-[110px]">
+    <div className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
+      {icon}
+      <span>{title}</span>
     </div>
+    <div className="mt-auto">
+      <span className={cn("text-3xl font-bold font-mono", valueClassName)}>
+        {value}
+      </span>
+      {subValue && (
+        <span className="text-sm text-muted-foreground ml-1 font-mono">
+          {subValue}
+        </span>
+      )}
+    </div>
+  </div>
 );
+
 
 const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview, isGeneratingReview, onKillSwitch, isKilling }: { stats: PortfolioStats | null, isLoading: boolean, realtimePnl: number, onGenerateReview: () => void, isGeneratingReview: boolean, onKillSwitch: () => void, isKilling: boolean }) => {
     if (isLoading && !stats) {
@@ -300,27 +322,57 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                     Get SHADOW's Review
                 </Button>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <StatCard title="Capital Invested" value={`$${stats.totalCapitalInvested.toFixed(2)}`} icon={<Wallet size={14} />} valueClassName="text-tertiary" />
-                <StatCard title="Real-time PnL" value={`$${realtimePnl.toFixed(2)}`} icon={<Activity size={14} />} valueClassName={pnlColor} />
-                <StatCard title="Total Trades" value={stats.totalTrades} icon={<History size={14} />} />
-                <StatCard 
-                    title="Win Rate" 
-                    icon={<Percent size={14} />} 
+            <CardContent className="grid grid-cols-2 gap-3">
+                 <StatItem
+                    title="Capital Invested"
+                    value={`$${stats.totalCapitalInvested.toFixed(2)}`}
+                    icon={<Wallet size={14} />}
+                    valueClassName="text-tertiary"
+                />
+                <StatItem
+                    title="Real-time PnL"
+                    value={`$${realtimePnl.toFixed(2)}`}
+                    icon={<Activity size={14} />}
+                    valueClassName={pnlColor}
+                />
+                <StatItem
+                    title="Total Trades"
+                    value={stats.totalTrades}
+                    icon={<History size={14} />}
+                    valueClassName="text-primary"
+                />
+                <StatItem
+                    title="Win Rate"
+                    icon={<Percent size={14} />}
                     value={`${stats.winRate.toFixed(1)}%`}
                     subValue={stats.totalTrades > 0 ? `(${stats.winningTrades} Wins)` : undefined}
-                    valueClassName={winRateColor} 
+                    valueClassName={winRateColor}
                 />
-                <StatCard 
-                    title="Total Closed PnL" 
-                    icon={<DollarSign size={14} />} 
+                <StatItem
+                    title="Total Closed PnL"
+                    icon={<DollarSign size={14} />}
                     value={`$${stats.totalPnl.toFixed(2)}`}
                     subValue={stats.totalTrades > 0 ? `(${stats.totalPnlPercentage.toFixed(2)}%)` : undefined}
-                    valueClassName={closedPnlColor} 
+                    valueClassName={closedPnlColor}
                 />
-                <StatCard title="Best Trade" value={`$${stats.bestTradePnl.toFixed(2)}`} icon={<ArrowUp size={14} />} valueClassName="text-green-400" />
-                <StatCard title="Worst Trade" value={`$${stats.worstTradePnl.toFixed(2)}`} icon={<ArrowDown size={14} />} valueClassName="text-destructive" />
-                <StatCard title="Lifetime Rewards" value={stats.lifetimeRewards.toLocaleString()} icon={<Gift size={14}/>} valueClassName="text-orange-400" />
+                <StatItem
+                    title="Best Trade"
+                    value={`$${stats.bestTradePnl.toFixed(2)}`}
+                    icon={<ArrowUp size={14} />}
+                    valueClassName="text-green-400"
+                />
+                <StatItem
+                    title="Worst Trade"
+                    value={`$${stats.worstTradePnl.toFixed(2)}`}
+                    icon={<ArrowDown size={14} />}
+                    valueClassName="text-destructive"
+                />
+                <StatItem
+                    title="Lifetime Rewards"
+                    value={stats.lifetimeRewards.toLocaleString()}
+                    icon={<Gift size={14}/>}
+                    valueClassName="text-orange-400"
+                />
             </CardContent>
              <CardFooter className="pt-6 flex-col sm:flex-row items-center justify-between gap-4 border-t border-border/20 mt-4">
                 <div className="text-center sm:text-left">
@@ -756,3 +808,5 @@ export default function PortfolioPage() {
     </>
   );
 }
+
+    
