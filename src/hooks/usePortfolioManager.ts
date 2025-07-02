@@ -1,6 +1,7 @@
 
 'use client';
 
+import React from 'react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -33,31 +34,33 @@ export const usePortfolioManager = (userId?: string) => {
   const showCloseToast = useCallback((closedPosition: Position, airdropPoints: number, reason: string) => {
     const pnl = closedPosition.pnl || 0;
     toast({
-        title: <span className="text-accent">{reason}</span>,
-        description: (
-            <div className="text-foreground">
-                <div>Your position resulted in a PnL of <strong className={pnl >= 0 ? 'text-stat-green' : 'text-red-400'}>${pnl.toFixed(2)}</strong>.</div>
-                {airdropPoints > 0 && (
-                    <div className="flex items-center mt-1">
-                        <Sparkles className="h-4 w-4 mr-2 text-stat-orange"/>
-                        You've earned <strong className="text-stat-orange">{airdropPoints} $BSAI</strong> airdrop points!
-                    </div>
-                )}
-            </div>
-        ),
+        title: React.createElement('span', { className: 'text-accent' }, reason),
+        description: React.createElement('div', { className: 'text-foreground' }, 
+            React.createElement('div', null, 
+                'Your position resulted in a PnL of ',
+                React.createElement('strong', { className: pnl >= 0 ? 'text-stat-green' : 'text-red-400' }, `$${pnl.toFixed(2)}`),
+                '.'
+            ),
+            airdropPoints > 0 && React.createElement('div', { className: 'flex items-center mt-1' },
+                React.createElement(Sparkles, { className: 'h-4 w-4 mr-2 text-stat-orange' }),
+                "You've earned ",
+                React.createElement('strong', { className: 'text-stat-orange' }, `${airdropPoints} $BSAI`),
+                ' airdrop points!'
+            )
+        )
     });
   }, [toast]);
     
   const showFilledToast = useCallback((filledPosition: Position) => {
     toast({
-        title: <span className="text-primary">Order Filled!</span>,
+        title: React.createElement('span', { className: 'text-primary' }, 'Order Filled!'),
         description: `Your ${filledPosition.signalType} order for ${filledPosition.symbol} at $${filledPosition.entryPrice} has been executed.`
     });
   }, [toast]);
 
   const showExpiredToast = useCallback((expiredPosition: Position) => {
     toast({
-        title: <span className="text-muted-foreground">Order Expired</span>,
+        title: React.createElement('span', { className: 'text-muted-foreground' }, 'Order Expired'),
         description: `Your pending ${expiredPosition.signalType} order for ${expiredPosition.symbol} at $${expiredPosition.entryPrice} has expired.`
     });
   }, [toast]);
