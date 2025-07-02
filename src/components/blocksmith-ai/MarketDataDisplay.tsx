@@ -31,12 +31,12 @@ const formatNumber = (numStr: string) => {
 }
 
 const StatBox = ({ title, value, icon, valueClassName }: { title: string; value: React.ReactNode; icon: React.ReactNode, valueClassName?: string }) => (
-    <div className="bg-secondary p-3 rounded-lg">
+    <div className="bg-secondary p-2 rounded-lg">
         <div className="flex items-center text-xs text-muted-foreground mb-1">
             {icon}
             <span className="ml-1.5">{title}</span>
         </div>
-        <div className={`text-xl font-bold font-mono break-all ${valueClassName || 'text-foreground'}`}>
+        <div className={`text-lg sm:text-xl font-bold font-mono break-all ${valueClassName || 'text-foreground'}`}>
             {value}
         </div>
     </div>
@@ -54,7 +54,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 
   if (isLoading) {
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-[75px] w-full bg-secondary" />)}
         </div>
     );
@@ -96,7 +96,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
   });
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
         <StatBox 
           title="Current Price"
           icon={<DollarSign size={14} />}
@@ -107,13 +107,13 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
           title="24h Change"
           icon={<Percent size={14} />}
           value={formattedPriceChange}
-          valueClassName={isPositiveChange ? "text-green-400" : "text-destructive"}
+          valueClassName={isPositiveChange ? "text-stat-green" : "text-destructive"}
         />
         <StatBox
           title="24h High"
           icon={<ArrowUp size={14} />}
           value={`$${parseFloat(data.highPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
-          valueClassName="text-green-400"
+          valueClassName="text-stat-green"
         />
         <StatBox
           title="24h Low"
@@ -138,5 +138,3 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 };
 
 export default MarketDataDisplay;
-
-    

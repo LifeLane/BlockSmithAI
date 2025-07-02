@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
@@ -117,7 +118,7 @@ const OpenPositionCard = ({ position, currentPrice, onClose, isClosing }: { posi
     const isValidOpenDate = openDate && !isNaN(openDate.getTime());
     const openTimestampText = isValidOpenDate ? `${formatDistanceToNow(openDate)} ago` : 'N/A';
     
-    const pnlColor = pnl >= 0 ? 'text-green-400' : 'text-red-400';
+    const pnlColor = pnl >= 0 ? 'text-stat-green' : 'text-red-400';
     const isBuy = position.signalType === 'BUY';
     
     return (
@@ -125,7 +126,7 @@ const OpenPositionCard = ({ position, currentPrice, onClose, isClosing }: { posi
             <CardHeader className="flex flex-row items-start justify-between pb-4">
                 <div>
                     <CardTitle className="text-xl flex items-center font-headline">
-                        <span className={`mr-2 font-bold ${isBuy ? 'text-green-400' : 'text-red-400'}`}>{isBuy ? 'LONG' : 'SHORT'}</span>
+                        <span className={`mr-2 font-bold ${isBuy ? 'text-stat-green' : 'text-red-400'}`}>{isBuy ? 'LONG' : 'SHORT'}</span>
                         {position.symbol}
                     </CardTitle>
                      <CardDescription className="text-xs">
@@ -176,7 +177,7 @@ const OpenPositionCard = ({ position, currentPrice, onClose, isClosing }: { posi
                     label="Take Profit"
                     icon={<Target size={12}/>}
                     value={position.takeProfit ? `$${position.takeProfit.toFixed(2)}` : 'N/A'}
-                    valueClassName="text-green-400"
+                    valueClassName="text-stat-green"
                 />
             </CardContent>
             <CardFooter className="pt-6">
@@ -200,8 +201,8 @@ const HistoryCard = ({ position }: { position: Position }) => {
         pnlPercent = (pnl / (entryPrice * (position.size || 1))) * 100;
     }
 
-    const icon = isWin ? <CheckCircle2 className="h-6 w-6 text-green-400"/> : <XCircle className="h-6 w-6 text-red-400"/>;
-    const pnlColor = isWin ? 'text-green-400' : 'text-red-400';
+    const icon = isWin ? <CheckCircle2 className="h-6 w-6 text-stat-green"/> : <XCircle className="h-6 w-6 text-red-400"/>;
+    const pnlColor = isWin ? 'text-stat-green' : 'text-red-400';
 
     const closeDate = position.closeTimestamp ? new Date(position.closeTimestamp) : null;
     const isValidDate = closeDate && !isNaN(closeDate.getTime());
@@ -266,13 +267,13 @@ const StatItem = ({
   icon: React.ReactNode;
   valueClassName?: string;
 }) => (
-  <div className="bg-secondary p-2 rounded-lg flex flex-col justify-center items-center h-[80px] glow-border-box">
+  <div className="bg-secondary p-3 rounded-lg flex flex-col justify-center items-center glow-border-box">
     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
       {icon}
       <span className="truncate">{title}</span>
     </div>
     <div className="mt-1">
-      <span className={cn("text-xl font-bold font-mono", valueClassName)}>
+      <span className={cn("text-lg sm:text-xl font-bold font-mono", valueClassName)}>
         {value}
       </span>
     </div>
@@ -313,7 +314,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                     Get SHADOW's Review
                 </Button>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <CardContent className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                  <StatItem
                     title="Invested"
                     value={`$${stats.totalCapitalInvested.toLocaleString(undefined, {maximumFractionDigits: 0})}`}
@@ -421,11 +422,11 @@ export default function PortfolioPage() {
             title: <span className="text-accent">{reason}</span>,
             description: (
                 <div className="text-foreground">
-                    <div>Your position resulted in a PnL of <strong className={pnl >= 0 ? 'text-green-400' : 'text-red-400'}>${pnl.toFixed(2)}</strong>.</div>
+                    <div>Your position resulted in a PnL of <strong className={pnl >= 0 ? 'text-stat-green' : 'text-red-400'}>${pnl.toFixed(2)}</strong>.</div>
                     {airdropPoints > 0 && (
                         <div className="flex items-center mt-1">
-                            <Sparkles className="h-4 w-4 mr-2 text-orange-400"/>
-                            You've earned <strong className="text-orange-400">{airdropPoints} $BSAI</strong> airdrop points!
+                            <Sparkles className="h-4 w-4 mr-2 text-stat-orange"/>
+                            You've earned <strong className="text-stat-orange">{airdropPoints} $BSAI</strong> airdrop points!
                         </div>
                     )}
                 </div>
@@ -765,16 +766,16 @@ export default function PortfolioPage() {
             <TabsList className="grid w-full grid-cols-2 gap-4 h-auto p-0 bg-transparent">
                 <TabsTrigger
                     value="open"
-                    className="flex flex-col rounded-lg h-auto p-3 text-primary-foreground bg-primary/70 hover:bg-primary data-[state=active]:bg-primary data-[state=active]:shadow-lg transition-all"
+                    className="flex flex-col rounded-lg h-auto p-3 text-white bg-primary/80 hover:bg-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
                 >
-                    <span className="font-bold text-lg">Positions</span>
+                    <span className="font-bold sm:text-lg">Positions</span>
                     <span className="text-sm">({positions.filter(p => p.status !== 'CLOSED').length})</span>
                 </TabsTrigger>
                 <TabsTrigger
                     value="history"
-                    className="flex flex-col rounded-lg h-auto p-3 text-primary-foreground bg-primary/70 hover:bg-primary data-[state=active]:bg-primary data-[state=active]:shadow-lg transition-all"
+                    className="flex flex-col rounded-lg h-auto p-3 text-white bg-primary/80 hover:bg-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
                 >
-                    <span className="font-bold text-lg">History</span>
+                    <span className="font-bold sm:text-lg">History</span>
                     <span className="text-sm">({tradeHistory.length})</span>
                 </TabsTrigger>
             </TabsList>
@@ -797,5 +798,3 @@ export default function PortfolioPage() {
     </>
   );
 }
-
-    

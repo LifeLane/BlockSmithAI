@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
+import { cn } from '@/lib/utils';
 
 // Import JSON-based actions and types from app/actions.ts
 import { 
@@ -52,9 +53,9 @@ const missionsList = [
   { id: 'mission_first_signal', title: 'First Signal', description: 'Generate your first trading signal using the Core Console.', reward: '100 XP & 500 Airdrop Points', icon: <Zap className="h-8 w-8 text-primary"/>, type: 'action' },
   { id: 'mission_analyst', title: 'The Analyst', description: 'Generate signals for 3 different assets (e.g., BTC, ETH, SOL).', reward: '250 XP & 1000 Airdrop Points', icon: <ShieldCheck className="h-8 w-8 text-tertiary"/>, type: 'action' },
   { id: 'mission_prolific_trader', title: 'Prolific Trader', description: 'Execute 10 simulated trades (open or close).', reward: '150 XP & 750 Airdrop Points', icon: <Repeat className="h-8 w-8 text-primary"/>, type: 'action' },
-  { id: 'mission_winning_streak', title: 'Winning Streak', description: 'Close 3 profitable trades in a row.', reward: '300 XP & 1500 Airdrop Points', icon: <TrendingUp className="h-8 w-8 text-green-400"/>, type: 'action' },
-  { id: 'mission_top_trader', title: 'Top Trader', description: 'Achieve Rank #1 on the weekly XP leaderboard.', reward: '2000 XP & 10000 Airdrop Points', icon: <Crown className="h-8 w-8 text-yellow-400"/>, type: 'locked' },
-  { id: 'mission_streak', title: 'Weekly Streak', description: 'Generate at least one signal every day for 7 consecutive days.', reward: '1000 XP & 5000 Airdrop Points', icon: <Gift className="h-8 w-8 text-orange-400"/>, type: 'locked' },
+  { id: 'mission_winning_streak', title: 'Winning Streak', description: 'Close 3 profitable trades in a row.', reward: '300 XP & 1500 Airdrop Points', icon: <TrendingUp className="h-8 w-8 text-stat-green"/>, type: 'action' },
+  { id: 'mission_top_trader', title: 'Top Trader', description: 'Achieve Rank #1 on the weekly XP leaderboard.', reward: '2000 XP & 10000 Airdrop Points', icon: <Crown className="h-8 w-8 text-stat-yellow"/>, type: 'locked' },
+  { id: 'mission_streak', title: 'Weekly Streak', description: 'Generate at least one signal every day for 7 consecutive days.', reward: '1000 XP & 5000 Airdrop Points', icon: <Gift className="h-8 w-8 text-stat-orange"/>, type: 'locked' },
 ];
 
 const ranks = [
@@ -87,7 +88,7 @@ const getRankDetails = (xp: number) => {
 };
 
 const RankIcon = ({ rank }: { rank: number }) => {
-    if (rank === 1) return <Crown className="h-6 w-6 text-yellow-400" />;
+    if (rank === 1) return <Crown className="h-6 w-6 text-stat-yellow" />;
     if (rank === 2) return <Trophy className="h-6 w-6 text-gray-400" />;
     if (rank === 3) return <Shield className="h-6 w-6 text-orange-600" />;
     return <span className="font-bold text-lg text-muted-foreground">{rank}</span>;
@@ -108,7 +109,7 @@ const MissionCard = ({ mission, onClaim, isClaimed, isLocked }: { mission: typeo
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="text-sm font-semibold text-green-600 dark:text-green-400 bg-green-500/10 border border-green-500/30 rounded-md p-2 text-center">
+                <div className="text-sm font-semibold text-stat-green bg-stat-green/10 border border-stat-green/30 rounded-md p-2 text-center">
                     Reward: {mission.reward}
                 </div>
             </CardContent>
@@ -291,10 +292,10 @@ export default function ProfilePage() {
 
         <Tabs defaultValue="missions" className="w-full">
             <div className="flex justify-center">
-                <TabsList className="bg-card/80 grid w-full max-w-md grid-cols-3">
-                    <TabsTrigger value="profile" className="data-[state=active]:shadow-active-tab-glow">Profile</TabsTrigger>
-                    <TabsTrigger value="missions" className="data-[state=active]:shadow-active-tab-glow">Missions</TabsTrigger>
-                    <TabsTrigger value="leaderboard" className="data-[state=active]:shadow-active-tab-glow">Leaderboard</TabsTrigger>
+                <TabsList className="bg-background grid h-12 w-full max-w-lg grid-cols-3 items-center rounded-lg border border-primary/30 p-1">
+                    <TabsTrigger value="profile" className="h-full rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Profile</TabsTrigger>
+                    <TabsTrigger value="missions" className="h-full rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Missions</TabsTrigger>
+                    <TabsTrigger value="leaderboard" className="h-full rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Leaderboard</TabsTrigger>
                 </TabsList>
             </div>
 
@@ -318,7 +319,7 @@ export default function ProfilePage() {
                         {currentUser.shadowId && (
                             <div>
                             <p className="text-sm font-medium text-muted-foreground">ShadowID:</p>
-                            <p className="text-lg font-semibold text-primary">{currentUser.shadowId}</p>
+                            <p className="text-lg font-semibold text-primary break-all">{currentUser.shadowId}</p>
                             </div>
                         )}
 
@@ -336,7 +337,7 @@ export default function ProfilePage() {
                             </div>
                              <div>
                                 <p className="text-sm font-medium text-muted-foreground flex items-center"><TrendingDown className="mr-1.5 h-4 w-4"/>Total Airdrop Points:</p>
-                                <p className="text-lg font-semibold text-orange-400">{currentUser.airdropPoints?.toLocaleString() || 0}</p>
+                                <p className="text-lg font-semibold text-stat-orange">{currentUser.airdropPoints?.toLocaleString() || 0}</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -480,7 +481,7 @@ export default function ProfilePage() {
                                         </TableCell>
                                         <TableCell className="font-medium text-foreground">{user.username}</TableCell>
                                         <TableCell className="text-right font-mono text-tertiary">{user.weeklyPoints?.toLocaleString() || 0}</TableCell>
-                                        <TableCell className="text-right font-mono text-orange-400">{user.airdropPoints?.toLocaleString() || 0}</TableCell>
+                                        <TableCell className="text-right font-mono text-stat-orange">{user.airdropPoints?.toLocaleString() || 0}</TableCell>
                                     </TableRow>
                                     ))}
                                 </TableBody>
@@ -490,15 +491,15 @@ export default function ProfilePage() {
                         <div className="block md:hidden space-y-3">
                             {leaderboardData.map((user) => (
                                 <Card key={user.id} className="flex items-center p-3 bg-secondary/50">
-                                    <div className="w-12 text-center font-bold text-lg">
+                                    <div className="w-12 flex-shrink-0 text-center font-bold text-lg">
                                         {user.rank && <RankIcon rank={user.rank} />}
                                     </div>
-                                    <div className="flex-grow ml-3">
+                                    <div className="flex-grow ml-3 min-w-0">
                                         <p className="font-semibold text-foreground truncate">{user.username}</p>
                                     </div>
-                                    <div className="text-right ml-2">
+                                    <div className="text-right ml-2 flex-shrink-0">
                                         <p className="font-mono text-sm text-tertiary whitespace-nowrap">{user.weeklyPoints?.toLocaleString() || 0} XP</p>
-                                        <p className="font-mono text-xs text-orange-400 whitespace-nowrap">{user.airdropPoints?.toLocaleString() || 0} $BSAI</p>
+                                        <p className="font-mono text-xs text-stat-orange whitespace-nowrap">{user.airdropPoints?.toLocaleString() || 0} $BSAI</p>
                                     </div>
                                 </Card>
                             ))}

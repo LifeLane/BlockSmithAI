@@ -7,12 +7,15 @@ import GlyphScramble from './GlyphScramble';
 const DisclaimerFooter = () => {
     return (
         <footer className="w-full mt-auto pt-8 pb-4 px-4 text-center">
-             <div className="inline-flex items-center justify-center p-3 rounded-lg bg-card/80 backdrop-blur-sm border border-destructive/50">
-                 <strong className="text-red-500 inline-flex items-center text-base sm:text-lg font-bold whitespace-nowrap">
-                    <AlertTriangle className="h-5 w-5 mr-2" />
-                    <GlyphScramble text="Do Your Own Research." />
-                </strong>
-             </div>
+            <div className="text-sm md:text-base">
+                <span className="font-bold text-accent animate-shadow-pulse-accent">
+                    <GlyphScramble text="Disclaimer:" />
+                </span>
+                <span className="ml-2 font-semibold text-destructive inline-flex items-center">
+                    <AlertTriangle className="h-4 w-4 mr-1.5" />
+                    Do Your Own Research.
+                </span>
+            </div>
         </footer>
     );
 };

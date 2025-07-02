@@ -351,36 +351,50 @@ export default function CoreConsolePage() {
                     {isLimitReached ? (
                         <Button
                             onClick={() => setShowAirdropModal(true)}
-                            className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out glow-button"
+                            className="w-full font-semibold py-3 text-base sm:text-lg shadow-lg transition-all duration-300 ease-in-out glow-button"
                         >
                             <Unlock className="mr-2 h-5 w-5" />
                             Join Network for Unlimited Signals
                         </Button>
                     ) : (
-                        <div className="flex flex-col md:flex-row items-stretch gap-6">
+                        <div className="flex flex-col md:flex-row items-stretch gap-4 md:gap-6">
                             <div className="w-full md:w-1/2 flex flex-col">
-                                <p className="text-sm font-bold text-center text-primary mb-2">Executes immediately with your selected parameters.</p>
+                                 <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <p className="text-sm font-bold text-center text-primary mb-2 cursor-help">Executes immediately at market price.</p>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>SHADOW generates a trade based on your exact parameters and opens a position instantly.</p>
+                                    </TooltipContent>
+                                 </Tooltip>
                                 <Button
                                     onClick={() => handleGenerateStrategy({ isCustom: false })}
                                     disabled={isButtonDisabled}
-                                    className="w-full flex-grow font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
+                                    className="w-full flex-grow font-semibold py-3 text-base sm:text-lg shadow-lg transition-all duration-300 ease-in-out generate-signal-button"
                                 >
                                     {isLoadingInstant ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                         : isUserLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                         : <Sparkles className="mr-2 h-5 w-5" />}
-                                    {isLoadingInstant ? "SHADOW is Analyzing..." : isUserLoading ? "Initializing..." : <GlyphScramble text="Instant Signal" />}
+                                    {isLoadingInstant ? "Analyzing..." : isUserLoading ? "Initializing..." : <GlyphScramble text="Instant Signal" />}
                                 </Button>
                             </div>
 
                             <div className="w-full md:w-1/2 flex flex-col">
-                                 <p className="text-sm font-bold text-center text-accent mb-2">SHADOW finds the optimal entry and provides a limit order.</p>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <p className="text-sm font-bold text-center text-accent mb-2 cursor-help">SHADOW finds the optimal entry.</p>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>SHADOW analyzes the order book to find a better entry price, providing a limit order signal.</p>
+                                    </TooltipContent>
+                                </Tooltip>
                                 <Button
                                     onClick={() => handleGenerateStrategy({ isCustom: true })}
                                     disabled={isButtonDisabled}
-                                    className="w-full flex-grow font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out shadow-choice-button"
+                                    className="w-full flex-grow font-semibold py-3 text-base sm:text-lg shadow-lg transition-all duration-300 ease-in-out shadow-choice-button"
                                 >
                                     {isLoadingCustom ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
-                                    {isLoadingCustom ? "SHADOW is Deciding..." : <GlyphScramble text="SHADOW's Signal" />}
+                                    {isLoadingCustom ? "Deciding..." : <GlyphScramble text="SHADOW's Signal" />}
                                 </Button>
                             </div>
                         </div>
@@ -423,5 +437,3 @@ export default function CoreConsolePage() {
     </TooltipProvider>
   );
 }
-
-    
