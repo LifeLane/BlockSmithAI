@@ -721,9 +721,21 @@ export default function PortfolioPage() {
             isKilling={isKilling}
         />
          <Tabs defaultValue="open" className="mt-4">
-            <TabsList className="flex w-full h-auto">
-                <TabsTrigger value="open" className="flex-1 whitespace-normal h-auto py-2 text-base font-semibold data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground">Positions ({positions.filter(p => p.status !== 'CLOSED').length})</TabsTrigger>
-                <TabsTrigger value="history" className="flex-1 whitespace-normal h-auto py-2 text-base font-semibold data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground">History ({tradeHistory.length})</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 h-auto rounded-lg bg-primary p-0 border border-primary/30">
+                <TabsTrigger
+                    value="open"
+                    className="flex flex-col h-auto py-3 px-1 rounded-l-md text-primary-foreground !shadow-none !bg-transparent data-[state=active]:opacity-100 opacity-75 data-[state=active]:!bg-transparent focus:!ring-0 transition-opacity data-[state=inactive]:hover:bg-black/20"
+                >
+                    <span className="font-bold text-lg">Positions</span>
+                    <span className="font-bold">({positions.filter(p => p.status !== 'CLOSED').length})</span>
+                </TabsTrigger>
+                <TabsTrigger
+                    value="history"
+                    className="flex flex-col h-auto py-3 px-1 rounded-r-md text-primary-foreground !shadow-none !bg-transparent data-[state=active]:opacity-100 opacity-75 data-[state=active]:!bg-transparent focus:!ring-0 transition-opacity data-[state=inactive]:hover:bg-black/20"
+                >
+                    <span className="font-bold text-lg">History</span>
+                    <span className="font-bold">({tradeHistory.length})</span>
+                </TabsTrigger>
             </TabsList>
             <TabsContent value="open" className="mt-4">
                 {renderActivePositions()}
