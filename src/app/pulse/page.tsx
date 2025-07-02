@@ -269,13 +269,13 @@ const StatItem = ({
   icon: React.ReactNode;
   valueClassName?: string;
 }) => (
-  <div className="bg-secondary p-3 rounded-lg flex flex-col justify-between h-[90px] glow-border-box">
-    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+  <div className="bg-secondary p-2 rounded-lg flex flex-col justify-between h-[75px] glow-border-box">
+    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
       {icon}
       <span className="truncate">{title}</span>
     </div>
     <div className="text-left mt-auto">
-      <span className={cn("text-2xl font-bold font-mono", valueClassName)}>
+      <span className={cn("text-lg sm:text-xl font-bold font-mono", valueClassName)}>
         {value}
       </span>
        {subValue && (
@@ -322,7 +322,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                     Get SHADOW's Review
                 </Button>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-2">
                  <StatItem
                     title="Invested"
                     value={`$${stats.totalCapitalInvested.toLocaleString(undefined, {maximumFractionDigits: 0})}`}
@@ -352,7 +352,6 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                     title="Total PnL"
                     icon={<DollarSign size={14} />}
                     value={`$${stats.totalPnl.toFixed(2)}`}
-                    subValue={stats.totalTrades > 0 ? `(${stats.totalPnlPercentage.toFixed(2)}%)` : undefined}
                     valueClassName={closedPnlColor}
                 />
                 <StatItem
@@ -808,3 +807,5 @@ export default function PortfolioPage() {
     </>
   );
 }
+
+    
