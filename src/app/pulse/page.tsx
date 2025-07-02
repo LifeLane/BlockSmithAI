@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
@@ -342,10 +341,9 @@ const PortfolioStatsDisplay = ({ stats, isLoading, realtimePnl, onGenerateReview
                     valueClassName="text-blue-400"
                 />
                 <StatItem
-                    title="Win Rate"
-                    icon={<Percent size={14} />}
-                    value={`${stats.winRate.toFixed(1)}%`}
-                    subValue={stats.totalTrades > 0 ? `(${stats.winningTrades} Wins)` : undefined}
+                    title="Winning Trades"
+                    icon={<CheckCircle2 size={14} />}
+                    value={stats.winningTrades.toLocaleString()}
                     valueClassName={winRateColor}
                 />
                 <StatItem
@@ -772,17 +770,17 @@ export default function PortfolioPage() {
             isKilling={isKilling}
         />
          <Tabs defaultValue="open" className="mt-4">
-            <TabsList className="grid w-full grid-cols-2 h-auto rounded-lg bg-primary p-1">
+            <TabsList className="grid w-full grid-cols-2 gap-4 h-auto p-0 bg-transparent">
                 <TabsTrigger
                     value="open"
-                    className="flex flex-col rounded-md h-auto p-2 text-foreground !shadow-none !bg-transparent data-[state=inactive]:opacity-60 focus-visible:!ring-0 focus-visible:!ring-offset-0 focus:!ring-0 transition-opacity"
+                    className="flex flex-col rounded-lg h-auto p-3 text-primary-foreground bg-primary/70 hover:bg-primary data-[state=active]:bg-primary data-[state=active]:shadow-lg transition-all"
                 >
                     <span className="font-bold text-lg">Positions</span>
                     <span className="text-sm">({positions.filter(p => p.status !== 'CLOSED').length})</span>
                 </TabsTrigger>
                 <TabsTrigger
                     value="history"
-                    className="flex flex-col rounded-md h-auto p-2 text-foreground !shadow-none !bg-transparent data-[state=inactive]:opacity-60 focus-visible:!ring-0 focus-visible:!ring-offset-0 focus:!ring-0 transition-opacity"
+                    className="flex flex-col rounded-lg h-auto p-3 text-primary-foreground bg-primary/70 hover:bg-primary data-[state=active]:bg-primary data-[state=active]:shadow-lg transition-all"
                 >
                     <span className="font-bold text-lg">History</span>
                     <span className="text-sm">({tradeHistory.length})</span>
@@ -807,5 +805,3 @@ export default function PortfolioPage() {
     </>
   );
 }
-
-    
