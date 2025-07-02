@@ -38,7 +38,7 @@ const prompt = ai.definePrompt({
   Craft a new, unique, ONE-LINER disclaimer. It must concisely warn the user that this is not financial advice and they are responsible for their own decisions (DYOR).
 
   Examples of tone:
-  - "My analysis is a weapon; how you wield it is your own affair. This is not financial advice."
+  - "My pronouncements are data, not destiny. DYOR."
   - "I provide the coordinates, you fly the ship. Do your own research before engaging."
   - "Consider this data, but the final command is yours. The market does not offer refunds."
 
@@ -54,7 +54,7 @@ const generateSarcasticDisclaimerFlow = ai.defineFlow(
   async (input) => { // input can be an empty object here
     const {output} = await prompt(input);
     if (!output || !output.disclaimer) {
-        return { disclaimer: "My analysis is a beacon in the chaos, not a crystal ball. This is not financial advice. DYOR."};
+        return { disclaimer: "My pronouncements are data, not destiny. DYOR."};
     }
     return output;
   }

@@ -15,24 +15,27 @@ const DisclaimerFooter = () => {
             .then(result => setDisclaimer(result.disclaimer))
             .catch(err => {
                 console.error("Failed to fetch sarcastic disclaimer:", err);
-                setDisclaimer("My analysis is a weapon; how you wield it is your own affair. This is not financial advice.");
+                setDisclaimer("My pronouncements are data, not destiny. DYOR.");
             });
     }, []);
 
     return (
         <footer className="w-full mt-auto pt-12 pb-4 px-4">
-            <div className="shadow-edict-container">
-                <div className="shadow-edict-title-container">
+            <div className="w-full space-y-4 pt-4 border-t border-border/50 text-center">
+                <div className="flex flex-col items-center text-primary">
                     <BrainCircuit className="h-6 w-6" />
-                    <h3 className="shadow-edict-title">
+                    <h3 className="mt-2 text-sm font-semibold font-headline">
                         <GlyphScramble text="SHADOW's Edict" />
                     </h3>
                 </div>
-                <div className="shadow-edict-body text-center space-y-2">
+                
+                <div className="font-code space-y-3">
                    {disclaimer ? (
-                        <p className="font-semibold text-foreground italic">"{disclaimer}"</p>
+                        <p className="text-sm font-semibold text-foreground italic">"{disclaimer}"</p>
                     ) : (
-                        <Skeleton className="h-4 w-10/12 max-w-sm mx-auto bg-muted/50" />
+                        <div className="flex justify-center">
+                            <Skeleton className="h-5 w-10/12 max-w-md mx-auto bg-muted/50" />
+                        </div>
                     )}
                     <p className="flex items-center justify-center gap-2 text-sm font-bold text-destructive">
                         <AlertTriangle className="h-4 w-4" />

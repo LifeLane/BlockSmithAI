@@ -69,7 +69,7 @@
     --destructive-foreground: 0 84% 98%;
     --border: 140 30% 20%;
     --input: 140 20% 15%;
-    --ring: hsl(var(--primary));
+    --ring: hsl(var(--ring));
     
     --sidebar-background: 140 15% 7%;
     --sidebar-foreground: hsl(var(--foreground));
@@ -319,19 +319,6 @@
 
 .shadow-mind-line.footer-line {
     margin-top: -0.5rem;
-}
-
-.shadow-edict-container {
-    @apply w-full space-y-3 pt-4 border-t border-border/50;
-}
-.shadow-edict-title-container {
-    @apply flex flex-col items-center text-center text-primary;
-}
-.shadow-edict-title {
-    @apply mt-2 text-sm font-semibold font-headline;
-}
-.shadow-edict-body {
-    @apply text-xs text-muted-foreground font-code leading-relaxed text-center;
 }
 
 .risk-profile-tabs-list {
