@@ -17,6 +17,8 @@ import {
   generateShadowChoiceStrategyAction,
   type GenerateTradingStrategyOutput,
   type GenerateShadowChoiceStrategyOutput,
+  type GenerateTradingStrategyInput,
+  type ShadowChoiceStrategyInput
 } from '@/app/actions';
 import { 
     fetchMarketDataAction, 

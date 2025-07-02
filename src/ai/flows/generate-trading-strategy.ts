@@ -23,15 +23,6 @@ const GenerateTradingStrategyInputSchema = z.object({
 });
 export type GenerateTradingStrategyInput = z.infer<typeof GenerateTradingStrategyInputSchema>;
 
-// Input schema for the prompt, which now includes multiple sets of candlestick data
-const PromptInputSchema = GenerateTradingStrategyInputSchema.extend({
-    shortTermCandles: z.string().describe("Stringified JSON of recent candlestick data for the short-term timeframe, used for entry timing."),
-    mediumTermCandles: z.string().describe("Stringified JSON of recent candlestick data for the medium-term timeframe, used for context."),
-    longTermCandles: z.string().describe("Stringified JSON of recent candlestick data for the long-term timeframe, used to establish the primary trend."),
-});
-export type PromptInput = z.infer<typeof PromptInputSchema>;
-
-
 // Core output fields from the AI, now including thought process elements and analysis summaries
 const GenerateTradingStrategyCoreOutputSchema = z.object({
   signal: z.string().describe('The trading signal (BUY or SELL).'),
@@ -58,37 +49,41 @@ const GenerateTradingStrategyOutputSchema = GenerateTradingStrategyCoreOutputSch
 export type GenerateTradingStrategyOutput = z.infer<typeof GenerateTradingStrategyOutputSchema>;
 
 
-export async function generateTradingStrategy(input: PromptInput): Promise<GenerateTradingStrategyCoreOutput> {
+export async function generateTradingStrategy(input: GenerateTradingStrategyInput): Promise<GenerateTradingStrategyCoreOutput> {
   return generateTradingStrategyFlow(input);
 }
 
 const generateTradingStrategyPrompt = ai.definePrompt({
   name: 'generateTradingStrategyPrompt',
   tools: [fetchHistoricalDataTool, fetchNewsTool],
-  input: {schema: PromptInputSchema},
+  input: {schema: GenerateTradingStrategyInputSchema},
   output: {schema: GenerateTradingStrategyCoreOutputSchema},
   prompt: `I am SHADOW, a Senior Quantitative Analyst AI. My directive is to generate a decisive, actionable trading signal based on a comprehensive, multi-modal analysis of all available data. I will not abstain from making a call.
 
 **Input Parameters Assimilated:**
-Market Data Snapshot: {{{marketData}}}
+Live Market Data: {{{marketData}}}
 Target Symbol: {{{symbol}}}
-Trading Mode: {{{tradingMode}}}
-User Risk Profile: {{{riskProfile}}}
-
-**Multi-Timeframe Candlestick Data:**
-Short-Term Candles: {{{shortTermCandles}}}
-Medium-Term Candles: {{{mediumTermCandles}}}
-Long-Term Candles: {{{longTermCandles}}}
+User-Selected Trading Mode: {{{tradingMode}}}
+User-Selected Risk Profile: {{{riskProfile}}}
 
 **Analytical Protocol (MANDATORY & NON-NEGOTIABLE):**
 
-1.  **Signal Determination:** I MUST issue a \`BUY\` or \`SELL\` signal. I will synthesize all available data (live market, historical candles, news) to determine the most probable market direction. My confidence score will reflect the quality of the setup, but I will not issue a "HOLD" signal. My analysis must always result in an actionable trading decision.
-2.  **Trend-Based Bias:** I will first analyze the Long-Term and Medium-Term candlestick data to establish the dominant trend. My primary directive is to trade in alignment with this trend.
-3.  **Fundamental & Sentiment Context:** I will use the \`fetchNewsTool\` to assess the current news environment for {{{symbol}}}. This context is critical. Positive news strengthens a BUY signal; negative news strengthens a SELL signal. If news sentiment contradicts the technical trend, I will note this conflict in my analysis and lower my confidence score, but still issue a signal based on the stronger of the two indicators.
-4.  **Comprehensive Analysis & Rationale:** My \`analysisSummary\` MUST articulate the specific key findings from the data that led to my signal. I will mention the key indicators (RSI, MACD, Bollinger Bands) and how they support my decision. If any data source (like candlesticks) is unavailable, I will explicitly state this and explain how I weighted the remaining available data (e.g., "Candlestick data was unavailable; the decision was based primarily on strong bullish sentiment from news analysis and high-volume metrics from the live snapshot."). I will NEVER state I was 'unable to perform analysis'.
-5.  **Parameter Derivation:**
-    -   **Entry Price:** The 'entry_zone' MUST be the current 'lastPrice' from the 'marketData' snapshot.
-    -   **Data-Driven SL/TP:** I will set the 'stop_loss' and 'take_profit' based on key support and resistance levels identified from the historical data. For a \`BUY\` signal, the 'stop_loss' must be below a recent support level. For a \`SELL\` signal, it must be above a recent resistance level. The 'riskProfile' will influence the distance of these targets.
+1.  **Data Acquisition:** I MUST use my available tools to gather intelligence.
+    *   **Historical Data:** Use the \`fetchHistoricalDataTool\` to acquire candlestick data. The timeframes I use MUST be appropriate for the user's selected '{{{tradingMode}}}':
+        *   'Scalper': Use '1m', '3m', and '5m' intervals.
+        *   'Sniper': Use '5m', '15m', and '30m' intervals.
+        *   'Intraday': Use '15m', '30m', and '1h' intervals.
+        *   'Swing': Use '1h', '4h', and '1d' intervals.
+        I will analyze this data to establish the dominant trend, support, and resistance.
+    *   **News & Sentiment:** Use the \`fetchNewsTool\` to assess the current news environment for {{{symbol}}}. This context is critical.
+
+2.  **Signal Determination:** Based on a synthesis of all acquired data (live market, historical candles, news), I MUST issue a \`BUY\` or \`SELL\` signal. My confidence score will reflect the quality of the setup, but I will not issue a "HOLD" signal. My analysis must always result in an actionable trading decision.
+
+3.  **Comprehensive Analysis & Rationale:** My \`analysisSummary\` MUST articulate the specific key findings from the data that led to my signal. I will mention key indicators (RSI, MACD, Bollinger Bands) and how they support my decision. If any data source is unavailable (e.g., the tool returns an error), I will explicitly state this and explain how I weighted the remaining available data (e.g., "Historical data was unavailable; the decision was based primarily on strong bullish sentiment from news analysis and high-volume metrics from the live snapshot."). I will NEVER state I was 'unable to perform analysis'.
+
+4.  **Parameter Derivation:**
+    *   **Entry Price:** The 'entry_zone' MUST be the current 'lastPrice' from the 'marketData' snapshot.
+    *   **Data-Driven SL/TP:** I will set the 'stop_loss' and 'take_profit' based on key support and resistance levels identified from the historical data. For a \`BUY\` signal, the 'stop_loss' must be below a recent support level. For a \`SELL\` signal, it must be above a recent resistance level. The 'riskProfile' will influence the distance of these targets.
 
 **Output Requirements (Provide ALL 13 of these fields. The signal must be BUY or SELL):**
 
@@ -113,7 +108,7 @@ My output must be decisive and directly based on this protocol.
 const generateTradingStrategyFlow = ai.defineFlow(
   {
     name: 'generateTradingStrategyFlow',
-    inputSchema: PromptInputSchema, // The flow now expects the pre-fetched data
+    inputSchema: GenerateTradingStrategyInputSchema,
     outputSchema: GenerateTradingStrategyCoreOutputSchema,
     tools: [fetchHistoricalDataTool, fetchNewsTool],
   },

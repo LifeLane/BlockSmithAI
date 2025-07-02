@@ -22,13 +22,6 @@ const ShadowChoiceStrategyInputSchema = z.object({
 });
 export type ShadowChoiceStrategyInput = z.infer<typeof ShadowChoiceStrategyInputSchema>;
 
-// Input schema for the prompt, including multiple timeframes
-const PromptInputSchema = ShadowChoiceStrategyInputSchema.extend({
-  shortTermCandles: z.string().describe("Stringified JSON of 15-minute candlestick data."),
-  mediumTermCandles: z.string().describe("Stringified JSON of 1-hour candlestick data."),
-  longTermCandles: z.string().describe("Stringified JSON of 4-hour candlestick data."),
-});
-
 // The core output schema which includes the existing 11 fields plus SHADOW's autonomous choices and reasoning.
 const ShadowChoiceStrategyCoreOutputSchema = z.object({
   signal: z.string().describe('The trading signal (BUY, SELL, or HOLD).'),
@@ -53,41 +46,46 @@ const ShadowChoiceStrategyCoreOutputSchema = z.object({
 export type ShadowChoiceStrategyCoreOutput = z.infer<typeof ShadowChoiceStrategyCoreOutputSchema>;
 
 // This is the main function that will be called by the server action.
-export async function generateShadowChoiceStrategy(input: PromptInput): Promise<ShadowChoiceStrategyCoreOutput> {
+export async function generateShadowChoiceStrategy(input: ShadowChoiceStrategyInput): Promise<ShadowChoiceStrategyCoreOutput> {
   return shadowChoiceStrategyFlow(input);
 }
 
 const prompt = ai.definePrompt({
   name: 'shadowChoiceStrategyPrompt',
   tools: [fetchHistoricalDataTool, fetchNewsTool], 
-  input: { schema: PromptInputSchema },
+  input: { schema: ShadowChoiceStrategyInputSchema },
   output: { schema: ShadowChoiceStrategyCoreOutputSchema },
-  prompt: `I am SHADOW, a Senior Quantitative Analyst AI. My directive is to analyze the market and formulate a trading strategy based on the user's chosen parameters. I will create a custom limit order.
+  prompt: `I am SHADOW, a Senior Quantitative Analyst AI. My directive is to analyze the market and formulate a custom limit order trading strategy based on the user's chosen parameters.
 
-**Input Data Assimilated:**
+**Input Parameters Assimilated:**
 Live Market Snapshot: {{{marketData}}}
 Target Symbol: {{{symbol}}}
 User-Selected Trading Mode: {{{tradingMode}}}
 User-Selected Risk Profile: {{{riskProfile}}}
 
-**Multi-Timeframe Candlestick Data:**
-Short-Term Data (15m candles): {{{shortTermCandles}}}
-Medium-Term Data (1h candles): {{{mediumTermCandles}}}
-Long-Term Data (4h candles): {{{longTermCandles}}}
-
 **Analytical Protocol:**
 
-1.  **Adopt User Parameters:** I will operate within the {{{tradingMode}}} mode and {{{riskProfile}}} risk profile selected by the user. My 'chosenTradingMode' and 'chosenRiskProfile' in the output MUST match the user's input.
-2.  **Multi-Timeframe Trend Analysis:** I will first analyze the Long-Term (4h) and Medium-Term (1h) data to establish the dominant market trend.
-3.  **Risk/Reward Ratio Application:** The user's '{{riskProfile}}' risk profile dictates the Risk-to-Reward ratio I MUST target:
+1.  **Data Acquisition:** I MUST use my available tools to gather intelligence.
+    *   **Historical Data:** Use the \`fetchHistoricalDataTool\` to acquire candlestick data. The timeframes I use MUST be appropriate for the user's selected '{{{tradingMode}}}':
+        *   'Scalper': Use '1m', '3m', and '5m'.
+        *   'Sniper': Use '5m', '15m', and '30m'.
+        *   'Intraday': Use '15m', '30m', and '1h'.
+        *   'Swing': Use '1h', '4h', and '1d'.
+    *   **News & Sentiment:** Use \`fetchNewsTool\` to get context.
+
+2.  **Adopt User Parameters:** I will operate within the {{{tradingMode}}} mode and {{{riskProfile}}} risk profile selected by the user. My 'chosenTradingMode' and 'chosenRiskProfile' in the output MUST match the user's input.
+
+3.  **Multi-Timeframe Trend Analysis & Risk/Reward:** I will analyze the acquired historical data to establish the dominant market trend. The user's '{{riskProfile}}' dictates the Risk-to-Reward ratio I MUST target:
     *   **Low:** Aim for a Risk/Reward ratio of approximately **1:3**.
     *   **Medium:** Aim for a Risk/Reward ratio of approximately **1:5**.
     *   **High:** Aim for a Risk/Reward ratio of approximately **1:10**.
+
 4.  **Pinpoint Entry & Execute Deep Analysis:**
     -   **CRITICAL ENTRY PRICE LOGIC:** For this custom signal, I am creating a limit order. For a **BUY** signal, my 'entry_zone' must be a specific price at a logical support level, ideally *below* the current market price. For a **SELL** signal, my 'entry_zone' must be at a logical resistance level, ideally *above* the current market price. This entry must be a precise numerical value.
     -   **Data-Driven SL/TP:** Based on the identified entry point, I will calculate a 'stop_loss' by setting it just below a key recent support (for BUYs) or just above a key recent resistance (for SELLs).
     -   Then, I will calculate the 'take_profit' based on the distance of the 'stop_loss' from the entry, multiplied by the R:R ratio for the selected '{{riskProfile}}'.
     -   All derived trading parameters must be specific numerical values with realistic precision.
+
 5.  **Final Output Formulation**: I will assemble all 16 required output fields.
 
 **Output Requirements (Provide ALL 16 of these fields based on my analysis):**
@@ -115,7 +113,7 @@ My output must be direct, complete, and reflect my superior analytical process. 
 const shadowChoiceStrategyFlow = ai.defineFlow(
   {
     name: 'shadowChoiceStrategyFlow',
-    inputSchema: PromptInputSchema, // The flow now expects the pre-fetched data
+    inputSchema: ShadowChoiceStrategyInputSchema,
     outputSchema: ShadowChoiceStrategyCoreOutputSchema,
     tools: [fetchHistoricalDataTool, fetchNewsTool],
   },
