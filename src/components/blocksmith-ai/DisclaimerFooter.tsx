@@ -1,20 +1,39 @@
-
 'use client';
 
-import { AlertTriangle } from 'lucide-react';
+import { BrainCircuit } from 'lucide-react';
 import GlyphScramble from './GlyphScramble';
+import { generateSarcasticDisclaimer } from '@/ai/flows/generate-sarcastic-disclaimer';
+import { useEffect, useState } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const DisclaimerFooter = () => {
+    const [disclaimer, setDisclaimer] = useState<string | null>(null);
+
+    useEffect(() => {
+        generateSarcasticDisclaimer()
+            .then(result => setDisclaimer(result.disclaimer))
+            .catch(err => {
+                console.error("Failed to fetch sarcastic disclaimer:", err);
+                setDisclaimer("My analysis is a weapon; how you wield it is your own affair. This is not financial advice.");
+            });
+    }, []);
+
     return (
-        <footer className="w-full mt-auto pt-8 pb-4 px-4 text-center">
-            <div className="text-sm md:text-base">
-                <span className="font-bold text-accent animate-shadow-pulse-accent">
-                    <GlyphScramble text="Disclaimer:" />
-                </span>
-                <span className="ml-2 font-semibold text-destructive inline-flex items-center">
-                    <AlertTriangle className="h-4 w-4 mr-1.5" />
-                    Do Your Own Research.
-                </span>
+        <footer className="w-full mt-auto pt-12 pb-4 px-4">
+            <div className="shadow-edict-container">
+                <div className="shadow-edict-title-container">
+                    <BrainCircuit className="h-6 w-6" />
+                    <h3 className="shadow-edict-title">
+                        <GlyphScramble text="SHADOW's Edict" />
+                    </h3>
+                </div>
+                <div className="shadow-edict-body">
+                   {disclaimer ? (
+                        <p className="italic">"{disclaimer}"</p>
+                    ) : (
+                        <Skeleton className="h-4 w-10/12 max-w-sm mx-auto bg-muted/50" />
+                    )}
+                </div>
             </div>
         </footer>
     );
