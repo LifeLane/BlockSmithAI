@@ -292,10 +292,10 @@ export default function ProfilePage() {
 
         <Tabs defaultValue="missions" className="w-full">
             <div className="flex justify-center">
-                <TabsList className="bg-background grid h-12 w-full max-w-lg grid-cols-3 items-center rounded-lg border border-primary/30 p-1">
-                    <TabsTrigger value="profile" className="h-full rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Profile</TabsTrigger>
-                    <TabsTrigger value="missions" className="h-full rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Missions</TabsTrigger>
-                    <TabsTrigger value="leaderboard" className="h-full rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Leaderboard</TabsTrigger>
+                <TabsList className="profile-tabs-list">
+                    <TabsTrigger value="profile" className="profile-tabs-trigger">Profile</TabsTrigger>
+                    <TabsTrigger value="missions" className="profile-tabs-trigger">Missions</TabsTrigger>
+                    <TabsTrigger value="leaderboard" className="profile-tabs-trigger">Leaderboard</TabsTrigger>
                 </TabsList>
             </div>
 
@@ -308,7 +308,7 @@ export default function ProfilePage() {
                         <CardContent className="space-y-4">
                         <div>
                             <p className="text-sm font-medium text-muted-foreground">Username:</p>
-                            <p className="text-lg font-semibold text-foreground">{currentUser.username}</p>
+                            <p className="text-lg font-semibold text-foreground truncate">{currentUser.username}</p>
                         </div>
                         {currentUser.status && (
                             <div>
@@ -479,7 +479,7 @@ export default function ProfilePage() {
                                                 {user.rank && <RankIcon rank={user.rank}/>}
                                             </div>
                                         </TableCell>
-                                        <TableCell className="font-medium text-foreground">{user.username}</TableCell>
+                                        <TableCell className="font-medium text-foreground truncate">{user.username}</TableCell>
                                         <TableCell className="text-right font-mono text-tertiary">{user.weeklyPoints?.toLocaleString() || 0}</TableCell>
                                         <TableCell className="text-right font-mono text-stat-orange">{user.airdropPoints?.toLocaleString() || 0}</TableCell>
                                     </TableRow>
