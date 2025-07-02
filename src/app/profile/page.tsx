@@ -1,4 +1,3 @@
-
 'use client';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -97,9 +96,9 @@ const RankIcon = ({ rank }: { rank: number }) => {
 // ---- Helper Components ----
 const MissionCard = ({ mission, onClaim, isClaimed, isLocked }: { mission: typeof missionsList[0], onClaim: (id: string) => void, isClaimed: boolean, isLocked: boolean }) => {
     const cardContent = (
-        <Card className={`bg-card/80 backdrop-blur-sm transition-all duration-300 flex flex-col h-full ${isLocked ? 'opacity-60' : 'interactive-card'} ${mission.type === 'social' ? 'border-primary' : ''}`}>
+        <Card className={cn("bg-card/80 backdrop-blur-sm transition-all duration-300 flex flex-col h-full", isLocked ? 'opacity-60' : 'interactive-card', mission.type === 'social' ? 'border-primary' : 'border-border')}>
             <CardHeader className="flex flex-row items-start gap-4">
-                <div className={`p-2 bg-background rounded-lg ${mission.type === 'social' ? 'border border-primary/50' : ''}`}>{mission.icon}</div>
+                <div className={cn("p-2 bg-background rounded-lg", mission.type === 'social' ? 'border border-primary/50' : 'border border-border')}>{mission.icon}</div>
                 <div>
                     <CardTitle className="flex items-center text-base">
                         {mission.title} 
@@ -291,8 +290,8 @@ export default function ProfilePage() {
         </Card>
 
         <Tabs defaultValue="missions" className="w-full">
-            <div className="flex justify-center">
-                <TabsList className="profile-tabs-list">
+             <div className="flex justify-center">
+                 <TabsList className="profile-tabs-list">
                     <TabsTrigger value="profile" className="profile-tabs-trigger">Profile</TabsTrigger>
                     <TabsTrigger value="missions" className="profile-tabs-trigger">Missions</TabsTrigger>
                     <TabsTrigger value="leaderboard" className="profile-tabs-trigger">Leaderboard</TabsTrigger>
@@ -306,18 +305,18 @@ export default function ProfilePage() {
                             <CardTitle className="flex items-center"><User className="mr-2 h-5 w-5"/><GlyphScramble text="Analyst Status" /></CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                        <div>
+                        <div className="min-w-0">
                             <p className="text-sm font-medium text-muted-foreground">Username:</p>
                             <p className="text-lg font-semibold text-foreground truncate">{currentUser.username}</p>
                         </div>
                         {currentUser.status && (
-                            <div>
+                            <div className="min-w-0">
                             <p className="text-sm font-medium text-muted-foreground">Status:</p>
-                            <p className={`text-lg font-semibold ${currentUser.status !== 'Guest' ? 'text-accent' : 'text-muted-foreground'}`}>{currentUser.status}</p>
+                            <p className={cn("text-lg font-semibold truncate", currentUser.status !== 'Guest' ? 'text-accent' : 'text-muted-foreground')}>{currentUser.status}</p>
                             </div>
                         )}
                         {currentUser.shadowId && (
-                            <div>
+                            <div className="min-w-0">
                             <p className="text-sm font-medium text-muted-foreground">ShadowID:</p>
                             <p className="text-lg font-semibold text-primary break-all">{currentUser.shadowId}</p>
                             </div>
@@ -336,7 +335,7 @@ export default function ProfilePage() {
                                 <p className="text-lg font-semibold text-tertiary">{currentUser.weeklyPoints?.toLocaleString() || 0}</p>
                             </div>
                              <div>
-                                <p className="text-sm font-medium text-muted-foreground flex items-center"><TrendingDown className="mr-1.5 h-4 w-4"/>Total Airdrop Points:</p>
+                                <p className="text-sm font-medium text-muted-foreground flex items-center"><Gift className="mr-1.5 h-4 w-4"/>Total Airdrop Points:</p>
                                 <p className="text-lg font-semibold text-stat-orange">{currentUser.airdropPoints?.toLocaleString() || 0}</p>
                             </div>
                         </CardContent>
@@ -440,7 +439,7 @@ export default function ProfilePage() {
                     </CardFooter>
                 </Card>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {missionsList.map(mission => (
                         <MissionCard 
                             key={mission.id}
