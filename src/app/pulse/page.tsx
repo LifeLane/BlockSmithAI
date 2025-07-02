@@ -40,6 +40,7 @@ import {
   } from "@/components/ui/alert-dialog";
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import { cn } from '@/lib/utils';
+import DisclaimerFooter from '@/components/blocksmith-ai/DisclaimerFooter';
 
 const TimeLeft = ({ expiration, className }: { expiration?: Date | null, className?: string }) => {
     const [timeLeft, setTimeLeft] = useState('');
@@ -731,6 +732,7 @@ export default function PortfolioPage() {
                  {renderTradeHistory()}
             </TabsContent>
         </Tabs>
+        <DisclaimerFooter />
       </div>
        <PerformanceReviewModal 
             isOpen={isReviewModalOpen}

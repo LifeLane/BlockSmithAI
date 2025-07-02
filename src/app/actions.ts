@@ -2,7 +2,6 @@
 "use server";
 // AI Flow Imports
 import { generateTradingStrategy as genCoreStrategy, type GenerateTradingStrategyInput } from '@/ai/flows/generate-trading-strategy';
-import { generateSarcasticDisclaimer } from '@/ai/flows/generate-sarcastic-disclaimer';
 import { shadowChat as shadowChatFlow, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
 import { generateShadowChoiceStrategy as genShadowChoice, type ShadowChoiceStrategyInput } from '@/ai/flows/generate-shadow-choice-strategy';
@@ -106,14 +105,12 @@ export interface PortfolioStats {
 }
 export type GenerateTradingStrategyOutput = Awaited<ReturnType<typeof genCoreStrategy>> & {
   id: string;
-  disclaimer: string;
   symbol: string;
   tradingMode: string;
 };
 export type GenerateShadowChoiceStrategyOutput = Awaited<ReturnType<typeof genShadowChoice>> & {
   id: string;
   symbol: string;
-  disclaimer: string;
 };
 export type { PerformanceReviewOutput };
 
@@ -322,10 +319,7 @@ export async function fetchLeaderboardDataJson(): Promise<LeaderboardUser[]> {
 
 export async function generateTradingStrategyAction(input: GenerateTradingStrategyInput & { userId: string }): Promise<GenerateTradingStrategyOutput | { error: string }> {
     try {
-        const [strategy, disclaimer] = await Promise.all([
-            genCoreStrategy(input),
-            generateSarcasticDisclaimer()
-        ]);
+        const strategy = await genCoreStrategy(input);
 
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
         
@@ -350,16 +344,15 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
                 strategyReasoning: 'Instant signal based on user-defined parameters.',
                 analysisSummary: strategy.analysisSummary,
                 newsAnalysis: strategy.newsAnalysis,
-                disclaimer: disclaimer.disclaimer,
                 type: SignalGenerationType.INSTANT,
                 status: GeneratedSignalStatus.EXECUTED,
             }
         });
 
         // Always log the position for an instant signal
-        await logInstantPositionAction(input.userId, { ...strategy, id: savedSignal.id, tradingMode: input.tradingMode, symbol: input.symbol, disclaimer: disclaimer.disclaimer });
+        await logInstantPositionAction(input.userId, { ...strategy, id: savedSignal.id, tradingMode: input.tradingMode, symbol: input.symbol });
         
-        return { ...strategy, id: savedSignal.id, symbol: input.symbol, disclaimer: disclaimer.disclaimer, tradingMode: input.tradingMode };
+        return { ...strategy, id: savedSignal.id, symbol: input.symbol, tradingMode: input.tradingMode };
 
     } catch (error: any) {
         console.error("Error in generateTradingStrategyAction:", error);
@@ -369,10 +362,7 @@ export async function generateTradingStrategyAction(input: GenerateTradingStrate
 
 export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStrategyInput & { userId: string }): Promise<GenerateShadowChoiceStrategyOutput | { error: string }> {
     try {
-        const [strategy, disclaimer] = await Promise.all([
-            genShadowChoice(input),
-            generateSarcasticDisclaimer()
-        ]);
+        const strategy = await genShadowChoice(input);
 
         if (!strategy) return { error: "SHADOW Core failed to generate an autonomous strategy." };
         
@@ -398,13 +388,12 @@ export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStra
                 strategyReasoning: strategy.strategyReasoning,
                 analysisSummary: strategy.analysisSummary,
                 newsAnalysis: strategy.newsAnalysis,
-                disclaimer: disclaimer.disclaimer,
                 type: SignalGenerationType.CUSTOM,
                 status: isHold ? GeneratedSignalStatus.ARCHIVED : GeneratedSignalStatus.PENDING_EXECUTION,
             }
         });
         
-        return { ...strategy, id: savedSignal.id, symbol: input.symbol, disclaimer: disclaimer.disclaimer };
+        return { ...strategy, id: savedSignal.id, symbol: input.symbol };
 
     } catch (error: any) {
         console.error("Error in generateShadowChoiceStrategyAction:", error);

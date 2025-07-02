@@ -33,7 +33,6 @@ type AIStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStr
   analysisSummary?: string | null;
   newsAnalysis?: string | null;
   chosenTradingMode?: string;
-  disclaimer: string;
 };
 
 interface SignalTrackerProps {
@@ -78,7 +77,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
     setIsSimulating(false);
   };
 
-  const { signal, entry_zone, stop_loss, take_profit, confidence, gpt_confidence_score, risk_rating, sentiment, analysisSummary, disclaimer } = aiStrategy;
+  const { signal, entry_zone, stop_loss, take_profit, confidence, gpt_confidence_score, risk_rating, sentiment, analysisSummary } = aiStrategy;
 
   const isBuy = signal === 'BUY';
   const isHold = signal === 'HOLD';
@@ -192,20 +191,6 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
                 </Button>
             </div>
         ) : null}
-
-        {disclaimer && (
-            <div className="shadow-edict-container">
-                <div className="shadow-edict-title-container">
-                    <MessageCircleWarning className="h-6 w-6 text-orange-400" />
-                    <div className="shadow-edict-title text-orange-400">
-                        <GlyphScramble text="SHADOW's Disclaimer" />
-                    </div>
-                </div>
-                <p className="shadow-edict-body text-muted-foreground">
-                    {disclaimer}
-                </p>
-            </div>
-        )}
     </div>
   );
 };

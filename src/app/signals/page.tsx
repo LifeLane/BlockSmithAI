@@ -19,6 +19,7 @@ import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
+import DisclaimerFooter from '@/components/blocksmith-ai/DisclaimerFooter';
 
 const StatusBadge = ({ status }: { status: GeneratedSignal['status'] }) => {
     const statusMap = {
@@ -256,6 +257,7 @@ export default function SignalsPage() {
             </CardHeader>
         </Card>
         {renderContent()}
+        <DisclaimerFooter />
       </div>
     </>
   );

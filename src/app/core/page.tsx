@@ -32,6 +32,7 @@ import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Lightbulb } fro
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
+import DisclaimerFooter from '@/components/blocksmith-ai/DisclaimerFooter';
 
 type AIStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
   id?: string;
@@ -237,7 +238,7 @@ export default function CoreConsolePage() {
       });
       if(currentUser.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
     } else {
-      setAiStrategy(result);
+      setAiStrategy(result as AIStrategyOutput);
       
       const isHold = result.signal?.toUpperCase() === 'HOLD';
       const toastTitle = isCustom ? "Custom Signal Generated!" : "Instant Signal Executed!";
@@ -422,6 +423,7 @@ export default function CoreConsolePage() {
             </div>
         )}
         
+        <DisclaimerFooter />
       </div>
       <ChatbotPopup isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
       {currentUser && (
