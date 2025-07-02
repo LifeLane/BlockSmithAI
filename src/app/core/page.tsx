@@ -18,7 +18,6 @@ import {
   type GenerateTradingStrategyOutput,
   type GenerateShadowChoiceStrategyOutput,
 } from '@/app/actions';
-import type { GenerateTradingStrategyInput, ShadowChoiceStrategyInput } from '@/ai/flows/generate-trading-strategy';
 
 import { 
     fetchMarketDataAction, 
@@ -28,11 +27,17 @@ import {
 import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-react';
+import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import DisclaimerFooter from '@/components/blocksmith-ai/DisclaimerFooter';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type AIStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
   id?: string;
@@ -198,20 +203,7 @@ export default function CoreConsolePage() {
     setStrategyError(null);
     setAiStrategy(null);
 
-    let currentDataToUse = liveMarketData;
-    if (!currentDataToUse || (currentDataToUse.symbol !== symbol)) {
-      const result = await fetchAndSetMarketData(symbol, true);
-      if ('error' in result) {
-        setStrategyError("Market data unavailable. Strategy generation aborted.");
-        if(currentUser.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
-        if (isCustom) setIsLoadingCustom(false);
-        else setIsLoadingInstant(false);
-        return;
-      }
-      currentDataToUse = result;
-    }
-
-    const marketDataForAIString = JSON.stringify(currentDataToUse);
+    const marketDataForAIString = JSON.stringify(liveMarketData);
     let result;
 
     const commonInput = { 
@@ -225,8 +217,7 @@ export default function CoreConsolePage() {
     if (isCustom) {
         result = await generateShadowChoiceStrategyAction(commonInput);
     } else {
-        const instantInput: GenerateTradingStrategyInput = { ...commonInput };
-        result = await generateTradingStrategyAction(instantInput);
+        result = await generateTradingStrategyAction(commonInput);
     }
     
     if ('error' in result) {
@@ -257,7 +248,7 @@ export default function CoreConsolePage() {
     
     if (isCustom) setIsLoadingCustom(false);
     else setIsLoadingInstant(false);
-  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast]);
+  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, updateUsageData, toast]);
 
 
   const handleToggleChat = () => setIsChatOpen(prev => !prev);
@@ -326,7 +317,7 @@ export default function CoreConsolePage() {
   }
 
   return (
-    <>
+    <TooltipProvider>
       <AppHeader />
       <div className="container mx-auto px-4 py-4 flex flex-col w-full min-h-[calc(100vh-140px)]">
         
@@ -368,7 +359,7 @@ export default function CoreConsolePage() {
                     ) : (
                         <div className="flex flex-col md:flex-row items-stretch gap-6">
                             <div className="w-full md:w-1/2 flex flex-col">
-                                <p className="text-xs text-center text-muted-foreground mb-2">Executes immediately with your selected parameters.</p>
+                                <p className="text-sm font-bold text-center text-primary mb-2">Executes immediately with your selected parameters.</p>
                                 <Button
                                     onClick={() => handleGenerateStrategy({ isCustom: false })}
                                     disabled={isButtonDisabled}
@@ -382,7 +373,7 @@ export default function CoreConsolePage() {
                             </div>
 
                             <div className="w-full md:w-1/2 flex flex-col">
-                                 <p className="text-xs text-center text-muted-foreground mb-2">SHADOW finds the optimal entry and provides a limit order.</p>
+                                 <p className="text-sm font-bold text-center text-accent mb-2">SHADOW finds the optimal entry and provides a limit order.</p>
                                 <Button
                                     onClick={() => handleGenerateStrategy({ isCustom: true })}
                                     disabled={isButtonDisabled}
@@ -429,6 +420,8 @@ export default function CoreConsolePage() {
             userId={currentUser.id}
         />
       )}
-    </>
+    </TooltipProvider>
   );
 }
+
+    
