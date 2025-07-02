@@ -1,4 +1,3 @@
-
 'use client';
 
 import { MessageCircleWarning } from 'lucide-react';
@@ -15,7 +14,7 @@ const DisclaimerFooter = () => {
                         <GlyphScramble text="A Transmission from SHADOW" />
                     </h3>
                 </div>
-                <p className="text-sm font-bold text-muted-foreground">
+                <p className="text-sm font-bold text-foreground/90">
                     I provide the coordinates; you fly the ship. These are not psychic pronouncements, merely high-probability vectors. The market does not offer refunds. Do Your Own Research.
                 </p>
             </Card>
