@@ -1,73 +1,102 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-generator client {
-  provider = "prisma-client-js"
-}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id                String   @id @default(uuid())
-  username          String   @unique
-  shadowId          String   @unique
-  status            String
-  weeklyPoints      Int      @default(0)
-  airdropPoints     Int      @default(0)
-  wallet_address    String?
-  wallet_type       String?
-  email             String?  @unique
-  phone             String?
-  x_handle          String?
-  telegram_handle   String?
-  youtube_handle    String?
-  claimedMissions   String[]
-  claimedSpecialOps String[] @default([])
-
-  positions Position[]
-  agents    UserAgent[]
-  badges    Badge[]    @relation("UserBadges")
+generator client {
+  provider = "prisma-client-js"
 }
 
-model Position {
-  id                  String         @id @default(uuid())
-  userId              String
-  symbol              String
-  signalType          SignalType
-  entryPrice          Float
-  size                Float
-  status              PositionStatus
-  openTimestamp       DateTime       @default(now())
-  stopLoss            Float?
-  takeProfit          Float?
-  expirationTimestamp DateTime?
-
-  // Fields to fix the error
-  closePrice          Float?
-  closeTimestamp      DateTime?
-  pnl                 Float?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+model User {
+  id                  String    @id @default(uuid())
+  username            String    @unique
+  shadowId            String    @unique
+  status              String?   @default("Guest")
+  weeklyPoints        Int       @default(0)
+  airdropPoints       Int       @default(0)
+  wallet_address      String?
+  wallet_type         String?
+  email               String?   @unique
+  phone               String?
+  x_handle            String?
+  telegram_handle     String?
+  youtube_handle      String?
+  claimedMissions     String[]
+  claimedSpecialOps   String[]
+  badges              Badge[]   @relation("UserBadges")
+  positions           Position[]
+  generatedSignals    GeneratedSignal[]
+  userAgents          UserAgent[]
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 }
 
 model Badge {
-  id    String @id @default(uuid())
-  name  String @unique
-  users User[] @relation("UserBadges")
+  id      String @id @default(uuid())
+  name    String @unique
+  users   User[] @relation("UserBadges")
+}
+
+model Position {
+  id                  String          @id @default(uuid())
+  userId              String
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbol              String
+  signalType          SignalType
+  status              PositionStatus
+  entryPrice          Float
+  size                Float
+  stopLoss            Float?
+  takeProfit          Float?
+  pnl                 Float?
+  openTimestamp       DateTime?
+  closeTimestamp      DateTime?
+  expirationTimestamp DateTime?
+  strategyId          String?         @unique
+  strategy            GeneratedSignal? @relation(fields: [strategyId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+}
+
+model GeneratedSignal {
+  id                      String                  @id @default(uuid())
+  userId                  String
+  user                    User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbol                  String
+  signal                  String
+  entry_zone              String
+  stop_loss               String
+  take_profit             String
+  confidence              String
+  risk_rating             String
+  gpt_confidence_score    String
+  sentiment               String
+  currentThought          String
+  shortTermPrediction     String
+  sentimentTransition     String?
+  chosenTradingMode       String
+  chosenRiskProfile       String
+  strategyReasoning       String
+  analysisSummary         String?
+  newsAnalysis            String?
+  disclaimer              String
+  type                    SignalGenerationType
+  status                  GeneratedSignalStatus
+  position                Position?
+  createdAt               DateTime                @default(now())
 }
 
 model UserAgent {
-  id                String    @id @default(uuid())
+  id                String       @id @default(uuid())
   userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   agentId           String
-  level             Int
-  status            String
+  level             Int          @default(1)
+  status            AgentStatus  @default(IDLE)
   deploymentEndTime DateTime?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
   @@unique([userId, agentId])
 }
@@ -75,11 +104,28 @@ model UserAgent {
 enum SignalType {
   BUY
   SELL
-  HOLD
 }
 
 enum PositionStatus {
   PENDING
   OPEN
   CLOSED
+}
+
+enum AgentStatus {
+  IDLE
+  DEPLOYED
+}
+
+enum GeneratedSignalStatus {
+  PENDING_EXECUTION
+  EXECUTED
+  DISMISSED
+  ARCHIVED
+  ERROR
+}
+
+enum SignalGenerationType {
+  INSTANT
+  CUSTOM
 }
