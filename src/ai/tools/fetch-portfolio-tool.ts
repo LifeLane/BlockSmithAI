@@ -1,11 +1,10 @@
 
 /**
  * @fileOverview A Genkit tool to fetch the user's current open portfolio positions.
+ * NOTE: This tool is stubbed to work without a database connection.
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-// Corrected the import to use the existing 'fetchPendingAndOpenPositionsAction'
-import { fetchPendingAndOpenPositionsAction, type Position } from '@/app/actions';
 
 // Corrected schema to match the data model for a Position.
 const PositionSchema = z.object({
@@ -14,10 +13,10 @@ const PositionSchema = z.object({
   signalType: z.enum(['BUY', 'SELL']),
   entryPrice: z.number(),
   size: z.number(),
-  status: z.enum(['PENDING', 'OPEN', 'CLOSED']), // The full enum from the DB schema
-  openTimestamp: z.date().nullable(), // Correct type
-  closeTimestamp: z.date().nullable(), // Correct type
-  expirationTimestamp: z.date().nullable(), // Correct type
+  status: z.enum(['PENDING', 'OPEN', 'CLOSED']),
+  openTimestamp: z.date().nullable(),
+  closeTimestamp: z.date().nullable(),
+  expirationTimestamp: z.date().nullable(),
   stopLoss: z.number().nullable(),
   takeProfit: z.number().nullable(),
   pnl: z.number().nullable(),
@@ -45,20 +44,10 @@ export const fetchPortfolioTool = ai.defineTool(
     outputSchema: FetchPortfolioOutputSchema,
   },
   async (input) => {
+    // Database functionality is disabled. Return a default empty state.
     if (!input.userId) {
       return { error: 'User ID is required to fetch portfolio.' };
     }
-    try {
-      // Corrected the function call
-      const positions = await fetchPendingAndOpenPositionsAction(input.userId);
-      if (positions.length === 0) {
-        return { message: "The user has no open or pending positions." };
-      }
-      return { positions, message: `User has ${positions.length} active position(s).` };
-    } catch (error: any) {
-      return { error: `Failed to fetch portfolio: ${error.message}` };
-    }
+    return { message: "The user has no open or pending positions (database is disabled)." };
   }
 );
-
-    
