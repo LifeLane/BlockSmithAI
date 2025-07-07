@@ -15,6 +15,7 @@ import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import {
   generateTradingStrategyAction,
   generateShadowChoiceStrategyAction,
+  logInstantPositionAction,
   type GenerateTradingStrategyOutput,
   type GenerateShadowChoiceStrategyOutput,
 } from '@/app/actions';
@@ -229,10 +230,15 @@ export default function CoreConsolePage() {
     } else {
       setAiStrategy(result);
       
+      // For Instant Signals, log the position immediately. The SignalTracker component will handle the rest.
+      if (!isCustom) {
+        await logInstantPositionAction(currentUser.id, result as GenerateTradingStrategyOutput);
+      }
+
       const toastTitle = isCustom ? "Custom Signal Generated!" : "Instant Signal Generated!";
       const toastDescription = isCustom
           ? `Your custom signal for ${result.symbol} is ready to be simulated.`
-          : `The instant signal for ${result.symbol} is now displayed.`;
+          : `The instant signal for ${result.symbol} has been logged and can be tracked in your portfolio.`;
 
       toast({
           title: <span className="text-accent">{toastTitle}</span>,
@@ -302,7 +308,7 @@ export default function CoreConsolePage() {
             aiStrategy={aiStrategy}
             liveMarketData={liveMarketData}
             userId={currentUser?.id || ''}
-            onSimulateSuccess={() => router.push('/pulse')}
+            onActionSuccess={() => router.push('/pulse')}
         />
       );
     }

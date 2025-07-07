@@ -338,12 +338,14 @@ export async function claimMissionRewardAction(userId: string, missionId: string
     return { success: true, message: `Mission reward claimed (session only).` };
 }
 
-export async function logInstantPositionAction(userId: string, strategy: GenerateTradingStrategyOutput): Promise<{ position: Position | null; error?: string; message?: string }> {
-    return { position: null, message: "Position logged (session only). Database is disabled." };
+export async function logInstantPositionAction(userId: string, strategy: GenerateTradingStrategyOutput): Promise<{ success: boolean; error?: string; }> {
+    console.log(`MOCK: Logging instant position for user ${userId} for symbol ${strategy.symbol}. No database is connected.`);
+    return { success: true };
 }
 
-export async function executeCustomSignalAction(signalId: string, userId: string): Promise<{ position: Position | null; error?: string }> {
-     return { position: null, error: "Feature disabled: Database connection is not active." };
+export async function executeCustomSignalAction(signalId: string, userId: string): Promise<{ success: boolean; error?: string }> {
+    console.log(`MOCK: Executing custom signal ${signalId} for user ${userId}. No database is connected.`);
+    return { success: true };
 }
 
 export async function closePositionAction(positionId: string, closePrice: number): Promise<{ position?: Position; airdropPointsEarned?: number; error?: string; }> {

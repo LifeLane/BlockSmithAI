@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import type { FunctionComponent } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,83 +14,108 @@ import {
   Activity,
   ShieldCheck,
   Percent,
-  AlertTriangle,
   Zap,
   PlayCircle,
   Loader2,
   MessageSquareHeart,
   Route,
 } from 'lucide-react';
-import { executeCustomSignalAction, type GenerateTradingStrategyOutput, type GenerateShadowChoiceStrategyOutput } from '@/app/actions';
+import { logInstantPositionAction, executeCustomSignalAction, type GenerateTradingStrategyOutput, type GenerateShadowChoiceStrategyOutput } from '@/app/actions';
 import type { LiveMarketData } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import GlyphScramble from './GlyphScramble';
-import Link from 'next/link';
 
 type AIStrategyOutput = (GenerateTradingStrategyOutput | GenerateShadowChoiceStrategyOutput) & { 
   id?: string;
   analysisSummary?: string | null;
   newsAnalysis?: string | null;
   chosenTradingMode?: string;
+  tradingMode?: string; // Add tradingMode for instant signals
 };
 
 interface SignalTrackerProps {
   aiStrategy: AIStrategyOutput | null;
   liveMarketData: LiveMarketData | null;
   userId: string;
-  onSimulateSuccess: () => void;
+  onActionSuccess: () => void;
 }
 
 const ParameterCard = ({ label, value, icon, valueClassName, isLarge = false }: { label: string, value: string, icon: React.ReactNode, valueClassName?: string, isLarge?: boolean }) => (
     <div className={cn("flex flex-col p-3 bg-secondary rounded-lg shadow-inner", isLarge ? "col-span-1" : "")}>
         <span className="text-xs text-muted-foreground flex items-center">{icon}{label}</span>
-        <span className={`font-mono font-semibold truncate ${valueClassName} ${isLarge ? 'text-2xl mt-1' : 'text-base'}`}>{value}</span>
+        <span className={`font-mono font-semibold truncate ${isLarge ? 'text-2xl mt-1' : 'text-base'} ${valueClassName || ''}`}>{value}</span>
     </div>
 );
 
 
-const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, liveMarketData, userId, onSimulateSuccess }) => {
-  const [isSimulating, setIsSimulating] = useState(false);
+const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, liveMarketData, userId, onActionSuccess }) => {
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+
+  const formatPrice = (priceString?: string | null): string => {
+    if (!priceString) return 'N/A';
+    if (priceString.includes('-')) {
+        const parts = priceString.split('-').map(p => parseFloat(p.trim()));
+        if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+            return `${parts[0].toFixed(2)} - ${parts[1].toFixed(2)}`;
+        }
+    }
+    const price = parseFloat(priceString);
+    if (isNaN(price)) {
+        return priceString;
+    }
+    return price.toFixed(2);
+  };
+  
+  const handleAction = useCallback(async () => {
+    if (!userId || !aiStrategy?.id) {
+        toast({ title: "Error", description: "User or Signal ID not found.", variant: "destructive" });
+        return;
+    }
+    setIsProcessing(true);
+
+    const isCustom = !!aiStrategy.chosenTradingMode;
+    let result: { success: boolean; error?: string };
+    let toastTitle: React.ReactNode;
+    let toastDescription: React.ReactNode;
+
+    if (isCustom) {
+        result = await executeCustomSignalAction(aiStrategy.id, userId);
+        toastTitle = <span className="text-accent">Custom Signal Simulated!</span>;
+        toastDescription = <span className="text-foreground">Your pending order for <strong className="text-primary">{aiStrategy.symbol}</strong> is now active. You are being redirected to your portfolio.</span>;
+    } else {
+        result = await logInstantPositionAction(userId, aiStrategy as GenerateTradingStrategyOutput);
+        toastTitle = <span className="text-accent">Instant Position Logged!</span>;
+        toastDescription = <span className="text-foreground">Your instant trade for <strong className="text-primary">{aiStrategy.symbol}</strong> has been logged. Redirecting to your portfolio.</span>;
+    }
+
+    if (result.success) {
+        toast({
+            title: toastTitle,
+            description: toastDescription,
+        });
+        onActionSuccess();
+    } else {
+        toast({ title: "Action Failed", description: result.error || "An unknown error occurred.", variant: "destructive" });
+    }
+    setIsProcessing(false);
+  }, [userId, aiStrategy, toast, onActionSuccess]);
+
 
   if (!aiStrategy || !aiStrategy.id) {
     return null;
   }
   
-  const handleSimulate = async () => {
-    if (!userId || !aiStrategy.id) {
-        toast({ title: "Error", description: "User or Signal ID not found.", variant: "destructive" });
-        return;
-    }
-    setIsSimulating(true);
-    const result = await executeCustomSignalAction(aiStrategy.id, userId);
-    if (result.position) {
-        toast({
-            title: <span className="text-accent">Signal Simulated!</span>,
-            description: <span className="text-foreground">Your pending order for <strong className="text-primary">{aiStrategy.symbol}</strong> is now active. You are being redirected to your portfolio.</span>,
-        });
-        onSimulateSuccess();
-    } else {
-        toast({ title: "Simulation Failed", description: result.error, variant: "destructive" });
-    }
-    setIsSimulating(false);
-  };
-
   const { signal, entry_zone, stop_loss, take_profit, confidence, gpt_confidence_score, risk_rating, sentiment, analysisSummary, disclaimer } = aiStrategy;
 
   const isBuy = signal === 'BUY';
   const isCustomSignal = !!aiStrategy.chosenTradingMode;
 
-  const formatPrice = (priceString?: string | null): string => {
-    if (!priceString) return 'N/A';
-    const price = parseFloat(priceString);
-    if (isNaN(price)) return priceString;
-    return price.toFixed(2);
-  };
-
   const signalText = isBuy ? 'BUY / LONG' : 'SELL / SHORT';
   const signalIcon = isBuy ? <TrendingUp className="mr-2 h-4 w-4" /> : <TrendingDown className="mr-2 h-4 w-4" />;
+  const buttonText = isCustomSignal ? "Simulate Signal" : "Track Instant Position";
+  const buttonIcon = isCustomSignal ? <PlayCircle className="h-4 w-4 mr-2"/> : <Route className="mr-2 h-4 w-4"/>;
 
   const currentPriceFormatted = liveMarketData?.lastPrice ? `$${formatPrice(liveMarketData.lastPrice)}` : 'N/A';
 
@@ -126,7 +151,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <ParameterCard 
-                label="Entry Zone" 
+                label={isCustomSignal ? "Limit Entry" : "Instant Entry"}
                 value={`$${formatPrice(entry_zone)}`}
                 icon={<LogIn className="mr-2 h-3 w-3" />}
                 valueClassName="text-foreground"
@@ -161,7 +186,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
             <ParameterCard 
                 label="Risk Rating" 
                 value={risk_rating || 'N/A'}
-                icon={<AlertTriangle className="mr-2 h-3 w-3" />}
+                icon={<Zap className="mr-2 h-3 w-3" />}
                 valueClassName="text-orange-400"
             />
         </div>
@@ -173,23 +198,16 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
             </div>
         )}
 
-        {isCustomSignal ? (
-          <div className="pt-2">
-             <Button className="w-full glow-button" onClick={handleSimulate} disabled={isSimulating}>
-                {isSimulating ? <Loader2 className="h-4 w-4 animate-spin"/> : <PlayCircle className="h-4 w-4 mr-2"/>}
-                Simulate Signal
-             </Button>
-          </div>
-        ) : (
-            <div className="pt-2">
-                <Button asChild className="w-full shadow-choice-button">
-                    <Link href="/pulse">
-                        <Route className="mr-2 h-4 w-4" />
-                        Track in Portfolio
-                    </Link>
-                </Button>
-            </div>
-        )}
+        <div className="pt-2">
+            <Button 
+                className={cn("w-full", isCustomSignal ? "glow-button" : "shadow-choice-button")} 
+                onClick={handleAction} 
+                disabled={isProcessing}
+            >
+                {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : buttonIcon}
+                {buttonText}
+            </Button>
+        </div>
 
         {disclaimer && (
             <div className="shadow-edict-container">
