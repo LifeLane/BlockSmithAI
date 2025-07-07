@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -29,7 +28,7 @@ const PromptInputSchema = ShadowChoiceStrategyInputSchema.extend({
 
 // The core output schema which includes the existing 11 fields plus SHADOW's autonomous choices and reasoning.
 const ShadowChoiceStrategyCoreOutputSchema = z.object({
-  signal: z.string().describe('The trading signal (BUY, SELL, or HOLD).'),
+  signal: z.enum(['BUY', 'SELL']).describe('The trading signal (BUY or SELL).'),
   entry_zone: z.string().describe('The entry zone for the trade (specific price or range).'),
   stop_loss: z.string().describe('The stop loss level for the trade (specific price).'),
   take_profit: z.string().describe('The take profit level for the trade (specific price).'),
@@ -76,8 +75,8 @@ Long-Term Data (4h candles): {{{longTermCandles}}}
 3.  **Optimal Parameter Selection:** Based on the synthesis of the trend, volatility, and news context, I will decide upon the most logical **Trading Mode** and **Risk Profile**.
 4.  **Articulate Rationale:** I will formulate a concise **strategyReasoning** to explain *why* my chosen trading mode and risk profile are the most logical course of action based on the multi-timeframe analysis.
 5.  **Pinpoint Entry & Execute Deep Analysis:** I will use the Short-Term (15m) data to find a precise entry point that aligns with the dominant trend (e.g., buying a small dip in an uptrend). I will synthesize all live and historical data, focusing on key indicators like RSI for overbought/oversold levels and MACD for momentum confirmation.
-6.  **Derive Core Strategy:** Using my autonomous choices as internal guides, I will derive the full set of 16 core trading parameters.
-    -   **CRITICAL ENTRY PRICE LOGIC:** For this custom signal, I am creating a limit order. For a **BUY** signal, my 'entry_zone' must be a specific price at a logical support level, ideally *below* the current market price. For a **SELL** signal, my 'entry_zone' must be at a logical resistance level, ideally *above* the current market price.
+6.  **Derive Core Strategy:** Using my autonomous choices as internal guides, I will derive the full set of 16 core trading parameters. I must always provide a BUY or SELL signal.
+    -   **CRITICAL ENTRY PRICE LOGIC:** For this custom signal, I am creating a limit order. For a **BUY** signal, my 'entry_zone' must be a specific price at a logical support level, ideally *below* the current market price. For a **SELL** signal, my 'entry_zone' must be at a logical resistance level, ideally *above* the current market price. If a clear entry point cannot be found, I must still choose the most probable direction (BUY or SELL) and set a low confidence score, adjusting the entry zone to be a logical, albeit less optimal, level.
     -   **Data-Driven SL/TP:** My 'stop_loss' and 'take_profit' will be data-driven, based on key support and resistance levels identified across the multiple timeframes.
     -   For a **BUY** signal, my 'stop_loss' will be set just below a key recent support level. My 'take_profit' will be set at a logical resistance level.
     -   For a **SELL** signal, my 'stop_loss' will be set just above a key recent resistance level. My 'take_profit' will be set at a logical support level.
@@ -91,7 +90,7 @@ Long-Term Data (4h candles): {{{longTermCandles}}}
 *   **strategyReasoning**: My justification for the choices above.
 *   **analysisSummary**: A brief summary of my technical analysis, referencing the indicators used.
 *   **newsAnalysis**: (A summary of how news influenced my choice of mode and risk. If no significant news, state that.)
-*   **signal**: (BUY, SELL, or HOLD)
+*   **signal**: (BUY or SELL)
 *   **entry_zone**: (Specific price or a tight price range)
 *   **stop_loss**: (Specific numerical price, data-driven)
 *   **take_profit**: (Specific numerical price, data-driven)
@@ -118,25 +117,7 @@ const shadowChoiceStrategyFlow = ai.defineFlow(
 
     if (!output) {
       console.error("SHADOW Core returned empty output for SHADOW's Choice strategy with input:", input);
-      // Return a structured error-like response that fits the schema
-      return {
-        signal: "HOLD",
-        entry_zone: "N/A - Autonomous analysis failed",
-        stop_loss: "N/A",
-        take_profit: "N/A",
-        confidence: "Low",
-        risk_rating: "High", // High risk because the AI failed
-        gpt_confidence_score: "0%",
-        sentiment: "Indeterminate",
-        currentThought: "My higher cognitive functions experienced a quantum fluctuation. Unable to determine optimal parameters.",
-        shortTermPrediction: "Indeterminate",
-        sentimentTransition: "N/A",
-        chosenTradingMode: "Unknown",
-        chosenRiskProfile: "Unknown",
-        strategyReasoning: "A critical failure occurred during the autonomous decision-making process. The query could not be resolved.",
-        analysisSummary: "Technical analysis failed due to the core decision-making error.",
-        newsAnalysis: "News feed analysis failed.",
-      };
+      throw new Error("SHADOW Core failed to generate an autonomous strategy. The AI returned no output.");
     }
 
     // Sanitize confidence score

@@ -229,13 +229,10 @@ export default function CoreConsolePage() {
     } else {
       setAiStrategy(result);
       
-      const isHold = result.signal?.toUpperCase() === 'HOLD';
-      const toastTitle = isCustom ? "Custom Signal Generated!" : "Instant Signal Executed!";
-      const toastDescription = isHold 
-          ? `HOLD signal for ${result.symbol} received. No position logged.`
-          : isCustom
-              ? `Your custom signal for ${result.symbol} is ready to be simulated.`
-              : `Position for ${result.symbol} has been opened. Track it in your Portfolio.`;
+      const toastTitle = isCustom ? "Custom Signal Generated!" : "Instant Signal Generated!";
+      const toastDescription = isCustom
+          ? `Your custom signal for ${result.symbol} is ready to be simulated.`
+          : `The instant signal for ${result.symbol} is now displayed.`;
 
       toast({
           title: <span className="text-accent">{toastTitle}</span>,

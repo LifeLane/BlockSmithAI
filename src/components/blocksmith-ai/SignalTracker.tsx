@@ -80,7 +80,6 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
   const { signal, entry_zone, stop_loss, take_profit, confidence, gpt_confidence_score, risk_rating, sentiment, analysisSummary, disclaimer } = aiStrategy;
 
   const isBuy = signal === 'BUY';
-  const isHold = signal === 'HOLD';
   const isCustomSignal = !!aiStrategy.chosenTradingMode;
 
   const formatPrice = (priceString?: string | null): string => {
@@ -105,9 +104,9 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
              <ParameterCard 
                 isLarge
                 label="SHADOW Signal"
-                value={isHold ? 'HOLD' : signalText}
-                icon={isHold ? <Activity className="mr-2 h-4 w-4" /> : signalIcon}
-                valueClassName={isHold ? 'text-muted-foreground' : isBuy ? 'text-green-400' : 'text-red-400'}
+                value={signalText}
+                icon={signalIcon}
+                valueClassName={isBuy ? 'text-green-400' : 'text-red-400'}
             />
              <ParameterCard 
                 isLarge
@@ -128,19 +127,19 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <ParameterCard 
                 label="Entry Zone" 
-                value={isHold ? 'N/A' : `$${formatPrice(entry_zone)}`}
+                value={`$${formatPrice(entry_zone)}`}
                 icon={<LogIn className="mr-2 h-3 w-3" />}
                 valueClassName="text-foreground"
             />
             <ParameterCard 
                 label="Stop Loss" 
-                value={isHold ? 'N/A' : `$${formatPrice(stop_loss)}`}
+                value={`$${formatPrice(stop_loss)}`}
                 icon={<ShieldX className="mr-2 h-3 w-3" />}
                 valueClassName="text-red-400"
             />
             <ParameterCard 
                 label="Take Profit" 
-                value={isHold ? 'N/A' : `$${formatPrice(take_profit)}`}
+                value={`$${formatPrice(take_profit)}`}
                 icon={<Target className="mr-2 h-3 w-3" />}
                 valueClassName="text-green-400"
             />
@@ -174,14 +173,14 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
             </div>
         )}
 
-        {!isHold && isCustomSignal ? (
+        {isCustomSignal ? (
           <div className="pt-2">
              <Button className="w-full glow-button" onClick={handleSimulate} disabled={isSimulating}>
                 {isSimulating ? <Loader2 className="h-4 w-4 animate-spin"/> : <PlayCircle className="h-4 w-4 mr-2"/>}
                 Simulate Signal
              </Button>
           </div>
-        ) : !isHold && !isCustomSignal ? (
+        ) : (
             <div className="pt-2">
                 <Button asChild className="w-full shadow-choice-button">
                     <Link href="/pulse">
@@ -190,7 +189,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
                     </Link>
                 </Button>
             </div>
-        ) : null}
+        )}
 
         {disclaimer && (
             <div className="shadow-edict-container">
