@@ -24,7 +24,7 @@ import { fetchMarketDataAction } from '@/services/market-data-service';
 
 
 // Helper function to robustly parse price strings, which could be a single number or a range.
-const parsePrice = (priceStr: string | undefined): number => {
+const parsePrice = (priceStr: string | undefined | null): number => {
     if (!priceStr) return NaN;
     const cleanedStr = priceStr.replace(/[^0-9.-]/g, ' '); 
     const parts = cleanedStr.split(' ').filter(p => p !== '' && !isNaN(parseFloat(p)));
