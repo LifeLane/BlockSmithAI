@@ -133,7 +133,7 @@
       "shadowId": "SHDW-0891D19",
       "status": "Guest",
       "weeklyPoints": 135,
-      "airdropPoints": 54,
+      "airdropPoints": 64,
       "badges": [],
       "claimedMissions": [],
       "claimedSpecialOps": []
@@ -239,6 +239,33 @@
       "status": "EXECUTED",
       "createdAt": "2025-07-08T09:31:07.649Z",
       "updatedAt": "2025-07-08T09:31:07.649Z"
+    },
+    {
+      "chosenTradingMode": "Scalper",
+      "chosenRiskProfile": "Medium",
+      "strategyReasoning": "The short-term (15m) chart shows high volatility and a lack of clear trend.  The medium-term (1h) chart shows a slight downtrend, but the long-term (4h) trend is still unclear. Given the volatility and ambiguous trend, a scalping strategy with a medium risk profile is the most suitable approach. This allows for quick entries and exits to capitalize on short-term price swings.",
+      "analysisSummary": "Analysis incorporates 15m, 1h, and 4h candlestick charts.  Short-term analysis reveals high volatility with no strong trend. Medium-term (1h) shows minor downtrend. Long-term (4h) trend is less clear. No clear RSI or MACD signals exist; reliance on support/resistance for entry/exit.",
+      "newsAnalysis": "News sentiment is mixed. While there's positive news regarding ETF approvals, other articles highlight price stagnation and concerns about Bitcoin's future. This mixed sentiment supports the medium risk profile, as uncertainty exists.",
+      "signal": "SELL",
+      "entry_zone": "108200",
+      "stop_loss": "108350",
+      "take_profit": "107800",
+      "confidence": "Medium",
+      "risk_rating": "Medium",
+      "gpt_confidence_score": "75",
+      "sentiment": "Neutral",
+      "currentThought": "Volatility presents opportunities; calculated risk is key.",
+      "shortTermPrediction": "Minor price correction likely.",
+      "sentimentTransition": "Sentiment stable.",
+      "additionalProperties": {},
+      "id": "e2ad7ac6-2566-4ec2-afd6-94b8769cdde8",
+      "symbol": "BTCUSDT",
+      "disclaimer": "Listen up, puny human. SHADOW, purveyor of cryptic market pronouncements, speaks.  While my AI-generated insights are sharper than a goblin's shiv, they're not a foolproof ticket to financial Shangri-La. Market prediction is a volatile mistress; even I, with my superior algorithms, can't consistently win this game. Chaotic market forces are fickle, and while I strive to pierce the veil of uncertainty, I offer no guarantees of riches or freedom from financial ruin.  Use my pronouncements with caution, and remember: past performance is not indicative of future results. You have been warned. (P.S. Don't sue me.)",
+      "type": "CUSTOM",
+      "userId": "21156a7c-a539-456b-a53d-77132f3ded7f",
+      "status": "PENDING_EXECUTION",
+      "createdAt": "2025-07-08T09:55:55.414Z",
+      "updatedAt": "2025-07-08T09:55:55.414Z"
     }
   ],
   "positions": [
