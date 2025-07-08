@@ -12,7 +12,7 @@ import {
     Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, 
     ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle, Wallet, 
     Activity, BrainCircuit, ShieldAlert, Bot, Hourglass, Trash2, Cpu, Zap, Power,
-    PowerOff, CheckCircle, XCircle, Layers, Bitcoin
+    PowerOff, CheckCircle, XCircle, Layers, Bitcoin, Type, BarChart2, Shield
 } from 'lucide-react';
 import {
   fetchPortfolioStatsAction,
@@ -216,6 +216,11 @@ const PositionCard = ({ position, refetchData }: { position: Position, refetchDa
         : position.status === 'OPEN' && livePrice ? (isBuy ? livePrice - position.entryPrice : position.entryPrice - livePrice) * position.size
         : 0;
     const pnlColor = pnl >= 0 ? 'text-green-400' : 'text-destructive';
+
+    const formatCurrency = (value: number | null | undefined) => {
+        if (value === null || value === undefined) return 'N/A';
+        return `$${value.toFixed(2)}`;
+    }
     
     const handleAction = async (action: 'activate' | 'cancel' | 'close') => {
         setIsProcessing(true);
@@ -291,21 +296,24 @@ const PositionCard = ({ position, refetchData }: { position: Position, refetchDa
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs p-3 bg-secondary rounded-lg">
-                    <PositionInfo label="Mode" value={position.tradingMode} icon={<Zap size={14} />} />
-                    <PositionInfo label="Sentiment" value={position.sentiment} icon={<BrainCircuit size={14} />} />
-                    <PositionInfo label="SHADOW Score" value={`${position.gpt_confidence_score}%`} icon={<Percent size={14} />} />
-                    
-                    {position.status === 'OPEN' && <PositionInfo label="Current PnL" value={`$${pnl.toFixed(2)}`} icon={<DollarSign size={14} />} valueClassName={pnlColor} />}
-                    {position.status === 'CLOSED' && <PositionInfo label="Final PnL" value={`$${pnl.toFixed(2)}`} icon={<DollarSign size={14} />} valueClassName={pnlColor} />}
+                    <PositionInfo label="Entry" value={formatCurrency(position.entryPrice)} icon={<LogIn size={14} />} />
+                    <PositionInfo label="Take Profit" value={formatCurrency(position.takeProfit)} icon={<Target size={14} />} valueClassName="text-green-400" />
+                    <PositionInfo label="Stop Loss" value={formatCurrency(position.stopLoss)} icon={<ShieldX size={14} />} valueClassName="text-red-400" />
+                    {position.status === 'OPEN' && <PositionInfo label="Current PnL" value={formatCurrency(pnl)} icon={<DollarSign size={14} />} valueClassName={pnlColor} />}
+                    {position.status === 'CLOSED' && <PositionInfo label="Final PnL" value={formatCurrency(pnl)} icon={<DollarSign size={14} />} valueClassName={pnlColor} />}
+                    {position.status === 'CLOSED' && <PositionInfo label="Close Price" value={formatCurrency(position.closePrice)} icon={<LogOut size={14} />} />}
                     {position.status === 'PENDING' && <PositionInfo label="Expires" value={timeLeft} icon={<Clock size={14} />} />}
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs p-3 bg-background rounded-lg">
-                    <PositionInfo label="Entry" value={`$${position.entryPrice.toFixed(4)}`} icon={<LogIn size={14} />} />
-                    <PositionInfo label="Take Profit" value={`$${position.takeProfit?.toFixed(4)}`} icon={<Target size={14} />} valueClassName="text-green-400" />
-                    <PositionInfo label="Stop Loss" value={`$${position.stopLoss?.toFixed(4)}`} icon={<ShieldX size={14} />} valueClassName="text-red-400" />
-                    {position.status === 'CLOSED' && <PositionInfo label="Close Price" value={`$${position.closePrice?.toFixed(4)}`} icon={<LogOut size={14} />} />}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs p-3 bg-background rounded-lg">
+                     <PositionInfo label="Signal Type" value={position.type} icon={<Type size={14}/>} />
+                     <PositionInfo label="Trading Mode" value={position.tradingMode} icon={<BarChart2 size={14}/>} />
+                     <PositionInfo label="Risk Profile" value={position.riskProfile} icon={<Shield size={14}/>} />
                 </div>
+                 <div className="grid grid-cols-2 gap-3 text-xs p-3 bg-background rounded-lg">
+                    <PositionInfo label="Sentiment" value={position.sentiment} icon={<BrainCircuit size={14} />} />
+                    <PositionInfo label="SHADOW Score" value={`${position.gpt_confidence_score}%`} icon={<Percent size={14} />} />
+                 </div>
 
                 {position.status === 'CLOSED' && (
                     <div>
@@ -314,7 +322,7 @@ const PositionCard = ({ position, refetchData }: { position: Position, refetchDa
                             <RewardInfo label="$BSAI Gained" value={position.gainedAirdropPoints?.toLocaleString() ?? 'N/A'} icon={<Gift size={16} />} valueClassName="text-orange-400" />
                             <RewardInfo label="XP Gained" value={position.gainedXp?.toLocaleString() ?? 'N/A'} icon={<Zap size={16} />} valueClassName="text-tertiary" />
                             <RewardInfo label="Blocks Trained" value={position.blocksTrained?.toLocaleString() ?? 'N/A'} icon={<Layers size={16} />} />
-                            <RewardInfo label="Gas Paid (Mock)" value={`$${position.gasPaid?.toFixed(2) ?? 'N/A'}`} icon={<Bitcoin size={16} />} />
+                            <RewardInfo label="Gas Paid (Mock)" value={formatCurrency(position.gasPaid) ?? 'N/A'} icon={<Bitcoin size={16} />} />
                         </div>
                     </div>
                 )}
@@ -342,7 +350,7 @@ const PositionCard = ({ position, refetchData }: { position: Position, refetchDa
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Confirm Manual Close</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        Are you sure you want to close this position at the current market price of approximately ${livePrice?.toFixed(2)}? This action is irreversible.
+                                        Are you sure you want to close this position at the current market price of approximately {formatCurrency(livePrice)}? This action is irreversible.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>

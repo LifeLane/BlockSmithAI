@@ -66,6 +66,7 @@ export interface Position {
     createdAt: Date;
     updatedAt: Date;
     // Enriched data from signal
+    type: 'INSTANT' | 'CUSTOM';
     tradingMode: string;
     riskProfile: string;
     gpt_confidence_score: string;
@@ -434,6 +435,7 @@ export async function logInstantPositionAction(userId: string, strategy: Generat
         createdAt: new Date(),
         updatedAt: new Date(),
         // Enriched Data
+        type: 'INSTANT',
         tradingMode: strategy.tradingMode,
         riskProfile: strategy.risk_rating,
         gpt_confidence_score: strategy.gpt_confidence_score,
@@ -480,6 +482,7 @@ export async function executeCustomSignalAction(signalId: string, userId: string
         createdAt: new Date(),
         updatedAt: new Date(),
         // Enriched Data
+        type: 'CUSTOM',
         tradingMode: signal.chosenTradingMode || 'Custom',
         riskProfile: signal.chosenRiskProfile,
         gpt_confidence_score: signal.gpt_confidence_score,
@@ -733,3 +736,4 @@ export async function dismissCustomSignalAction(signalId: string, userId: string
     await writeDb(db);
     return { success: true };
 }
+
