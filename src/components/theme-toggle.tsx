@@ -2,10 +2,16 @@
 "use client"
 
 import * as React from "react"
-import { Paintbrush } from "lucide-react"
+import { Moon, Sun, Flame, Leaf, Grape, Contrast, Paintbrush } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Tooltip,
   TooltipContent,
@@ -14,37 +20,45 @@ import {
 } from "@/components/ui/tooltip"
 
 const themes = [
-  { value: "dark", label: "Default Dark" },
-  { value: "theme-green", label: "Green" },
-  { value: "theme-red", label: "Red" },
-  { value: "theme-yellow", label: "Yellow" },
-  { value: "theme-purple", label: "Purple" },
-  { value: "theme-white", label: "White" },
+  { value: "dark", label: "Default Dark", icon: Moon },
+  { value: "theme-green", label: "Green", icon: Leaf },
+  { value: "theme-red", label: "Red", icon: Flame },
+  { value: "theme-yellow", label: "Yellow", icon: Sun },
+  { value: "theme-purple", label: "Purple", icon: Grape },
+  { value: "theme-white", label: "White", icon: Contrast },
 ]
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
-
-  const handleThemeCycle = () => {
-    const currentIndex = themes.findIndex((t) => t.value === theme)
-    const nextIndex = (currentIndex + 1) % themes.length
-    setTheme(themes[nextIndex].value)
-  }
-
-  const currentThemeLabel = themes.find(t => t.value === theme)?.label || 'Theme';
+  const { setTheme } = useTheme()
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="Toggle theme" onClick={handleThemeCycle}>
-            <Paintbrush className="h-[1.2rem] w-[1.2rem] animate-icon-pulse-glow" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Change Theme: {currentThemeLabel}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <DropdownMenu>
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" aria-label="Toggle theme">
+                            <Paintbrush className="h-[1.2rem] w-[1.2rem] animate-icon-pulse-glow" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Change Theme</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+
+      <DropdownMenuContent align="end">
+        {themes.map((theme) => {
+            const Icon = theme.icon;
+            return (
+                <DropdownMenuItem key={theme.value} onClick={() => setTheme(theme.value)}>
+                    <Icon className="mr-2 h-4 w-4" />
+                    <span>{theme.label}</span>
+                </DropdownMenuItem>
+            )
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
