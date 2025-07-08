@@ -111,11 +111,9 @@ export async function getOrCreateUserAction(userId: string | null): Promise<User
         if(existingUser) return existingUser;
     }
 
-    const newId = userId || randomUUID();
     const newUser = await prisma.user.create({
         data: {
-            id: newId,
-            username: `Analyst_${newId.substring(0, 6)}`,
+            username: `Analyst_${randomUUID().substring(0, 6)}`,
             shadowId: `SHDW-${randomUUID().substring(0, 7).toUpperCase()}`,
         }
     });
@@ -344,7 +342,7 @@ export async function executeCustomSignalAction(signalId: string, userId: string
                 strategyId: signal.id,
                 type: 'CUSTOM' as PositionType,
                 tradingMode: signal.chosenTradingMode || 'Custom',
-                riskProfile: signal.chosenRiskProfile,
+                riskProfile: signal.chosenRiskProfile || 'Medium',
                 gpt_confidence_score: signal.gpt_confidence_score,
                 sentiment: signal.sentiment,
             }
