@@ -44,7 +44,7 @@ const DEFAULT_SYMBOLS: FormattedSymbol[] = [
   { value: "SOLUSDT", label: "SOL/USDT" },
 ];
 const INITIAL_DEFAULT_SYMBOL = 'BTCUSDT';
-const MAX_GUEST_ANALYSES = 3;
+const MAX_GUEST_ANALYSES = 5;
 
 
 export default function CoreConsolePage() {
@@ -230,22 +230,8 @@ export default function CoreConsolePage() {
       });
       if(currentUser.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
     } else {
-        // Save to local storage for the Signals page
-        try {
-            const existingSignals: GeneratedSignal[] = JSON.parse(localStorage.getItem('bs-generated-signals') || '[]');
-            const newSignal: GeneratedSignal = {
-                ...(result as any),
-                status: result.type === 'INSTANT' ? 'EXECUTED' : 'PENDING_EXECUTION',
-                userId: currentUser.id,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            };
-            const updatedSignals = [newSignal, ...existingSignals];
-            localStorage.setItem('bs-generated-signals', JSON.stringify(updatedSignals));
-        } catch(e) {
-            console.error("Could not save signal to localStorage", e);
-        }
-
+        setAiStrategy(result as AIStrategyOutput);
+        
         if (result.type === 'INSTANT') {
             await logInstantPositionAction(currentUser.id, result as GenerateTradingStrategyOutput);
             toast({
@@ -258,8 +244,6 @@ export default function CoreConsolePage() {
                 description: `Your custom signal for ${result.symbol} is ready to be simulated.`,
             });
         }
-        
-        setAiStrategy(result as AIStrategyOutput);
     }
     
     if (isCustom) setIsLoadingCustom(false);
@@ -278,7 +262,7 @@ export default function CoreConsolePage() {
   };
 
   const isButtonDisabled = isUserLoading || isLoadingInstant || isLoadingCustom || isLoadingSymbols;
-  const showResults = aiStrategy || isLoadingCustom || strategyError;
+  const showResults = aiStrategy || isLoadingCustom || isLoadingInstant || strategyError;
   const isLimitReached = currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES;
 
   const renderResults = () => {

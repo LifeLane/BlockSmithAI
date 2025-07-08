@@ -11,6 +11,7 @@ import Link from 'next/link';
 import {
   dismissCustomSignalAction,
   executeCustomSignalAction,
+  fetchAllGeneratedSignalsAction,
   type GeneratedSignal,
 } from '@/app/actions';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
@@ -109,22 +110,18 @@ export default function SignalsPage() {
     const { toast } = useToast();
     const router = useRouter();
 
-    const fetchSignals = useCallback(() => {
+    const fetchSignals = useCallback(async () => {
+        if(!user?.id) return;
         setIsLoading(true);
-        try {
-            const storedSignals = localStorage.getItem('bs-generated-signals');
-            if (storedSignals) {
-                setSignals(JSON.parse(storedSignals));
-            } else {
-                setSignals([]);
-            }
-        } catch (e) {
-            console.error("Failed to parse signals from localStorage", e);
-            toast({ title: "Error", description: "Could not load signal history.", variant: 'destructive' });
+        const result = await fetchAllGeneratedSignalsAction(user.id);
+        if ('error' in result) {
+            toast({ title: "Error", description: result.error, variant: 'destructive' });
             setSignals([]);
+        } else {
+            setSignals(result);
         }
         setIsLoading(false);
-    }, [toast]);
+    }, [user?.id, toast]);
 
     useEffect(() => {
         if (user?.id) {
@@ -134,16 +131,6 @@ export default function SignalsPage() {
         }
     }, [user, isUserLoading, fetchSignals]);
     
-    const updateSignalInStorage = useCallback((signalId: string, updates: Partial<GeneratedSignal>) => {
-        setSignals(currentSignals => {
-            const updatedSignals = currentSignals.map(s => 
-                s.id === signalId ? { ...s, ...updates, updatedAt: new Date() } : s
-            );
-            localStorage.setItem('bs-generated-signals', JSON.stringify(updatedSignals));
-            return updatedSignals;
-        });
-    }, []);
-
     const handleDismiss = useCallback(async (signalId: string) => {
         if (!user) return;
         setProcessingId(signalId);
@@ -151,13 +138,13 @@ export default function SignalsPage() {
         const result = await dismissCustomSignalAction(signalId, user.id);
         
         if (result.success) {
-            updateSignalInStorage(signalId, { status: 'DISMISSED' });
             toast({ title: "Signal Dismissed", description: "This signal will no longer be available for execution." });
+            fetchSignals(); // Refetch signals
         } else {
             toast({ title: "Dismissal Failed", description: result.error || "Could not dismiss the signal.", variant: 'destructive' });
         }
         setProcessingId(null);
-    }, [user, updateSignalInStorage, toast]);
+    }, [user, fetchSignals, toast]);
     
     const handleExecute = useCallback(async (signalId: string) => {
         if (!user) return;
@@ -166,7 +153,6 @@ export default function SignalsPage() {
         const result = await executeCustomSignalAction(signalId, user.id);
         
         if (result.success) {
-            updateSignalInStorage(signalId, { status: 'EXECUTED' });
             toast({
                 title: "Signal Executed",
                 description: "Your pending order has been created. Redirecting to portfolio...",
@@ -174,9 +160,9 @@ export default function SignalsPage() {
             router.push('/pulse');
         } else {
             toast({ title: "Execution Failed", description: result.error || "Could not execute the signal.", variant: 'destructive' });
+            setProcessingId(null);
         }
-        setProcessingId(null);
-    }, [user, toast, router, updateSignalInStorage]);
+    }, [user, toast, router, fetchSignals]);
 
 
     const renderContent = () => {

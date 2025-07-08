@@ -1,5 +1,7 @@
-
 "use server";
+import {promises as fs} from 'fs';
+import path from 'path';
+
 // AI Flow Imports
 import { generateTradingStrategy as genCoreStrategy, type PromptInput as TradingStrategyPromptInput } from '@/ai/flows/generate-trading-strategy';
 import { generateSarcasticDisclaimer } from '@/ai/flows/generate-sarcastic-disclaimer';
@@ -19,21 +21,27 @@ import { randomUUID } from 'crypto';
 import { add, isBefore } from 'date-fns';
 import { fetchMarketDataAction } from '@/services/market-data-service';
 
+// --- MOCK DATABASE (db.json) ---
+const dbPath = path.join(process.cwd(), 'src', 'data', 'db.json');
 
-// --- MOCK DATA AND TYPES (DATABASE REMOVED) ---
+async function readDb(): Promise<any> {
+    try {
+        const data = await fs.readFile(dbPath, 'utf-8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.error("Error reading from db.json:", error);
+        // In case of error (e.g., file not found), return a default structure
+        return { users: [], positions: [], signals: [] };
+    }
+}
 
-// Helper function to robustly parse price strings, which could be a single number or a range.
-const parsePrice = (priceStr: string | undefined | null): number => {
-    if (!priceStr) return NaN;
-    const cleanedStr = priceStr.replace(/[^0-9.-]/g, ' ');
-    const parts = cleanedStr.split(' ').filter(p => p !== '' && !isNaN(parseFloat(p)));
-
-    if (parts.length === 0) return NaN;
-    if (parts.length === 1) return parseFloat(parts[0]);
-
-    const sum = parts.reduce((acc, val) => acc + parseFloat(val), 0);
-    return sum / parts.length;
-};
+async function writeDb(data: any): Promise<void> {
+    try {
+        await fs.writeFile(dbPath, JSON.stringify(data, null, 2), 'utf-8');
+    } catch (error) {
+        console.error("Error writing to db.json:", error);
+    }
+}
 
 
 // Type Definitions
@@ -161,15 +169,19 @@ export type GenerateShadowChoiceStrategyOutput = ShadowChoiceStrategyCoreOutput 
 };
 export type { PerformanceReviewOutput };
 
-const MOCK_USER_STORE: { [id: string]: UserProfile } = {};
+// --- ---
 
-function getMockUser(userId: string): UserProfile {
-    if (MOCK_USER_STORE[userId]) {
-        return MOCK_USER_STORE[userId];
+export async function getOrCreateUserAction(userId: string | null): Promise<UserProfile> {
+    const db = await readDb();
+    if (userId) {
+        const existingUser = db.users.find((u: UserProfile) => u.id === userId);
+        if(existingUser) return existingUser;
     }
+
+    const newId = userId || randomUUID();
     const newUser: UserProfile = {
-        id: userId,
-        username: `Analyst_${userId.substring(0, 6)}`,
+        id: newId,
+        username: `Analyst_${newId.substring(0, 6)}`,
         shadowId: `SHDW-${randomUUID().substring(0, 7).toUpperCase()}`,
         status: "Guest",
         weeklyPoints: 100,
@@ -178,50 +190,68 @@ function getMockUser(userId: string): UserProfile {
         claimedMissions: [],
         claimedSpecialOps: [],
     };
-    MOCK_USER_STORE[userId] = newUser;
-    return newUser;
-}
-
-// --- ---
-
-export async function getOrCreateUserAction(userId: string | null): Promise<UserProfile> {
-    if (userId) {
-        return getMockUser(userId);
+    
+    const userIndex = db.users.findIndex((u: UserProfile) => u.id === newId);
+    if (userIndex !== -1) {
+        db.users[userIndex] = newUser;
+    } else {
+        db.users.push(newUser);
     }
-    const newId = randomUUID();
-    return getMockUser(newId);
+
+    await writeDb(db);
+    return newUser;
 }
 
 export async function fetchCurrentUserJson(userId: string): Promise<UserProfile | null> {
     if (!userId) return null;
-    return getMockUser(userId);
+    const db = await readDb();
+    return db.users.find((u: UserProfile) => u.id === userId) || null;
 }
 
 export async function updateUserSettingsJson(userId: string, data: { username?: string }): Promise<UserProfile | null> {
-    const user = getMockUser(userId);
+    const db = await readDb();
+    const userIndex = db.users.findIndex((u: UserProfile) => u.id === userId);
+    if(userIndex === -1) return null;
+
     if(data.username) {
-        user.username = data.username;
+        db.users[userIndex].username = data.username;
     }
-    return user;
+    await writeDb(db);
+    return db.users[userIndex];
 }
 
 export async function handleAirdropSignupAction(formData: AirdropFormData, userId: string): Promise<{ userId: string; } | { error: string; }> {
-    const user = getMockUser(userId);
-    user.status = "Registered";
-    user.wallet_address = formData.wallet_address;
-    user.wallet_type = formData.wallet_type;
-    user.email = formData.email;
-    user.phone = formData.phone;
-    user.x_handle = formData.x_handle;
-    user.telegram_handle = formData.telegram_handle;
-    user.youtube_handle = formData.youtube_handle;
+    const db = await readDb();
+    const userIndex = db.users.findIndex((u: UserProfile) => u.id === userId);
+    if(userIndex === -1) return { error: "User not found." };
+    
+    db.users[userIndex] = {
+        ...db.users[userIndex],
+        status: "Registered",
+        wallet_address: formData.wallet_address,
+        wallet_type: formData.wallet_type,
+        email: formData.email,
+        phone: formData.phone,
+        x_handle: formData.x_handle,
+        telegram_handle: formData.telegram_handle,
+        youtube_handle: formData.youtube_handle,
+    };
+    
+    await writeDb(db);
     return { userId };
 }
 
 export async function fetchLeaderboardDataJson(): Promise<LeaderboardUser[]> {
-    return []; // Feature disabled
+    const db = await readDb();
+    const sortedUsers = [...db.users].sort((a,b) => b.weeklyPoints - a.weeklyPoints);
+    return sortedUsers.slice(0, 10).map((user, index) => ({
+        id: user.id,
+        username: user.username,
+        weeklyPoints: user.weeklyPoints,
+        airdropPoints: user.airdropPoints,
+        rank: index + 1,
+    }));
 }
-
 
 const timeframeMappings: { [key: string]: { short: string; medium: string; long: string; } } = {
     Scalper: { short: '1m', medium: '3m', long: '5m' },
@@ -229,6 +259,19 @@ const timeframeMappings: { [key: string]: { short: string; medium: string; long:
     Intraday: { short: '15m', medium: '30m', long: '1h' },
     Swing: { short: '1h', medium: '4h', long: '1d' },
 };
+
+async function saveSignalToDb(signalData: Omit<GeneratedSignal, 'createdAt' | 'updatedAt'>) {
+    const db = await readDb();
+    const newSignal: GeneratedSignal = {
+        ...signalData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    };
+    if (!db.signals) db.signals = [];
+    db.signals.push(newSignal);
+    await writeDb(db);
+}
+
 
 export async function generateTradingStrategyAction(input: Omit<TradingStrategyPromptInput, 'shortTermCandles' | 'mediumTermCandles' | 'longTermCandles'> & { userId: string }): Promise<GenerateTradingStrategyOutput | { error: string }> {
     try {
@@ -254,8 +297,13 @@ export async function generateTradingStrategyAction(input: Omit<TradingStrategyP
 
         const [strategy, disclaimer] = await Promise.all([ genCoreStrategy(promptInput), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
+        
+        const resultId = randomUUID();
+        const fullResult = { ...strategy, id: resultId, symbol: input.symbol, disclaimer: disclaimer.disclaimer, tradingMode: input.tradingMode, type: 'INSTANT' as const };
 
-        return { ...strategy, id: randomUUID(), symbol: input.symbol, disclaimer: disclaimer.disclaimer, tradingMode: input.tradingMode, type: 'INSTANT' };
+        await saveSignalToDb({ ...fullResult, userId: input.userId, status: 'EXECUTED' });
+
+        return fullResult;
 
     } catch (error: any) {
         console.error("Error in generateTradingStrategyAction:", error);
@@ -288,7 +336,12 @@ export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStra
         const [strategy, disclaimer] = await Promise.all([ genShadowChoice(promptInput), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate an autonomous strategy." };
 
-        return { ...strategy, id: randomUUID(), symbol: input.symbol, disclaimer: disclaimer.disclaimer, type: 'CUSTOM' };
+        const resultId = randomUUID();
+        const fullResult = { ...strategy, id: resultId, symbol: input.symbol, disclaimer: disclaimer.disclaimer, type: 'CUSTOM' as const };
+        
+        await saveSignalToDb({ ...fullResult, userId, status: 'PENDING_EXECUTION' });
+
+        return fullResult;
 
     } catch (error: any) {
         console.error("Error in generateShadowChoiceStrategyAction:", error);
@@ -309,74 +362,250 @@ export async function getDailyGreeting(): Promise<GenerateDailyGreetingOutput> {
     return generateDailyGreeting();
 }
 
-// --- Stubbed out functions that require a database ---
+const parsePrice = (priceStr: string | undefined | null): number => {
+    if (!priceStr) return NaN;
+    const cleanedStr = priceStr.replace(/[^0-9.-]/g, ' ');
+    const parts = cleanedStr.split(' ').filter(p => p !== '' && !isNaN(parseFloat(p)));
+    if (parts.length === 0) return NaN;
+    if (parts.length === 1) return parseFloat(parts[0]);
+    const sum = parts.reduce((acc, val) => acc + parseFloat(val), 0);
+    return sum / parts.length;
+};
+
 
 export async function claimMissionRewardAction(userId: string, missionId: string): Promise<{ success: boolean; message: string }> {
-    const user = getMockUser(userId);
+    const db = await readDb();
+    const user = db.users.find((u: UserProfile) => u.id === userId);
+    if (!user) return { success: false, message: 'User not found.' };
+
     user.claimedMissions.push(missionId);
-    return { success: true, message: `Mission reward claimed (session only).` };
+    await writeDb(db);
+    return { success: true, message: `Mission reward claimed.` };
 }
 
 export async function logInstantPositionAction(userId: string, strategy: GenerateTradingStrategyOutput): Promise<{ success: boolean; error?: string; }> {
-    console.log(`MOCK: Logging instant position for user ${userId} for symbol ${strategy.symbol}. No database is connected.`);
+    const db = await readDb();
+    const newPosition: Position = {
+        id: randomUUID(),
+        userId,
+        symbol: strategy.symbol,
+        signalType: strategy.signal as 'BUY' | 'SELL',
+        status: 'OPEN',
+        entryPrice: parsePrice(strategy.entry_zone),
+        closePrice: null,
+        size: 1, // Default size for now
+        stopLoss: parsePrice(strategy.stop_loss),
+        takeProfit: parsePrice(strategy.take_profit),
+        pnl: null,
+        openTimestamp: new Date(),
+        closeTimestamp: null,
+        expirationTimestamp: null,
+        strategyId: strategy.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+    };
+    if (!db.positions) db.positions = [];
+    db.positions.push(newPosition);
+    await writeDb(db);
     return { success: true };
 }
 
 export async function executeCustomSignalAction(signalId: string, userId: string): Promise<{ success: boolean; error?: string }> {
-    console.log(`MOCK: Executing custom signal ${signalId} for user ${userId}. No database is connected.`);
+    const db = await readDb();
+    const signal = db.signals.find((s: GeneratedSignal) => s.id === signalId && s.userId === userId);
+    if (!signal) return { success: false, error: 'Signal not found.' };
+
+    const newPosition: Position = {
+        id: randomUUID(),
+        userId,
+        symbol: signal.symbol,
+        signalType: signal.signal as 'BUY' | 'SELL',
+        status: 'PENDING',
+        entryPrice: parsePrice(signal.entry_zone),
+        closePrice: null,
+        size: 1, // Default size for now
+        stopLoss: parsePrice(signal.stop_loss),
+        takeProfit: parsePrice(signal.take_profit),
+        pnl: null,
+        openTimestamp: null,
+        closeTimestamp: null,
+        expirationTimestamp: add(new Date(), { hours: 24 }),
+        strategyId: signal.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+    };
+    if (!db.positions) db.positions = [];
+    db.positions.push(newPosition);
+
+    const signalIndex = db.signals.findIndex((s: GeneratedSignal) => s.id === signalId);
+    if(signalIndex > -1) {
+        db.signals[signalIndex].status = 'EXECUTED';
+        db.signals[signalIndex].updatedAt = new Date();
+    }
+    
+    await writeDb(db);
     return { success: true };
 }
 
 export async function closePositionAction(positionId: string, closePrice: number): Promise<{ position?: Position; airdropPointsEarned?: number; error?: string; }> {
-    return { error: 'Feature disabled: Database connection is not active.' };
+    const db = await readDb();
+    const positionIndex = db.positions.findIndex((p: Position) => p.id === positionId);
+    if (positionIndex === -1) return { error: 'Position not found.' };
+
+    const position = db.positions[positionIndex];
+    if (position.status !== 'OPEN') return { error: 'Position is not open.' };
+
+    position.status = 'CLOSED';
+    position.closePrice = closePrice;
+    position.closeTimestamp = new Date();
+
+    const pnl = (position.signalType === 'BUY'
+        ? (closePrice - position.entryPrice)
+        : (position.entryPrice - closePrice)) * position.size;
+    position.pnl = pnl;
+
+    const userIndex = db.users.findIndex((u: UserProfile) => u.id === position.userId);
+    if (userIndex !== -1) {
+        db.users[userIndex].airdropPoints += Math.round(pnl);
+        db.users[userIndex].weeklyPoints += Math.round(pnl > 0 ? pnl / 10 : pnl / 20); // Example XP logic
+    }
+    
+    await writeDb(db);
+    return { position, airdropPointsEarned: Math.round(pnl) };
 }
 
 export async function fetchPendingAndOpenPositionsAction(userId: string): Promise<Position[]> {
-    return [];
+    const db = await readDb();
+    if (!db.positions) return [];
+    return db.positions.filter((p: Position) => p.userId === userId && (p.status === 'PENDING' || p.status === 'OPEN'));
 }
 
 export async function fetchTradeHistoryAction(userId: string): Promise<Position[]> {
-    return [];
+    const db = await readDb();
+    if (!db.positions) return [];
+    return db.positions.filter((p: Position) => p.userId === userId && p.status === 'CLOSED');
 }
 
 export async function fetchPortfolioStatsAction(userId: string): Promise<PortfolioStats | { error: string }> {
-    const user = getMockUser(userId);
+    const db = await readDb();
+    const user = db.users.find((u: UserProfile) => u.id === userId);
+    if (!user) return { error: 'User not found' };
+
+    const trades = (db.positions || []).filter((p: Position) => p.userId === userId && p.status === 'CLOSED');
+    
+    const totalTrades = trades.length;
+    if (totalTrades === 0) {
+        return {
+            totalTrades: 0, winRate: 0, winningTrades: 0, totalPnl: 0,
+            totalPnlPercentage: 0, bestTradePnl: 0, worstTradePnl: 0,
+            lifetimeRewards: user.airdropPoints, totalCapitalInvested: 0,
+        };
+    }
+
+    const winningTrades = trades.filter((t: Position) => t.pnl && t.pnl > 0).length;
+    const winRate = (winningTrades / totalTrades) * 100;
+    const totalPnl = trades.reduce((acc: number, t: Position) => acc + (t.pnl || 0), 0);
+    const bestTradePnl = Math.max(...trades.map((t: Position) => t.pnl || 0), 0);
+    const worstTradePnl = Math.min(...trades.map((t: Position) => t.pnl || 0), 0);
+    
     return {
-        totalTrades: 0,
-        winRate: 0,
-        winningTrades: 0,
-        totalPnl: 0,
-        totalPnlPercentage: 0,
-        bestTradePnl: 0,
-        worstTradePnl: 0,
-        lifetimeRewards: user.airdropPoints,
-        totalCapitalInvested: 0
+        totalTrades, winRate, winningTrades, totalPnl,
+        totalPnlPercentage: 0, // Simplified for now
+        bestTradePnl, worstTradePnl,
+        lifetimeRewards: user.airdropPoints, totalCapitalInvested: 0,
     };
 }
 
 export async function generatePerformanceReviewAction(userId: string): Promise<PerformanceReviewOutput | { error: string }> {
-    return { error: 'Feature disabled: No trade history available without a database.' };
+    const db = await readDb();
+    const user = db.users.find((u: UserProfile) => u.id === userId);
+    if (!user) return { error: 'User not found' };
+    
+    const tradeHistory = (db.positions || []).filter((p: Position) => p.userId === userId && p.status === 'CLOSED');
+    if (tradeHistory.length < 3) return { error: 'Insufficient trade history for analysis. Complete at least 3 trades.' };
+    
+    const stats = await fetchPortfolioStatsAction(userId);
+    if('error' in stats) return stats;
+
+    const reviewInput: PerformanceReviewInput = {
+        stats: {
+            totalTrades: stats.totalTrades,
+            winRate: stats.winRate,
+            winningTrades: stats.winningTrades,
+            totalPnl: stats.totalPnl,
+            bestTradePnl: stats.bestTradePnl,
+            worstTradePnl: stats.worstTradePnl,
+        },
+        tradeHistory: tradeHistory.map(t => ({
+            ...t,
+            openTimestamp: t.openTimestamp?.toString() || "",
+            closeTimestamp: t.closeTimestamp?.toString() || null,
+        }))
+    }
+    
+    return genPerformanceReview(reviewInput);
 }
 
 export async function killSwitchAction(userId: string): Promise<{ success: boolean; message: string; }> {
-    return { success: true, message: 'No active positions to close (Database is disabled).' };
+    const db = await readDb();
+    if (!db.positions) return { success: true, message: 'No active positions to close.' };
+    
+    const openPositions = db.positions.filter((p: Position) => p.userId === userId && p.status === 'OPEN');
+    if(openPositions.length === 0) return { success: true, message: 'No active positions to close.' };
+
+    // This is a mock, so we just mark them as closed. A real implementation would need live prices.
+    let closedCount = 0;
+    openPositions.forEach((p: Position) => {
+        p.status = 'CLOSED';
+        p.closePrice = p.entryPrice; // Mock closing at entry
+        p.pnl = 0;
+        p.closeTimestamp = new Date();
+        closedCount++;
+    });
+    
+    await writeDb(db);
+    return { success: true, message: `Successfully closed ${closedCount} open positions.` };
 }
 
 export async function activatePendingPositionAction(positionId: string): Promise<{ position?: Position; error?: string; }> {
-    return { error: 'Feature disabled: Database connection is not active.' };
+    const db = await readDb();
+    const position = db.positions.find((p: Position) => p.id === positionId);
+    if (!position) return { error: 'Position not found.' };
+
+    position.status = 'OPEN';
+    position.openTimestamp = new Date();
+    await writeDb(db);
+    return { position };
 }
 
 export async function cancelPendingPositionAction(positionId: string): Promise<{ success: boolean; error?: string; }> {
-    return { success: true, error: 'Feature disabled: Database connection is not active.' };
+    const db = await readDb();
+    const positionIndex = db.positions.findIndex((p: Position) => p.id === positionId);
+    if (positionIndex === -1) return { success: false, error: 'Position not found.' };
+
+    if(db.positions[positionIndex].status !== 'PENDING') return { success: false, error: 'Position is not pending.' };
+
+    db.positions.splice(positionIndex, 1);
+    await writeDb(db);
+    return { success: true };
 }
 
 export async function fetchAllGeneratedSignalsAction(userId: string): Promise<GeneratedSignal[] | { error: string }> {
-    // This server action is now a placeholder. The logic is handled on the client in /signals/page.tsx
-    // to allow functionality without a database.
-    return [];
+    if (!userId) return { error: 'User ID is required' };
+    const db = await readDb();
+    if (!db.signals) return [];
+    return (db.signals as GeneratedSignal[])
+        .filter(s => s.userId === userId)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export async function dismissCustomSignalAction(signalId: string, userId: string): Promise<{ success: boolean, error?: string }> {
-    console.log(`MOCK: Dismissing signal ${signalId} for user ${userId}. No database is connected.`);
+    const db = await readDb();
+    const signalIndex = db.signals.findIndex((s: GeneratedSignal) => s.id === signalId && s.userId === userId);
+    if (signalIndex === -1) return { success: false, error: 'Signal not found' };
+
+    db.signals[signalIndex].status = 'DISMISSED';
+    db.signals[signalIndex].updatedAt = new Date();
+    await writeDb(db);
     return { success: true };
 }
