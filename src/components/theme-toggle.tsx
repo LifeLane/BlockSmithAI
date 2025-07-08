@@ -7,49 +7,45 @@ import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
+const themes = [
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
+  { value: "theme-synthwave", label: "Synthwave" },
+  { value: "theme-solarflare", label: "Solar Flare" },
+  { value: "theme-quantum", label: "Quantum" },
+  { value: "theme-matrix", label: "Matrix" },
+  { value: "theme-stark", label: "Stark" },
+]
 
 export function ThemeToggle() {
-  const { setTheme } = useTheme()
+  const { theme, setTheme } = useTheme()
+
+  const handleThemeCycle = () => {
+    const currentIndex = themes.findIndex((t) => t.value === theme)
+    const nextIndex = (currentIndex + 1) % themes.length
+    setTheme(themes[nextIndex].value)
+  }
+
+  const currentThemeLabel = themes.find(t => t.value === theme)?.label || 'Theme';
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Toggle theme">
-          <Paintbrush className="h-[1.2rem] w-[1.2rem]" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Select Theme</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("theme-synthwave")}>
-          Synthwave
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("theme-solarflare")}>
-          Solar Flare
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("theme-quantum")}>
-          Quantum
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("theme-matrix")}>
-          Matrix
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("theme-stark")}>
-          Stark
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button variant="ghost" size="icon" aria-label="Toggle theme" onClick={handleThemeCycle}>
+            <Paintbrush className="h-[1.2rem] w-[1.2rem] animate-icon-pulse-glow" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Change Theme: {currentThemeLabel}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }

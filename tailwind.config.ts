@@ -93,10 +93,21 @@ export default {
             height: '0',
           },
         },
+        'icon-pulse-glow': {
+          '0%, 100%': {
+            filter: 'drop-shadow(0 0 2px hsl(var(--primary)/0.6))',
+            transform: 'scale(1)',
+          },
+          '50%': {
+            filter: 'drop-shadow(0 0 4px hsl(var(--primary)/0.8)) drop-shadow(0 0 8px hsl(var(--accent)/0.6))',
+            transform: 'scale(1.1)',
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'icon-pulse-glow': 'icon-pulse-glow 3s ease-in-out infinite',
       },
     },
   },
