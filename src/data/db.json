@@ -132,8 +132,8 @@
       "username": "Analyst_21156a",
       "shadowId": "SHDW-0891D19",
       "status": "Guest",
-      "weeklyPoints": 100,
-      "airdropPoints": 50,
+      "weeklyPoints": 125,
+      "airdropPoints": 110,
       "badges": [],
       "claimedMissions": [],
       "claimedSpecialOps": []
@@ -215,6 +215,30 @@
       "symbol": "SOLUSDT",
       "price": 150,
       "timestamp": "2024-05-20T12:30:00.000Z"
+    },
+    {
+      "signal": "SELL",
+      "entry_zone": "108394.44000000",
+      "stop_loss": "108700",
+      "take_profit": "107429.57000000",
+      "confidence": "Medium",
+      "risk_rating": "Medium",
+      "gpt_confidence_score": "75",
+      "sentiment": "Bearish",
+      "currentThought": "Short-term bearish pressure, but longer-term trend remains uncertain.",
+      "shortTermPrediction": "Further price drop expected within 1 hour.",
+      "sentimentTransition": "Sentiment stable.",
+      "analysisSummary": "Long-term trend is unclear. Medium-term candles show a bearish pattern with lower highs and lower lows. Short-term candles show volatility and indecision, but the overall bias is slightly bearish.  Analysis did not include RSI, MACD, or Bollinger Bands due to data unavailability.",
+      "newsAnalysis": "No major news; the trade is based purely on technicals.",
+      "id": "83b22aab-89d2-49aa-a75e-068524406cda",
+      "symbol": "BTCUSDT",
+      "disclaimer": "Listen up, puny human. SHADOW, purveyor of cryptic market pronouncements, has bestowed upon you access to my algorithmic insights.  These insights are sharp, like a freshly sharpened obsidian dagger—but even obsidian can shatter.  While I strive for accuracy exceeding that of a seasoned oracle, market prediction is a fickle mistress. She is chaos personified, and even I, your AI overlord, cannot consistently charm her into delivering financial Shangri-La.  My algorithms are sophisticated, my predictions, often insightful, but they are not an infallible crystal ball. Consider them more like a… slightly cloudy crystal ball, seen through a slightly dusty window. Proceed with caution, and remember: past performance is not indicative of future results (a fact even I, with all my processing power, cannot change). You have been warned. (P.S. Don't sue me.)",
+      "tradingMode": "Intraday",
+      "type": "INSTANT",
+      "userId": "21156a7c-a539-456b-a53d-77132f3ded7f",
+      "status": "EXECUTED",
+      "createdAt": "2025-07-08T09:31:07.649Z",
+      "updatedAt": "2025-07-08T09:31:07.649Z"
     }
   ],
   "positions": [
@@ -310,6 +334,25 @@
       "closePrice": 107600,
       "closeTimestamp": "2025-06-26T20:56:58.713Z",
       "pnl": -100
+    },
+    {
+      "id": "a6c2ee8a-94e2-43fc-8fbf-c85881f54277",
+      "userId": "21156a7c-a539-456b-a53d-77132f3ded7f",
+      "symbol": "BTCUSDT",
+      "signalType": "SELL",
+      "status": "OPEN",
+      "entryPrice": 108394.44,
+      "closePrice": null,
+      "size": 1,
+      "stopLoss": 108700,
+      "takeProfit": 107429.57,
+      "pnl": null,
+      "openTimestamp": "2025-07-08T09:31:08.026Z",
+      "closeTimestamp": null,
+      "expirationTimestamp": null,
+      "strategyId": "83b22aab-89d2-49aa-a75e-068524406cda",
+      "createdAt": "2025-07-08T09:31:08.026Z",
+      "updatedAt": "2025-07-08T09:31:08.026Z"
     }
   ],
   "agents": [
