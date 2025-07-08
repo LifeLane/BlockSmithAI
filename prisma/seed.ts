@@ -6,13 +6,11 @@ const prisma = new PrismaClient()
 async function main() {
   console.log(`Start seeding ...`)
 
-  // Clean up existing data in the correct order to avoid constraint violations
-  await prisma.badge.deleteMany();
-  await prisma.position.deleteMany();
-  await prisma.generatedSignal.deleteMany();
+  // By deleting users, the `onDelete: Cascade` in the schema will automatically delete related
+  // positions, signals, and badges, simplifying the cleanup process. This is more robust
+  // than deleting from each table individually.
   await prisma.user.deleteMany();
-
-  console.log('Old data cleaned up.');
+  console.log('Old users and all related data cleaned up.');
 
   const user = await prisma.user.create({
     data: {

@@ -1,5 +1,8 @@
-// This is your Prisma schema file,
+// This is a SAMPLE Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client-js"
@@ -12,89 +15,27 @@ datasource db {
 }
 
 model User {
-  id                String   @id @default(cuid())
-  shadowId          String   @unique
-  username          String
-  email             String?
+  id                String            @id @default(cuid())
+  username          String            @unique
+  shadowId          String            @unique
+  weeklyPoints      Int               @default(0)
+  airdropPoints     Int               @default(0)
+  status            String?           @default("Guest") // e.g., Guest, Registered
+  claimedMissions   String[]          @default([])
+  email             String?           @unique
   phone             String?
   wallet_address    String?
   wallet_type       String?
   x_handle          String?
   telegram_handle   String?
   youtube_handle    String?
-  status            String   @default("Guest")
-  weeklyPoints      Int      @default(0)
-  airdropPoints     Int      @default(0)
-  claimedMissions   String[]
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  positions         Position[]
-  generated_signals GeneratedSignal[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
   badges            Badge[]
+  positions         Position[]
+  generatedSignals  GeneratedSignal[]
 
   @@map("users")
-}
-
-model Position {
-  id                  String         @id @default(cuid())
-  userId              String
-  symbol              String
-  signalType          SignalType
-  status              PositionStatus
-  entryPrice          Float
-  closePrice          Float?
-  stopLoss            Float
-  takeProfit          Float
-  size                Float          @default(1)
-  pnl                 Float?
-  gainedXp            Int?
-  gainedAirdropPoints Int?
-  gasPaid             Float?
-  blocksTrained       Int?
-  openTimestamp       DateTime?
-  closeTimestamp      DateTime?
-  expirationTimestamp DateTime?
-  strategyId          String?
-  type                PositionType
-  tradingMode         String
-  riskProfile         String
-  gpt_confidence_score String?
-  sentiment           String?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
-  user                User           @relation(fields: [userId], references: [id])
-  GeneratedSignal     GeneratedSignal? @relation(fields: [strategyId], references: [id])
-
-  @@map("positions")
-}
-
-model GeneratedSignal {
-  id                  String       @id @default(cuid())
-  userId              String
-  symbol              String
-  signal              String
-  entry_zone          String
-  stop_loss           String
-  take_profit         String
-  confidence          String
-  risk_rating         String
-  gpt_confidence_score String
-  sentiment           String
-  currentThought      String
-  shortTermPrediction String
-  disclaimer          String
-  type                String
-  status              SignalStatus
-  chosenTradingMode   String?
-  chosenRiskProfile   String?
-  analysisSummary     String?
-  newsAnalysis        String?
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
-  user                User         @relation(fields: [userId], references: [id])
-  Position            Position[]
-
-  @@map("generated_signals")
 }
 
 model Badge {
@@ -103,10 +44,70 @@ model Badge {
   description String
   icon        String
   userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
+  updatedAt   DateTime @updatedAt
 
   @@map("badges")
+}
+
+model Position {
+  id                   String         @id @default(cuid())
+  userId               String
+  symbol               String
+  signalType           SignalType
+  status               PositionStatus
+  entryPrice           Float
+  closePrice           Float?
+  stopLoss             Float
+  takeProfit           Float
+  openTimestamp        DateTime?      @default(now())
+  closeTimestamp       DateTime?
+  expirationTimestamp  DateTime?
+  pnl                  Float?
+  gainedXp             Int?
+  gainedAirdropPoints  Int?
+  gasPaid              Float?
+  blocksTrained        Int?
+  strategyId           String?
+  type                 PositionType
+  tradingMode          String
+  riskProfile          String
+  gpt_confidence_score String
+  sentiment            String
+  size                 Float          @default(1)
+  user                 User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("positions")
+}
+
+model GeneratedSignal {
+  id                   String       @id @default(cuid())
+  userId               String
+  symbol               String
+  signal               String
+  entry_zone           String
+  stop_loss            String
+  take_profit          String
+  confidence           String
+  risk_rating          String
+  gpt_confidence_score String
+  sentiment            String
+  currentThought       String
+  shortTermPrediction  String?
+  sentimentTransition  String?
+  analysisSummary      String?
+  newsAnalysis         String?
+  disclaimer           String
+  type                 String
+  chosenTradingMode    String?
+  chosenRiskProfile    String?
+  status               SignalStatus
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+  user                 User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("generated_signals")
 }
 
 enum SignalType {
@@ -114,16 +115,15 @@ enum SignalType {
   SELL
 }
 
-enum PositionType {
-  INSTANT
-  CUSTOM
-}
-
 enum PositionStatus {
   PENDING
   OPEN
   CLOSED
-  CANCELLED
+}
+
+enum PositionType {
+  INSTANT
+  CUSTOM
 }
 
 enum SignalStatus {
