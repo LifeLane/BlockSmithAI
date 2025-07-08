@@ -12,7 +12,7 @@ import {
     Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, 
     ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle, Wallet, 
     Activity, BrainCircuit, ShieldAlert, Bot, Hourglass, Trash2, Cpu, Zap, Power,
-    PowerOff, CheckCircle, XCircle, Layers, Bitcoin, Type, BarChart2, Shield
+    PowerOff, CheckCircle, XCircle, Layers, Bitcoin, Type, BarChart2, Shield, Info, BarChartHorizontal
 } from 'lucide-react';
 import {
     fetchPortfolioStatsAction,
@@ -287,45 +287,53 @@ const PositionCard = ({ position, refetchData }: { position: Position, refetchDa
                         <span className="text-foreground">{position.symbol}</span>
                     </CardTitle>
                     <CardDescription className="text-xs">
-                        Created {format(new Date(position.createdAt), 'PPp')}
+                        {currentStatus.label === 'CLOSED' ? `Closed ${format(new Date(position.closeTimestamp!), 'PPp')}` : `Created ${format(new Date(position.createdAt), 'PPp')}`}
                     </CardDescription>
                 </div>
                 <Badge variant="outline" className={cn("text-xs font-bold", currentStatus.className)}>
                     {currentStatus.icon} {currentStatus.label}
                 </Badge>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs p-3 bg-secondary rounded-lg">
-                    <PositionInfo label="Entry" value={formatCurrency(position.entryPrice)} icon={<LogIn size={14} />} />
-                    <PositionInfo label="Take Profit" value={formatCurrency(position.takeProfit)} icon={<Target size={14} />} valueClassName="text-green-400" />
-                    <PositionInfo label="Stop Loss" value={formatCurrency(position.stopLoss)} icon={<ShieldX size={14} />} valueClassName="text-red-400" />
-                    {position.status === 'OPEN' && <PositionInfo label="Current PnL" value={formatCurrency(pnl)} icon={<DollarSign size={14} />} valueClassName={pnlColor} />}
-                    {position.status === 'CLOSED' && <PositionInfo label="Final PnL" value={formatCurrency(pnl)} icon={<DollarSign size={14} />} valueClassName={pnlColor} />}
-                    {position.status === 'CLOSED' && <PositionInfo label="Close Price" value={formatCurrency(position.closePrice)} icon={<LogOut size={14} />} />}
-                    {position.status === 'PENDING' && <PositionInfo label="Expires" value={timeLeft} icon={<Clock size={14} />} />}
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs p-3 bg-background rounded-lg">
-                     <PositionInfo label="Signal Type" value={position.type || 'N/A'} icon={<Type size={14}/>} />
-                     <PositionInfo label="Trading Mode" value={position.tradingMode || 'N/A'} icon={<BarChart2 size={14}/>} />
-                     <PositionInfo label="Risk Profile" value={position.riskProfile || 'N/A'} icon={<Shield size={14}/>} />
-                </div>
-                 <div className="grid grid-cols-2 gap-3 text-xs p-3 bg-background rounded-lg">
-                    <PositionInfo label="Sentiment" value={position.sentiment || 'N/A'} icon={<BrainCircuit size={14} />} />
-                    <PositionInfo label="SHADOW Score" value={`${position.gpt_confidence_score || '0'}%`} icon={<Percent size={14} />} />
-                 </div>
-
-                {position.status === 'CLOSED' && (
-                    <div>
-                        <h4 className="text-sm font-semibold mb-2 text-muted-foreground">Rewards & Analytics</h4>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                            <RewardInfo label="$BSAI Gained" value={position.gainedAirdropPoints?.toLocaleString() ?? 'N/A'} icon={<Gift size={16} />} valueClassName="text-orange-400" />
-                            <RewardInfo label="XP Gained" value={position.gainedXp?.toLocaleString() ?? 'N/A'} icon={<Zap size={16} />} valueClassName="text-tertiary" />
-                            <RewardInfo label="Blocks Trained" value={position.blocksTrained?.toLocaleString() ?? 'N/A'} icon={<Layers size={16} />} />
-                            <RewardInfo label="Gas Paid (Mock)" value={formatCurrency(position.gasPaid) ?? 'N/A'} icon={<Bitcoin size={16} />} />
+            <CardContent>
+                <Tabs defaultValue="details" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 h-9">
+                        <TabsTrigger value="details" className="text-xs"><Info className="mr-1.5" /> Details</TabsTrigger>
+                        <TabsTrigger value="strategy" className="text-xs"><BarChartHorizontal className="mr-1.5" /> Strategy</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="details" className="mt-4 space-y-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs p-3 bg-secondary rounded-lg">
+                            <PositionInfo label="Entry" value={formatCurrency(position.entryPrice)} icon={<LogIn size={14} />} />
+                            <PositionInfo label="Take Profit" value={formatCurrency(position.takeProfit)} icon={<Target size={14} />} valueClassName="text-green-400" />
+                            <PositionInfo label="Stop Loss" value={formatCurrency(position.stopLoss)} icon={<ShieldX size={14} />} valueClassName="text-red-400" />
+                            {position.status === 'OPEN' && <PositionInfo label="Current PnL" value={formatCurrency(pnl)} icon={<DollarSign size={14} />} valueClassName={pnlColor} />}
+                            {position.status === 'CLOSED' && <PositionInfo label="Final PnL" value={formatCurrency(pnl)} icon={<DollarSign size={14} />} valueClassName={pnlColor} />}
+                            {position.status === 'CLOSED' && <PositionInfo label="Close Price" value={formatCurrency(position.closePrice)} icon={<LogOut size={14} />} />}
+                            {position.status === 'PENDING' && <PositionInfo label="Expires" value={timeLeft} icon={<Clock size={14} />} />}
                         </div>
-                    </div>
-                )}
+                        {position.status === 'CLOSED' && (
+                        <div>
+                            <h4 className="text-sm font-semibold mb-2 text-muted-foreground">Rewards & Analytics</h4>
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                                <RewardInfo label="$BSAI Gained" value={position.gainedAirdropPoints?.toLocaleString() ?? 'N/A'} icon={<Gift size={16} />} valueClassName="text-orange-400" />
+                                <RewardInfo label="XP Gained" value={position.gainedXp?.toLocaleString() ?? 'N/A'} icon={<Zap size={16} />} valueClassName="text-tertiary" />
+                                <RewardInfo label="Blocks Trained" value={position.blocksTrained?.toLocaleString() ?? 'N/A'} icon={<Layers size={16} />} />
+                                <RewardInfo label="Gas Paid (Mock)" value={formatCurrency(position.gasPaid) ?? 'N/A'} icon={<Bitcoin size={16} />} />
+                            </div>
+                        </div>
+                        )}
+                    </TabsContent>
+                     <TabsContent value="strategy" className="mt-4 space-y-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs p-3 bg-secondary rounded-lg">
+                             <PositionInfo label="Signal Type" value={position.type || 'N/A'} icon={<Type size={14}/>} />
+                             <PositionInfo label="Trading Mode" value={position.tradingMode || 'N/A'} icon={<BarChart2 size={14}/>} />
+                             <PositionInfo label="Risk Profile" value={position.riskProfile || 'N/A'} icon={<Shield size={14}/>} />
+                        </div>
+                         <div className="grid grid-cols-2 gap-3 text-xs p-3 bg-secondary rounded-lg">
+                            <PositionInfo label="Sentiment" value={position.sentiment || 'N/A'} icon={<BrainCircuit size={14} />} />
+                            <PositionInfo label="SHADOW Score" value={`${position.gpt_confidence_score || '0'}%`} icon={<Percent size={14} />} />
+                         </div>
+                    </TabsContent>
+                </Tabs>
             </CardContent>
             {position.status !== 'CLOSED' && (
                 <CardFooter className="flex gap-2">
@@ -546,5 +554,3 @@ export default function PortfolioPage() {
     </>
   );
 }
-
-    
