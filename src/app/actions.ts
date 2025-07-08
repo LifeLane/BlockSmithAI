@@ -6,11 +6,10 @@ import { generateSarcasticDisclaimer } from '@/ai/flows/generate-sarcastic-discl
 import { shadowChat as shadowChatFlow, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
 import { generateShadowChoiceStrategy as genShadowChoice, type ShadowChoiceStrategyInput, type ShadowChoiceStrategyCoreOutput } from '@/ai/flows/generate-shadow-choice-strategy';
-import { generateMissionLog, type GenerateMissionLogInput } from '@/ai/flows/generate-mission-log';
-import { 
-    generatePerformanceReview as genPerformanceReview, 
-    type PerformanceReviewInput, 
-    type PerformanceReviewOutput 
+import {
+    generatePerformanceReview as genPerformanceReview,
+    type PerformanceReviewInput,
+    type PerformanceReviewOutput
 } from '@/ai/flows/generate-performance-review';
 import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
 
@@ -26,12 +25,12 @@ import { fetchMarketDataAction } from '@/services/market-data-service';
 // Helper function to robustly parse price strings, which could be a single number or a range.
 const parsePrice = (priceStr: string | undefined | null): number => {
     if (!priceStr) return NaN;
-    const cleanedStr = priceStr.replace(/[^0-9.-]/g, ' '); 
+    const cleanedStr = priceStr.replace(/[^0-9.-]/g, ' ');
     const parts = cleanedStr.split(' ').filter(p => p !== '' && !isNaN(parseFloat(p)));
-    
+
     if (parts.length === 0) return NaN;
     if (parts.length === 1) return parseFloat(parts[0]);
-    
+
     const sum = parts.reduce((acc, val) => acc + parseFloat(val), 0);
     return sum / parts.length;
 };
@@ -130,42 +129,6 @@ export interface LiveMarketData {
     highPrice: string;
     lowPrice: string;
     quoteVolume: string;
-}
-export interface AgentLevel {
-  level: number;
-  deployDuration: number;
-  xpReward: number;
-  bsaiReward: number;
-  upgradeCost: number;
-}
-export interface Agent {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  levels: AgentLevel[];
-}
-export interface UserAgent {
-  id: string;
-  userId: string;
-  agentId: string;
-  level: number;
-  status: 'IDLE' | 'DEPLOYED';
-  deploymentEndTime: string | null;
-}
-export interface UserAgentData extends Agent {
-  userState: UserAgent | null;
-}
-export interface SpecialOp {
-    id: string;
-    title: string;
-    description: string;
-    requiredAgentId: string;
-    requiredAgentLevel: number;
-    xpReward: number;
-    bsaiReward: number;
-    isActive: boolean;
-    claimedBy: string[];
 }
 export interface FormattedSymbol {
   value: string;
@@ -282,16 +245,16 @@ export async function generateTradingStrategyAction(input: Omit<TradingStrategyP
             return { error: `Failed to retrieve historical market data required for analysis. Reason: ${error}` };
         }
 
-        const promptInput: TradingStrategyPromptInput = { 
+        const promptInput: TradingStrategyPromptInput = {
             ...input,
             shortTermCandles: JSON.stringify(shortTermResult.candles),
             mediumTermCandles: JSON.stringify(mediumTermResult.candles),
             longTermCandles: JSON.stringify(longTermResult.candles),
         };
-        
+
         const [strategy, disclaimer] = await Promise.all([ genCoreStrategy(promptInput), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
-        
+
         return { ...strategy, id: randomUUID(), symbol: input.symbol, disclaimer: disclaimer.disclaimer, tradingMode: input.tradingMode, type: 'INSTANT' };
 
     } catch (error: any) {
@@ -321,10 +284,10 @@ export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStra
             mediumTermCandles: JSON.stringify(mediumTermResult.candles),
             longTermCandles: JSON.stringify(longTermResult.candles),
         };
-        
+
         const [strategy, disclaimer] = await Promise.all([ genShadowChoice(promptInput), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate an autonomous strategy." };
-        
+
         return { ...strategy, id: randomUUID(), symbol: input.symbol, disclaimer: disclaimer.disclaimer, type: 'CUSTOM' };
 
     } catch (error: any) {
@@ -378,42 +341,17 @@ export async function fetchTradeHistoryAction(userId: string): Promise<Position[
 
 export async function fetchPortfolioStatsAction(userId: string): Promise<PortfolioStats | { error: string }> {
     const user = getMockUser(userId);
-    return { 
-        totalTrades: 0, 
-        winRate: 0, 
-        winningTrades: 0, 
-        totalPnl: 0, 
-        totalPnlPercentage: 0, 
-        bestTradePnl: 0, 
-        worstTradePnl: 0, 
-        lifetimeRewards: user.airdropPoints, 
+    return {
+        totalTrades: 0,
+        winRate: 0,
+        winningTrades: 0,
+        totalPnl: 0,
+        totalPnlPercentage: 0,
+        bestTradePnl: 0,
+        worstTradePnl: 0,
+        lifetimeRewards: user.airdropPoints,
         totalCapitalInvested: 0
     };
-}
-
-export async function fetchAgentDataAction(userId: string): Promise<{ agents: UserAgentData[], userXp: number } | { error: string }> {
-    const user = getMockUser(userId);
-    return { agents: [], userXp: user.weeklyPoints };
-}
-
-export async function deployAgentAction(userId: string, agentId: string): Promise<{ success: boolean, error?: string }> {
-    return { success: false, error: "Feature disabled: Database connection is not active." };
-}
-
-export async function claimAgentRewardsAction(userId: string, agentId: string): Promise<{ success: boolean; log?: string, message?: string }> {
-     return { success: false, message: "Feature disabled: Database connection is not active." };
-}
-
-export async function upgradeAgentAction(userId: string, agentId: string): Promise<{ success: boolean; message: string }> {
-    return { success: false, message: "Feature disabled: Database connection is not active." };
-}
-
-export async function fetchSpecialOpsAction(userId: string): Promise<SpecialOp[]> {
-   return [];
-}
-
-export async function claimSpecialOpAction(userId: string, opId: string): Promise<{ success: boolean; message: string; }> {
-    return { success: false, message: "Feature disabled: Database connection is not active." };
 }
 
 export async function generatePerformanceReviewAction(userId: string): Promise<PerformanceReviewOutput | { error: string }> {
