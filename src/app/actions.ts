@@ -1,7 +1,8 @@
 
 "use server";
 import { prisma } from '@/lib/prisma';
-import type { User as UserProfile, Position as PrismaPosition, GeneratedSignal as PrismaGeneratedSignal, SignalType, PositionStatus, PositionType, SignalStatus } from '@prisma/client';
+import type { User as PrismaUser, Position as PrismaPosition, GeneratedSignal as PrismaGeneratedSignal, SignalType, PositionStatus, PositionType, SignalStatus, Badge } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { add } from 'date-fns';
 
@@ -25,9 +26,16 @@ type Serializable<T> = {
   [K in keyof T]: T[K] extends Date ? string : T[K] extends Date | null ? string | null : T[K];
 };
 
+// Define a type for User with badges included
+const userWithBadgesArgs = Prisma.validator<Prisma.UserDefaultArgs>()({
+  include: { badges: true },
+});
+export type UserProfile = Prisma.UserGetPayload<typeof userWithBadgesArgs>;
+
+
 export type Position = Serializable<PrismaPosition>;
 export type GeneratedSignal = Serializable<PrismaGeneratedSignal>;
-export type { UserProfile };
+
 
 export type ChatMessage = AIChatMessage;
 export interface LeaderboardUser {
@@ -104,8 +112,17 @@ const serializeWithDates = <T>(obj: T): Serializable<T> => {
 // --- ---
 
 export async function getOrCreateUserAction(userId: string | null): Promise<UserProfile> {
+    const userQuery = {
+        include: {
+            badges: true,
+        },
+    };
+
     if (userId) {
-        const existingUser = await prisma.user.findUnique({ where: { id: userId } });
+        const existingUser = await prisma.user.findUnique({
+            where: { id: userId },
+            ...userQuery
+        });
         if(existingUser) return existingUser;
     }
 
@@ -113,14 +130,20 @@ export async function getOrCreateUserAction(userId: string | null): Promise<User
         data: {
             username: `Analyst_${randomUUID().substring(0, 6)}`,
             shadowId: `SHDW-${randomUUID().substring(0, 7).toUpperCase()}`,
-        }
+        },
+        ...userQuery
     });
     return newUser;
 }
 
 export async function fetchCurrentUserJson(userId: string): Promise<UserProfile | null> {
     if (!userId) return null;
-    return prisma.user.findUnique({ where: { id: userId } });
+    return prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+            badges: true,
+        },
+    });
 }
 
 export async function updateUserSettingsJson(userId: string, data: { username?: string }): Promise<UserProfile | null> {
@@ -128,6 +151,7 @@ export async function updateUserSettingsJson(userId: string, data: { username?: 
     return prisma.user.update({
         where: { id: userId },
         data: { username: data.username },
+        include: { badges: true },
     });
 }
 

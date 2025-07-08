@@ -215,7 +215,7 @@ export default function VaultPage() {
                         </CardHeader>
                         <CardContent>
                            <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-tertiary font-mono tracking-wider">
-                                {currentUser.weeklyPoints.toLocaleString()} XP
+                                {(currentUser.weeklyPoints || 0).toLocaleString()} XP
                             </p>
                         </CardContent>
                     </Card>

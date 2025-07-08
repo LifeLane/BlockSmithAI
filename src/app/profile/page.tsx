@@ -259,7 +259,7 @@ export default function ProfilePage() {
       );
   }
   
-  const rankDetails = getRankDetails(currentUser.weeklyPoints);
+  const rankDetails = getRankDetails(currentUser.weeklyPoints || 0);
   const mandatoryMissionsCompleted = missionsList.filter(m => m.type === 'social' && currentUser.claimedMissions?.includes(m.id)).length;
   const totalMandatoryMissions = missionsList.filter(m => m.type === 'social').length;
   const progress = (mandatoryMissionsCompleted / totalMandatoryMissions) * 100;
@@ -375,7 +375,7 @@ export default function ProfilePage() {
                             <CardTitle className="flex items-center"><Award className="mr-2 h-5 w-5"/>Earned Badges</CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-wrap gap-2">
-                        {currentUser.badges && currentUser.badges.length > 0 ? currentUser.badges.map((badge: any, index: number) => (
+                        {currentUser.badges && currentUser.badges.length > 0 ? currentUser.badges.map((badge, index) => (
                             <Badge key={index} variant="secondary" className="font-semibold text-base py-1 px-3">
                             {badge.name}
                             </Badge>
