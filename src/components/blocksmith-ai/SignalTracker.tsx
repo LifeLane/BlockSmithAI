@@ -1,8 +1,10 @@
+
 'use client';
 
 import { useState, useCallback } from 'react';
 import type { FunctionComponent } from 'react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import {
   LogIn,
   ShieldX,
@@ -17,20 +19,20 @@ import {
   PlayCircle,
   Loader2,
   MessageSquareHeart,
-  Route,
+  Briefcase,
 } from 'lucide-react';
-import { executeCustomSignalAction, type GenerateShadowChoiceStrategyOutput } from '@/app/actions';
+import { executeCustomSignalAction, type GenerateShadowChoiceStrategyOutput, type GenerateTradingStrategyOutput } from '@/app/actions';
 import type { LiveMarketData } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import GlyphScramble from './GlyphScramble';
 
-// This component now only handles custom signals (GenerateShadowChoiceStrategyOutput)
-type AIStrategyOutput = GenerateShadowChoiceStrategyOutput & { 
+type AIStrategyOutput = (GenerateShadowChoiceStrategyOutput | GenerateTradingStrategyOutput) & { 
   id?: string;
   analysisSummary?: string | null;
   newsAnalysis?: string | null;
   chosenTradingMode?: string;
+  type: 'INSTANT' | 'CUSTOM';
 };
 
 interface SignalTrackerProps {
@@ -93,7 +95,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
     return null;
   }
   
-  const { signal, entry_zone, stop_loss, take_profit, confidence, gpt_confidence_score, risk_rating, sentiment, analysisSummary, disclaimer } = aiStrategy;
+  const { signal, type, entry_zone, stop_loss, take_profit, confidence, gpt_confidence_score, risk_rating, sentiment, analysisSummary, disclaimer } = aiStrategy;
 
   const isBuy = signal === 'BUY';
 
@@ -101,17 +103,21 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
   const signalIcon = isBuy ? <TrendingUp className="mr-2 h-4 w-4" /> : <TrendingDown className="mr-2 h-4 w-4" />;
   
   const currentPriceFormatted = liveMarketData?.lastPrice ? `$${formatPrice(liveMarketData.lastPrice)}` : 'N/A';
+  
+  const titleText = type === 'INSTANT' 
+    ? `Instant Signal Executed: ${aiStrategy.symbol}` 
+    : `SHADOW's Insight Unveiled: ${aiStrategy.symbol}`;
 
   return (
     <div className="border border-primary/20 rounded-lg p-4 bg-card/80 backdrop-blur-sm space-y-4 shadow-lg interactive-card">
         <h2 className="text-lg sm:text-xl font-headline text-center">
-            <GlyphScramble text={`SHADOW's Insight Unveiled: ${aiStrategy.symbol}`} />
+            <GlyphScramble text={titleText} />
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
              <ParameterCard 
                 isLarge
-                label="SHADOW Signal"
+                label="Signal"
                 value={signalText}
                 icon={signalIcon}
                 valueClassName={isBuy ? 'text-green-400' : 'text-red-400'}
@@ -134,7 +140,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <ParameterCard 
-                label="Limit Entry"
+                label={type === 'CUSTOM' ? "Limit Entry" : "Executed Entry"}
                 value={`$${formatPrice(entry_zone)}`}
                 icon={<LogIn className="mr-2 h-3 w-3" />}
                 valueClassName="text-foreground"
@@ -182,14 +188,23 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
         )}
 
         <div className="pt-2">
-            <Button 
-                className="w-full glow-button"
-                onClick={handleAction} 
-                disabled={isProcessing}
-            >
-                {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <PlayCircle className="mr-2 h-4 w-4"/>}
-                Simulate Signal
-            </Button>
+            {type === 'CUSTOM' ? (
+                <Button 
+                    className="w-full glow-button"
+                    onClick={handleAction} 
+                    disabled={isProcessing}
+                >
+                    {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <PlayCircle className="mr-2 h-4 w-4"/>}
+                    Simulate Signal
+                </Button>
+            ) : (
+                 <Button asChild className="w-full glow-button">
+                    <Link href="/pulse">
+                         <Briefcase className="mr-2 h-4 w-4"/>
+                         Track in Portfolio
+                    </Link>
+                </Button>
+            )}
         </div>
 
         {disclaimer && (

@@ -188,11 +188,13 @@ export type GenerateTradingStrategyOutput = Awaited<ReturnType<typeof genCoreStr
   disclaimer: string;
   symbol: string;
   tradingMode: string;
+  type: 'INSTANT';
 };
 export type GenerateShadowChoiceStrategyOutput = ShadowChoiceStrategyCoreOutput & {
   id: string;
   symbol: string;
   disclaimer: string;
+  type: 'CUSTOM';
 };
 export type { PerformanceReviewOutput };
 
@@ -290,7 +292,7 @@ export async function generateTradingStrategyAction(input: Omit<TradingStrategyP
         const [strategy, disclaimer] = await Promise.all([ genCoreStrategy(promptInput), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
         
-        return { ...strategy, id: randomUUID(), symbol: input.symbol, disclaimer: disclaimer.disclaimer, tradingMode: input.tradingMode };
+        return { ...strategy, id: randomUUID(), symbol: input.symbol, disclaimer: disclaimer.disclaimer, tradingMode: input.tradingMode, type: 'INSTANT' };
 
     } catch (error: any) {
         console.error("Error in generateTradingStrategyAction:", error);
@@ -323,7 +325,7 @@ export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStra
         const [strategy, disclaimer] = await Promise.all([ genShadowChoice(promptInput), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate an autonomous strategy." };
         
-        return { ...strategy, id: randomUUID(), symbol: input.symbol, disclaimer: disclaimer.disclaimer };
+        return { ...strategy, id: randomUUID(), symbol: input.symbol, disclaimer: disclaimer.disclaimer, type: 'CUSTOM' };
 
     } catch (error: any) {
         console.error("Error in generateShadowChoiceStrategyAction:", error);
@@ -431,9 +433,12 @@ export async function cancelPendingPositionAction(positionId: string): Promise<{
 }
 
 export async function fetchAllGeneratedSignalsAction(userId: string): Promise<GeneratedSignal[] | { error: string }> {
+    // This server action is now a placeholder. The logic is handled on the client in /signals/page.tsx
+    // to allow functionality without a database.
     return [];
 }
 
 export async function dismissCustomSignalAction(signalId: string, userId: string): Promise<{ success: boolean, error?: string }> {
-    return { success: true, error: "Feature disabled: Database connection is not active." };
+    console.log(`MOCK: Dismissing signal ${signalId} for user ${userId}. No database is connected.`);
+    return { success: true };
 }
