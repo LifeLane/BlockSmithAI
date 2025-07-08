@@ -1,13 +1,14 @@
 
 "use server";
-import {promises as fs} from 'fs';
-import path from 'path';
-import { lock } from 'proper-lockfile';
+import { prisma } from '@/lib/prisma';
+import type { User as UserProfile, Position as PrismaPosition, GeneratedSignal as PrismaGeneratedSignal, SignalType, PositionStatus, PositionType, SignalStatus } from '@prisma/client';
+import { randomUUID } from 'crypto';
+import { add } from 'date-fns';
 
 // AI Flow Imports
 import { generateTradingStrategy as genCoreStrategy, type PromptInput as TradingStrategyPromptInput } from '@/ai/flows/generate-trading-strategy';
 import { generateSarcasticDisclaimer } from '@/ai/flows/generate-sarcastic-disclaimer';
-import { shadowChat as shadowChatFlow, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
+import { shadowChat as shadowChatFlow, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-ai/blocksmith-chat-flow';
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
 import { generateShadowChoiceStrategy as genShadowChoice, type ShadowChoiceStrategyInput, type ShadowChoiceStrategyCoreOutput } from '@/ai/flows/generate-shadow-choice-strategy';
 import {
@@ -16,126 +17,21 @@ import {
     type PerformanceReviewOutput
 } from '@/ai/flows/generate-performance-review';
 import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
-
-
-// Node/Prisma Imports
-import { randomUUID } from 'crypto';
-import { add, isBefore } from 'date-fns';
 import { fetchMarketDataAction } from '@/services/market-data-service';
 
-// --- MOCK DATABASE (db.json) ---
-const dbPath = path.join(process.cwd(), 'src', 'data', 'db.json');
-
-async function updateDb<T>(updater: (db: any) => Promise<T> | T): Promise<T> {
-    const release = await lock(dbPath, { retries: 5, stale: 10000 });
-    let db;
-    try {
-        try {
-            const data = await fs.readFile(dbPath, 'utf-8');
-            db = JSON.parse(data);
-        } catch (error) {
-            console.warn("Could not read db.json, initializing with empty state.");
-            db = { users: [], positions: [], signals: [] };
-        }
-        
-        const result = await updater(db);
-
-        await fs.writeFile(dbPath, JSON.stringify(db, null, 2), 'utf-8');
-
-        return result;
-    } finally {
-        await release();
-    }
-}
-
-async function readDb(): Promise<any> {
-    try {
-        const data = await fs.readFile(dbPath, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error("Error reading from db.json:", error);
-        return { users: [], positions: [], signals: [] };
-    }
-}
-
-
-// Type Definitions
-// Re-defining types to avoid Prisma dependency.
-export interface Position {
-    id: string;
-    userId: string;
-    symbol: string;
-    signalType: 'BUY' | 'SELL';
-    status: 'PENDING' | 'OPEN' | 'CLOSED';
-    entryPrice: number;
-    closePrice: number | null;
-    size: number;
-    stopLoss: number | null;
-    takeProfit: number | null;
-    pnl: number | null;
+// --- Type Definitions ---
+export type Position = Omit<PrismaPosition, 'openTimestamp' | 'closeTimestamp' | 'expirationTimestamp' | 'createdAt' | 'updatedAt'> & {
     openTimestamp: string | null;
     closeTimestamp: string | null;
     expirationTimestamp: string | null;
-    strategyId: string | null;
     createdAt: string;
     updatedAt: string;
-    // Enriched data from signal
-    type: 'INSTANT' | 'CUSTOM';
-    tradingMode: string;
-    riskProfile: string;
-    gpt_confidence_score: string;
-    sentiment: string;
-    // Reward data
-    gainedAirdropPoints?: number | null;
-    gainedXp?: number | null;
-    gasPaid?: number | null;
-    blocksTrained?: number | null;
-}
-export interface Badge { name: string; }
-export interface UserProfile {
-    id: string;
-    username: string;
-    shadowId: string;
-    status: string;
-    weeklyPoints: number;
-    airdropPoints: number;
-    badges: Badge[];
-    claimedMissions: string[];
-    claimedSpecialOps: string[];
-    email?: string | null;
-    phone?: string | null;
-    x_handle?: string | null;
-    telegram_handle?: string | null;
-    youtube_handle?: string | null;
-    wallet_address?: string | null;
-    wallet_type?: string | null;
-}
-export interface GeneratedSignal {
-    id: string;
-    userId: string;
-    symbol: string;
-    signal: string;
-    entry_zone: string;
-    stop_loss: string;
-    take_profit: string;
-    confidence: string;
-    risk_rating: string;
-    gpt_confidence_score: string;
-    sentiment: string;
-    currentThought: string;
-    shortTermPrediction: string | null;
-    sentimentTransition: string | null;
-    chosenTradingMode: string;
-    chosenRiskProfile: string;
-    strategyReasoning: string;
-    analysisSummary: string;
-    newsAnalysis: string | null;
-    disclaimer: string;
-    type: 'INSTANT' | 'CUSTOM';
-    status: 'PENDING_EXECUTION' | 'EXECUTED' | 'DISMISSED' | 'ARCHIVED' | 'ERROR';
+};
+export type GeneratedSignal = Omit<PrismaGeneratedSignal, 'createdAt' | 'updatedAt'> & {
     createdAt: string;
     updatedAt: string;
-}
+};
+export type { UserProfile };
 
 export type ChatMessage = AIChatMessage;
 export interface LeaderboardUser {
@@ -197,63 +93,53 @@ export type GenerateShadowChoiceStrategyOutput = ShadowChoiceStrategyCoreOutput 
 };
 export type { PerformanceReviewOutput };
 
+const serializeDates = <T extends { createdAt?: Date, updatedAt?: Date, openTimestamp?: Date | null, closeTimestamp?: Date | null, expirationTimestamp?: Date | null }>(obj: T) => {
+    const newObj: any = { ...obj };
+    if (obj.createdAt) newObj.createdAt = obj.createdAt.toISOString();
+    if (obj.updatedAt) newObj.updatedAt = obj.updatedAt.toISOString();
+    if (obj.openTimestamp) newObj.openTimestamp = obj.openTimestamp.toISOString();
+    if (obj.closeTimestamp) newObj.closeTimestamp = obj.closeTimestamp.toISOString();
+    if (obj.expirationTimestamp) newObj.expirationTimestamp = obj.expirationTimestamp.toISOString();
+    return newObj;
+};
+
 // --- ---
 
 export async function getOrCreateUserAction(userId: string | null): Promise<UserProfile> {
-    return updateDb(db => {
-        if (userId) {
-            const existingUser = db.users.find((u: UserProfile) => u.id === userId);
-            if(existingUser) return existingUser;
-        }
+    if (userId) {
+        const existingUser = await prisma.user.findUnique({ where: { id: userId } });
+        if(existingUser) return existingUser;
+    }
 
-        const newId = userId || randomUUID();
-        const newUser: UserProfile = {
+    const newId = userId || randomUUID();
+    const newUser = await prisma.user.create({
+        data: {
             id: newId,
             username: `Analyst_${newId.substring(0, 6)}`,
             shadowId: `SHDW-${randomUUID().substring(0, 7).toUpperCase()}`,
-            status: "Guest",
-            weeklyPoints: 0,
-            airdropPoints: 0,
-            badges: [],
-            claimedMissions: [],
-            claimedSpecialOps: [],
-        };
-        
-        const userIndex = db.users.findIndex((u: UserProfile) => u.id === newId);
-        if (userIndex !== -1) {
-            db.users[userIndex] = newUser;
-        } else {
-            db.users.push(newUser);
         }
-        return newUser;
     });
+    return newUser;
 }
 
 export async function fetchCurrentUserJson(userId: string): Promise<UserProfile | null> {
     if (!userId) return null;
-    const db = await readDb();
-    return db.users.find((u: UserProfile) => u.id === userId) || null;
+    return prisma.user.findUnique({ where: { id: userId } });
 }
 
 export async function updateUserSettingsJson(userId: string, data: { username?: string }): Promise<UserProfile | null> {
-    return updateDb(db => {
-        const userIndex = db.users.findIndex((u: UserProfile) => u.id === userId);
-        if(userIndex === -1) return null;
-
-        if(data.username) {
-            db.users[userIndex].username = data.username;
-        }
-        return db.users[userIndex];
+    if (!userId || !data.username) return null;
+    return prisma.user.update({
+        where: { id: userId },
+        data: { username: data.username },
     });
 }
 
 export async function handleAirdropSignupAction(formData: AirdropFormData, userId: string): Promise<{ userId: string; } | { error: string; }> {
-    return updateDb(db => {
-        const userIndex = db.users.findIndex((u: UserProfile) => u.id === userId);
-        if(userIndex === -1) return { error: "User not found." };
-        
-        db.users[userIndex] = {
-            ...db.users[userIndex],
+    if (!userId) return { error: "User not found." };
+    await prisma.user.update({
+        where: { id: userId },
+        data: {
             status: "Registered",
             wallet_address: formData.wallet_address,
             wallet_type: formData.wallet_type,
@@ -262,15 +148,17 @@ export async function handleAirdropSignupAction(formData: AirdropFormData, userI
             x_handle: formData.x_handle,
             telegram_handle: formData.telegram_handle,
             youtube_handle: formData.youtube_handle,
-        };
-        return { userId };
+        }
     });
+    return { userId };
 }
 
 export async function fetchLeaderboardDataJson(): Promise<LeaderboardUser[]> {
-    const db = await readDb();
-    const sortedUsers = [...db.users].sort((a,b) => b.weeklyPoints - a.weeklyPoints);
-    return sortedUsers.slice(0, 10).map((user, index) => ({
+    const users = await prisma.user.findMany({
+        take: 10,
+        orderBy: { weeklyPoints: 'desc' },
+    });
+    return users.map((user, index) => ({
         id: user.id,
         username: user.username,
         weeklyPoints: user.weeklyPoints,
@@ -285,25 +173,6 @@ const timeframeMappings: { [key: string]: { short: string; medium: string; long:
     Intraday: { short: '15m', medium: '30m', long: '1h' },
     Swing: { short: '1h', medium: '4h', long: '1d' },
 };
-
-async function saveSignalToDb(signalData: Omit<GeneratedSignal, 'createdAt' | 'updatedAt'>) {
-    return updateDb(db => {
-        const newSignal: GeneratedSignal = {
-            ...signalData,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
-        if (!db.signals) db.signals = [];
-        db.signals.push(newSignal);
-
-        // --- Gamification: Reward for generating a signal ---
-        const userIndex = db.users.findIndex((u: UserProfile) => u.id === signalData.userId);
-        if (userIndex !== -1) {
-            const NODE_TRAINING_REWARD = 10; // $BSAI
-            db.users[userIndex].airdropPoints += NODE_TRAINING_REWARD;
-        }
-    });
-}
 
 const parsePrice = (priceStr: string | undefined | null): number => {
     if (!priceStr) return NaN;
@@ -352,43 +221,32 @@ export async function generateTradingStrategyAction(input: Omit<TradingStrategyP
             type: 'INSTANT' as const
         };
         
-        await updateDb(db => {
-            const newPosition: Position = {
-                id: randomUUID(),
-                userId: input.userId,
-                symbol: fullResult.symbol,
-                signalType: fullResult.signal as 'BUY' | 'SELL',
-                status: 'OPEN',
-                entryPrice: parsePrice(fullResult.entry_zone),
-                closePrice: null,
-                size: 1, // Default size for now
-                stopLoss: parsePrice(fullResult.stop_loss),
-                takeProfit: parsePrice(fullResult.take_profit),
-                pnl: null,
-                openTimestamp: new Date().toISOString(),
-                closeTimestamp: null,
-                expirationTimestamp: null,
-                strategyId: fullResult.id,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                // Enriched Data
-                type: 'INSTANT',
-                tradingMode: fullResult.tradingMode,
-                riskProfile: fullResult.risk_rating,
-                gpt_confidence_score: fullResult.gpt_confidence_score,
-                sentiment: fullResult.sentiment,
-            };
-            if (!db.positions) db.positions = [];
-            db.positions.push(newPosition);
+        await prisma.$transaction(async (tx) => {
+            await tx.position.create({
+                data: {
+                    userId: input.userId,
+                    symbol: fullResult.symbol,
+                    signalType: fullResult.signal as SignalType,
+                    status: 'OPEN',
+                    entryPrice: parsePrice(fullResult.entry_zone),
+                    stopLoss: parsePrice(fullResult.stop_loss),
+                    takeProfit: parsePrice(fullResult.take_profit),
+                    openTimestamp: new Date(),
+                    type: 'INSTANT',
+                    tradingMode: fullResult.tradingMode,
+                    riskProfile: fullResult.risk_rating,
+                    gpt_confidence_score: fullResult.gpt_confidence_score,
+                    sentiment: fullResult.sentiment,
+                }
+            });
 
-            // --- Gamification: Reward for simulating a trade ---
-            const userIndex = db.users.findIndex((u: UserProfile) => u.id === input.userId);
-            if (userIndex !== -1) {
-                const SIMULATION_XP_REWARD = 25;
-                const SIMULATION_AIRDROP_REWARD = 50;
-                db.users[userIndex].weeklyPoints += SIMULATION_XP_REWARD;
-                db.users[userIndex].airdropPoints += SIMULATION_AIRDROP_REWARD;
-            }
+            await tx.user.update({
+                where: { id: input.userId },
+                data: {
+                    weeklyPoints: { increment: 25 },
+                    airdropPoints: { increment: 50 },
+                }
+            });
         });
 
         return fullResult;
@@ -424,10 +282,17 @@ export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStra
         const [strategy, disclaimer] = await Promise.all([ genShadowChoice(promptInput), generateSarcasticDisclaimer() ]);
         if (!strategy) return { error: "SHADOW Core failed to generate an autonomous strategy." };
 
-        const resultId = randomUUID();
-        const fullResult = { ...strategy, id: resultId, symbol: input.symbol, disclaimer: disclaimer.disclaimer, type: 'CUSTOM' as const };
+        const fullResult = { ...strategy, id: randomUUID(), symbol: input.symbol, disclaimer: disclaimer.disclaimer, type: 'CUSTOM' as const };
         
-        await saveSignalToDb({ ...fullResult, userId, status: 'PENDING_EXECUTION' });
+        await prisma.$transaction(async (tx) => {
+            await tx.generatedSignal.create({
+                data: { ...fullResult, userId, status: 'PENDING_EXECUTION' as SignalStatus }
+            });
+            await tx.user.update({
+                where: { id: userId },
+                data: { airdropPoints: { increment: 10 } }
+            });
+        });
 
         return fullResult;
 
@@ -451,80 +316,68 @@ export async function getDailyGreeting(): Promise<GenerateDailyGreetingOutput> {
 }
 
 export async function claimMissionRewardAction(userId: string, missionId: string): Promise<{ success: boolean; message: string }> {
-    return updateDb(db => {
-        const user = db.users.find((u: UserProfile) => u.id === userId);
-        if (!user) return { success: false, message: 'User not found.' };
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return { success: false, message: 'User not found.' };
 
-        user.claimedMissions.push(missionId);
-        return { success: true, message: `Mission reward claimed.` };
+    await prisma.user.update({
+        where: { id: userId },
+        data: { claimedMissions: { push: missionId } }
     });
+    return { success: true, message: `Mission reward claimed.` };
 }
 
 export async function executeCustomSignalAction(signalId: string, userId: string): Promise<{ success: boolean; error?: string }> {
-    return updateDb(db => {
-        const signal = db.signals.find((s: GeneratedSignal) => s.id === signalId && s.userId === userId);
-        if (!signal) return { success: false, error: 'Signal not found.' };
+    return prisma.$transaction(async (tx) => {
+        const signal = await tx.generatedSignal.findUnique({ where: { id: signalId } });
+        if (!signal || signal.userId !== userId) return { success: false, error: 'Signal not found.' };
 
-        const newPosition: Position = {
-            id: randomUUID(),
-            userId,
-            symbol: signal.symbol,
-            signalType: signal.signal as 'BUY' | 'SELL',
-            status: 'PENDING',
-            entryPrice: parsePrice(signal.entry_zone),
-            closePrice: null,
-            size: 1, // Default size for now
-            stopLoss: parsePrice(signal.stop_loss),
-            takeProfit: parsePrice(signal.take_profit),
-            pnl: null,
-            openTimestamp: null,
-            closeTimestamp: null,
-            expirationTimestamp: add(new Date(), { hours: 24 }).toISOString(),
-            strategyId: signal.id,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            // Enriched Data
-            type: 'CUSTOM',
-            tradingMode: signal.chosenTradingMode || 'Custom',
-            riskProfile: signal.chosenRiskProfile,
-            gpt_confidence_score: signal.gpt_confidence_score,
-            sentiment: signal.sentiment,
-        };
-        if (!db.positions) db.positions = [];
-        db.positions.push(newPosition);
+        await tx.position.create({
+            data: {
+                userId,
+                symbol: signal.symbol,
+                signalType: signal.signal as SignalType,
+                status: 'PENDING' as PositionStatus,
+                entryPrice: parsePrice(signal.entry_zone),
+                stopLoss: parsePrice(signal.stop_loss),
+                takeProfit: parsePrice(signal.take_profit),
+                expirationTimestamp: add(new Date(), { hours: 24 }),
+                strategyId: signal.id,
+                type: 'CUSTOM' as PositionType,
+                tradingMode: signal.chosenTradingMode || 'Custom',
+                riskProfile: signal.chosenRiskProfile,
+                gpt_confidence_score: signal.gpt_confidence_score,
+                sentiment: signal.sentiment,
+            }
+        });
 
-        const signalIndex = db.signals.findIndex((s: GeneratedSignal) => s.id === signalId);
-        if(signalIndex > -1) {
-            db.signals[signalIndex].status = 'EXECUTED';
-            db.signals[signalIndex].updatedAt = new Date().toISOString();
-        }
+        await tx.generatedSignal.update({
+            where: { id: signalId },
+            data: { status: 'EXECUTED' as SignalStatus }
+        });
         
-        // --- Gamification: Reward for simulating a trade ---
-        const userIndex = db.users.findIndex((u: UserProfile) => u.id === userId);
-        if (userIndex !== -1) {
-            const SIMULATION_XP_REWARD = 25;
-            const SIMULATION_AIRDROP_REWARD = 50;
-            db.users[userIndex].weeklyPoints += SIMULATION_XP_REWARD;
-            db.users[userIndex].airdropPoints += SIMULATION_AIRDROP_REWARD;
-        }
+        await tx.user.update({
+            where: { id: userId },
+            data: {
+                weeklyPoints: { increment: 25 },
+                airdropPoints: { increment: 50 },
+            }
+        });
         
         return { success: true };
     });
 }
 
 const calculateTradeRewards = (pnl: number, tradingMode: string, riskProfile: string) => {
-    // Define base rewards
     const BASE_WIN_XP = 50;
     const BASE_LOSS_XP = 10;
     const BASE_WIN_AIRDROP_BONUS = 25;
     const BASE_LOSS_AIRDROP_BONUS = 5;
 
-    // Define multipliers
-    const modeMultipliers = { Scalper: 1.0, Sniper: 1.1, Intraday: 1.2, Swing: 1.5, Custom: 1.2 };
-    const riskMultipliers = { Low: 0.8, Medium: 1.0, High: 1.3 };
+    const modeMultipliers: { [key: string]: number } = { Scalper: 1.0, Sniper: 1.1, Intraday: 1.2, Swing: 1.5, Custom: 1.2 };
+    const riskMultipliers: { [key: string]: number } = { Low: 0.8, Medium: 1.0, High: 1.3 };
 
-    const modeMultiplier = modeMultipliers[tradingMode as keyof typeof modeMultipliers] || 1.0;
-    const riskMultiplier = riskMultipliers[riskProfile as keyof typeof riskMultipliers] || 1.0;
+    const modeMultiplier = modeMultipliers[tradingMode] || 1.0;
+    const riskMultiplier = riskMultipliers[riskProfile] || 1.0;
 
     let gainedXp: number;
     let gainedAirdropPoints: number;
@@ -533,11 +386,10 @@ const calculateTradeRewards = (pnl: number, tradingMode: string, riskProfile: st
         gainedXp = BASE_WIN_XP * modeMultiplier * riskMultiplier;
         gainedAirdropPoints = pnl + (BASE_WIN_AIRDROP_BONUS * modeMultiplier * riskMultiplier);
     } else {
-        gainedXp = BASE_LOSS_XP * modeMultiplier; // Less penalty on XP for losses
-        gainedAirdropPoints = pnl + BASE_LOSS_AIRDROP_BONUS; // PnL is negative, so this is a smaller loss + small bonus
+        gainedXp = BASE_LOSS_XP * modeMultiplier;
+        gainedAirdropPoints = pnl + BASE_LOSS_AIRDROP_BONUS;
     }
 
-    // Deterministic values instead of mock random data
     const gasPaid = 1.25 + (riskMultiplier - 1) + (modeMultiplier - 1);
     const blocksTrained = 100 + Math.floor(Math.abs(pnl) * 2);
 
@@ -549,94 +401,100 @@ const calculateTradeRewards = (pnl: number, tradingMode: string, riskProfile: st
     };
 };
 
-
 export async function closePositionAction(positionId: string, closePrice: number): Promise<{ position?: Position; error?: string; }> {
-    return updateDb(db => {
-        const positionIndex = db.positions.findIndex((p: Position) => p.id === positionId);
-        if (positionIndex === -1) return { error: 'Position not found.' };
+    const positionToUpdate = await prisma.position.findUnique({ where: { id: positionId } });
+    if (!positionToUpdate) return { error: 'Position not found.' };
+    if (positionToUpdate.status !== 'OPEN') return { error: 'Position is not open.' };
 
-        const position = db.positions[positionIndex];
-        if (position.status !== 'OPEN') return { error: 'Position is not open.' };
+    const pnl = (positionToUpdate.signalType === 'BUY'
+        ? (closePrice - positionToUpdate.entryPrice)
+        : (positionToUpdate.entryPrice - closePrice)) * positionToUpdate.size;
+    
+    const rewards = calculateTradeRewards(pnl, positionToUpdate.tradingMode, positionToUpdate.riskProfile);
 
-        const pnl = (position.signalType === 'BUY'
-            ? (closePrice - position.entryPrice)
-            : (position.entryPrice - closePrice)) * position.size;
-        
-        const rewards = calculateTradeRewards(pnl, position.tradingMode, position.riskProfile);
+    const updatedPosition = await prisma.$transaction(async (tx) => {
+        const pos = await tx.position.update({
+            where: { id: positionId },
+            data: {
+                status: 'CLOSED',
+                closePrice: closePrice,
+                closeTimestamp: new Date(),
+                pnl: pnl,
+                gainedXp: rewards.gainedXp,
+                gainedAirdropPoints: rewards.gainedAirdropPoints,
+                gasPaid: rewards.gasPaid,
+                blocksTrained: rewards.blocksTrained,
+            }
+        });
 
-        position.status = 'CLOSED';
-        position.closePrice = closePrice;
-        position.closeTimestamp = new Date().toISOString();
-        position.pnl = pnl;
-        position.gainedXp = rewards.gainedXp;
-        position.gainedAirdropPoints = rewards.gainedAirdropPoints;
-        position.gasPaid = rewards.gasPaid;
-        position.blocksTrained = rewards.blocksTrained;
-
-        const userIndex = db.users.findIndex((u: UserProfile) => u.id === position.userId);
-        if (userIndex !== -1) {
-            db.users[userIndex].airdropPoints += rewards.gainedAirdropPoints;
-            db.users[userIndex].weeklyPoints += rewards.gainedXp;
-        }
-        
-        return { position };
+        await tx.user.update({
+            where: { id: pos.userId },
+            data: {
+                airdropPoints: { increment: rewards.gainedAirdropPoints },
+                weeklyPoints: { increment: rewards.gainedXp },
+            }
+        });
+        return pos;
     });
+    
+    return { position: serializeDates(updatedPosition) };
 }
 
 export async function fetchPendingAndOpenPositionsAction(userId: string): Promise<Position[]> {
-    const db = await readDb();
-    if (!db.positions) return [];
-    return db.positions.filter((p: Position) => p.userId === userId && (p.status === 'PENDING' || p.status === 'OPEN'));
+    const positions = await prisma.position.findMany({
+        where: { userId, status: { in: ['PENDING', 'OPEN'] } },
+        orderBy: { createdAt: 'desc' }
+    });
+    return positions.map(serializeDates);
 }
 
 export async function fetchTradeHistoryAction(userId: string): Promise<Position[]> {
-    const db = await readDb();
-    if (!db.positions) return [];
-    return db.positions.filter((p: Position) => p.userId === userId && p.status === 'CLOSED');
+    const positions = await prisma.position.findMany({
+        where: { userId, status: 'CLOSED' },
+        orderBy: { closeTimestamp: 'desc' }
+    });
+    return positions.map(serializeDates);
 }
 
 export async function fetchPortfolioStatsAction(userId: string): Promise<PortfolioStats | { error: string }> {
-    const db = await readDb();
-    const user = db.users.find((u: UserProfile) => u.id === userId);
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return { error: 'User not found' };
 
-    const closedTrades = (db.positions || []).filter((p: Position) => p.userId === userId && p.status === 'CLOSED');
-    const signals = (db.signals || []).filter((s: GeneratedSignal) => s.userId === userId);
+    const closedTrades = await prisma.position.findMany({ where: { userId: userId, status: 'CLOSED' } });
+    const signalsCount = await prisma.generatedSignal.count({ where: { userId: userId } });
     
     const totalTrades = closedTrades.length;
-    const nodesTrained = signals.length;
-    const xpGained = user.weeklyPoints;
     
     if (totalTrades === 0) {
         return {
             totalTrades: 0, winRate: 0, winningTrades: 0, totalPnl: 0,
             totalPnlPercentage: 0, bestTradePnl: 0, worstTradePnl: 0,
             lifetimeRewards: user.airdropPoints,
-            nodesTrained, xpGained,
+            nodesTrained: signalsCount, xpGained: user.weeklyPoints,
         };
     }
 
-    const winningTrades = closedTrades.filter((t: Position) => t.pnl && t.pnl > 0).length;
+    const winningTrades = closedTrades.filter((t) => t.pnl && t.pnl > 0).length;
     const winRate = (winningTrades / totalTrades) * 100;
-    const totalPnl = closedTrades.reduce((acc: number, t: Position) => acc + (t.pnl || 0), 0);
-    const bestTradePnl = Math.max(...closedTrades.map((t: Position) => t.pnl || 0), 0);
-    const worstTradePnl = Math.min(...closedTrades.map((t: Position) => t.pnl || 0), 0);
+    const totalPnl = closedTrades.reduce((acc, t) => acc + (t.pnl || 0), 0);
+    const bestTradePnl = Math.max(...closedTrades.map((t) => t.pnl || 0), 0);
+    const worstTradePnl = Math.min(...closedTrades.map((t) => t.pnl || 0), 0);
     
     return {
         totalTrades, winRate, winningTrades, totalPnl,
         totalPnlPercentage: 0, // Simplified for now
         bestTradePnl, worstTradePnl,
         lifetimeRewards: user.airdropPoints,
-        nodesTrained, xpGained
+        nodesTrained: signalsCount, xpGained: user.weeklyPoints
     };
 }
 
 export async function generatePerformanceReviewAction(userId: string): Promise<PerformanceReviewOutput | { error: string }> {
-    const db = await readDb();
-    const user = db.users.find((u: UserProfile) => u.id === userId);
-    if (!user) return { error: 'User not found' };
-    
-    const tradeHistory = (db.positions || []).filter((p: Position) => p.userId === userId && p.status === 'CLOSED');
+    const tradeHistory = await prisma.position.findMany({
+      where: { userId: userId, status: 'CLOSED' },
+      take: 50,
+      orderBy: { closeTimestamp: 'desc' }
+    });
     if (tradeHistory.length < 3) return { error: 'Insufficient trade history for analysis. Complete at least 3 trades.' };
     
     const stats = await fetchPortfolioStatsAction(userId);
@@ -652,9 +510,14 @@ export async function generatePerformanceReviewAction(userId: string): Promise<P
             worstTradePnl: stats.worstTradePnl,
         },
         tradeHistory: tradeHistory.map(t => ({
-            ...t,
-            openTimestamp: t.openTimestamp || "",
-            closeTimestamp: t.closeTimestamp || null,
+            id: t.id,
+            symbol: t.symbol,
+            signalType: t.signalType,
+            entryPrice: t.entryPrice,
+            closePrice: t.closePrice,
+            pnl: t.pnl,
+            openTimestamp: t.openTimestamp?.toISOString() || "",
+            closeTimestamp: t.closeTimestamp?.toISOString() || null,
         }))
     }
     
@@ -662,73 +525,47 @@ export async function generatePerformanceReviewAction(userId: string): Promise<P
 }
 
 export async function killSwitchAction(userId: string): Promise<{ success: boolean; message: string; }> {
-     return updateDb(db => {
-        if (!db.positions) return { success: true, message: 'No active positions to close.' };
-        
-        const openPositions = db.positions.filter((p: Position) => p.userId === userId && p.status === 'OPEN');
-        if(openPositions.length === 0) return { success: true, message: 'No active positions to close.' };
-
-        let closedCount = 0;
-        openPositions.forEach((p: Position) => {
-            p.status = 'CLOSED';
-            p.closePrice = p.entryPrice;
-            p.pnl = 0;
-            p.closeTimestamp = new Date().toISOString();
-            const rewards = calculateTradeRewards(0, p.tradingMode, p.riskProfile);
-            p.gainedXp = rewards.gainedXp;
-            p.gainedAirdropPoints = rewards.gainedAirdropPoints;
-            p.gasPaid = rewards.gasPaid;
-            p.blocksTrained = rewards.blocksTrained;
-            closedCount++;
-        });
-        
-        return { success: true, message: `Successfully closed ${closedCount} open positions.` };
-    });
+    const openPositions = await prisma.position.findMany({ where: { userId: userId, status: 'OPEN' } });
+    if(openPositions.length === 0) return { success: true, message: 'No active positions to close.' };
+    
+    for (const p of openPositions) {
+        await closePositionAction(p.id, p.entryPrice); // Close at entry price for $0 PnL
+    }
+    
+    return { success: true, message: `Successfully closed ${openPositions.length} open positions.` };
 }
 
 export async function activatePendingPositionAction(positionId: string): Promise<{ position?: Position; error?: string; }> {
-    return updateDb(db => {
-        const positionIndex = db.positions.findIndex((p: Position) => p.id === positionId);
-        if (positionIndex === -1) return { error: 'Position not found.' };
-        
-        const position = db.positions[positionIndex];
-
-        if (position.status !== 'PENDING') return { error: 'Position is not pending.' };
-
-        position.status = 'OPEN';
-        position.openTimestamp = new Date().toISOString();
-        return { position };
+    const updatedPosition = await prisma.position.update({
+        where: { id: positionId, status: 'PENDING' },
+        data: { status: 'OPEN', openTimestamp: new Date() }
     });
+    if (!updatedPosition) return { error: "Position not found or not pending." };
+    return { position: serializeDates(updatedPosition) };
 }
 
 export async function cancelPendingPositionAction(positionId: string): Promise<{ success: boolean; error?: string; }> {
-    return updateDb(db => {
-        const positionIndex = db.positions.findIndex((p: Position) => p.id === positionId);
-        if (positionIndex === -1) return { success: false, error: 'Position not found.' };
-
-        if(db.positions[positionIndex].status !== 'PENDING') return { success: false, error: 'Position is not pending.' };
-
-        db.positions.splice(positionIndex, 1);
-        return { success: true };
+    const result = await prisma.position.deleteMany({
+        where: { id: positionId, status: 'PENDING' }
     });
+    if (result.count === 0) return { success: false, error: "Position not found or not pending." };
+    return { success: true };
 }
 
 export async function fetchAllGeneratedSignalsAction(userId: string): Promise<GeneratedSignal[] | { error: string }> {
     if (!userId) return { error: 'User ID is required' };
-    const db = await readDb();
-    if (!db.signals) return [];
-    return (db.signals as GeneratedSignal[])
-        .filter(s => s.userId === userId)
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const signals = await prisma.generatedSignal.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' }
+    });
+    return signals.map(serializeDates);
 }
 
 export async function dismissCustomSignalAction(signalId: string, userId: string): Promise<{ success: boolean, error?: string }> {
-    return updateDb(db => {
-        const signalIndex = db.signals.findIndex((s: GeneratedSignal) => s.id === signalId && s.userId === userId);
-        if (signalIndex === -1) return { success: false, error: 'Signal not found' };
-
-        db.signals[signalIndex].status = 'DISMISSED';
-        db.signals[signalIndex].updatedAt = new Date().toISOString();
-        return { success: true };
+    const result = await prisma.generatedSignal.updateMany({
+        where: { id: signalId, userId: userId },
+        data: { status: 'DISMISSED' as SignalStatus }
     });
+    if(result.count === 0) return { success: false, error: 'Signal not found' };
+    return { success: true };
 }

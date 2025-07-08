@@ -5,6 +5,7 @@
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { prisma } from '@/lib/prisma';
 
 // Corrected schema to match the data model for a Position.
 const PositionSchema = z.object({
@@ -44,10 +45,31 @@ export const fetchPortfolioTool = ai.defineTool(
     outputSchema: FetchPortfolioOutputSchema,
   },
   async (input) => {
-    // Database functionality is disabled. Return a default empty state.
     if (!input.userId) {
       return { error: 'User ID is required to fetch portfolio.' };
     }
-    return { message: "The user has no open or pending positions (database is disabled)." };
+    
+    try {
+        const positions = await prisma.position.findMany({
+            where: {
+                userId: input.userId,
+                status: {
+                    in: ['PENDING', 'OPEN']
+                }
+            }
+        });
+        
+        if (positions.length === 0) {
+            return { message: "The user has no open or pending positions." };
+        }
+
+        // The schema expects float for pnl, but prisma might return Decimal. Ensure conversion if necessary.
+        // For now, schema aligns with Float so direct return is okay.
+        return { positions };
+
+    } catch (error: any) {
+        console.error("Error in fetchPortfolioTool:", error);
+        return { error: `Database error when fetching portfolio: ${error.message}` };
+    }
   }
 );
