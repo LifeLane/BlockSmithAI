@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -27,7 +26,7 @@ import {
 import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Lightbulb } from 'lucide-react';
+import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Lightbulb, CircleDot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
@@ -158,9 +157,11 @@ export default function CoreConsolePage() {
 
 
   const handleGenerateStrategy = useCallback(async ({ isCustom }: { isCustom: boolean }) => {
-    setTimeout(() => {
-        document.getElementById('results-block')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    if (!isCustom) { // Only scroll for custom signals that show results on the same page
+        setTimeout(() => {
+            document.getElementById('results-block')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
 
     if (!currentUser) {
         setShowAirdropModal(true);
@@ -228,27 +229,37 @@ export default function CoreConsolePage() {
       });
       if(currentUser.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
     } else {
-      setAiStrategy(result);
-      
-      // For Instant Signals, log the position immediately. The SignalTracker component will handle the rest.
-      if (!isCustom) {
-        await logInstantPositionAction(currentUser.id, result as GenerateTradingStrategyOutput);
-      }
-
-      const toastTitle = isCustom ? "Custom Signal Generated!" : "Instant Signal Generated!";
-      const toastDescription = isCustom
-          ? `Your custom signal for ${result.symbol} is ready to be simulated.`
-          : `The instant signal for ${result.symbol} has been logged and can be tracked in your portfolio.`;
-
-      toast({
-          title: <span className="text-accent">{toastTitle}</span>,
-          description: <span className="text-foreground">{toastDescription}</span>,
-      });
+        if (isCustom) {
+            setAiStrategy(result);
+            const toastTitle = "Custom Signal Generated!";
+            const toastDescription = `Your custom signal for ${result.symbol} is ready to be simulated.`;
+            toast({
+                title: <span className="text-accent">{toastTitle}</span>,
+                description: <span className="text-foreground">{toastDescription}</span>,
+            });
+        } else {
+            // Instant signal: log immediately and redirect
+            const logResult = await logInstantPositionAction(currentUser.id, result as GenerateTradingStrategyOutput);
+            if (logResult.success) {
+                toast({
+                    title: <span className="text-accent">Instant Signal Executed!</span>,
+                    description: `Your instant trade for ${result.symbol} has been logged. Redirecting to your portfolio...`,
+                });
+                router.push('/pulse');
+            } else {
+                 setStrategyError(logResult.error || "Failed to log instant position.");
+                 toast({
+                     title: "Execution Failed",
+                     description: logResult.error || "Could not log the instant position.",
+                     variant: "destructive",
+                 });
+            }
+        }
     }
     
     if (isCustom) setIsLoadingCustom(false);
     else setIsLoadingInstant(false);
-  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast]);
+  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast, router]);
 
 
   const handleToggleChat = () => setIsChatOpen(prev => !prev);
@@ -262,11 +273,11 @@ export default function CoreConsolePage() {
   };
 
   const isButtonDisabled = isUserLoading || isLoadingInstant || isLoadingCustom || isLoadingSymbols;
-  const showResults = aiStrategy || isLoadingInstant || isLoadingCustom || strategyError;
+  const showResults = aiStrategy || isLoadingCustom || strategyError;
   const isLimitReached = currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES;
 
   const renderResults = () => {
-    if (isLoadingInstant || isLoadingCustom) {
+    if (isLoadingCustom) {
       return (
         <Card className="shadow-lg w-full bg-card/80 backdrop-blur-sm border-0 transition-all duration-300 ease-in-out">
           <CardHeader className="items-center text-center">
@@ -367,7 +378,7 @@ export default function CoreConsolePage() {
                                     {isLoadingInstant ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                         : isUserLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                         : <Sparkles className="mr-2 h-5 w-5" />}
-                                    {isLoadingInstant ? "SHADOW is Analyzing..." : isUserLoading ? "Initializing..." : <GlyphScramble text="Instant Signal" />}
+                                    {isLoadingInstant ? "SHADOW is Executing..." : isUserLoading ? "Initializing..." : <GlyphScramble text="Instant Signal" />}
                                 </Button>
                                 
                             </div>
