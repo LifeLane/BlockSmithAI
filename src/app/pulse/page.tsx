@@ -12,7 +12,7 @@ import {
     Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, 
     ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle, Wallet, 
     Activity, BrainCircuit, ShieldAlert, Bot, Hourglass, Trash2, Cpu, Zap, Power,
-    PowerOff, CheckCircle, XCircle
+    PowerOff, CheckCircle, XCircle, Layers, Bitcoin
 } from 'lucide-react';
 import {
   fetchPortfolioStatsAction,
@@ -41,7 +41,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Tooltip, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow, isBefore } from 'date-fns';
@@ -84,10 +84,21 @@ const PortfolioStatsDisplay = ({ stats, isLoading, onGenerateReview, isGeneratin
                     <CardTitle className="text-lg flex items-center gap-2 text-accent font-headline"><Briefcase /> <GlyphScramble text="Performance Matrix" /></CardTitle>
                     <CardDescription>A summary of your <strong className="text-accent">lifetime activity</strong> and rewards.</CardDescription>
                 </div>
-                <Button size="sm" onClick={onGenerateReview} disabled={isGeneratingReview || stats.totalTrades < 3} className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground w-full sm:w-auto">
-                    {isGeneratingReview ? <Loader2 className="h-4 w-4 animate-spin"/> : <BrainCircuit className="h-4 w-4 mr-2"/>}
-                    Get SHADOW's Review
-                </Button>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                             <Button size="sm" onClick={onGenerateReview} disabled={isGeneratingReview || stats.totalTrades < 3} className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground w-full sm:w-auto">
+                                {isGeneratingReview ? <Loader2 className="h-4 w-4 animate-spin"/> : <BrainCircuit className="h-4 w-4 mr-2"/>}
+                                Get SHADOW's Review
+                            </Button>
+                        </TooltipTrigger>
+                        {stats.totalTrades < 3 && (
+                            <TooltipContent>
+                                <p>Complete at least 3 trades for a review.</p>
+                            </TooltipContent>
+                        )}
+                    </Tooltip>
+                </TooltipProvider>
             </CardHeader>
             <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 <StatCard title="Nodes Trained" value={stats.nodesTrained} icon={<Cpu size={14} />} valueClassName="text-tertiary" />
@@ -149,6 +160,18 @@ const PositionInfo = ({ label, value, icon, valueClassName }: { label: string; v
     </div>
 );
 
+const RewardInfo = ({ label, value, icon, valueClassName }: { label: string, value: React.ReactNode, icon: React.ReactNode, valueClassName?: string }) => (
+    <div className="flex items-center gap-2 p-2 bg-background/50 rounded-md">
+        <div className={cn("text-primary", valueClassName)}>
+            {icon}
+        </div>
+        <div>
+            <p className="text-xs text-muted-foreground">{label}</p>
+            <p className="text-sm font-semibold font-mono">{value}</p>
+        </div>
+    </div>
+);
+
 const PositionCard = ({ position, refetchData }: { position: Position, refetchData: () => void }) => {
     const [livePrice, setLivePrice] = useState<number | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -196,7 +219,7 @@ const PositionCard = ({ position, refetchData }: { position: Position, refetchDa
     
     const handleAction = async (action: 'activate' | 'cancel' | 'close') => {
         setIsProcessing(true);
-        let result: { success?: boolean; error?: string };
+        let result: { success?: boolean; error?: string; position?: Position };
         try {
             switch (action) {
                 case 'activate':
@@ -215,8 +238,12 @@ const PositionCard = ({ position, refetchData }: { position: Position, refetchDa
                     break;
             }
 
-            if (result.success || !('error' in result)) {
-                toast({ title: `Position ${action}d successfully.`, variant: 'default' });
+            if (result.success || result.position) {
+                toast({ 
+                    title: `Position ${action}d successfully.`, 
+                    variant: 'default',
+                    description: action === 'close' ? `PnL: $${result.position?.pnl?.toFixed(2)}` : undefined,
+                });
                 refetchData();
             } else {
                 toast({ title: 'Action Failed', description: result.error, variant: 'destructive' });
@@ -279,6 +306,18 @@ const PositionCard = ({ position, refetchData }: { position: Position, refetchDa
                     <PositionInfo label="Stop Loss" value={`$${position.stopLoss?.toFixed(4)}`} icon={<ShieldX size={14} />} valueClassName="text-red-400" />
                     {position.status === 'CLOSED' && <PositionInfo label="Close Price" value={`$${position.closePrice?.toFixed(4)}`} icon={<LogOut size={14} />} />}
                 </div>
+
+                {position.status === 'CLOSED' && (
+                    <div>
+                        <h4 className="text-sm font-semibold mb-2 text-muted-foreground">Rewards & Analytics</h4>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                            <RewardInfo label="$BSAI Gained" value={position.gainedAirdropPoints?.toLocaleString() ?? 'N/A'} icon={<Gift size={16} />} valueClassName="text-orange-400" />
+                            <RewardInfo label="XP Gained" value={position.gainedXp?.toLocaleString() ?? 'N/A'} icon={<Zap size={16} />} valueClassName="text-tertiary" />
+                            <RewardInfo label="Blocks Trained" value={position.blocksTrained?.toLocaleString() ?? 'N/A'} icon={<Layers size={16} />} />
+                            <RewardInfo label="Gas Paid (Mock)" value={`$${position.gasPaid?.toFixed(2) ?? 'N/A'}`} icon={<Bitcoin size={16} />} />
+                        </div>
+                    </div>
+                )}
             </CardContent>
             {position.status !== 'CLOSED' && (
                 <CardFooter className="flex gap-2">
@@ -348,7 +387,7 @@ export default function PortfolioPage() {
             
             if (!('error' in statsResult)) setPortfolioStats(statsResult);
             if (Array.isArray(openPositionsResult)) setOpenPositions(openPositionsResult.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-            if (Array.isArray(historyResult)) setTradeHistory(historyResult.sort((a,b) => new Date(b.closeTimestamp!).getTime() - new Date(a.closeTimestamp!).getTime()));
+            if (Array.isArray(historyResult)) setTradeHistory(historyResult.sort((a,b) => new Date(b.closeTimestamp || 0).getTime() - new Date(a.closeTimestamp || 0).getTime()));
 
         } catch (e: any) {
              console.error("Error in fetching portfolio data:", e);
@@ -499,5 +538,3 @@ export default function PortfolioPage() {
     </>
   );
 }
-
-    

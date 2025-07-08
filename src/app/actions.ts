@@ -67,8 +67,14 @@ export interface Position {
     updatedAt: Date;
     // Enriched data from signal
     tradingMode: string;
+    riskProfile: string;
     gpt_confidence_score: string;
     sentiment: string;
+    // Reward data
+    gainedAirdropPoints?: number | null;
+    gainedXp?: number | null;
+    gasPaid?: number | null;
+    blocksTrained?: number | null;
 }
 export interface Badge { name: string; }
 export interface UserProfile {
@@ -159,13 +165,13 @@ export interface PortfolioStats {
     lifetimeRewards: number; // this is airdropPoints
     nodesTrained: number;
     xpGained: number;
-    totalCapitalDeployed: number;
 }
 export type GenerateTradingStrategyOutput = Awaited<ReturnType<typeof genCoreStrategy>> & {
   id: string;
   disclaimer: string;
   symbol: string;
   tradingMode: string;
+  risk_rating: string;
   type: 'INSTANT';
 };
 export type GenerateShadowChoiceStrategyOutput = ShadowChoiceStrategyCoreOutput & {
@@ -315,9 +321,17 @@ export async function generateTradingStrategyAction(input: Omit<TradingStrategyP
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
         
         const resultId = randomUUID();
-        const fullResult = { ...strategy, id: resultId, symbol: input.symbol, disclaimer: disclaimer.disclaimer, tradingMode: input.tradingMode, type: 'INSTANT' as const };
+        const fullResult: GenerateTradingStrategyOutput = {
+            ...strategy,
+            id: resultId,
+            symbol: input.symbol,
+            disclaimer: disclaimer.disclaimer,
+            tradingMode: input.tradingMode,
+            risk_rating: strategy.risk_rating || input.riskProfile,
+            type: 'INSTANT' as const
+        };
 
-        await saveSignalToDb({ ...fullResult, userId: input.userId, status: 'EXECUTED' });
+        await saveSignalToDb({ ...fullResult, userId: input.userId, status: 'EXECUTED', chosenRiskProfile: fullResult.risk_rating, chosenTradingMode: fullResult.tradingMode });
 
         return fullResult;
 
@@ -355,7 +369,7 @@ export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStra
         const resultId = randomUUID();
         const fullResult = { ...strategy, id: resultId, symbol: input.symbol, disclaimer: disclaimer.disclaimer, type: 'CUSTOM' as const };
         
-        await saveSignalToDb({ ...fullResult, userId, status: 'PENDING_EXECUTION' });
+        await saveSignalToDb({ ...fullResult, userId, risk_rating: strategy.risk_rating, status: 'PENDING_EXECUTION' });
 
         return fullResult;
 
@@ -421,6 +435,7 @@ export async function logInstantPositionAction(userId: string, strategy: Generat
         updatedAt: new Date(),
         // Enriched Data
         tradingMode: strategy.tradingMode,
+        riskProfile: strategy.risk_rating,
         gpt_confidence_score: strategy.gpt_confidence_score,
         sentiment: strategy.sentiment,
     };
@@ -466,6 +481,7 @@ export async function executeCustomSignalAction(signalId: string, userId: string
         updatedAt: new Date(),
         // Enriched Data
         tradingMode: signal.chosenTradingMode || 'Custom',
+        riskProfile: signal.chosenRiskProfile,
         gpt_confidence_score: signal.gpt_confidence_score,
         sentiment: signal.sentiment,
     };
@@ -492,7 +508,45 @@ export async function executeCustomSignalAction(signalId: string, userId: string
     return { success: true };
 }
 
-export async function closePositionAction(positionId: string, closePrice: number): Promise<{ position?: Position; airdropPointsEarned?: number; error?: string; }> {
+const calculateTradeRewards = (pnl: number, tradingMode: string, riskProfile: string) => {
+    // Define base rewards
+    const BASE_WIN_XP = 50;
+    const BASE_LOSS_XP = 10;
+    const BASE_WIN_AIRDROP_BONUS = 25;
+    const BASE_LOSS_AIRDROP_BONUS = 5;
+
+    // Define multipliers
+    const modeMultipliers = { Scalper: 1.0, Sniper: 1.1, Intraday: 1.2, Swing: 1.5, Custom: 1.2 };
+    const riskMultipliers = { Low: 0.8, Medium: 1.0, High: 1.3 };
+
+    const modeMultiplier = modeMultipliers[tradingMode as keyof typeof modeMultipliers] || 1.0;
+    const riskMultiplier = riskMultipliers[riskProfile as keyof typeof riskMultipliers] || 1.0;
+
+    let gainedXp: number;
+    let gainedAirdropPoints: number;
+
+    if (pnl > 0) {
+        gainedXp = BASE_WIN_XP * modeMultiplier * riskMultiplier;
+        gainedAirdropPoints = pnl + (BASE_WIN_AIRDROP_BONUS * modeMultiplier * riskMultiplier);
+    } else {
+        gainedXp = BASE_LOSS_XP * modeMultiplier; // Less penalty on XP for losses
+        gainedAirdropPoints = pnl + BASE_LOSS_AIRDROP_BONUS; // PnL is negative, so this is a smaller loss + small bonus
+    }
+
+    // Mock data
+    const gasPaid = parseFloat((Math.random() * (5 - 1) + 1).toFixed(2));
+    const blocksTrained = Math.floor(Math.random() * (500 - 100) + 100);
+
+    return {
+        gainedXp: Math.round(gainedXp),
+        gainedAirdropPoints: Math.round(gainedAirdropPoints),
+        gasPaid,
+        blocksTrained
+    };
+};
+
+
+export async function closePositionAction(positionId: string, closePrice: number): Promise<{ position?: Position; error?: string; }> {
     const db = await readDb();
     const positionIndex = db.positions.findIndex((p: Position) => p.id === positionId);
     if (positionIndex === -1) return { error: 'Position not found.' };
@@ -500,23 +554,33 @@ export async function closePositionAction(positionId: string, closePrice: number
     const position = db.positions[positionIndex];
     if (position.status !== 'OPEN') return { error: 'Position is not open.' };
 
-    position.status = 'CLOSED';
-    position.closePrice = closePrice;
-    position.closeTimestamp = new Date();
-
+    // Calculate PnL
     const pnl = (position.signalType === 'BUY'
         ? (closePrice - position.entryPrice)
         : (position.entryPrice - closePrice)) * position.size;
-    position.pnl = pnl;
+    
+    // Calculate Rewards
+    const rewards = calculateTradeRewards(pnl, position.tradingMode, position.riskProfile);
 
+    // Update Position
+    position.status = 'CLOSED';
+    position.closePrice = closePrice;
+    position.closeTimestamp = new Date();
+    position.pnl = pnl;
+    position.gainedXp = rewards.gainedXp;
+    position.gainedAirdropPoints = rewards.gainedAirdropPoints;
+    position.gasPaid = rewards.gasPaid;
+    position.blocksTrained = rewards.blocksTrained;
+
+    // Update User's total points
     const userIndex = db.users.findIndex((u: UserProfile) => u.id === position.userId);
     if (userIndex !== -1) {
-        db.users[userIndex].airdropPoints += Math.round(pnl);
-        db.users[userIndex].weeklyPoints += Math.round(pnl > 0 ? pnl / 10 : pnl / 20); // Example XP logic
+        db.users[userIndex].airdropPoints += rewards.gainedAirdropPoints;
+        db.users[userIndex].weeklyPoints += rewards.gainedXp;
     }
     
     await writeDb(db);
-    return { position, airdropPointsEarned: Math.round(pnl) };
+    return { position };
 }
 
 export async function fetchPendingAndOpenPositionsAction(userId: string): Promise<Position[]> {
@@ -537,20 +601,18 @@ export async function fetchPortfolioStatsAction(userId: string): Promise<Portfol
     if (!user) return { error: 'User not found' };
 
     const closedTrades = (db.positions || []).filter((p: Position) => p.userId === userId && p.status === 'CLOSED');
-    const allTrades = (db.positions || []).filter((p: Position) => p.userId === userId);
     const signals = (db.signals || []).filter((s: GeneratedSignal) => s.userId === userId);
     
     const totalTrades = closedTrades.length;
     const nodesTrained = signals.length;
     const xpGained = user.weeklyPoints;
-    const totalCapitalDeployed = allTrades.reduce((acc: number, t: Position) => acc + (t.entryPrice * t.size), 0);
     
     if (totalTrades === 0) {
         return {
             totalTrades: 0, winRate: 0, winningTrades: 0, totalPnl: 0,
             totalPnlPercentage: 0, bestTradePnl: 0, worstTradePnl: 0,
             lifetimeRewards: user.airdropPoints,
-            nodesTrained, xpGained, totalCapitalDeployed,
+            nodesTrained, xpGained,
         };
     }
 
@@ -565,7 +627,7 @@ export async function fetchPortfolioStatsAction(userId: string): Promise<Portfol
         totalPnlPercentage: 0, // Simplified for now
         bestTradePnl, worstTradePnl,
         lifetimeRewards: user.airdropPoints,
-        nodesTrained, xpGained, totalCapitalDeployed
+        nodesTrained, xpGained
     };
 }
 
@@ -613,6 +675,11 @@ export async function killSwitchAction(userId: string): Promise<{ success: boole
         p.closePrice = p.entryPrice; // Mock closing at entry
         p.pnl = 0;
         p.closeTimestamp = new Date();
+        const rewards = calculateTradeRewards(0, p.tradingMode, p.riskProfile);
+        p.gainedXp = rewards.gainedXp;
+        p.gainedAirdropPoints = rewards.gainedAirdropPoints;
+        p.gasPaid = rewards.gasPaid;
+        p.blocksTrained = rewards.blocksTrained;
         closedCount++;
     });
     
