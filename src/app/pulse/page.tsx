@@ -23,11 +23,11 @@ import {
   closePositionAction,
   activatePendingPositionAction,
   cancelPendingPositionAction,
-  fetchMarketDataAction,
   type Position,
   type PortfolioStats,
   type PerformanceReviewOutput,
 } from '@/app/actions';
+import { fetchMarketDataAction } from '@/services/market-data-service';
 import { Button } from '@/components/ui/button';
 import PerformanceReviewModal from '@/components/blocksmith-ai/PerformanceReviewModal';
 import {
@@ -499,3 +499,5 @@ export default function PortfolioPage() {
     </>
   );
 }
+
+    
