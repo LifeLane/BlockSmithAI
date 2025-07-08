@@ -1,17 +1,8 @@
+
 {
-  "users": [
-    {
-      "id": "21156a7c-a539-456b-a53d-77132f3ded7f",
-      "username": "Analyst_21156a",
-      "shadowId": "SHDW-31DB150",
-      "status": "Guest",
-      "weeklyPoints": 100,
-      "airdropPoints": 50,
-      "badges": [],
-      "claimedMissions": [],
-      "claimedSpecialOps": []
-    }
-  ],
+  "users": [],
+  "signals": [],
+  "positions": [],
   "badges": [
     {
       "id": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b11",
@@ -28,8 +19,6 @@
   ],
   "_UserBadges": [],
   "console_insights": [],
-  "signals": [],
-  "positions": [],
   "agents": [
     {
       "id": "agent-001",

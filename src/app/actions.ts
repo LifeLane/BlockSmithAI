@@ -332,7 +332,8 @@ export async function generateTradingStrategyAction(input: Omit<TradingStrategyP
             type: 'INSTANT' as const
         };
 
-        await saveSignalToDb({ ...fullResult, userId: input.userId, status: 'EXECUTED', chosenRiskProfile: fullResult.risk_rating, chosenTradingMode: fullResult.tradingMode });
+        // An "Instant" signal creates a Position directly and should not be logged as a pending signal.
+        // The Position is created in the UI via logInstantPositionAction.
 
         return fullResult;
 
@@ -370,7 +371,7 @@ export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStra
         const resultId = randomUUID();
         const fullResult = { ...strategy, id: resultId, symbol: input.symbol, disclaimer: disclaimer.disclaimer, type: 'CUSTOM' as const };
         
-        await saveSignalToDb({ ...fullResult, userId, risk_rating: strategy.risk_rating, status: 'PENDING_EXECUTION' });
+        await saveSignalToDb({ ...fullResult, userId, status: 'PENDING_EXECUTION' });
 
         return fullResult;
 
@@ -736,4 +737,3 @@ export async function dismissCustomSignalAction(signalId: string, userId: string
     await writeDb(db);
     return { success: true };
 }
-
