@@ -6,7 +6,8 @@ const prisma = new PrismaClient()
 async function main() {
   console.log(`Start seeding ...`)
 
-  // Clean up existing data
+  // Clean up existing data in the correct order to avoid constraint violations
+  await prisma.badge.deleteMany();
   await prisma.position.deleteMany();
   await prisma.generatedSignal.deleteMany();
   await prisma.user.deleteMany();
@@ -29,6 +30,18 @@ async function main() {
   })
 
   console.log(`Created user with id: ${user.id}`);
+
+  // Create a sample badge for the user
+  await prisma.badge.create({
+    data: {
+        name: 'Genesis Operator',
+        description: 'Awarded to the first user of the SHADOW system.',
+        icon: 'ShieldCheck',
+        userId: user.id,
+    }
+  });
+
+  console.log('Created sample badge.');
 
   // Create sample positions
   await prisma.position.createMany({
@@ -107,7 +120,9 @@ async function main() {
             shortTermPrediction: 'Price to test resistance at $38 within 4 hours.',
             type: 'CUSTOM',
             status: SignalStatus.PENDING_EXECUTION,
-            disclaimer: 'This is not financial advice. Your capital is at risk.'
+            disclaimer: 'This is not financial advice. Your capital is at risk.',
+            chosenTradingMode: 'Sniper',
+            chosenRiskProfile: 'Medium',
         },
         {
             userId: user.id,
@@ -124,7 +139,9 @@ async function main() {
             shortTermPrediction: 'Pullback towards $17 support level expected.',
             type: 'CUSTOM',
             status: SignalStatus.EXECUTED,
-            disclaimer: 'This is not financial advice. Your capital is at risk.'
+            disclaimer: 'This is not financial advice. Your capital is at risk.',
+            chosenTradingMode: 'Intraday',
+            chosenRiskProfile: 'High',
         }
     ]
   });
