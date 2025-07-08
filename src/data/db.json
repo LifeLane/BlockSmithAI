@@ -1,5 +1,17 @@
 {
-  "users": [],
+  "users": [
+    {
+      "id": "21156a7c-a539-456b-a53d-77132f3ded7f",
+      "username": "Analyst_21156a",
+      "shadowId": "SHDW-31DB150",
+      "status": "Guest",
+      "weeklyPoints": 100,
+      "airdropPoints": 50,
+      "badges": [],
+      "claimedMissions": [],
+      "claimedSpecialOps": []
+    }
+  ],
   "badges": [
     {
       "id": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b11",
