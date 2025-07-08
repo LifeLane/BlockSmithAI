@@ -15,17 +15,17 @@ import {
     PowerOff, CheckCircle, XCircle, Layers, Bitcoin, Type, BarChart2, Shield
 } from 'lucide-react';
 import {
-  fetchPortfolioStatsAction,
-  generatePerformanceReviewAction,
-  killSwitchAction,
-  fetchPendingAndOpenPositionsAction,
-  fetchTradeHistoryAction,
-  closePositionAction,
-  activatePendingPositionAction,
-  cancelPendingPositionAction,
-  type Position,
-  type PortfolioStats,
-  type PerformanceReviewOutput,
+    fetchPortfolioStatsAction,
+    generatePerformanceReviewAction,
+    killSwitchAction,
+    fetchPendingAndOpenPositionsAction,
+    fetchTradeHistoryAction,
+    closePositionAction,
+    activatePendingPositionAction,
+    cancelPendingPositionAction,
+    type Position,
+    type PortfolioStats,
+    type PerformanceReviewOutput,
 } from '@/app/actions';
 import { fetchMarketDataAction } from '@/services/market-data-service';
 import { Button } from '@/components/ui/button';
@@ -306,13 +306,13 @@ const PositionCard = ({ position, refetchData }: { position: Position, refetchDa
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs p-3 bg-background rounded-lg">
-                     <PositionInfo label="Signal Type" value={position.type} icon={<Type size={14}/>} />
-                     <PositionInfo label="Trading Mode" value={position.tradingMode} icon={<BarChart2 size={14}/>} />
-                     <PositionInfo label="Risk Profile" value={position.riskProfile} icon={<Shield size={14}/>} />
+                     <PositionInfo label="Signal Type" value={position.type || 'N/A'} icon={<Type size={14}/>} />
+                     <PositionInfo label="Trading Mode" value={position.tradingMode || 'N/A'} icon={<BarChart2 size={14}/>} />
+                     <PositionInfo label="Risk Profile" value={position.riskProfile || 'N/A'} icon={<Shield size={14}/>} />
                 </div>
                  <div className="grid grid-cols-2 gap-3 text-xs p-3 bg-background rounded-lg">
-                    <PositionInfo label="Sentiment" value={position.sentiment} icon={<BrainCircuit size={14} />} />
-                    <PositionInfo label="SHADOW Score" value={`${position.gpt_confidence_score}%`} icon={<Percent size={14} />} />
+                    <PositionInfo label="Sentiment" value={position.sentiment || 'N/A'} icon={<BrainCircuit size={14} />} />
+                    <PositionInfo label="SHADOW Score" value={`${position.gpt_confidence_score || '0'}%`} icon={<Percent size={14} />} />
                  </div>
 
                 {position.status === 'CLOSED' && (
