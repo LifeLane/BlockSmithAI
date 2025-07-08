@@ -109,7 +109,6 @@ export async function getOrCreateUserAction(userId: string | null): Promise<User
         if(existingUser) return existingUser;
     }
 
-    // Let the database handle the default cuid() for the id
     const newUser = await prisma.user.create({
         data: {
             username: `Analyst_${randomUUID().substring(0, 6)}`,
