@@ -1,12 +1,11 @@
 
+'use server';
 /**
- * @fileOverview A Genkit tool to fetch historical candlestick data using Polygon.io.
+ * @fileOverview A Genkit tool to fetch historical candlestick data using Binance.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { fetchCandlestickData, type Candlestick } from '@/services/polygon-service';
-import { format, subDays, subHours, subMinutes } from 'date-fns';
 
 const CANDLE_COUNT_TARGET = 100; // Number of candles we aim to fetch
 
@@ -21,10 +20,10 @@ const CandlestickSchema = z.object({
   vw: z.number().optional().describe('Volume Weighted Average Price'),
   n: z.number().optional().describe('Number of transactions'),
 });
+type Candlestick = z.infer<typeof CandlestickSchema>;
 
 const FetchHistoricalDataInputSchema = z.object({
   symbol: z.string().describe('The trading symbol (e.g., BTCUSDT, ETHUSDT).'),
-  // App's interval format: "1m", "15m", "1h", "4h", "1d". We'll parse this.
   appInterval: z.string().describe('The chart interval string from the app (e.g., "1m", "5m", "1h", "1d").'),
 });
 export type FetchHistoricalDataInput = z.infer<typeof FetchHistoricalDataInputSchema>;
@@ -36,96 +35,45 @@ const FetchHistoricalDataOutputSchema = z.object({
 });
 export type FetchHistoricalDataOutput = z.infer<typeof FetchHistoricalDataOutputSchema>;
 
-
-function mapAppIntervalToPolygonParams(appInterval: string): {
-    multiplier: number;
-    timespan: 'minute' | 'hour' | 'day';
-    error?: string;
-  } {
-  const match = appInterval.match(/^(\d+)([mhd])$/); // m for minute, h for hour, d for day
-  if (!match) {
-    return { multiplier: 0, timespan: 'minute', error: `Invalid appInterval format: ${appInterval}. Expected format like '1m', '15m', '1h', '1d'.` };
-  }
-  const value = parseInt(match[1], 10);
-  const unit = match[2];
-
-  if (unit === 'm') {
-    if (value < 1 ) return {multiplier: 0, timespan: 'minute', error: "Minute interval must be 1 or greater."};
-    return { multiplier: value, timespan: 'minute' };
-  } else if (unit === 'h') {
-     if (value < 1 ) return {multiplier: 0, timespan: 'hour', error: "Hour interval must be 1 or greater."};
-    return { multiplier: value, timespan: 'hour' };
-  } else if (unit === 'd') {
-     if (value < 1 ) return {multiplier: 0, timespan: 'day', error: "Day interval must be 1 or greater."};
-    return { multiplier: value, timespan: 'day' };
-  }
-  return { multiplier: 0, timespan: 'minute', error: `Unsupported unit in appInterval: ${unit}` };
-}
-
-function calculateDateRange(
-    appInterval: string,
-    candleCount: number
-  ): { from: string; to: string; error?: string } {
-  const toDate = new Date();
-  let fromDate: Date;
-
-  const { multiplier, timespan, error: intervalError } = mapAppIntervalToPolygonParams(appInterval);
-  if (intervalError) return { from: '', to: '', error: intervalError};
-
-  if (timespan === 'minute') {
-    fromDate = subMinutes(toDate, multiplier * candleCount);
-  } else if (timespan === 'hour') {
-    fromDate = subHours(toDate, multiplier * candleCount);
-  } else if (timespan === 'day') {
-    fromDate = subDays(toDate, multiplier * candleCount);
-  } else {
-    return { from: '', to: '', error: `Unhandled timespan: ${timespan}` };
-  }
-   // Polygon free tier often has a delay, so fetching up to "yesterday" might be more reliable for some tickers
-   // For crypto, "today" is usually fine.
-  return {
-    from: format(fromDate, 'yyyy-MM-dd'),
-    to: format(toDate, 'yyyy-MM-dd'),
-  };
-}
-
-
 export const fetchHistoricalDataTool = ai.defineTool(
   {
     name: 'fetchHistoricalDataTool',
-    description: 'Fetches recent historical candlestick (OHLCV) data for a given trading symbol and interval. This data can be used to identify recent chart patterns, support, and resistance.',
+    description: 'Fetches recent historical candlestick (OHLCV) data for a given trading symbol and interval from Binance. This data can be used to identify recent chart patterns, support, and resistance.',
     inputSchema: FetchHistoricalDataInputSchema,
     outputSchema: FetchHistoricalDataOutputSchema,
   },
   async (input) => {
-    const { multiplier, timespan, error: intervalMappingError } = mapAppIntervalToPolygonParams(input.appInterval);
-    if (intervalMappingError) {
-      return { error: intervalMappingError };
-    }
+    try {
+        const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${input.symbol.toUpperCase()}&interval=${input.appInterval}&limit=${CANDLE_COUNT_TARGET}`);
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { error: `Failed to fetch candlestick data for ${input.symbol} from Binance: ${response.statusText} - ${errorData.msg || 'Unknown API error'}` };
+        }
+        
+        const data = await response.json();
+        
+        if (!Array.isArray(data)) {
+            return { error: `Unexpected data format from Binance klines API for ${input.symbol}.` };
+        }
+        if (data.length === 0) {
+            return { error: `No candlestick data returned from Binance for ${input.symbol} on ${input.appInterval} interval.`};
+        }
 
-    const { from, to, error: dateRangeError } = calculateDateRange(input.appInterval, CANDLE_COUNT_TARGET);
-    if (dateRangeError) {
-      return { error: dateRangeError };
-    }
+        const candles: Candlestick[] = data.map((k: any[]) => ({
+            t: k[0],
+            o: parseFloat(k[1]),
+            h: parseFloat(k[2]),
+            l: parseFloat(k[3]),
+            c: parseFloat(k[4]),
+            v: parseFloat(k[5]),
+        }));
 
-    const result = await fetchCandlestickData({
-      symbol: input.symbol,
-      multiplier,
-      timespan,
-      from,
-      to,
-      limit: CANDLE_COUNT_TARGET + 10, // Fetch a bit more to ensure we get enough after any gaps
-    });
+        return { candles: candles, message: `Fetched ${candles.length} candles for ${input.symbol} on ${input.appInterval} interval from Binance.` };
 
-    if ('error' in result) {
-      return { error: result.error };
+    } catch (error: any) {
+        console.error(`Error in fetchHistoricalDataTool for ${input.symbol}:`, error);
+        return { error: `Network error or failed to parse candlestick data for ${input.symbol}: ${error.message}` };
     }
-    if (!result || result.length === 0) {
-        return { error: `No candlestick data returned from Polygon for ${input.symbol} on ${input.appInterval} interval from ${from} to ${to}.`};
-    }
-
-    return { candles: result, message: `Fetched ${result.length} candles for ${input.symbol} on ${input.appInterval} interval from ${from} to ${to}.` };
   }
 );
-
-    
