@@ -12,6 +12,7 @@ import {
   Percent
 } from 'lucide-react';
 import type { LiveMarketData } from '@/app/actions';
+import { cn } from '@/lib/utils';
 
 interface MarketDataDisplayProps {
   liveMarketData: LiveMarketData | null;
@@ -31,12 +32,12 @@ const formatNumber = (numStr: string) => {
 }
 
 const StatBox = ({ title, value, icon, valueClassName }: { title: string; value: React.ReactNode; icon: React.ReactNode, valueClassName?: string }) => (
-    <div className="bg-secondary p-3 rounded-lg">
+    <div className="flex flex-col p-3 bg-secondary rounded-lg border border-border/30 h-full justify-center">
         <div className="flex items-center text-xs text-muted-foreground mb-1">
             {icon}
             <span className="ml-1.5">{title}</span>
         </div>
-        <div className={`text-xl font-bold font-mono break-all ${valueClassName || 'text-foreground'}`}>
+        <div className={cn("text-lg sm:text-xl font-bold font-mono whitespace-nowrap", valueClassName || 'text-foreground')}>
             {value}
         </div>
     </div>
@@ -54,8 +55,8 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 
   if (isLoading) {
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-[75px] w-full bg-secondary" />)}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-[88px] w-full bg-secondary" />)}
         </div>
     );
   }
@@ -96,7 +97,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
   });
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <StatBox 
           title="Current Price"
           icon={<DollarSign size={14} />}
