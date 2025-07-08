@@ -15,7 +15,6 @@ import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import {
   generateTradingStrategyAction,
   generateShadowChoiceStrategyAction,
-  logInstantPositionAction,
   type GenerateTradingStrategyOutput,
   type GenerateShadowChoiceStrategyOutput,
   type GeneratedSignal,
@@ -233,7 +232,6 @@ export default function CoreConsolePage() {
         setAiStrategy(result as AIStrategyOutput);
         
         if (result.type === 'INSTANT') {
-            await logInstantPositionAction(currentUser.id, result as GenerateTradingStrategyOutput);
             toast({
                 title: <span className="text-accent">Instant Signal Executed!</span>,
                 description: `Your instant trade for ${result.symbol} has been logged. Review the parameters below.`,

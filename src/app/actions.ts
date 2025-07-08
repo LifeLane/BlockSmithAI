@@ -295,6 +295,16 @@ async function saveSignalToDb(signalData: Omit<GeneratedSignal, 'createdAt' | 'u
     await writeDb(db);
 }
 
+const parsePrice = (priceStr: string | undefined | null): number => {
+    if (!priceStr) return NaN;
+    const cleanedStr = priceStr.replace(/[^0-9.-]/g, ' ');
+    const parts = cleanedStr.split(' ').filter(p => p !== '' && !isNaN(parseFloat(p)));
+    if (parts.length === 0) return NaN;
+    if (parts.length === 1) return parseFloat(parts[0]);
+    const sum = parts.reduce((acc, val) => acc + parseFloat(val), 0);
+    return sum / parts.length;
+};
+
 
 export async function generateTradingStrategyAction(input: Omit<TradingStrategyPromptInput, 'shortTermCandles' | 'mediumTermCandles' | 'longTermCandles'> & { userId: string }): Promise<GenerateTradingStrategyOutput | { error: string }> {
     try {
@@ -331,9 +341,49 @@ export async function generateTradingStrategyAction(input: Omit<TradingStrategyP
             risk_rating: strategy.risk_rating || input.riskProfile,
             type: 'INSTANT' as const
         };
+        
+        // --- Create and log the position directly in this action ---
+        const db = await readDb();
+        const newPosition: Position = {
+            id: randomUUID(),
+            userId: input.userId,
+            symbol: fullResult.symbol,
+            signalType: fullResult.signal as 'BUY' | 'SELL',
+            status: 'OPEN',
+            entryPrice: parsePrice(fullResult.entry_zone),
+            closePrice: null,
+            size: 1, // Default size for now
+            stopLoss: parsePrice(fullResult.stop_loss),
+            takeProfit: parsePrice(fullResult.take_profit),
+            pnl: null,
+            openTimestamp: new Date(),
+            closeTimestamp: null,
+            expirationTimestamp: null,
+            strategyId: fullResult.id,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            // Enriched Data
+            type: 'INSTANT',
+            tradingMode: fullResult.tradingMode,
+            riskProfile: fullResult.risk_rating,
+            gpt_confidence_score: fullResult.gpt_confidence_score,
+            sentiment: fullResult.sentiment,
+        };
+        if (!db.positions) db.positions = [];
+        db.positions.push(newPosition);
 
-        // An "Instant" signal creates a Position directly and should not be logged as a pending signal.
-        // The Position is created in the UI via logInstantPositionAction.
+        // --- Gamification: Reward for simulating a trade ---
+        const userIndex = db.users.findIndex((u: UserProfile) => u.id === input.userId);
+        if (userIndex !== -1) {
+            const SIMULATION_XP_REWARD = 25;
+            const SIMULATION_AIRDROP_REWARD = 50;
+            db.users[userIndex].weeklyPoints += SIMULATION_XP_REWARD;
+            db.users[userIndex].airdropPoints += SIMULATION_AIRDROP_REWARD;
+        }
+        // ---
+
+        await writeDb(db);
+        // --- End of position logging ---
 
         return fullResult;
 
@@ -394,17 +444,6 @@ export async function getDailyGreeting(): Promise<GenerateDailyGreetingOutput> {
     return generateDailyGreeting();
 }
 
-const parsePrice = (priceStr: string | undefined | null): number => {
-    if (!priceStr) return NaN;
-    const cleanedStr = priceStr.replace(/[^0-9.-]/g, ' ');
-    const parts = cleanedStr.split(' ').filter(p => p !== '' && !isNaN(parseFloat(p)));
-    if (parts.length === 0) return NaN;
-    if (parts.length === 1) return parseFloat(parts[0]);
-    const sum = parts.reduce((acc, val) => acc + parseFloat(val), 0);
-    return sum / parts.length;
-};
-
-
 export async function claimMissionRewardAction(userId: string, missionId: string): Promise<{ success: boolean; message: string }> {
     const db = await readDb();
     const user = db.users.find((u: UserProfile) => u.id === userId);
@@ -413,50 +452,6 @@ export async function claimMissionRewardAction(userId: string, missionId: string
     user.claimedMissions.push(missionId);
     await writeDb(db);
     return { success: true, message: `Mission reward claimed.` };
-}
-
-export async function logInstantPositionAction(userId: string, strategy: GenerateTradingStrategyOutput): Promise<{ success: boolean; error?: string; }> {
-    const db = await readDb();
-    const newPosition: Position = {
-        id: randomUUID(),
-        userId,
-        symbol: strategy.symbol,
-        signalType: strategy.signal as 'BUY' | 'SELL',
-        status: 'OPEN',
-        entryPrice: parsePrice(strategy.entry_zone),
-        closePrice: null,
-        size: 1, // Default size for now
-        stopLoss: parsePrice(strategy.stop_loss),
-        takeProfit: parsePrice(strategy.take_profit),
-        pnl: null,
-        openTimestamp: new Date(),
-        closeTimestamp: null,
-        expirationTimestamp: null,
-        strategyId: strategy.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        // Enriched Data
-        type: 'INSTANT',
-        tradingMode: strategy.tradingMode,
-        riskProfile: strategy.risk_rating,
-        gpt_confidence_score: strategy.gpt_confidence_score,
-        sentiment: strategy.sentiment,
-    };
-    if (!db.positions) db.positions = [];
-    db.positions.push(newPosition);
-
-    // --- Gamification: Reward for simulating a trade ---
-    const userIndex = db.users.findIndex((u: UserProfile) => u.id === userId);
-    if (userIndex !== -1) {
-        const SIMULATION_XP_REWARD = 25;
-        const SIMULATION_AIRDROP_REWARD = 50;
-        db.users[userIndex].weeklyPoints += SIMULATION_XP_REWARD;
-        db.users[userIndex].airdropPoints += SIMULATION_AIRDROP_REWARD;
-    }
-    // ---
-
-    await writeDb(db);
-    return { success: true };
 }
 
 export async function executeCustomSignalAction(signalId: string, userId: string): Promise<{ success: boolean; error?: string }> {
