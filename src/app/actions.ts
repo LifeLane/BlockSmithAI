@@ -536,14 +536,14 @@ const calculateTradeRewards = (pnl: number, tradingMode: string, riskProfile: st
         gainedAirdropPoints = pnl + BASE_LOSS_AIRDROP_BONUS; // PnL is negative, so this is a smaller loss + small bonus
     }
 
-    // Mock data
-    const gasPaid = parseFloat((Math.random() * (5 - 1) + 1).toFixed(2));
-    const blocksTrained = Math.floor(Math.random() * (500 - 100) + 100);
+    // Deterministic values instead of mock random data
+    const gasPaid = 1.25 + (riskMultiplier - 1) + (modeMultiplier - 1);
+    const blocksTrained = 100 + Math.floor(Math.abs(pnl) * 2);
 
     return {
         gainedXp: Math.round(gainedXp),
         gainedAirdropPoints: Math.round(gainedAirdropPoints),
-        gasPaid,
+        gasPaid: parseFloat(gasPaid.toFixed(2)),
         blocksTrained
     };
 };

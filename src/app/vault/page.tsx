@@ -78,7 +78,7 @@ const StakingCard = ({ shadowBalance }: { shadowBalance: number }) => {
                     </div>
                      <div className="p-3 bg-background/50 rounded-md">
                         <p className="text-sm text-muted-foreground">Estimated APY</p>
-                        <p className="text-2xl font-bold font-mono text-primary">12.5%</p>
+                        <p className="text-2xl font-bold font-mono text-primary">Dynamic</p>
                     </div>
                 </div>
                  <div className="flex items-center gap-2">
