@@ -8,7 +8,7 @@ const cspHeader = `
     font-src 'self' https://fonts.gstatic.com;
     img-src 'self' data: https://placehold.co;
     connect-src 'self' https://api.binance.com https://newsapi.org https://vercel.live;
-    frame-src 'none';
+    frame-src 'self' https://vercel.live;
     object-src 'none';
     base-uri 'self';
     form-action 'self';

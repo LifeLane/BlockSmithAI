@@ -12,88 +12,87 @@ generator client {
 }
 
 model User {
-  id                String            @id @default(cuid())
-  username          String            @unique
-  shadowId          String            @unique
-  email             String?           @unique
-  phone             String?
-  x_handle          String?
-  telegram_handle   String?
-  youtube_handle    String?
-  wallet_address    String?
-  wallet_type       String?
-  status            String            @default("Guest") // Guest, Registered
-  weeklyPoints      Int               @default(0)
-  airdropPoints     Int               @default(0)
-  claimedMissions   String[]
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  positions         Position[]
-  generated_signals GeneratedSignal[]
-  badges            Badge[]           @relation("UserBadges")
+  id                  String   @id @default(cuid())
+  createdAt           DateTime @default(now())
+  username            String
+  shadowId            String   @unique
+  status              String   @default("Guest")
+  weeklyPoints        Int      @default(0)
+  airdropPoints       Int      @default(0)
+  claimedMissions     String[]
+  badges              Badge[]  @relation("UserBadges")
+  positions           Position[]
+  generatedSignals    GeneratedSignal[]
+
+  // Airdrop registration fields
+  wallet_address      String?
+  wallet_type         String?
+  email               String?  @unique
+  phone               String?
+  x_handle            String?
+  telegram_handle     String?
+  youtube_handle      String?
 }
 
 model Position {
-  id                    String         @id @default(cuid())
+  id                    String      @id @default(cuid())
+  userId                String
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt             DateTime    @default(now())
   symbol                String
   signalType            SignalType
-  entryPrice            Float
-  size                  Float          @default(1)
   status                PositionStatus
+  entryPrice            Float
+  size                  Float       @default(1)
+  stopLoss              Float
+  takeProfit            Float
   openTimestamp         DateTime?
   closeTimestamp        DateTime?
   expirationTimestamp   DateTime?
-  stopLoss              Float?
-  takeProfit            Float?
   pnl                   Float?
+  gainedXp              Int?
+  gainedAirdropPoints   Int?
+  gasPaid               Float?
+  blocksTrained         Int?
   strategyId            String?
   type                  PositionType
   tradingMode           String
   riskProfile           String
   gpt_confidence_score  String?
   sentiment             String?
-  gainedXp              Int?
-  gainedAirdropPoints   Int?
-  gasPaid               Float?
-  blocksTrained         Int?
-  userId                String
-  user                  User           @relation(fields: [userId], references: [id])
-  createdAt             DateTime       @default(now())
-  updatedAt             DateTime       @updatedAt
 }
 
 model GeneratedSignal {
-  id                   String       @id @default(cuid())
-  symbol               String
-  signal               String
-  entry_zone           String
-  stop_loss            String
-  take_profit          String
-  confidence           String
-  risk_rating          String
-  gpt_confidence_score String
-  sentiment            String
-  currentThought       String
-  shortTermPrediction  String
-  sentimentTransition  String?
-  chosenTradingMode    String?
-  chosenRiskProfile    String?
-  strategyReasoning    String?
-  analysisSummary      String?
-  newsAnalysis         String?
-  disclaimer           String
-  type                 String
-  userId               String
-  user                 User         @relation(fields: [userId], references: [id])
-  status               SignalStatus @default(PENDING_EXECUTION)
-  createdAt            DateTime     @default(now())
-  updatedAt            DateTime     @updatedAt
+  id                    String        @id @default(cuid())
+  userId                String
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt             DateTime      @default(now())
+  status                SignalStatus
+  symbol                String
+  signal                String
+  entry_zone            String
+  stop_loss             String
+  take_profit           String
+  confidence            String
+  risk_rating           String
+  gpt_confidence_score  String
+  sentiment             String
+  currentThought        String
+  shortTermPrediction   String
+  sentimentTransition   String?
+  chosenTradingMode     String?
+  chosenRiskProfile     String?
+  strategyReasoning     String
+  analysisSummary       String
+  newsAnalysis          String?
+  disclaimer            String
+  type                  String
 }
 
 model Badge {
-  id    String @id @default(cuid())
-  name  String @unique
-  users User[] @relation("UserBadges")
+  id     String @id @default(cuid())
+  name   String @unique
+  users  User[] @relation("UserBadges")
 }
 
 enum SignalType {
@@ -105,6 +104,8 @@ enum PositionStatus {
   PENDING
   OPEN
   CLOSED
+  CANCELLED
+  EXPIRED
 }
 
 enum PositionType {
