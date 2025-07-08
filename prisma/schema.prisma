@@ -11,55 +11,26 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// --- Enums ---
-enum SignalType {
-  BUY
-  SELL
-}
-
-enum PositionStatus {
-  PENDING
-  OPEN
-  CLOSED
-}
-
-enum PositionType {
-  INSTANT
-  CUSTOM
-}
-
-enum SignalStatus {
-  PENDING_EXECUTION
-  EXECUTED
-  DISMISSED
-  ARCHIVED
-  ERROR
-}
-
-
-// --- Models ---
 model User {
-  id              String   @id @default(cuid())
-  username        String   @unique
-  shadowId        String   @unique
-  weeklyPoints    Int      @default(0)
-  airdropPoints   Int      @default(0)
-  claimedMissions String[]
-  badges          Badge[]
-  status          String   @default("Guest")
-  email           String?
-  phone           String?
-  wallet_address  String?
-  wallet_type     String?
-  x_handle        String?
-  telegram_handle String?
-  youtube_handle  String?
-
-  positions        Position[]
-  generatedSignals GeneratedSignal[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                String   @id @default(cuid())
+  shadowId          String   @unique
+  username          String
+  email             String?
+  phone             String?
+  x_handle          String?
+  telegram_handle   String?
+  youtube_handle    String?
+  wallet_address    String?
+  wallet_type       String?
+  status            String   @default("Guest")
+  weeklyPoints      Int      @default(0)
+  airdropPoints     Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  claimedMissions   String[]
+  positions         Position[]
+  generated_signals GeneratedSignal[]
+  badges            Badge[]
 
   @@map("users")
 }
@@ -75,24 +46,23 @@ model Position {
   closePrice          Float?
   stopLoss            Float
   takeProfit          Float
+  size                Int            @default(1)
+  pnl                 Float?
   openTimestamp       DateTime?
   closeTimestamp      DateTime?
   expirationTimestamp DateTime?
-  pnl                 Float?
-  gainedXp            Int?
-  gainedAirdropPoints Int?
-  gasPaid             Float?
-  blocksTrained       Int?
   strategyId          String?
   type                PositionType
   tradingMode         String
   riskProfile         String
   gpt_confidence_score String
   sentiment           String
-  size                Float          @default(1.0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  gainedXp            Int?
+  gainedAirdropPoints Int?
+  gasPaid             Float?
+  blocksTrained       Int?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
 
   @@map("positions")
 }
@@ -117,9 +87,8 @@ model GeneratedSignal {
   disclaimer          String
   chosenTradingMode   String?
   chosenRiskProfile   String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
 
   @@map("generated_signals")
 }
@@ -134,4 +103,28 @@ model Badge {
   createdAt   DateTime @default(now())
 
   @@map("badges")
+}
+
+enum SignalType {
+  BUY
+  SELL
+}
+
+enum PositionStatus {
+  PENDING
+  OPEN
+  CLOSED
+}
+
+enum PositionType {
+  INSTANT
+  CUSTOM
+}
+
+enum SignalStatus {
+  PENDING_EXECUTION
+  EXECUTED
+  DISMISSED
+  ARCHIVED
+  ERROR
 }
