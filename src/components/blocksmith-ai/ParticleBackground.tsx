@@ -22,7 +22,7 @@ const ParticleBackground = () => {
 
     const options: ISourceOptions = useMemo(
         () => {
-            const isDark = theme !== 'light' && theme !== 'theme-solarflare' && theme !== 'theme-stark';
+            const isDark = true; // All themes are dark now
 
             let baseOptions: ISourceOptions = {
                 background: {
@@ -85,30 +85,6 @@ const ParticleBackground = () => {
                             modes: { repulse: { distance: 100, duration: 0.4 } },
                         },
                     };
-                
-                case 'theme-solarflare':
-                    return {
-                        ...baseOptions,
-                        particles: {
-                            color: { value: ["#ff6a00", "#ffb400", "#ff4500"] },
-                            move: {
-                                direction: "top",
-                                enable: true,
-                                outModes: { default: "out" },
-                                random: true,
-                                speed: 2,
-                                straight: false,
-                            },
-                            number: { density: { enable: true, area: 800 }, value: 100 },
-                            opacity: { value: {min: 0.5, max: 1}, animation: { enable: true, speed: 1, sync: false }},
-                            shape: { type: "circle" },
-                            size: { value: { min: 2, max: 5 }, animation: { enable: true, speed: 4, sync: false } },
-                        },
-                        interactivity: {
-                            events: { onHover: { enable: true, mode: "bubble" } },
-                            modes: { bubble: { distance: 200, size: 10, duration: 2, opacity: 0.8 } },
-                        },
-                    };
 
                 case 'theme-quantum':
                      return {
@@ -128,21 +104,7 @@ const ParticleBackground = () => {
                         },
                     };
                 
-                case 'theme-stark':
-                     return {
-                        ...baseOptions,
-                        particles: {
-                            color: { value: "#aaaaaa" },
-                            move: { enable: true, speed: 0.1, direction: "none", random: true, straight: false, outModes: { default: "out" } },
-                            number: { density: { enable: true, area: 1200 }, value: 50 },
-                            opacity: { value: 0.4 },
-                            shape: { type: "circle" },
-                            size: { value: 1 },
-                        },
-                        interactivity: { events: { onHover: { enable: false } } },
-                    };
-
-                default: // Default Dark and Light
+                default: // Default Dark theme
                     return {
                         ...baseOptions,
                         interactivity: {
@@ -151,12 +113,12 @@ const ParticleBackground = () => {
                                 resize: true,
                             },
                             modes: {
-                                bubble: { distance: 200, duration: 2, opacity: 0.8, size: 6, color: isDark ? "#55aaff" : "#0055aa" },
+                                bubble: { distance: 200, duration: 2, opacity: 0.8, size: 6, color: "#55aaff" },
                             },
                         },
                         particles: {
                             color: {
-                                value: isDark ? "#ffffff" : "#000000",
+                                value: "#ffffff",
                             },
                             links: { enable: false },
                             move: {

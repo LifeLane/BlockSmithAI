@@ -5,36 +5,36 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 224 71% 4%;
-
-    --card: 0 0% 100% / 0.85;
-    --card-foreground: 224 71% 4%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
-
-    --primary: 210 100% 50%;
-    --primary-foreground: 210 20% 98%;
-
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 13% 29%;
-
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 13% 29%;
+    --background: 232 36% 10%;
+    --foreground: 210 20% 92%;
     
-    --accent: 270 90% 60%;
-    --accent-foreground: 210 20% 98%;
-
-    --tertiary: 35 92% 55%;
-    --tertiary-foreground: 48 96% 11%;
-
-    --destructive: 0 84% 60%;
+    --card: 230 33% 15% / 0.85;
+    --card-foreground: 210 20% 92%;
+    
+    --popover: 230 33% 15%;
+    --popover-foreground: 210 20% 92%;
+    
+    --primary: 210 100% 68%;
+    --primary-foreground: 210 100% 12%;
+    
+    --secondary: 230 33% 22%;
+    --secondary-foreground: 210 20% 88%;
+    
+    --muted: 230 33% 22%;
+    --muted-foreground: 210 20% 70%;
+    
+    --accent: 270 100% 75%;
+    --accent-foreground: 270 100% 15%;
+    
+    --tertiary: 35 100% 60%;
+    --tertiary-foreground: 35 100% 10%;
+    
+    --destructive: 0 80% 68%;
     --destructive-foreground: 0 0% 98%;
-
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: hsl(var(--primary));
+    
+    --border: 230 33% 28%;
+    --input: 230 33% 20%;
+    --ring: hsl(var(--accent));
 
     --chart-1: hsl(var(--primary));
     --chart-2: hsl(var(--accent));
@@ -43,7 +43,7 @@
     --chart-5: 200 80% 60%;
     --radius: 0.5rem;
 
-    --sidebar-background: 220 14% 99%;
+    --sidebar-background: var(--background);
     --sidebar-foreground: var(--foreground);
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
@@ -115,35 +115,6 @@
     --chart-5: 210 100% 70%;
   }
 
-  .theme-solarflare {
-    --background: 30 50% 98%;
-    --foreground: 25 30% 10%;
-    --card: 0 0% 100% / 0.8;
-    --card-foreground: 25 30% 10%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 25 30% 10%;
-    --primary: 20 90% 55%;
-    --primary-foreground: 20 90% 98%;
-    --secondary: 30 30% 94%;
-    --secondary-foreground: 25 30% 20%;
-    --muted: 30 30% 94%;
-    --muted-foreground: 25 30% 40%;
-    --accent: 0 75% 55%;
-    --accent-foreground: 0 0% 98%;
-    --tertiary: 45 100% 55%;
-    --tertiary-foreground: 45 100% 8%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 30 20% 88%;
-    --input: 30 20% 90%;
-    --ring: hsl(var(--primary));
-    --chart-1: hsl(var(--primary));
-    --chart-2: hsl(var(--accent));
-    --chart-3: hsl(var(--tertiary));
-    --chart-4: 10 90% 60%;
-    --chart-5: 350 90% 60%;
-  }
-
   .theme-quantum {
     --background: 220 40% 8%;
     --foreground: 220 15% 92%;
@@ -202,48 +173,8 @@
     --chart-5: 130 80% 60%;
   }
 
-  .theme-stark {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 10%;
-    --card: 220 20% 98% / 0.8;
-    --card-foreground: 240 10% 10%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 10%;
-    --primary: 220 60% 55%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 20% 96%;
-    --secondary-foreground: 240 10% 20%;
-    --muted: 220 20% 96%;
-    --muted-foreground: 240 10% 40%;
-    --accent: 220 50% 70%;
-    --accent-foreground: 240 10% 10%;
-    --tertiary: 30 5% 50%;
-    --tertiary-foreground: 0 0% 100%;
-    --destructive: 0 80% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 220 20% 92%;
-    --input: 220 20% 94%;
-    --ring: hsl(var(--primary));
-    --chart-1: hsl(var(--primary));
-    --chart-2: hsl(var(--accent));
-    --chart-3: hsl(var(--tertiary));
-    --chart-4: 200 60% 60%;
-    --chart-5: 240 60% 60%;
-  }
-
   .dark, .theme-synthwave, .theme-quantum, .theme-matrix {
     --sidebar-background: var(--background);
-    --sidebar-foreground: var(--foreground);
-    --sidebar-primary: var(--primary);
-    --sidebar-primary-foreground: var(--primary-foreground);
-    --sidebar-accent: var(--accent);
-    --sidebar-accent-foreground: var(--accent-foreground);
-    --sidebar-border: var(--border);
-    --sidebar-ring: var(--ring);
-  }
-
-  .light, .theme-solarflare, .theme-stark {
-    --sidebar-background: var(--secondary);
     --sidebar-foreground: var(--foreground);
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
