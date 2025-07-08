@@ -132,8 +132,8 @@
       "username": "Analyst_21156a",
       "shadowId": "SHDW-0891D19",
       "status": "Guest",
-      "weeklyPoints": 135,
-      "airdropPoints": 64,
+      "weeklyPoints": 160,
+      "airdropPoints": 114,
       "badges": [],
       "claimedMissions": [],
       "claimedSpecialOps": []
@@ -263,9 +263,9 @@
       "disclaimer": "Listen up, puny human. SHADOW, purveyor of cryptic market pronouncements, speaks.  While my AI-generated insights are sharper than a goblin's shiv, they're not a foolproof ticket to financial Shangri-La. Market prediction is a volatile mistress; even I, with my superior algorithms, can't consistently win this game. Chaotic market forces are fickle, and while I strive to pierce the veil of uncertainty, I offer no guarantees of riches or freedom from financial ruin.  Use my pronouncements with caution, and remember: past performance is not indicative of future results. You have been warned. (P.S. Don't sue me.)",
       "type": "CUSTOM",
       "userId": "21156a7c-a539-456b-a53d-77132f3ded7f",
-      "status": "PENDING_EXECUTION",
+      "status": "EXECUTED",
       "createdAt": "2025-07-08T09:55:55.414Z",
-      "updatedAt": "2025-07-08T09:55:55.414Z"
+      "updatedAt": "2025-07-08T09:56:21.552Z"
     }
   ],
   "positions": [
@@ -384,6 +384,30 @@
       "gainedAirdropPoints": -56,
       "gasPaid": 3.03,
       "blocksTrained": 492
+    },
+    {
+      "id": "77234efa-ae10-4eae-a6d1-adfe5e84beae",
+      "userId": "21156a7c-a539-456b-a53d-77132f3ded7f",
+      "symbol": "BTCUSDT",
+      "signalType": "SELL",
+      "status": "PENDING",
+      "entryPrice": 108200,
+      "closePrice": null,
+      "size": 1,
+      "stopLoss": 108350,
+      "takeProfit": 107800,
+      "pnl": null,
+      "openTimestamp": null,
+      "closeTimestamp": null,
+      "expirationTimestamp": "2025-07-09T09:56:21.552Z",
+      "strategyId": "e2ad7ac6-2566-4ec2-afd6-94b8769cdde8",
+      "createdAt": "2025-07-08T09:56:21.552Z",
+      "updatedAt": "2025-07-08T09:56:21.552Z",
+      "type": "CUSTOM",
+      "tradingMode": "Scalper",
+      "riskProfile": "Medium",
+      "gpt_confidence_score": "75",
+      "sentiment": "Neutral"
     }
   ],
   "agents": [

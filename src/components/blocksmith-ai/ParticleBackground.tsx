@@ -22,78 +22,167 @@ const ParticleBackground = () => {
 
     const options: ISourceOptions = useMemo(
         () => {
-            const isDark = theme === 'dark';
-            
-            return {
+            const isDark = theme !== 'light' && theme !== 'theme-solarflare' && theme !== 'theme-stark';
+
+            let baseOptions: ISourceOptions = {
                 background: {
                     color: {
                         value: "transparent",
                     },
                 },
                 fpsLimit: 120,
-                interactivity: {
-                    events: {
-                        onHover: {
-                            enable: true,
-                            mode: "bubble",
-                        },
-                        resize: true,
-                    },
-                    modes: {
-                        bubble: {
-                            distance: 200,
-                            duration: 2,
-                            opacity: 0.8,
-                            size: 6,
-                        },
-                    },
-                },
-                particles: {
-                    color: {
-                        value: isDark ? "#ffffff" : "#000000",
-                    },
-                    links: {
-                        enable: false, // Disabled for a starfield look
-                    },
-                    move: {
-                        direction: "none",
-                        enable: true,
-                        outModes: {
-                            default: "out",
-                        },
-                        random: true,
-                        speed: 0.2, // Very slow cosmic drift
-                        straight: false,
-                    },
-                    number: {
-                        density: {
-                            enable: true,
-                            area: 800,
-                        },
-                        value: 250, // More particles for a denser starfield
-                    },
-                    opacity: {
-                        value: { min: 0.1, max: 0.8 }, // Twinkling effect
-                        animation: {
-                            enable: true,
-                            speed: 0.5,
-                            sync: false,
-                        }
-                    },
-                    shape: {
-                        type: "circle",
-                    },
-                    size: {
-                        value: { min: 0.5, max: 2 }, // Twinkling effect
-                        animation: {
-                            enable: true,
-                            speed: 2,
-                            sync: false,
-                        }
-                    },
-                },
                 detectRetina: true,
             };
+
+            switch (theme) {
+                case 'theme-matrix':
+                    return {
+                        ...baseOptions,
+                        particles: {
+                            color: { value: "#00ff00" },
+                            move: {
+                                direction: "bottom",
+                                enable: true,
+                                outModes: { default: "out" },
+                                random: false,
+                                speed: 3,
+                                straight: true,
+                            },
+                            number: { density: { enable: true, area: 800 }, value: 150 },
+                            opacity: { value: { min: 0.3, max: 0.8 } },
+                            shape: { type: "circle" },
+                            size: { value: { min: 1, max: 3 } },
+                        },
+                    };
+                
+                case 'theme-synthwave':
+                    return {
+                        ...baseOptions,
+                        particles: {
+                            color: { value: ["#ff00ff", "#00ffff"] },
+                            links: {
+                                color: "#ffffff",
+                                distance: 150,
+                                enable: true,
+                                opacity: 0.2,
+                                width: 1,
+                            },
+                            move: {
+                                direction: "none",
+                                enable: true,
+                                outModes: { default: "bounce" },
+                                random: false,
+                                speed: 1,
+                                straight: false,
+                            },
+                            number: { density: { enable: true, area: 800 }, value: 80 },
+                            opacity: { value: 0.5 },
+                            shape: { type: "circle" },
+                            size: { value: { min: 1, max: 3 } },
+                        },
+                         interactivity: {
+                            events: { onHover: { enable: true, mode: "repulse" } },
+                            modes: { repulse: { distance: 100, duration: 0.4 } },
+                        },
+                    };
+                
+                case 'theme-solarflare':
+                    return {
+                        ...baseOptions,
+                        particles: {
+                            color: { value: ["#ff6a00", "#ffb400", "#ff4500"] },
+                            move: {
+                                direction: "top",
+                                enable: true,
+                                outModes: { default: "out" },
+                                random: true,
+                                speed: 2,
+                                straight: false,
+                            },
+                            number: { density: { enable: true, area: 800 }, value: 100 },
+                            opacity: { value: {min: 0.5, max: 1}, animation: { enable: true, speed: 1, sync: false }},
+                            shape: { type: "circle" },
+                            size: { value: { min: 2, max: 5 }, animation: { enable: true, speed: 4, sync: false } },
+                        },
+                        interactivity: {
+                            events: { onHover: { enable: true, mode: "bubble" } },
+                            modes: { bubble: { distance: 200, size: 10, duration: 2, opacity: 0.8 } },
+                        },
+                    };
+
+                case 'theme-quantum':
+                     return {
+                        ...baseOptions,
+                        particles: {
+                            color: { value: "#33bbff" },
+                            links: { color: "#33bbff", distance: 120, enable: true, opacity: 0.3, width: 1 },
+                            move: { enable: true, speed: 0.5, direction: "none", random: true, straight: false, outModes: { default: "out" } },
+                            number: { density: { enable: true, area: 800 }, value: 120 },
+                            opacity: { value: { min: 0.1, max: 0.6 } },
+                            shape: { type: "circle" },
+                            size: { value: { min: 1, max: 2 } },
+                        },
+                         interactivity: {
+                            events: { onHover: { enable: true, mode: "bubble" }, resize: true },
+                            modes: { bubble: { distance: 150, duration: 2, opacity: 1, size: 5 } },
+                        },
+                    };
+                
+                case 'theme-stark':
+                     return {
+                        ...baseOptions,
+                        particles: {
+                            color: { value: "#aaaaaa" },
+                            move: { enable: true, speed: 0.1, direction: "none", random: true, straight: false, outModes: { default: "out" } },
+                            number: { density: { enable: true, area: 1200 }, value: 50 },
+                            opacity: { value: 0.4 },
+                            shape: { type: "circle" },
+                            size: { value: 1 },
+                        },
+                        interactivity: { events: { onHover: { enable: false } } },
+                    };
+
+                default: // Default Dark and Light
+                    return {
+                        ...baseOptions,
+                        interactivity: {
+                            events: {
+                                onHover: { enable: true, mode: "bubble" },
+                                resize: true,
+                            },
+                            modes: {
+                                bubble: { distance: 200, duration: 2, opacity: 0.8, size: 6, color: isDark ? "#55aaff" : "#0055aa" },
+                            },
+                        },
+                        particles: {
+                            color: {
+                                value: isDark ? "#ffffff" : "#000000",
+                            },
+                            links: { enable: false },
+                            move: {
+                                direction: "none",
+                                enable: true,
+                                outModes: { default: "out" },
+                                random: true,
+                                speed: 0.2,
+                                straight: false,
+                            },
+                            number: {
+                                density: { enable: true, area: 800 },
+                                value: 250,
+                            },
+                            opacity: {
+                                value: { min: 0.1, max: 0.8 },
+                                animation: { enable: true, speed: 0.5, sync: false }
+                            },
+                            shape: { type: "circle" },
+                            size: {
+                                value: { min: 0.5, max: 2 },
+                                animation: { enable: true, speed: 2, sync: false }
+                            },
+                        },
+                    };
+            }
         },
         [theme],
     );
