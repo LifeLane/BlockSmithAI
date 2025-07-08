@@ -14,10 +14,12 @@ import {
 } from "@/components/ui/tooltip"
 
 const themes = [
-  { value: "dark", label: "Dark" },
-  { value: "theme-synthwave", label: "Synthwave" },
-  { value: "theme-quantum", label: "Quantum" },
-  { value: "theme-matrix", label: "Matrix" },
+  { value: "dark", label: "Default Dark" },
+  { value: "theme-green", label: "Green" },
+  { value: "theme-red", label: "Red" },
+  { value: "theme-yellow", label: "Yellow" },
+  { value: "theme-purple", label: "Purple" },
+  { value: "theme-white", label: "White" },
 ]
 
 export function ThemeToggle() {
