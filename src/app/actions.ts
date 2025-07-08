@@ -16,8 +16,6 @@ import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
 
 
 // Node/Prisma Imports
-// import prisma from '@/lib/prisma';
-// import { type Position as PrismaPosition, type User as PrismaUser, type Badge as PrismaBadge, SignalType, PositionStatus, AgentStatus, type GeneratedSignal as PrismaGeneratedSignal, GeneratedSignalStatus, SignalGenerationType } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { add, isBefore } from 'date-fns';
 import { fetchMarketDataAction } from '@/services/market-data-service';
@@ -48,6 +46,7 @@ export interface Position {
     signalType: 'BUY' | 'SELL';
     status: 'PENDING' | 'OPEN' | 'CLOSED';
     entryPrice: number;
+    closePrice: number | null;
     size: number;
     stopLoss: number | null;
     takeProfit: number | null;
@@ -245,7 +244,12 @@ export async function handleAirdropSignupAction(formData: AirdropFormData, userI
     const user = getMockUser(userId);
     user.status = "Registered";
     user.wallet_address = formData.wallet_address;
-    // ... update other fields
+    user.wallet_type = formData.wallet_type;
+    user.email = formData.email;
+    user.phone = formData.phone;
+    user.x_handle = formData.x_handle;
+    user.telegram_handle = formData.telegram_handle;
+    user.youtube_handle = formData.youtube_handle;
     return { userId };
 }
 
@@ -271,11 +275,16 @@ export async function generateTradingStrategyAction(input: Omit<TradingStrategyP
             fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.long }),
         ]);
 
+        if (shortTermResult.error || mediumTermResult.error || longTermResult.error) {
+            const error = shortTermResult.error || mediumTermResult.error || longTermResult.error;
+            return { error: `Failed to retrieve historical market data required for analysis. Reason: ${error}` };
+        }
+
         const promptInput: TradingStrategyPromptInput = { 
             ...input,
-            shortTermCandles: JSON.stringify(shortTermResult.candles || { error: shortTermResult.error }),
-            mediumTermCandles: JSON.stringify(mediumTermResult.candles || { error: mediumTermResult.error }),
-            longTermCandles: JSON.stringify(longTermResult.candles || { error: longTermResult.error }),
+            shortTermCandles: JSON.stringify(shortTermResult.candles),
+            mediumTermCandles: JSON.stringify(mediumTermResult.candles),
+            longTermCandles: JSON.stringify(longTermResult.candles),
         };
         
         const [strategy, disclaimer] = await Promise.all([ genCoreStrategy(promptInput), generateSarcasticDisclaimer() ]);
@@ -299,11 +308,16 @@ export async function generateShadowChoiceStrategyAction(input: ShadowChoiceStra
             fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.long }),
         ]);
 
+        if (shortTermResult.error || mediumTermResult.error || longTermResult.error) {
+            const error = shortTermResult.error || mediumTermResult.error || longTermResult.error;
+            return { error: `Failed to retrieve historical market data required for analysis. Reason: ${error}` };
+        }
+
         const promptInput = {
             ...input,
-            shortTermCandles: JSON.stringify(shortTermResult.candles || { error: shortTermResult.error }),
-            mediumTermCandles: JSON.stringify(mediumTermResult.candles || { error: mediumTermResult.error }),
-            longTermCandles: JSON.stringify(longTermResult.candles || { error: longTermResult.error }),
+            shortTermCandles: JSON.stringify(shortTermResult.candles),
+            mediumTermCandles: JSON.stringify(mediumTermResult.candles),
+            longTermCandles: JSON.stringify(longTermResult.candles),
         };
         
         const [strategy, disclaimer] = await Promise.all([ genShadowChoice(promptInput), generateSarcasticDisclaimer() ]);
