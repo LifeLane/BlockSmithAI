@@ -20,17 +20,13 @@ import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
 import { fetchMarketDataAction } from '@/services/market-data-service';
 
 // --- Type Definitions ---
-export type Position = Omit<PrismaPosition, 'openTimestamp' | 'closeTimestamp' | 'expirationTimestamp' | 'createdAt' | 'updatedAt'> & {
-    openTimestamp: string | null;
-    closeTimestamp: string | null;
-    expirationTimestamp: string | null;
-    createdAt: string;
-    updatedAt: string;
+// Helper to convert Prisma's Date objects to ISO strings for client-side serialization
+type Serializable<T> = {
+  [K in keyof T]: T[K] extends Date ? string : T[K] extends Date | null ? string | null : T[K];
 };
-export type GeneratedSignal = Omit<PrismaGeneratedSignal, 'createdAt' | 'updatedAt'> & {
-    createdAt: string;
-    updatedAt: string;
-};
+
+export type Position = Serializable<PrismaPosition>;
+export type GeneratedSignal = Serializable<PrismaGeneratedSignal>;
 export type { UserProfile };
 
 export type ChatMessage = AIChatMessage;
@@ -93,15 +89,17 @@ export type GenerateShadowChoiceStrategyOutput = ShadowChoiceStrategyCoreOutput 
 };
 export type { PerformanceReviewOutput };
 
-const serializeDates = <T extends { createdAt?: Date, updatedAt?: Date, openTimestamp?: Date | null, closeTimestamp?: Date | null, expirationTimestamp?: Date | null }>(obj: T) => {
+const serializeWithDates = <T>(obj: T): Serializable<T> => {
+    if (obj === null || obj === undefined) return obj as any;
     const newObj: any = { ...obj };
-    if (obj.createdAt) newObj.createdAt = obj.createdAt.toISOString();
-    if (obj.updatedAt) newObj.updatedAt = obj.updatedAt.toISOString();
-    if (obj.openTimestamp) newObj.openTimestamp = obj.openTimestamp.toISOString();
-    if (obj.closeTimestamp) newObj.closeTimestamp = obj.closeTimestamp.toISOString();
-    if (obj.expirationTimestamp) newObj.expirationTimestamp = obj.expirationTimestamp.toISOString();
+    for (const key in newObj) {
+        if (newObj[key] instanceof Date) {
+            newObj[key] = newObj[key].toISOString();
+        }
+    }
     return newObj;
 };
+
 
 // --- ---
 
@@ -111,6 +109,7 @@ export async function getOrCreateUserAction(userId: string | null): Promise<User
         if(existingUser) return existingUser;
     }
 
+    // Let the database handle the default cuid() for the id
     const newUser = await prisma.user.create({
         data: {
             username: `Analyst_${randomUUID().substring(0, 6)}`,
@@ -435,7 +434,7 @@ export async function closePositionAction(positionId: string, closePrice: number
         return pos;
     });
     
-    return { position: serializeDates(updatedPosition) };
+    return { position: serializeWithDates(updatedPosition) };
 }
 
 export async function fetchPendingAndOpenPositionsAction(userId: string): Promise<Position[]> {
@@ -443,7 +442,7 @@ export async function fetchPendingAndOpenPositionsAction(userId: string): Promis
         where: { userId, status: { in: ['PENDING', 'OPEN'] } },
         orderBy: { createdAt: 'desc' }
     });
-    return positions.map(serializeDates);
+    return positions.map(serializeWithDates);
 }
 
 export async function fetchTradeHistoryAction(userId: string): Promise<Position[]> {
@@ -451,7 +450,7 @@ export async function fetchTradeHistoryAction(userId: string): Promise<Position[
         where: { userId, status: 'CLOSED' },
         orderBy: { closeTimestamp: 'desc' }
     });
-    return positions.map(serializeDates);
+    return positions.map(serializeWithDates);
 }
 
 export async function fetchPortfolioStatsAction(userId: string): Promise<PortfolioStats | { error: string }> {
@@ -527,7 +526,10 @@ export async function killSwitchAction(userId: string): Promise<{ success: boole
     if(openPositions.length === 0) return { success: true, message: 'No active positions to close.' };
     
     for (const p of openPositions) {
-        await closePositionAction(p.id, p.entryPrice); // Close at entry price for $0 PnL
+        // Here we assume a live price check would happen, but for simplicity, we close at entry.
+        const marketData = await fetchMarketDataAction({symbol: p.symbol});
+        const closePrice = 'error' in marketData ? p.entryPrice : parseFloat(marketData.lastPrice);
+        await closePositionAction(p.id, closePrice);
     }
     
     return { success: true, message: `Successfully closed ${openPositions.length} open positions.` };
@@ -539,7 +541,7 @@ export async function activatePendingPositionAction(positionId: string): Promise
         data: { status: 'OPEN', openTimestamp: new Date() }
     });
     if (!updatedPosition) return { error: "Position not found or not pending." };
-    return { position: serializeDates(updatedPosition) };
+    return { position: serializeWithDates(updatedPosition) };
 }
 
 export async function cancelPendingPositionAction(positionId: string): Promise<{ success: boolean; error?: string; }> {
@@ -556,7 +558,7 @@ export async function fetchAllGeneratedSignalsAction(userId: string): Promise<Ge
         where: { userId },
         orderBy: { createdAt: 'desc' }
     });
-    return signals.map(serializeDates);
+    return signals.map(serializeWithDates);
 }
 
 export async function dismissCustomSignalAction(signalId: string, userId: string): Promise<{ success: boolean, error?: string }> {

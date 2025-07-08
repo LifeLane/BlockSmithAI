@@ -1,13 +1,13 @@
 
+'use server';
 /**
  * @fileOverview A Genkit tool to fetch the user's current open portfolio positions.
- * NOTE: This tool is stubbed to work without a database connection.
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { prisma } from '@/lib/prisma';
 
-// Corrected schema to match the data model for a Position.
+// Schema for a single position, mirroring the Prisma model but with optional fields for flexibility.
 const PositionSchema = z.object({
   id: z.string(),
   symbol: z.string(),
@@ -17,14 +17,7 @@ const PositionSchema = z.object({
   status: z.enum(['PENDING', 'OPEN', 'CLOSED']),
   openTimestamp: z.date().nullable(),
   closeTimestamp: z.date().nullable(),
-  expirationTimestamp: z.date().nullable(),
-  stopLoss: z.number().nullable(),
-  takeProfit: z.number().nullable(),
   pnl: z.number().nullable(),
-  strategyId: z.string().nullable(),
-  userId: z.string(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
 });
 
 const FetchPortfolioInputSchema = z.object({
@@ -56,6 +49,17 @@ export const fetchPortfolioTool = ai.defineTool(
                 status: {
                     in: ['PENDING', 'OPEN']
                 }
+            },
+            select: {
+                id: true,
+                symbol: true,
+                signalType: true,
+                entryPrice: true,
+                size: true,
+                status: true,
+                openTimestamp: true,
+                closeTimestamp: true,
+                pnl: true,
             }
         });
         
@@ -63,8 +67,6 @@ export const fetchPortfolioTool = ai.defineTool(
             return { message: "The user has no open or pending positions." };
         }
 
-        // The schema expects float for pnl, but prisma might return Decimal. Ensure conversion if necessary.
-        // For now, schema aligns with Float so direct return is okay.
         return { positions };
 
     } catch (error: any) {
