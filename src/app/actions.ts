@@ -2,6 +2,7 @@
 "use server";
 import {promises as fs} from 'fs';
 import path from 'path';
+import { lock } from 'proper-lockfile';
 
 // AI Flow Imports
 import { generateTradingStrategy as genCoreStrategy, type PromptInput as TradingStrategyPromptInput } from '@/ai/flows/generate-trading-strategy';
@@ -25,22 +26,35 @@ import { fetchMarketDataAction } from '@/services/market-data-service';
 // --- MOCK DATABASE (db.json) ---
 const dbPath = path.join(process.cwd(), 'src', 'data', 'db.json');
 
+async function updateDb<T>(updater: (db: any) => Promise<T> | T): Promise<T> {
+    const release = await lock(dbPath, { retries: 5, stale: 10000 });
+    let db;
+    try {
+        try {
+            const data = await fs.readFile(dbPath, 'utf-8');
+            db = JSON.parse(data);
+        } catch (error) {
+            console.warn("Could not read db.json, initializing with empty state.");
+            db = { users: [], positions: [], signals: [] };
+        }
+        
+        const result = await updater(db);
+
+        await fs.writeFile(dbPath, JSON.stringify(db, null, 2), 'utf-8');
+
+        return result;
+    } finally {
+        await release();
+    }
+}
+
 async function readDb(): Promise<any> {
     try {
         const data = await fs.readFile(dbPath, 'utf-8');
         return JSON.parse(data);
     } catch (error) {
         console.error("Error reading from db.json:", error);
-        // In case of error (e.g., file not found), return a default structure
         return { users: [], positions: [], signals: [] };
-    }
-}
-
-async function writeDb(data: any): Promise<void> {
-    try {
-        await fs.writeFile(dbPath, JSON.stringify(data, null, 2), 'utf-8');
-    } catch (error) {
-        console.error("Error writing to db.json:", error);
     }
 }
 
@@ -59,12 +73,12 @@ export interface Position {
     stopLoss: number | null;
     takeProfit: number | null;
     pnl: number | null;
-    openTimestamp: Date | null;
-    closeTimestamp: Date | null;
-    expirationTimestamp: Date | null;
+    openTimestamp: string | null;
+    closeTimestamp: string | null;
+    expirationTimestamp: string | null;
     strategyId: string | null;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string;
+    updatedAt: string;
     // Enriched data from signal
     type: 'INSTANT' | 'CUSTOM';
     tradingMode: string;
@@ -119,8 +133,8 @@ export interface GeneratedSignal {
     disclaimer: string;
     type: 'INSTANT' | 'CUSTOM';
     status: 'PENDING_EXECUTION' | 'EXECUTED' | 'DISMISSED' | 'ARCHIVED' | 'ERROR';
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export type ChatMessage = AIChatMessage;
@@ -186,34 +200,33 @@ export type { PerformanceReviewOutput };
 // --- ---
 
 export async function getOrCreateUserAction(userId: string | null): Promise<UserProfile> {
-    const db = await readDb();
-    if (userId) {
-        const existingUser = db.users.find((u: UserProfile) => u.id === userId);
-        if(existingUser) return existingUser;
-    }
+    return updateDb(db => {
+        if (userId) {
+            const existingUser = db.users.find((u: UserProfile) => u.id === userId);
+            if(existingUser) return existingUser;
+        }
 
-    const newId = userId || randomUUID();
-    const newUser: UserProfile = {
-        id: newId,
-        username: `Analyst_${newId.substring(0, 6)}`,
-        shadowId: `SHDW-${randomUUID().substring(0, 7).toUpperCase()}`,
-        status: "Guest",
-        weeklyPoints: 100,
-        airdropPoints: 50,
-        badges: [],
-        claimedMissions: [],
-        claimedSpecialOps: [],
-    };
-    
-    const userIndex = db.users.findIndex((u: UserProfile) => u.id === newId);
-    if (userIndex !== -1) {
-        db.users[userIndex] = newUser;
-    } else {
-        db.users.push(newUser);
-    }
-
-    await writeDb(db);
-    return newUser;
+        const newId = userId || randomUUID();
+        const newUser: UserProfile = {
+            id: newId,
+            username: `Analyst_${newId.substring(0, 6)}`,
+            shadowId: `SHDW-${randomUUID().substring(0, 7).toUpperCase()}`,
+            status: "Guest",
+            weeklyPoints: 0,
+            airdropPoints: 0,
+            badges: [],
+            claimedMissions: [],
+            claimedSpecialOps: [],
+        };
+        
+        const userIndex = db.users.findIndex((u: UserProfile) => u.id === newId);
+        if (userIndex !== -1) {
+            db.users[userIndex] = newUser;
+        } else {
+            db.users.push(newUser);
+        }
+        return newUser;
+    });
 }
 
 export async function fetchCurrentUserJson(userId: string): Promise<UserProfile | null> {
@@ -223,36 +236,35 @@ export async function fetchCurrentUserJson(userId: string): Promise<UserProfile 
 }
 
 export async function updateUserSettingsJson(userId: string, data: { username?: string }): Promise<UserProfile | null> {
-    const db = await readDb();
-    const userIndex = db.users.findIndex((u: UserProfile) => u.id === userId);
-    if(userIndex === -1) return null;
+    return updateDb(db => {
+        const userIndex = db.users.findIndex((u: UserProfile) => u.id === userId);
+        if(userIndex === -1) return null;
 
-    if(data.username) {
-        db.users[userIndex].username = data.username;
-    }
-    await writeDb(db);
-    return db.users[userIndex];
+        if(data.username) {
+            db.users[userIndex].username = data.username;
+        }
+        return db.users[userIndex];
+    });
 }
 
 export async function handleAirdropSignupAction(formData: AirdropFormData, userId: string): Promise<{ userId: string; } | { error: string; }> {
-    const db = await readDb();
-    const userIndex = db.users.findIndex((u: UserProfile) => u.id === userId);
-    if(userIndex === -1) return { error: "User not found." };
-    
-    db.users[userIndex] = {
-        ...db.users[userIndex],
-        status: "Registered",
-        wallet_address: formData.wallet_address,
-        wallet_type: formData.wallet_type,
-        email: formData.email,
-        phone: formData.phone,
-        x_handle: formData.x_handle,
-        telegram_handle: formData.telegram_handle,
-        youtube_handle: formData.youtube_handle,
-    };
-    
-    await writeDb(db);
-    return { userId };
+    return updateDb(db => {
+        const userIndex = db.users.findIndex((u: UserProfile) => u.id === userId);
+        if(userIndex === -1) return { error: "User not found." };
+        
+        db.users[userIndex] = {
+            ...db.users[userIndex],
+            status: "Registered",
+            wallet_address: formData.wallet_address,
+            wallet_type: formData.wallet_type,
+            email: formData.email,
+            phone: formData.phone,
+            x_handle: formData.x_handle,
+            telegram_handle: formData.telegram_handle,
+            youtube_handle: formData.youtube_handle,
+        };
+        return { userId };
+    });
 }
 
 export async function fetchLeaderboardDataJson(): Promise<LeaderboardUser[]> {
@@ -275,24 +287,22 @@ const timeframeMappings: { [key: string]: { short: string; medium: string; long:
 };
 
 async function saveSignalToDb(signalData: Omit<GeneratedSignal, 'createdAt' | 'updatedAt'>) {
-    const db = await readDb();
-    const newSignal: GeneratedSignal = {
-        ...signalData,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    };
-    if (!db.signals) db.signals = [];
-    db.signals.push(newSignal);
+    return updateDb(db => {
+        const newSignal: GeneratedSignal = {
+            ...signalData,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        };
+        if (!db.signals) db.signals = [];
+        db.signals.push(newSignal);
 
-    // --- Gamification: Reward for generating a signal ---
-    const userIndex = db.users.findIndex((u: UserProfile) => u.id === signalData.userId);
-    if (userIndex !== -1) {
-        const NODE_TRAINING_REWARD = 10; // $BSAI
-        db.users[userIndex].airdropPoints += NODE_TRAINING_REWARD;
-    }
-    // ---
-
-    await writeDb(db);
+        // --- Gamification: Reward for generating a signal ---
+        const userIndex = db.users.findIndex((u: UserProfile) => u.id === signalData.userId);
+        if (userIndex !== -1) {
+            const NODE_TRAINING_REWARD = 10; // $BSAI
+            db.users[userIndex].airdropPoints += NODE_TRAINING_REWARD;
+        }
+    });
 }
 
 const parsePrice = (priceStr: string | undefined | null): number => {
@@ -342,48 +352,44 @@ export async function generateTradingStrategyAction(input: Omit<TradingStrategyP
             type: 'INSTANT' as const
         };
         
-        // --- Create and log the position directly in this action ---
-        const db = await readDb();
-        const newPosition: Position = {
-            id: randomUUID(),
-            userId: input.userId,
-            symbol: fullResult.symbol,
-            signalType: fullResult.signal as 'BUY' | 'SELL',
-            status: 'OPEN',
-            entryPrice: parsePrice(fullResult.entry_zone),
-            closePrice: null,
-            size: 1, // Default size for now
-            stopLoss: parsePrice(fullResult.stop_loss),
-            takeProfit: parsePrice(fullResult.take_profit),
-            pnl: null,
-            openTimestamp: new Date(),
-            closeTimestamp: null,
-            expirationTimestamp: null,
-            strategyId: fullResult.id,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            // Enriched Data
-            type: 'INSTANT',
-            tradingMode: fullResult.tradingMode,
-            riskProfile: fullResult.risk_rating,
-            gpt_confidence_score: fullResult.gpt_confidence_score,
-            sentiment: fullResult.sentiment,
-        };
-        if (!db.positions) db.positions = [];
-        db.positions.push(newPosition);
+        await updateDb(db => {
+            const newPosition: Position = {
+                id: randomUUID(),
+                userId: input.userId,
+                symbol: fullResult.symbol,
+                signalType: fullResult.signal as 'BUY' | 'SELL',
+                status: 'OPEN',
+                entryPrice: parsePrice(fullResult.entry_zone),
+                closePrice: null,
+                size: 1, // Default size for now
+                stopLoss: parsePrice(fullResult.stop_loss),
+                takeProfit: parsePrice(fullResult.take_profit),
+                pnl: null,
+                openTimestamp: new Date().toISOString(),
+                closeTimestamp: null,
+                expirationTimestamp: null,
+                strategyId: fullResult.id,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                // Enriched Data
+                type: 'INSTANT',
+                tradingMode: fullResult.tradingMode,
+                riskProfile: fullResult.risk_rating,
+                gpt_confidence_score: fullResult.gpt_confidence_score,
+                sentiment: fullResult.sentiment,
+            };
+            if (!db.positions) db.positions = [];
+            db.positions.push(newPosition);
 
-        // --- Gamification: Reward for simulating a trade ---
-        const userIndex = db.users.findIndex((u: UserProfile) => u.id === input.userId);
-        if (userIndex !== -1) {
-            const SIMULATION_XP_REWARD = 25;
-            const SIMULATION_AIRDROP_REWARD = 50;
-            db.users[userIndex].weeklyPoints += SIMULATION_XP_REWARD;
-            db.users[userIndex].airdropPoints += SIMULATION_AIRDROP_REWARD;
-        }
-        // ---
-
-        await writeDb(db);
-        // --- End of position logging ---
+            // --- Gamification: Reward for simulating a trade ---
+            const userIndex = db.users.findIndex((u: UserProfile) => u.id === input.userId);
+            if (userIndex !== -1) {
+                const SIMULATION_XP_REWARD = 25;
+                const SIMULATION_AIRDROP_REWARD = 50;
+                db.users[userIndex].weeklyPoints += SIMULATION_XP_REWARD;
+                db.users[userIndex].airdropPoints += SIMULATION_AIRDROP_REWARD;
+            }
+        });
 
         return fullResult;
 
@@ -445,66 +451,65 @@ export async function getDailyGreeting(): Promise<GenerateDailyGreetingOutput> {
 }
 
 export async function claimMissionRewardAction(userId: string, missionId: string): Promise<{ success: boolean; message: string }> {
-    const db = await readDb();
-    const user = db.users.find((u: UserProfile) => u.id === userId);
-    if (!user) return { success: false, message: 'User not found.' };
+    return updateDb(db => {
+        const user = db.users.find((u: UserProfile) => u.id === userId);
+        if (!user) return { success: false, message: 'User not found.' };
 
-    user.claimedMissions.push(missionId);
-    await writeDb(db);
-    return { success: true, message: `Mission reward claimed.` };
+        user.claimedMissions.push(missionId);
+        return { success: true, message: `Mission reward claimed.` };
+    });
 }
 
 export async function executeCustomSignalAction(signalId: string, userId: string): Promise<{ success: boolean; error?: string }> {
-    const db = await readDb();
-    const signal = db.signals.find((s: GeneratedSignal) => s.id === signalId && s.userId === userId);
-    if (!signal) return { success: false, error: 'Signal not found.' };
+    return updateDb(db => {
+        const signal = db.signals.find((s: GeneratedSignal) => s.id === signalId && s.userId === userId);
+        if (!signal) return { success: false, error: 'Signal not found.' };
 
-    const newPosition: Position = {
-        id: randomUUID(),
-        userId,
-        symbol: signal.symbol,
-        signalType: signal.signal as 'BUY' | 'SELL',
-        status: 'PENDING',
-        entryPrice: parsePrice(signal.entry_zone),
-        closePrice: null,
-        size: 1, // Default size for now
-        stopLoss: parsePrice(signal.stop_loss),
-        takeProfit: parsePrice(signal.take_profit),
-        pnl: null,
-        openTimestamp: null,
-        closeTimestamp: null,
-        expirationTimestamp: add(new Date(), { hours: 24 }),
-        strategyId: signal.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        // Enriched Data
-        type: 'CUSTOM',
-        tradingMode: signal.chosenTradingMode || 'Custom',
-        riskProfile: signal.chosenRiskProfile,
-        gpt_confidence_score: signal.gpt_confidence_score,
-        sentiment: signal.sentiment,
-    };
-    if (!db.positions) db.positions = [];
-    db.positions.push(newPosition);
+        const newPosition: Position = {
+            id: randomUUID(),
+            userId,
+            symbol: signal.symbol,
+            signalType: signal.signal as 'BUY' | 'SELL',
+            status: 'PENDING',
+            entryPrice: parsePrice(signal.entry_zone),
+            closePrice: null,
+            size: 1, // Default size for now
+            stopLoss: parsePrice(signal.stop_loss),
+            takeProfit: parsePrice(signal.take_profit),
+            pnl: null,
+            openTimestamp: null,
+            closeTimestamp: null,
+            expirationTimestamp: add(new Date(), { hours: 24 }).toISOString(),
+            strategyId: signal.id,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            // Enriched Data
+            type: 'CUSTOM',
+            tradingMode: signal.chosenTradingMode || 'Custom',
+            riskProfile: signal.chosenRiskProfile,
+            gpt_confidence_score: signal.gpt_confidence_score,
+            sentiment: signal.sentiment,
+        };
+        if (!db.positions) db.positions = [];
+        db.positions.push(newPosition);
 
-    const signalIndex = db.signals.findIndex((s: GeneratedSignal) => s.id === signalId);
-    if(signalIndex > -1) {
-        db.signals[signalIndex].status = 'EXECUTED';
-        db.signals[signalIndex].updatedAt = new Date();
-    }
-    
-    // --- Gamification: Reward for simulating a trade ---
-    const userIndex = db.users.findIndex((u: UserProfile) => u.id === userId);
-    if (userIndex !== -1) {
-        const SIMULATION_XP_REWARD = 25;
-        const SIMULATION_AIRDROP_REWARD = 50;
-        db.users[userIndex].weeklyPoints += SIMULATION_XP_REWARD;
-        db.users[userIndex].airdropPoints += SIMULATION_AIRDROP_REWARD;
-    }
-    // ---
-    
-    await writeDb(db);
-    return { success: true };
+        const signalIndex = db.signals.findIndex((s: GeneratedSignal) => s.id === signalId);
+        if(signalIndex > -1) {
+            db.signals[signalIndex].status = 'EXECUTED';
+            db.signals[signalIndex].updatedAt = new Date().toISOString();
+        }
+        
+        // --- Gamification: Reward for simulating a trade ---
+        const userIndex = db.users.findIndex((u: UserProfile) => u.id === userId);
+        if (userIndex !== -1) {
+            const SIMULATION_XP_REWARD = 25;
+            const SIMULATION_AIRDROP_REWARD = 50;
+            db.users[userIndex].weeklyPoints += SIMULATION_XP_REWARD;
+            db.users[userIndex].airdropPoints += SIMULATION_AIRDROP_REWARD;
+        }
+        
+        return { success: true };
+    });
 }
 
 const calculateTradeRewards = (pnl: number, tradingMode: string, riskProfile: string) => {
@@ -546,40 +551,36 @@ const calculateTradeRewards = (pnl: number, tradingMode: string, riskProfile: st
 
 
 export async function closePositionAction(positionId: string, closePrice: number): Promise<{ position?: Position; error?: string; }> {
-    const db = await readDb();
-    const positionIndex = db.positions.findIndex((p: Position) => p.id === positionId);
-    if (positionIndex === -1) return { error: 'Position not found.' };
+    return updateDb(db => {
+        const positionIndex = db.positions.findIndex((p: Position) => p.id === positionId);
+        if (positionIndex === -1) return { error: 'Position not found.' };
 
-    const position = db.positions[positionIndex];
-    if (position.status !== 'OPEN') return { error: 'Position is not open.' };
+        const position = db.positions[positionIndex];
+        if (position.status !== 'OPEN') return { error: 'Position is not open.' };
 
-    // Calculate PnL
-    const pnl = (position.signalType === 'BUY'
-        ? (closePrice - position.entryPrice)
-        : (position.entryPrice - closePrice)) * position.size;
-    
-    // Calculate Rewards
-    const rewards = calculateTradeRewards(pnl, position.tradingMode, position.riskProfile);
+        const pnl = (position.signalType === 'BUY'
+            ? (closePrice - position.entryPrice)
+            : (position.entryPrice - closePrice)) * position.size;
+        
+        const rewards = calculateTradeRewards(pnl, position.tradingMode, position.riskProfile);
 
-    // Update Position
-    position.status = 'CLOSED';
-    position.closePrice = closePrice;
-    position.closeTimestamp = new Date();
-    position.pnl = pnl;
-    position.gainedXp = rewards.gainedXp;
-    position.gainedAirdropPoints = rewards.gainedAirdropPoints;
-    position.gasPaid = rewards.gasPaid;
-    position.blocksTrained = rewards.blocksTrained;
+        position.status = 'CLOSED';
+        position.closePrice = closePrice;
+        position.closeTimestamp = new Date().toISOString();
+        position.pnl = pnl;
+        position.gainedXp = rewards.gainedXp;
+        position.gainedAirdropPoints = rewards.gainedAirdropPoints;
+        position.gasPaid = rewards.gasPaid;
+        position.blocksTrained = rewards.blocksTrained;
 
-    // Update User's total points
-    const userIndex = db.users.findIndex((u: UserProfile) => u.id === position.userId);
-    if (userIndex !== -1) {
-        db.users[userIndex].airdropPoints += rewards.gainedAirdropPoints;
-        db.users[userIndex].weeklyPoints += rewards.gainedXp;
-    }
-    
-    await writeDb(db);
-    return { position };
+        const userIndex = db.users.findIndex((u: UserProfile) => u.id === position.userId);
+        if (userIndex !== -1) {
+            db.users[userIndex].airdropPoints += rewards.gainedAirdropPoints;
+            db.users[userIndex].weeklyPoints += rewards.gainedXp;
+        }
+        
+        return { position };
+    });
 }
 
 export async function fetchPendingAndOpenPositionsAction(userId: string): Promise<Position[]> {
@@ -652,8 +653,8 @@ export async function generatePerformanceReviewAction(userId: string): Promise<P
         },
         tradeHistory: tradeHistory.map(t => ({
             ...t,
-            openTimestamp: t.openTimestamp?.toString() || "",
-            closeTimestamp: t.closeTimestamp?.toString() || null,
+            openTimestamp: t.openTimestamp || "",
+            closeTimestamp: t.closeTimestamp || null,
         }))
     }
     
@@ -661,56 +662,55 @@ export async function generatePerformanceReviewAction(userId: string): Promise<P
 }
 
 export async function killSwitchAction(userId: string): Promise<{ success: boolean; message: string; }> {
-    const db = await readDb();
-    if (!db.positions) return { success: true, message: 'No active positions to close.' };
-    
-    const openPositions = db.positions.filter((p: Position) => p.userId === userId && p.status === 'OPEN');
-    if(openPositions.length === 0) return { success: true, message: 'No active positions to close.' };
+     return updateDb(db => {
+        if (!db.positions) return { success: true, message: 'No active positions to close.' };
+        
+        const openPositions = db.positions.filter((p: Position) => p.userId === userId && p.status === 'OPEN');
+        if(openPositions.length === 0) return { success: true, message: 'No active positions to close.' };
 
-    // This is a mock, so we just mark them as closed. A real implementation would need live prices.
-    let closedCount = 0;
-    openPositions.forEach((p: Position) => {
-        p.status = 'CLOSED';
-        p.closePrice = p.entryPrice; // Mock closing at entry
-        p.pnl = 0;
-        p.closeTimestamp = new Date();
-        const rewards = calculateTradeRewards(0, p.tradingMode, p.riskProfile);
-        p.gainedXp = rewards.gainedXp;
-        p.gainedAirdropPoints = rewards.gainedAirdropPoints;
-        p.gasPaid = rewards.gasPaid;
-        p.blocksTrained = rewards.blocksTrained;
-        closedCount++;
+        let closedCount = 0;
+        openPositions.forEach((p: Position) => {
+            p.status = 'CLOSED';
+            p.closePrice = p.entryPrice;
+            p.pnl = 0;
+            p.closeTimestamp = new Date().toISOString();
+            const rewards = calculateTradeRewards(0, p.tradingMode, p.riskProfile);
+            p.gainedXp = rewards.gainedXp;
+            p.gainedAirdropPoints = rewards.gainedAirdropPoints;
+            p.gasPaid = rewards.gasPaid;
+            p.blocksTrained = rewards.blocksTrained;
+            closedCount++;
+        });
+        
+        return { success: true, message: `Successfully closed ${closedCount} open positions.` };
     });
-    
-    await writeDb(db);
-    return { success: true, message: `Successfully closed ${closedCount} open positions.` };
 }
 
 export async function activatePendingPositionAction(positionId: string): Promise<{ position?: Position; error?: string; }> {
-    const db = await readDb();
-    const positionIndex = db.positions.findIndex((p: Position) => p.id === positionId);
-    if (positionIndex === -1) return { error: 'Position not found.' };
-    
-    const position = db.positions[positionIndex];
+    return updateDb(db => {
+        const positionIndex = db.positions.findIndex((p: Position) => p.id === positionId);
+        if (positionIndex === -1) return { error: 'Position not found.' };
+        
+        const position = db.positions[positionIndex];
 
-    if (position.status !== 'PENDING') return { error: 'Position is not pending.' };
+        if (position.status !== 'PENDING') return { error: 'Position is not pending.' };
 
-    position.status = 'OPEN';
-    position.openTimestamp = new Date();
-    await writeDb(db);
-    return { position };
+        position.status = 'OPEN';
+        position.openTimestamp = new Date().toISOString();
+        return { position };
+    });
 }
 
 export async function cancelPendingPositionAction(positionId: string): Promise<{ success: boolean; error?: string; }> {
-    const db = await readDb();
-    const positionIndex = db.positions.findIndex((p: Position) => p.id === positionId);
-    if (positionIndex === -1) return { success: false, error: 'Position not found.' };
+    return updateDb(db => {
+        const positionIndex = db.positions.findIndex((p: Position) => p.id === positionId);
+        if (positionIndex === -1) return { success: false, error: 'Position not found.' };
 
-    if(db.positions[positionIndex].status !== 'PENDING') return { success: false, error: 'Position is not pending.' };
+        if(db.positions[positionIndex].status !== 'PENDING') return { success: false, error: 'Position is not pending.' };
 
-    db.positions.splice(positionIndex, 1);
-    await writeDb(db);
-    return { success: true };
+        db.positions.splice(positionIndex, 1);
+        return { success: true };
+    });
 }
 
 export async function fetchAllGeneratedSignalsAction(userId: string): Promise<GeneratedSignal[] | { error: string }> {
@@ -723,12 +723,12 @@ export async function fetchAllGeneratedSignalsAction(userId: string): Promise<Ge
 }
 
 export async function dismissCustomSignalAction(signalId: string, userId: string): Promise<{ success: boolean, error?: string }> {
-    const db = await readDb();
-    const signalIndex = db.signals.findIndex((s: GeneratedSignal) => s.id === signalId && s.userId === userId);
-    if (signalIndex === -1) return { success: false, error: 'Signal not found' };
+    return updateDb(db => {
+        const signalIndex = db.signals.findIndex((s: GeneratedSignal) => s.id === signalId && s.userId === userId);
+        if (signalIndex === -1) return { success: false, error: 'Signal not found' };
 
-    db.signals[signalIndex].status = 'DISMISSED';
-    db.signals[signalIndex].updatedAt = new Date();
-    await writeDb(db);
-    return { success: true };
+        db.signals[signalIndex].status = 'DISMISSED';
+        db.signals[signalIndex].updatedAt = new Date().toISOString();
+        return { success: true };
+    });
 }
