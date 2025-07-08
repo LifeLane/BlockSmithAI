@@ -1,3 +1,4 @@
+
 "use server";
 import {promises as fs} from 'fs';
 import path from 'path';
@@ -64,6 +65,10 @@ export interface Position {
     strategyId: string | null;
     createdAt: Date;
     updatedAt: Date;
+    // Enriched data from signal
+    tradingMode: string;
+    gpt_confidence_score: string;
+    sentiment: string;
 }
 export interface Badge { name: string; }
 export interface UserProfile {
@@ -413,7 +418,11 @@ export async function logInstantPositionAction(userId: string, strategy: Generat
         expirationTimestamp: null,
         strategyId: strategy.id,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        // Enriched Data
+        tradingMode: strategy.tradingMode,
+        gpt_confidence_score: strategy.gpt_confidence_score,
+        sentiment: strategy.sentiment,
     };
     if (!db.positions) db.positions = [];
     db.positions.push(newPosition);
@@ -454,7 +463,11 @@ export async function executeCustomSignalAction(signalId: string, userId: string
         expirationTimestamp: add(new Date(), { hours: 24 }),
         strategyId: signal.id,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        // Enriched Data
+        tradingMode: signal.chosenTradingMode || 'Custom',
+        gpt_confidence_score: signal.gpt_confidence_score,
+        sentiment: signal.sentiment,
     };
     if (!db.positions) db.positions = [];
     db.positions.push(newPosition);
@@ -609,8 +622,12 @@ export async function killSwitchAction(userId: string): Promise<{ success: boole
 
 export async function activatePendingPositionAction(positionId: string): Promise<{ position?: Position; error?: string; }> {
     const db = await readDb();
-    const position = db.positions.find((p: Position) => p.id === positionId);
-    if (!position) return { error: 'Position not found.' };
+    const positionIndex = db.positions.findIndex((p: Position) => p.id === positionId);
+    if (positionIndex === -1) return { error: 'Position not found.' };
+    
+    const position = db.positions[positionIndex];
+
+    if (position.status !== 'PENDING') return { error: 'Position is not pending.' };
 
     position.status = 'OPEN';
     position.openTimestamp = new Date();
