@@ -126,6 +126,17 @@
       "airdropPoints": 0,
       "badges": [],
       "claimedMissions": []
+    },
+    {
+      "id": "21156a7c-a539-456b-a53d-77132f3ded7f",
+      "username": "Analyst_21156a",
+      "shadowId": "SHDW-0891D19",
+      "status": "Guest",
+      "weeklyPoints": 100,
+      "airdropPoints": 50,
+      "badges": [],
+      "claimedMissions": [],
+      "claimedSpecialOps": []
     }
   ],
   "badges": [

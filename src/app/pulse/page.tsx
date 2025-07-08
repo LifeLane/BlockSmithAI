@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
@@ -8,7 +7,7 @@ import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle, Wallet, Activity, BrainCircuit, ShieldAlert, Bot, Hourglass, Trash2 } from 'lucide-react';
+import { Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle, Wallet, Activity, BrainCircuit, ShieldAlert, Bot, Hourglass, Trash2, Cpu, Zap } from 'lucide-react';
 import {
   fetchPortfolioStatsAction,
   generatePerformanceReviewAction,
@@ -75,13 +74,16 @@ const PortfolioStatsDisplay = ({ stats, isLoading, onGenerateReview, isGeneratin
                     <CardTitle className="text-lg flex items-center gap-2 text-accent font-headline"><Briefcase /> <GlyphScramble text="Performance Matrix" /></CardTitle>
                     <CardDescription>A summary of your <strong className="text-accent">lifetime activity</strong> and rewards.</CardDescription>
                 </div>
-                <Button size="sm" onClick={onGenerateReview} disabled={isGeneratingReview} className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground w-full sm:w-auto">
+                <Button size="sm" onClick={onGenerateReview} disabled={isGeneratingReview || stats.totalTrades < 3} className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground w-full sm:w-auto">
                     {isGeneratingReview ? <Loader2 className="h-4 w-4 animate-spin"/> : <BrainCircuit className="h-4 w-4 mr-2"/>}
                     Get SHADOW's Review
                 </Button>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <StatCard title="Real-time Capital" value="$100,000" icon={<Activity size={14} />} valueClassName="text-muted-foreground" />
+            <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <StatCard title="Nodes Trained" value={stats.nodesTrained} icon={<Cpu size={14} />} valueClassName="text-tertiary" />
+                <StatCard title="Total XP Gained" value={stats.xpGained.toLocaleString()} icon={<Zap size={14} />} valueClassName="text-tertiary" />
+                <StatCard title="Capital Deployed" value={`$${stats.totalCapitalDeployed.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`} icon={<Wallet size={14} />} />
+                <StatCard title="Lifetime Rewards" value={stats.lifetimeRewards.toLocaleString()} icon={<Gift size={14}/>} valueClassName="text-orange-400" />
                 <StatCard title="Total Trades" value={stats.totalTrades} icon={<History size={14} />} />
                 <StatCard 
                     title="Win Rate" 
@@ -99,8 +101,6 @@ const PortfolioStatsDisplay = ({ stats, isLoading, onGenerateReview, isGeneratin
                 />
                 <StatCard title="Best Trade" value={`$${stats.bestTradePnl.toFixed(2)}`} icon={<ArrowUp size={14} />} valueClassName="text-green-400" />
                 <StatCard title="Worst Trade" value={`$${stats.worstTradePnl.toFixed(2)}`} icon={<ArrowDown size={14} />} valueClassName="text-destructive" />
-                <StatCard title="Lifetime Rewards" value={stats.lifetimeRewards.toLocaleString()} icon={<Gift size={14}/>} valueClassName="text-orange-400" />
-                 <StatCard title="Total Capital" value="$100,000" icon={<Wallet size={14} />} valueClassName="text-muted-foreground" />
             </CardContent>
              <CardFooter className="pt-6 flex-col sm:flex-row items-center justify-between gap-4 border-t border-border/20 mt-4">
                 <div className="text-center sm:text-left">

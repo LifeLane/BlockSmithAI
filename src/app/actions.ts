@@ -151,8 +151,10 @@ export interface PortfolioStats {
     totalPnlPercentage: number;
     bestTradePnl: number;
     worstTradePnl: number;
-    lifetimeRewards: number;
-    totalCapitalInvested: number;
+    lifetimeRewards: number; // this is airdropPoints
+    nodesTrained: number;
+    xpGained: number;
+    totalCapitalDeployed: number;
 }
 export type GenerateTradingStrategyOutput = Awaited<ReturnType<typeof genCoreStrategy>> & {
   id: string;
@@ -269,6 +271,15 @@ async function saveSignalToDb(signalData: Omit<GeneratedSignal, 'createdAt' | 'u
     };
     if (!db.signals) db.signals = [];
     db.signals.push(newSignal);
+
+    // --- Gamification: Reward for generating a signal ---
+    const userIndex = db.users.findIndex((u: UserProfile) => u.id === signalData.userId);
+    if (userIndex !== -1) {
+        const NODE_TRAINING_REWARD = 10; // $BSAI
+        db.users[userIndex].airdropPoints += NODE_TRAINING_REWARD;
+    }
+    // ---
+
     await writeDb(db);
 }
 
@@ -406,6 +417,17 @@ export async function logInstantPositionAction(userId: string, strategy: Generat
     };
     if (!db.positions) db.positions = [];
     db.positions.push(newPosition);
+
+    // --- Gamification: Reward for simulating a trade ---
+    const userIndex = db.users.findIndex((u: UserProfile) => u.id === userId);
+    if (userIndex !== -1) {
+        const SIMULATION_XP_REWARD = 25;
+        const SIMULATION_AIRDROP_REWARD = 50;
+        db.users[userIndex].weeklyPoints += SIMULATION_XP_REWARD;
+        db.users[userIndex].airdropPoints += SIMULATION_AIRDROP_REWARD;
+    }
+    // ---
+
     await writeDb(db);
     return { success: true };
 }
@@ -442,6 +464,16 @@ export async function executeCustomSignalAction(signalId: string, userId: string
         db.signals[signalIndex].status = 'EXECUTED';
         db.signals[signalIndex].updatedAt = new Date();
     }
+    
+    // --- Gamification: Reward for simulating a trade ---
+    const userIndex = db.users.findIndex((u: UserProfile) => u.id === userId);
+    if (userIndex !== -1) {
+        const SIMULATION_XP_REWARD = 25;
+        const SIMULATION_AIRDROP_REWARD = 50;
+        db.users[userIndex].weeklyPoints += SIMULATION_XP_REWARD;
+        db.users[userIndex].airdropPoints += SIMULATION_AIRDROP_REWARD;
+    }
+    // ---
     
     await writeDb(db);
     return { success: true };
@@ -491,28 +523,36 @@ export async function fetchPortfolioStatsAction(userId: string): Promise<Portfol
     const user = db.users.find((u: UserProfile) => u.id === userId);
     if (!user) return { error: 'User not found' };
 
-    const trades = (db.positions || []).filter((p: Position) => p.userId === userId && p.status === 'CLOSED');
+    const closedTrades = (db.positions || []).filter((p: Position) => p.userId === userId && p.status === 'CLOSED');
+    const allTrades = (db.positions || []).filter((p: Position) => p.userId === userId);
+    const signals = (db.signals || []).filter((s: GeneratedSignal) => s.userId === userId);
     
-    const totalTrades = trades.length;
+    const totalTrades = closedTrades.length;
+    const nodesTrained = signals.length;
+    const xpGained = user.weeklyPoints;
+    const totalCapitalDeployed = allTrades.reduce((acc: number, t: Position) => acc + (t.entryPrice * t.size), 0);
+    
     if (totalTrades === 0) {
         return {
             totalTrades: 0, winRate: 0, winningTrades: 0, totalPnl: 0,
             totalPnlPercentage: 0, bestTradePnl: 0, worstTradePnl: 0,
-            lifetimeRewards: user.airdropPoints, totalCapitalInvested: 0,
+            lifetimeRewards: user.airdropPoints,
+            nodesTrained, xpGained, totalCapitalDeployed,
         };
     }
 
-    const winningTrades = trades.filter((t: Position) => t.pnl && t.pnl > 0).length;
+    const winningTrades = closedTrades.filter((t: Position) => t.pnl && t.pnl > 0).length;
     const winRate = (winningTrades / totalTrades) * 100;
-    const totalPnl = trades.reduce((acc: number, t: Position) => acc + (t.pnl || 0), 0);
-    const bestTradePnl = Math.max(...trades.map((t: Position) => t.pnl || 0), 0);
-    const worstTradePnl = Math.min(...trades.map((t: Position) => t.pnl || 0), 0);
+    const totalPnl = closedTrades.reduce((acc: number, t: Position) => acc + (t.pnl || 0), 0);
+    const bestTradePnl = Math.max(...closedTrades.map((t: Position) => t.pnl || 0), 0);
+    const worstTradePnl = Math.min(...closedTrades.map((t: Position) => t.pnl || 0), 0);
     
     return {
         totalTrades, winRate, winningTrades, totalPnl,
         totalPnlPercentage: 0, // Simplified for now
         bestTradePnl, worstTradePnl,
-        lifetimeRewards: user.airdropPoints, totalCapitalInvested: 0,
+        lifetimeRewards: user.airdropPoints,
+        nodesTrained, xpGained, totalCapitalDeployed
     };
 }
 
