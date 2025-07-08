@@ -17,17 +17,17 @@ model User {
   username          String
   email             String?
   phone             String?
+  wallet_address    String?
+  wallet_type       String?
   x_handle          String?
   telegram_handle   String?
   youtube_handle    String?
-  wallet_address    String?
-  wallet_type       String?
   status            String   @default("Guest")
   weeklyPoints      Int      @default(0)
   airdropPoints     Int      @default(0)
+  claimedMissions   String[]
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  claimedMissions   String[]
   positions         Position[]
   generated_signals GeneratedSignal[]
   badges            Badge[]
@@ -38,7 +38,6 @@ model User {
 model Position {
   id                  String         @id @default(cuid())
   userId              String
-  user                User           @relation(fields: [userId], references: [id])
   symbol              String
   signalType          SignalType
   status              PositionStatus
@@ -46,8 +45,12 @@ model Position {
   closePrice          Float?
   stopLoss            Float
   takeProfit          Float
-  size                Int            @default(1)
+  size                Float          @default(1)
   pnl                 Float?
+  gainedXp            Int?
+  gainedAirdropPoints Int?
+  gasPaid             Float?
+  blocksTrained       Int?
   openTimestamp       DateTime?
   closeTimestamp      DateTime?
   expirationTimestamp DateTime?
@@ -55,14 +58,12 @@ model Position {
   type                PositionType
   tradingMode         String
   riskProfile         String
-  gpt_confidence_score String
-  sentiment           String
-  gainedXp            Int?
-  gainedAirdropPoints Int?
-  gasPaid             Float?
-  blocksTrained       Int?
+  gpt_confidence_score String?
+  sentiment           String?
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
+  user                User           @relation(fields: [userId], references: [id])
+  GeneratedSignal     GeneratedSignal? @relation(fields: [strategyId], references: [id])
 
   @@map("positions")
 }
@@ -70,7 +71,6 @@ model Position {
 model GeneratedSignal {
   id                  String       @id @default(cuid())
   userId              String
-  user                User         @relation(fields: [userId], references: [id])
   symbol              String
   signal              String
   entry_zone          String
@@ -82,13 +82,17 @@ model GeneratedSignal {
   sentiment           String
   currentThought      String
   shortTermPrediction String
+  disclaimer          String
   type                String
   status              SignalStatus
-  disclaimer          String
   chosenTradingMode   String?
   chosenRiskProfile   String?
+  analysisSummary     String?
+  newsAnalysis        String?
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
+  user                User         @relation(fields: [userId], references: [id])
+  Position            Position[]
 
   @@map("generated_signals")
 }
@@ -99,8 +103,8 @@ model Badge {
   description String
   icon        String
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
 
   @@map("badges")
 }
@@ -110,15 +114,16 @@ enum SignalType {
   SELL
 }
 
+enum PositionType {
+  INSTANT
+  CUSTOM
+}
+
 enum PositionStatus {
   PENDING
   OPEN
   CLOSED
-}
-
-enum PositionType {
-  INSTANT
-  CUSTOM
+  CANCELLED
 }
 
 enum SignalStatus {
