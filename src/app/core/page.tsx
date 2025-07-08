@@ -351,10 +351,15 @@ export default function CoreConsolePage() {
                     {isLimitReached ? (
                         <Button
                             onClick={() => setShowAirdropModal(true)}
-                            className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out glow-button generate-buttons"
+                            className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out glow-button generate-buttons h-auto"
                         >
-                            <Unlock className="mr-2 h-5 w-5" />
-                            Join Network for Unlimited Signals
+                            <div className="flex flex-col items-center">
+                                <div className="flex items-center">
+                                    <Unlock className="mr-2 h-5 w-5" />
+                                    Join for Unlimited Signals
+                                </div>
+                                <span className="text-xs font-normal opacity-80 mt-1">Register for full access.</span>
+                            </div>
                         </Button>
                     ) : (
                         <>
@@ -362,12 +367,17 @@ export default function CoreConsolePage() {
                                 <Button
                                     onClick={() => handleGenerateStrategy({ isCustom: false })}
                                     disabled={isButtonDisabled}
-                                    className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out generate-signal-button generate-buttons"
+                                    className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out generate-signal-button generate-buttons h-auto"
                                 >
-                                    {isLoadingInstant ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                        : isUserLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                        : <Sparkles className="mr-2 h-5 w-5" />}
-                                    {isLoadingInstant ? "SHADOW is Executing..." : isUserLoading ? "Initializing..." : <GlyphScramble text="Instant Signal" />}
+                                     <div className="flex flex-col items-center">
+                                        <div className="flex items-center">
+                                            {isLoadingInstant ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                                : isUserLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                                : <Sparkles className="mr-2 h-5 w-5" />}
+                                            {isLoadingInstant ? "SHADOW is Executing..." : isUserLoading ? "Initializing..." : <GlyphScramble text="Instant Signal" />}
+                                        </div>
+                                        <span className="text-xs font-normal opacity-80 mt-1">Market price, instant execution.</span>
+                                    </div>
                                 </Button>
                                 
                             </div>
@@ -376,21 +386,19 @@ export default function CoreConsolePage() {
                                 <Button
                                     onClick={() => handleGenerateStrategy({ isCustom: true })}
                                     disabled={isButtonDisabled}
-                                    className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out shadow-choice-button generate-buttons"
+                                    className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out shadow-choice-button generate-buttons h-auto"
                                 >
-                                    {isLoadingCustom ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
-                                    {isLoadingCustom ? "SHADOW is Deciding..." : <GlyphScramble text="SHADOW's Signal" />}
+                                    <div className="flex flex-col items-center">
+                                        <div className="flex items-center">
+                                            {isLoadingCustom ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
+                                            {isLoadingCustom ? "SHADOW is Deciding..." : <GlyphScramble text="SHADOW's Signal" />}
+                                        </div>
+                                        <span className="text-xs font-normal opacity-80 mt-1">AI-chosen custom limit order.</span>
+                                    </div>
                                 </Button>
                             </div>
                         </>
                     )}
-                     <div className="flex items-start justify-center gap-3 mt-4 text-muted-foreground text-xs p-3 bg-secondary rounded-lg">
-                        <Lightbulb className="h-5 w-5 text-tertiary flex-shrink-0 mt-0.5" />
-                        <p>
-                            <strong className="text-primary">Instant Signal:</strong> Executes immediately with your selected parameters. <br />
-                            <strong className="text-accent">SHADOW's Signal:</strong> SHADOW autonomously determines the best strategy and provides a custom limit order for you to simulate.
-                        </p>
-                    </div>
                     
                     {currentUser?.status === 'Guest' && (
                         <p className="text-xs text-center text-muted-foreground mt-2">

@@ -54,7 +54,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 
   if (isLoading) {
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-[75px] w-full bg-secondary" />)}
         </div>
     );
@@ -96,7 +96,7 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
   });
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <StatBox 
           title="Current Price"
           icon={<DollarSign size={14} />}
@@ -138,5 +138,3 @@ const MarketDataDisplay: FunctionComponent<MarketDataDisplayProps> = ({
 };
 
 export default MarketDataDisplay;
-
-    
