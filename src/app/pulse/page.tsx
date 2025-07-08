@@ -47,11 +47,11 @@ import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow, isBefore } from 'date-fns';
 
 const StatCard = ({ title, value, subValue, icon, valueClassName }: { title: string; value: React.ReactNode; subValue?: React.ReactNode; icon: React.ReactNode; valueClassName?: string }) => (
-    <div className="flex flex-col items-center justify-center p-3 bg-secondary rounded-lg text-center">
-        <span className="text-xs text-muted-foreground flex items-center gap-1.5">{icon} {title}</span>
-        <div className="mt-1 flex items-baseline gap-1">
-            <span className={`text-lg sm:text-xl font-bold font-mono ${valueClassName || 'text-primary'}`}>{value}</span>
-            {subValue && <span className="text-xs text-muted-foreground font-mono">{subValue}</span>}
+    <div className="flex flex-col items-center justify-center p-3 bg-secondary rounded-lg text-center border border-border/30 h-full">
+        <span className="text-xs text-muted-foreground flex items-center gap-1.5 mb-1">{icon} {title}</span>
+        <div>
+            <p className={cn("text-lg sm:text-xl font-bold font-mono", valueClassName || 'text-primary')}>{value}</p>
+            {subValue && <p className="text-xs text-muted-foreground font-mono mt-0.5 whitespace-nowrap">{subValue}</p>}
         </div>
     </div>
 );
@@ -100,7 +100,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, onGenerateReview, isGeneratin
                     </Tooltip>
                 </TooltipProvider>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <StatCard title="Nodes Trained" value={stats.nodesTrained} icon={<Cpu size={14} />} valueClassName="text-tertiary" />
                 <StatCard title="Total XP Gained" value={stats.xpGained.toLocaleString()} icon={<Zap size={14} />} valueClassName="text-tertiary" />
                 <StatCard title="Lifetime Rewards" value={stats.lifetimeRewards.toLocaleString()} icon={<Gift size={14}/>} valueClassName="text-orange-400" />
@@ -312,7 +312,7 @@ const PositionCard = ({ position, refetchData }: { position: Position, refetchDa
                 </div>
                  <div className="grid grid-cols-2 gap-3 text-xs p-3 bg-background rounded-lg">
                     <PositionInfo label="Sentiment" value={position.sentiment || 'N/A'} icon={<BrainCircuit size={14} />} />
-                    <PositionInfo label="SHADOW Score" value={`${position.gpt_confidence_score || 'N/A'}%`} icon={<Percent size={14} />} />
+                    <PositionInfo label="SHADOW Score" value={`${position.gpt_confidence_score || '0'}%`} icon={<Percent size={14} />} />
                  </div>
 
                 {position.status === 'CLOSED' && (
@@ -546,3 +546,5 @@ export default function PortfolioPage() {
     </>
   );
 }
+
+    
