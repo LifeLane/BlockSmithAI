@@ -8,17 +8,18 @@ import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useClientState } from '@/hooks/use-client-state';
 import { 
-    Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, 
-    ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle, Wallet, 
+    Loader2, Briefcase, AlertTriangle, LogOut, History, DollarSign, Percent, 
+    ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle,
     Activity, BrainCircuit, ShieldAlert, Bot, Hourglass, Trash2, Cpu, Zap, Power,
-    PowerOff, CheckCircle, XCircle, Layers, Bitcoin, Type, BarChart2, Shield, Info, BarChartHorizontal
+    PowerOff, CheckCircle, XCircle, Layers, Bitcoin, Type, BarChart2, Shield, Info, BarChartHorizontal, RefreshCw
 } from 'lucide-react';
 import {
     generatePerformanceReviewAction,
     killSwitchAction,
     closePositionAction,
+    activatePendingPositionAction,
+    fetchPositionsAction,
     type Position,
     type PortfolioStats,
     type PerformanceReviewOutput,
@@ -60,12 +61,10 @@ const PortfolioStatsDisplay = ({ stats, isLoading, onGenerateReview, isGeneratin
                     <CardTitle className="text-lg flex items-center gap-2 text-accent font-headline"><Briefcase /> <GlyphScramble text="Performance Matrix" /></CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex justify-center items-center h-24">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary"/>
-                    </div>
+                    <div className="flex justify-center items-center h-24"> <Loader2 className="h-8 w-8 animate-spin text-primary"/> </div>
                 </CardContent>
             </Card>
-        )
+        );
     }
 
     if (!stats) return null;
@@ -78,43 +77,23 @@ const PortfolioStatsDisplay = ({ stats, isLoading, onGenerateReview, isGeneratin
             <CardHeader className="flex-col sm:flex-row items-start sm:items-center justify-between pb-4">
                 <div className="space-y-1 mb-4 sm:mb-0">
                     <CardTitle className="text-lg flex items-center gap-2 text-accent font-headline"><Briefcase /> <GlyphScramble text="Performance Matrix" /></CardTitle>
-                    <CardDescription>A summary of your <strong className="text-accent">lifetime activity</strong> and rewards.</CardDescription>
+                    <CardDescription>A summary of your <strong className="text-accent">lifetime activity</strong>.</CardDescription>
                 </div>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
                              <Button size="sm" onClick={onGenerateReview} disabled={isGeneratingReview || stats.totalTrades < 3} className="bg-tertiary hover:bg-tertiary/90 text-tertiary-foreground w-full sm:w-auto">
-                                {isGeneratingReview ? <Loader2 className="h-4 w-4 animate-spin"/> : <BrainCircuit className="h-4 w-4 mr-2"/>}
-                                Get SHADOW's Review
+                                {isGeneratingReview ? <Loader2 className="h-4 w-4 animate-spin"/> : <BrainCircuit className="h-4 w-4 mr-2"/>} Get SHADOW's Review
                             </Button>
                         </TooltipTrigger>
-                        {stats.totalTrades < 3 && (
-                            <TooltipContent>
-                                <p>Complete at least 3 trades for a review.</p>
-                            </TooltipContent>
-                        )}
+                        {stats.totalTrades < 3 && <TooltipContent><p>Complete at least 3 trades for a review.</p></TooltipContent>}
                     </Tooltip>
                 </TooltipProvider>
             </CardHeader>
             <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <StatCard title="Nodes Trained" value={stats.nodesTrained} icon={<Cpu size={14} />} valueClassName="text-tertiary" />
-                <StatCard title="Total XP Gained" value={stats.xpGained.toLocaleString()} icon={<Zap size={14} />} valueClassName="text-tertiary" />
-                <StatCard title="Lifetime Rewards" value={stats.lifetimeRewards.toLocaleString()} icon={<Gift size={14}/>} valueClassName="text-orange-400" />
                 <StatCard title="Total Trades" value={stats.totalTrades} icon={<History size={14} />} />
-                <StatCard 
-                    title="Win Rate" 
-                    icon={<Percent size={14} />} 
-                    value={`${stats.winRate.toFixed(1)}%`}
-                    subValue={stats.totalTrades > 0 ? `(${stats.winningTrades} Wins)` : undefined}
-                    valueClassName={winRateColor} 
-                />
-                <StatCard 
-                    title="Total Closed PnL" 
-                    icon={<DollarSign size={14} />} 
-                    value={`$${stats.totalPnl.toFixed(2)}`}
-                    subValue={stats.totalTrades > 0 ? `(${stats.totalPnlPercentage.toFixed(2)}%)` : undefined}
-                    valueClassName={closedPnlColor} 
-                />
+                <StatCard title="Win Rate" icon={<Percent size={14} />} value={`${stats.winRate.toFixed(1)}%`} subValue={stats.totalTrades > 0 ? `(${stats.winningTrades} Wins)` : undefined} valueClassName={winRateColor} />
+                <StatCard title="Total Closed PnL" icon={<DollarSign size={14} />} value={`$${stats.totalPnl.toFixed(2)}`} valueClassName={closedPnlColor} />
                 <StatCard title="Best Trade" value={`$${stats.bestTradePnl.toFixed(2)}`} icon={<ArrowUp size={14} />} valueClassName="text-green-400" />
                 <StatCard title="Worst Trade" value={`$${stats.worstTradePnl.toFixed(2)}`} icon={<ArrowDown size={14} />} valueClassName="text-destructive" />
             </CardContent>
@@ -125,16 +104,12 @@ const PortfolioStatsDisplay = ({ stats, isLoading, onGenerateReview, isGeneratin
                 </div>
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
-                        <Button variant="destructive" className="w-full sm:w-auto" disabled={isKilling}>
-                            <ShieldAlert className="mr-2 h-4 w-4"/> Kill Switch
-                        </Button>
+                        <Button variant="destructive" className="w-full sm:w-auto" disabled={isKilling}> <ShieldAlert className="mr-2 h-4 w-4"/> Kill Switch </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>Activate Kill Switch?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This will immediately close ALL of your currently open positions at the current market price. This action cannot be undone. Are you sure you want to proceed?
-                            </AlertDialogDescription>
+                            <AlertDialogDescription> This will immediately close ALL of your currently open positions at the current market price. This action cannot be undone. </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -158,9 +133,7 @@ const PositionInfo = ({ label, value, icon, valueClassName }: { label: string; v
 
 const RewardInfo = ({ label, value, icon, valueClassName }: { label: string, value: React.ReactNode, icon: React.ReactNode, valueClassName?: string }) => (
     <div className="flex items-center gap-2 p-2 bg-background/50 rounded-md">
-        <div className={cn("text-primary", valueClassName)}>
-            {icon}
-        </div>
+        <div className={cn("text-primary", valueClassName)}> {icon} </div>
         <div>
             <p className="text-xs text-muted-foreground">{label}</p>
             <p className="text-sm font-semibold font-mono">{value}</p>
@@ -168,109 +141,66 @@ const RewardInfo = ({ label, value, icon, valueClassName }: { label: string, val
     </div>
 );
 
-const PositionCard = ({ position, updatePosition, activatePosition }: { position: Position, updatePosition: (id: string, updates: Partial<Position>) => void, activatePosition: (id: string) => void }) => {
+const PositionCard = ({ position, updateLocalPosition }: { position: Position, updateLocalPosition: (position: Position) => void }) => {
     const { user, refetch: refetchUser } = useCurrentUser();
     const [livePrice, setLivePrice] = useState<number | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [timeLeft, setTimeLeft] = useState('');
     const { toast } = useToast();
 
     const isBuy = position.signalType === 'BUY';
 
     useEffect(() => {
         if (position.status !== 'OPEN') return;
-
         const fetchPrice = async () => {
             const result = await fetchMarketDataAction({ symbol: position.symbol });
-            if (!('error' in result) && result.lastPrice) {
-                setLivePrice(parseFloat(result.lastPrice));
-            }
+            if (!('error' in result) && result.lastPrice) setLivePrice(parseFloat(result.lastPrice));
         };
-
         fetchPrice();
         const interval = setInterval(fetchPrice, 15000);
         return () => clearInterval(interval);
     }, [position.status, position.symbol]);
-
-    useEffect(() => {
-        if (position.status !== 'PENDING' || !position.expirationTimestamp) return;
-        const expiration = new Date(position.expirationTimestamp);
-
-        const updateTimer = () => {
-            if (isBefore(new Date(), expiration)) {
-                setTimeLeft(formatDistanceToNow(expiration, { addSuffix: true }));
-            } else {
-                setTimeLeft('Expired');
-                clearInterval(interval);
-            }
-        };
-        updateTimer();
-        const interval = setInterval(updateTimer, 1000);
-        return () => clearInterval(interval);
-    }, [position.status, position.expirationTimestamp]);
 
     const pnl = position.status === 'CLOSED' ? (position.pnl ?? 0)
         : position.status === 'OPEN' && livePrice ? (isBuy ? livePrice - position.entryPrice : position.entryPrice - livePrice) * position.size
         : 0;
     const pnlColor = pnl >= 0 ? 'text-green-400' : 'text-destructive';
 
-    const formatCurrency = (value: number | null | undefined) => {
-        if (value === null || value === undefined) return 'N/A';
-        return `$${value.toFixed(2)}`;
-    }
+    const formatCurrency = (value: number | null | undefined) => value === null || value === undefined ? 'N/A' : `$${value.toFixed(2)}`;
     
     const handleClose = async () => {
-        if (!livePrice) {
-            toast({ title: 'Error', description: 'Could not fetch live price to close position.', variant: 'destructive' });
+        if (!livePrice || !user) {
+            toast({ title: 'Error', description: 'Could not fetch live price or user session.', variant: 'destructive' });
             return;
         }
-        if (!user) return;
-
         setIsProcessing(true);
-        const result = await closePositionAction(user.id, position, livePrice);
+        const result = await closePositionAction(user.id, position.id, livePrice);
         if (result.error) {
             toast({ title: 'Action Failed', description: result.error, variant: 'destructive' });
         } else {
-            updatePosition(position.id, result.updatedPosition);
-            toast({
-                title: 'Position Closed',
-                description: `PnL: ${formatCurrency(result.updatedPosition.pnl)}`,
-            });
-            refetchUser(); // Update points
+            updateLocalPosition(result.updatedPosition);
+            toast({ title: 'Position Closed', description: `PnL: ${formatCurrency(result.updatedPosition.pnl)}` });
+            refetchUser();
         }
         setIsProcessing(false);
     };
 
-    const handleActivate = () => {
+    const handleActivate = async () => {
+        if (!user) return;
         setIsProcessing(true);
-        activatePosition(position.id);
-        toast({ title: 'Position Activated', description: 'Your pending order is now open.' });
+        const result = await activatePendingPositionAction(position.id, user.id);
+        if (result.success) {
+            updateLocalPosition({ ...position, status: 'OPEN', openTimestamp: new Date().toISOString() });
+            toast({ title: 'Position Activated', description: 'Your pending order is now open.' });
+        } else {
+            toast({ title: 'Activation Failed', description: result.error, variant: 'destructive' });
+        }
         setIsProcessing(false);
     }
     
-    const handleCancel = () => {
-        setIsProcessing(true);
-        updatePosition(position.id, { status: 'CLOSED', closeTimestamp: new Date().toISOString(), pnl: 0 });
-        toast({ title: 'Position Canceled', description: 'Your pending order has been removed.' });
-        setIsProcessing(false);
-    }
-
     const statusConfig = {
-        PENDING: {
-            icon: <Hourglass className="h-4 w-4" />,
-            label: 'PENDING',
-            className: 'border-yellow-500/50 text-yellow-400',
-        },
-        OPEN: {
-            icon: <Activity className="h-4 w-4" />,
-            label: 'OPEN',
-            className: 'border-primary/50 text-primary animate-pulse',
-        },
-        CLOSED: {
-            icon: <CheckCircle className="h-4 w-4" />,
-            label: 'CLOSED',
-            className: 'border-muted text-muted-foreground',
-        },
+        PENDING: { icon: <Hourglass className="h-4 w-4" />, label: 'PENDING', className: 'border-yellow-500/50 text-yellow-400' },
+        OPEN: { icon: <Activity className="h-4 w-4" />, label: 'OPEN', className: 'border-primary/50 text-primary animate-pulse' },
+        CLOSED: { icon: <CheckCircle className="h-4 w-4" />, label: 'CLOSED', className: 'border-muted text-muted-foreground' },
     };
     const currentStatus = statusConfig[position.status];
 
@@ -286,9 +216,7 @@ const PositionCard = ({ position, updatePosition, activatePosition }: { position
                         {currentStatus.label === 'CLOSED' ? `Closed ${format(new Date(position.closeTimestamp!), 'PPp')}` : `Created ${format(new Date(position.createdAt), 'PPp')}`}
                     </CardDescription>
                 </div>
-                <Badge variant="outline" className={cn("text-xs font-bold", currentStatus.className)}>
-                    {currentStatus.icon} {currentStatus.label}
-                </Badge>
+                <Badge variant="outline" className={cn("text-xs font-bold", currentStatus.className)}>{currentStatus.icon} {currentStatus.label}</Badge>
             </CardHeader>
             <CardContent>
                 <Tabs defaultValue="details" className="w-full">
@@ -304,7 +232,6 @@ const PositionCard = ({ position, updatePosition, activatePosition }: { position
                             {position.status === 'OPEN' && <PositionInfo label="Current PnL" value={formatCurrency(pnl)} icon={<DollarSign size={14} />} valueClassName={pnlColor} />}
                             {position.status === 'CLOSED' && <PositionInfo label="Final PnL" value={formatCurrency(pnl)} icon={<DollarSign size={14} />} valueClassName={pnlColor} />}
                             {position.status === 'CLOSED' && <PositionInfo label="Close Price" value={formatCurrency(position.closePrice)} icon={<LogOut size={14} />} />}
-                            {position.status === 'PENDING' && <PositionInfo label="Expires" value={timeLeft} icon={<Clock size={14} />} />}
                         </div>
                         {position.status === 'CLOSED' && (
                         <div>
@@ -334,28 +261,17 @@ const PositionCard = ({ position, updatePosition, activatePosition }: { position
             {position.status !== 'CLOSED' && (
                 <CardFooter className="flex gap-2">
                     {position.status === 'PENDING' && (
-                        <>
-                            <Button variant="outline" size="sm" className="w-full" onClick={handleCancel} disabled={isProcessing}>
-                                <XCircle className="mr-2" /> Cancel
-                            </Button>
-                            <Button size="sm" className="w-full glow-button" onClick={handleActivate} disabled={isProcessing}>
-                                <Power className="mr-2"/> Activate
-                            </Button>
-                        </>
+                        <Button size="sm" className="w-full glow-button" onClick={handleActivate} disabled={isProcessing}> <Power className="mr-2"/> Activate </Button>
                     )}
                     {position.status === 'OPEN' && (
                          <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button variant="destructive" size="sm" className="w-full" disabled={isProcessing || !livePrice}>
-                                    <PowerOff className="mr-2"/> Manual Close
-                                </Button>
+                                <Button variant="destructive" size="sm" className="w-full" disabled={isProcessing || !livePrice}> <PowerOff className="mr-2"/> Manual Close </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Confirm Manual Close</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        Are you sure you want to close this position at the current market price of approximately {formatCurrency(livePrice)}? This action is irreversible.
-                                    </AlertDialogDescription>
+                                    <AlertDialogDescription> Close this position at market price of ~{formatCurrency(livePrice)}? This is irreversible. </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -372,56 +288,58 @@ const PositionCard = ({ position, updatePosition, activatePosition }: { position
     );
 }
 
-
 export default function PortfolioPage() {
     const { user: currentUser, isLoading: isUserLoading, error: userError, refetch: refetchUser } = useCurrentUser();
-    const { positions, updatePosition, activatePosition, isLoading: isClientStateLoading } = useClientState();
-
+    const [positions, setPositions] = useState<Position[]>([]);
+    const [isLoadingPositions, setIsLoadingPositions] = useState(true);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [isGeneratingReview, setIsGeneratingReview] = useState(false);
     const [reviewData, setReviewData] = useState<PerformanceReviewOutput | null>(null);
     const [reviewError, setReviewError] = useState<string | null>(null);
     const [isKilling, setIsKilling] = useState(false);
-
     const { toast } = useToast();
 
+    const fetchPositions = useCallback(async () => {
+        if (!currentUser) return;
+        setIsLoadingPositions(true);
+        const result = await fetchPositionsAction(currentUser.id);
+        if (result.error) {
+            toast({ title: 'Error', description: result.error, variant: 'destructive' });
+        } else {
+            setPositions(result.positions);
+        }
+        setIsLoadingPositions(false);
+    }, [currentUser, toast]);
+
+    useEffect(() => {
+        fetchPositions();
+    }, [fetchPositions]);
+
+    const updateLocalPosition = (updatedPosition: Position) => {
+        setPositions(prev => prev.map(p => p.id === updatedPosition.id ? updatedPosition : p));
+    };
+    
     const { openPositions, tradeHistory } = useMemo(() => {
-        const sortedPositions = [...positions].sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         return {
-            openPositions: sortedPositions.filter(p => p.status === 'OPEN' || p.status === 'PENDING'),
-            tradeHistory: sortedPositions.filter(p => p.status === 'CLOSED'),
+            openPositions: positions.filter(p => p.status === 'OPEN' || p.status === 'PENDING'),
+            tradeHistory: positions.filter(p => p.status === 'CLOSED'),
         }
     }, [positions]);
 
     const portfolioStats: PortfolioStats | null = useMemo(() => {
-        if (!currentUser || !tradeHistory) return null;
-        
         const totalTrades = tradeHistory.length;
-        if (totalTrades === 0) {
-            return {
-                totalTrades: 0, winRate: 0, winningTrades: 0, totalPnl: 0,
-                totalPnlPercentage: 0, bestTradePnl: 0, worstTradePnl: 0,
-                lifetimeRewards: currentUser.airdropPoints || 0,
-                nodesTrained: 0, // This info is lost with localStorage approach, can be tracked separately if needed
-                xpGained: currentUser.weeklyPoints || 0,
-            };
-        }
-
-        const winningTrades = tradeHistory.filter((t) => t.pnl && t.pnl > 0).length;
-        const winRate = (winningTrades / totalTrades) * 100;
+        if (totalTrades === 0) return { totalTrades: 0, winRate: 0, winningTrades: 0, totalPnl: 0, bestTradePnl: 0, worstTradePnl: 0 };
+        const winningTrades = tradeHistory.filter(t => t.pnl && t.pnl > 0).length;
         const totalPnl = tradeHistory.reduce((acc, t) => acc + (t.pnl || 0), 0);
-        const bestTradePnl = Math.max(...tradeHistory.map((t) => t.pnl || 0), 0);
-        const worstTradePnl = Math.min(...tradeHistory.map((t) => t.pnl || 0), 0);
-        
         return {
-            totalTrades, winRate, winningTrades, totalPnl,
-            totalPnlPercentage: 0, // Simplified for now
-            bestTradePnl, worstTradePnl,
-            lifetimeRewards: currentUser.airdropPoints || 0,
-            nodesTrained: 0, // This info is lost
-            xpGained: currentUser.weeklyPoints || 0
+            totalTrades,
+            winRate: (winningTrades / totalTrades) * 100,
+            winningTrades,
+            totalPnl,
+            bestTradePnl: Math.max(...tradeHistory.map(t => t.pnl || 0), 0),
+            worstTradePnl: Math.min(...tradeHistory.map(t => t.pnl || 0), 0),
         };
-    }, [tradeHistory, currentUser]);
+    }, [tradeHistory]);
     
     const handleGenerateReview = useCallback(async () => {
         if (!currentUser) return;
@@ -430,115 +348,59 @@ export default function PortfolioPage() {
         setReviewError(null);
         setIsReviewModalOpen(true);
         
-        const serializableHistory = tradeHistory.map(t => ({
-            id: t.id,
-            symbol: t.symbol,
-            signalType: t.signalType,
-            entryPrice: t.entryPrice,
-            closePrice: t.closePrice,
-            pnl: t.pnl,
-            openTimestamp: t.openTimestamp,
-            closeTimestamp: t.closeTimestamp,
-        }));
+        const result = await generatePerformanceReviewAction(currentUser.id, {
+            stats: portfolioStats!,
+            tradeHistory: tradeHistory.map(t => ({...t, closePrice: t.closePrice || 0}))
+        });
         
-        const reviewInput = {
-            stats: {
-                totalTrades: portfolioStats?.totalTrades || 0,
-                winRate: portfolioStats?.winRate || 0,
-                winningTrades: portfolioStats?.winningTrades || 0,
-                totalPnl: portfolioStats?.totalPnl || 0,
-                bestTradePnl: portfolioStats?.bestTradePnl || 0,
-                worstTradePnl: portfolioStats?.worstTradePnl || 0,
-            },
-            tradeHistory: serializableHistory
-        };
-
-        const result = await generatePerformanceReviewAction(currentUser.id, reviewInput);
+        if ('error' in result) setReviewError(result.error);
+        else setReviewData(result);
         
-        if ('error' in result) {
-            setReviewError(result.error);
-        } else {
-            setReviewData(result);
-        }
         setIsGeneratingReview(false);
     }, [currentUser, tradeHistory, portfolioStats]);
 
     const handleKillSwitch = useCallback(async () => {
         if (!currentUser) return;
         setIsKilling(true);
-        const openTrades = openPositions.filter(p => p.status === 'OPEN');
-        if (openTrades.length === 0) {
-            toast({ title: 'No active positions to close.' });
-            setIsKilling(false);
-            return;
+        const result = await killSwitchAction(currentUser.id);
+        if (result.error) {
+            toast({ title: 'Kill Switch Failed', description: result.error, variant: 'destructive' });
+        } else {
+            toast({ title: "Kill Switch Activated", description: `Successfully closed ${result.closedCount} open positions.` });
+            fetchPositions(); // Refetch all positions data
+            refetchUser(); // Refetch user points
         }
-
-        for (const pos of openTrades) {
-            const marketData = await fetchMarketDataAction({symbol: pos.symbol});
-            const closePrice = 'error' in marketData ? pos.entryPrice : parseFloat(marketData.lastPrice);
-            const result = await closePositionAction(currentUser.id, pos, closePrice);
-            if (!result.error) {
-                updatePosition(pos.id, result.updatedPosition);
-            }
-        }
-
-        await refetchUser();
-        toast({
-            title: "Kill Switch Activated",
-            description: `Successfully closed ${openTrades.length} open positions.`,
-        });
         setIsKilling(false);
-    }, [currentUser, toast, openPositions, updatePosition, refetchUser]);
+    }, [currentUser, toast, fetchPositions, refetchUser]);
     
     const renderEmptyState = (title: string, message: string) => (
         <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4 interactive-card">
             <CardHeader>
-                <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">
-                    <Bot className="h-10 w-10 text-primary" />
-                </div>
+                <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit"><Bot className="h-10 w-10 text-primary" /></div>
                 <CardTitle className="mt-4">{title}</CardTitle>
-                <CardDescription className="mt-2 text-base">
-                    {message}
-                </CardDescription>
+                <CardDescription className="mt-2 text-base">{message}</CardDescription>
             </CardHeader>
-            <CardContent>
-                    <Button asChild className="glow-button">
-                        <Link href="/core">
-                        Go to Core Console
-                    </Link>
-                </Button>
-            </CardContent>
+            <CardContent> <Button asChild className="glow-button"> <Link href="/core">Go to Core Console</Link> </Button> </CardContent>
         </Card>
     );
 
     if (isUserLoading) {
-        return (
-            <>
-                <AppHeader />
-                <div className="flex justify-center items-center h-[calc(100vh-8rem)]">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary"/>
-                </div>
-            </>
-        )
+        return ( <> <AppHeader /> <div className="flex justify-center items-center h-[calc(100vh-8rem)]"> <Loader2 className="h-8 w-8 animate-spin text-primary"/> </div> </> );
     }
 
-    if (userError || !currentUser) {
+    if (userError) {
         return (
              <>
                 <AppHeader />
                 <div className="container mx-auto px-4 py-8">
                     <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm border-destructive interactive-card">
                         <CardHeader>
-                            <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
-                                <AlertTriangle className="h-10 w-10 text-destructive" />
-                            </div>
+                            <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit"><AlertTriangle className="h-10 w-10 text-destructive" /></div>
                             <CardTitle className="mt-4 text-destructive">Access Denied</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-base text-destructive-foreground">{userError || "Please visit the Core Console to initialize a user session."}</p>
-                            <Button asChild className="glow-button mt-4">
-                                <Link href="/core">Return to Core</Link>
-                            </Button>
+                            <p className="text-base text-destructive-foreground">{userError}</p>
+                            <Button asChild className="glow-button mt-4"> <Link href="/core">Return to Core</Link> </Button>
                         </CardContent>
                     </Card>
                 </div>
@@ -550,46 +412,25 @@ export default function PortfolioPage() {
     <>
       <AppHeader />
       <div className="container mx-auto px-4 py-8 pb-20">
-        <PortfolioStatsDisplay 
-            stats={portfolioStats} 
-            isLoading={isUserLoading || isClientStateLoading}
-            onGenerateReview={handleGenerateReview}
-            isGeneratingReview={isGeneratingReview}
-            onKillSwitch={handleKillSwitch}
-            isKilling={isKilling}
-        />
+        <PortfolioStatsDisplay stats={portfolioStats} isLoading={isUserLoading || isLoadingPositions} onGenerateReview={handleGenerateReview} isGeneratingReview={isGeneratingReview} onKillSwitch={handleKillSwitch} isKilling={isKilling} />
          <Tabs defaultValue="open" className="mt-4">
             <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="open" className="data-[state=active]:shadow-active-tab-glow">Active Positions ({openPositions.length})</TabsTrigger>
                 <TabsTrigger value="history" className="data-[state=active]:shadow-active-tab-glow">Trade History ({tradeHistory.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="open" className="mt-4 space-y-3">
-                {isClientStateLoading ? (
-                     <div className="flex justify-center items-center h-24"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
-                ) : openPositions.length > 0 ? (
-                    openPositions.map(pos => <PositionCard key={pos.id} position={pos} updatePosition={updatePosition} activatePosition={activatePosition} />)
-                ) : (
-                    renderEmptyState("No Active Positions", "Simulated positions appear here after execution from the Core Console.")
-                )}
+                {isLoadingPositions ? <div className="flex justify-center items-center h-24"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
+                : openPositions.length > 0 ? openPositions.map(pos => <PositionCard key={pos.id} position={pos} updateLocalPosition={updateLocalPosition} />)
+                : renderEmptyState("No Active Positions", "Simulated positions appear here after execution from the Core Console.")}
             </TabsContent>
             <TabsContent value="history" className="mt-4 space-y-3">
-                 {isClientStateLoading ? (
-                     <div className="flex justify-center items-center h-24"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
-                 ) : tradeHistory.length > 0 ? (
-                    tradeHistory.map(pos => <PositionCard key={pos.id} position={pos} updatePosition={updatePosition} activatePosition={activatePosition} />)
-                ) : (
-                    renderEmptyState("No Trade History", "Your closed trades will appear here.")
-                )}
+                 {isLoadingPositions ? <div className="flex justify-center items-center h-24"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
+                 : tradeHistory.length > 0 ? tradeHistory.map(pos => <PositionCard key={pos.id} position={pos} updateLocalPosition={updateLocalPosition} />)
+                : renderEmptyState("No Trade History", "Your closed trades will appear here.")}
             </TabsContent>
         </Tabs>
       </div>
-       <PerformanceReviewModal 
-            isOpen={isReviewModalOpen}
-            onOpenChange={setIsReviewModalOpen}
-            reviewData={reviewData}
-            isLoading={isGeneratingReview}
-            error={reviewError}
-        />
+       <PerformanceReviewModal isOpen={isReviewModalOpen} onOpenChange={setIsReviewModalOpen} reviewData={reviewData} isLoading={isGeneratingReview} error={reviewError} />
     </>
   );
 }
