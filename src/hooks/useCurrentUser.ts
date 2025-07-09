@@ -31,9 +31,36 @@ export const useCurrentUser = () => {
         localStorage.setItem('currentUserId', userProfile.id);
       }
     } catch (e: any) {
-      console.error("Failed to initialize user session:", e);
-      setError("Could not establish a user session. Please try again.");
-      setUser(null); // Clear user on error
+      console.error("Failed to initialize user session, creating offline fallback:", e);
+      setError("Offline Mode: Could not connect to the server. Progress will not be saved.");
+      
+      const guestId = userId || `guest_${Date.now()}`;
+      
+      const fallbackUser: UserProfile = {
+        id: guestId,
+        shadowId: `SHDW-${guestId.substring(guestId.length - 7).toUpperCase()}`,
+        username: `Analyst_${guestId.substring(guestId.length - 6)}`,
+        status: 'Guest',
+        weeklyPoints: 0,
+        airdropPoints: 0,
+        claimedMissions: [],
+        badges: [],
+        email: null,
+        phone: null,
+        wallet_address: null,
+        wallet_type: null,
+        x_handle: null,
+        telegram_handle: null,
+        youtube_handle: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      
+      setUser(fallbackUser);
+
+      if (!userId) {
+        localStorage.setItem('currentUserId', guestId);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -46,7 +73,6 @@ export const useCurrentUser = () => {
 
   const refetch = useCallback(() => {
     const userIdFromStorage = getCurrentUserId();
-    // Just call loadUser again. It will handle loading states.
     loadUser(userIdFromStorage);
   }, [loadUser]);
 

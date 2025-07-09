@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
@@ -89,6 +90,17 @@ export default function SignalsPage() {
     useEffect(() => {
         setIsClientLoaded(true);
     }, []);
+
+    useEffect(() => {
+        if (userError) {
+          toast({
+            title: "Offline Mode",
+            description: userError,
+            variant: "destructive",
+            duration: 900000,
+          });
+        }
+      }, [userError, toast]);
     
     const handleDismiss = useCallback((signalId: string) => {
         setProcessingId(signalId);
@@ -105,23 +117,8 @@ export default function SignalsPage() {
     }, [executeSignal, toast]);
 
     const renderContent = () => {
-        if (isUserLoading || !isClientLoaded) {
+        if (isUserLoading || !isClientLoaded || !user) {
             return <div className="flex justify-center items-center h-64"> <Loader2 className="h-8 w-8 animate-spin text-primary"/> </div>;
-        }
-        
-        if (userError) {
-             return (
-                <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4 border-destructive interactive-card">
-                     <CardHeader>
-                        <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit"><AlertTriangle className="h-10 w-10 text-destructive" /></div>
-                        <CardTitle className="mt-4 text-destructive">Access Denied</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-base text-destructive-foreground">{userError}</p>
-                        <Button asChild className="glow-button mt-4"><Link href="/core">Return to Core</Link></Button>
-                    </CardContent>
-                </Card>
-            );
         }
 
         if (signals.length === 0) {

@@ -149,9 +149,20 @@ export default function ProfilePage() {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
   const [showAirdropModal, setShowAirdropModal] = useState(false);
   const { user: currentUser, isLoading: isUserLoading, error: userError, refetch: refetchUser } = useCurrentUser();
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    if (userError) {
+      toast({
+        title: "Offline Mode",
+        description: userError,
+        variant: "destructive",
+        duration: 900000,
+      });
+    }
+  }, [userError, toast]);
   
   const loadPageData = useCallback(async () => {
     setLoading(true);
@@ -224,7 +235,7 @@ export default function ProfilePage() {
     setSettingsOpen(false);
   };
   
-  if (isUserLoading || loading) {
+  if (isUserLoading || loading || !currentUser) {
     return (
         <>
             <AppHeader />
@@ -233,32 +244,6 @@ export default function ProfilePage() {
             </div>
         </>
     );
-  }
-
-  if (userError || !currentUser) {
-      return (
-         <>
-            <AppHeader />
-             <div className="container mx-auto px-4 py-8 text-center">
-                 <Card className="max-w-lg mx-auto border-destructive interactive-card">
-                    <CardHeader>
-                         <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
-                            <AlertTriangle className="h-10 w-10 text-destructive" />
-                        </div>
-                        <CardTitle className="text-destructive mt-4">{userError ? 'Profile Error' : 'User Not Found'}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground">{userError || "Please visit the Core Console to initialize your session."}</p>
-                         <Button asChild className="glow-button mt-4">
-                             <Link href="/core">
-                                Return to Core
-                            </Link>
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-        </>
-      );
   }
   
   const rankDetails = getRankDetails(currentUser.weeklyPoints || 0);

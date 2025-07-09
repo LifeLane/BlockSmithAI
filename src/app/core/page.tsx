@@ -29,7 +29,6 @@ import { useClientState } from '@/hooks/use-client-state';
 import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
-import { randomUUID } from 'crypto';
 
 type AIStrategyOutput = (Position | GeneratedSignal) & { 
   type: 'INSTANT' | 'CUSTOM';
@@ -84,6 +83,17 @@ export default function CoreConsolePage() {
   const [lastAnalysisDate, setLastAnalysisDate] = useState<string>('');
 
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (userError) {
+      toast({
+        title: "Offline Mode",
+        description: userError,
+        variant: "destructive",
+        duration: 900000,
+      });
+    }
+  }, [userError, toast]);
   
   useEffect(() => {
     if (typeof window === 'undefined' || !currentUser || currentUser.status !== 'Guest') {
@@ -262,33 +272,13 @@ export default function CoreConsolePage() {
   const showResults = aiStrategy || isLoadingCustom || isLoadingInstant || strategyError;
   const isLimitReached = currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES;
 
-  if (isUserLoading) {
+  if (isUserLoading || !currentUser) {
     return (
       <>
         <AppHeader />
         <div className="flex flex-col flex-grow items-center justify-center h-[calc(100vh-140px)]">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
           <p className="mt-4 text-muted-foreground font-semibold">Initializing SHADOW Interface...</p>
-        </div>
-      </>
-    );
-  }
-
-  if (userError) {
-    return (
-      <>
-        <AppHeader />
-        <div className="container mx-auto px-4 py-8 text-center">
-          <Card className="max-w-lg mx-auto border-destructive interactive-card">
-            <CardHeader>
-              <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit"> <AlertTriangle className="h-10 w-10 text-destructive" /> </div>
-              <CardTitle className="text-destructive mt-4">Session Initialization Failed</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">{userError}</p>
-              <Button onClick={() => window.location.reload()} className="mt-4 glow-button"> <RefreshCw className="mr-2 h-4 w-4"/> Retry Connection </Button>
-            </CardContent>
-          </Card>
         </div>
       </>
     );
