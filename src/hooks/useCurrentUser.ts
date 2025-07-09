@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -22,6 +21,11 @@ export const useCurrentUser = () => {
       const userIdFromStorage = getCurrentUserId();
       try {
         const userProfile = await getOrCreateUserAction(userIdFromStorage);
+        
+        if (!userProfile || !userProfile.id) {
+          throw new Error("Received invalid user profile from the server.");
+        }
+        
         setUser(userProfile);
         if (userProfile.id !== userIdFromStorage) {
           localStorage.setItem('currentUserId', userProfile.id);
@@ -54,5 +58,3 @@ export const useCurrentUser = () => {
 
   return { user, isLoading, error, refetch };
 };
-
-    

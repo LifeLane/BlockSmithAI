@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -17,7 +16,6 @@ import {
   generateShadowChoiceStrategyAction,
   type GenerateTradingStrategyOutput,
   type GenerateShadowChoiceStrategyOutput,
-  type GeneratedSignal,
 } from '@/app/actions';
 import { 
     fetchMarketDataAction, 
@@ -27,7 +25,7 @@ import {
 import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Lightbulb, CircleDot } from 'lucide-react';
+import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Lightbulb, CircleDot, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
@@ -66,7 +64,7 @@ export default function CoreConsolePage() {
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
   
-  const { user: currentUser, isLoading: isUserLoading, refetch: refetchUser } = useCurrentUser();
+  const { user: currentUser, isLoading: isUserLoading, error: userError, refetch: refetchUser } = useCurrentUser();
   const router = useRouter();
   
   const [analysisCount, setAnalysisCount] = useState<number>(0);
@@ -150,12 +148,12 @@ export default function CoreConsolePage() {
   }, [toast]);
 
   useEffect(() => {
-    if (symbol) {
+    if (symbol && !isUserLoading) {
       fetchAndSetMarketData(symbol, true);
       const intervalId = setInterval(() => fetchAndSetMarketData(symbol, false), 30000);
       return () => clearInterval(intervalId);
     }
-  }, [symbol, fetchAndSetMarketData]);
+  }, [symbol, fetchAndSetMarketData, isUserLoading]);
 
 
   const handleGenerateStrategy = useCallback(async ({ isCustom }: { isCustom: boolean }) => {
@@ -262,6 +260,43 @@ export default function CoreConsolePage() {
   const isButtonDisabled = isUserLoading || isLoadingInstant || isLoadingCustom || isLoadingSymbols;
   const showResults = aiStrategy || isLoadingCustom || isLoadingInstant || strategyError;
   const isLimitReached = currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES;
+
+  if (isUserLoading) {
+    return (
+      <>
+        <AppHeader />
+        <div className="flex flex-col flex-grow items-center justify-center h-[calc(100vh-140px)]">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="mt-4 text-muted-foreground font-semibold">Initializing SHADOW Interface...</p>
+        </div>
+      </>
+    )
+  }
+
+  if (userError) {
+    return (
+      <>
+        <AppHeader />
+        <div className="container mx-auto px-4 py-8 text-center">
+          <Card className="max-w-lg mx-auto border-destructive interactive-card">
+            <CardHeader>
+              <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
+                <AlertTriangle className="h-10 w-10 text-destructive" />
+              </div>
+              <CardTitle className="text-destructive mt-4">Session Initialization Failed</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">{userError}</p>
+              <Button onClick={() => window.location.reload()} className="mt-4 glow-button">
+                <RefreshCw className="mr-2 h-4 w-4"/>
+                Retry Connection
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </>
+    )
+  }
 
   const renderResults = () => {
     if (isLoadingCustom || isLoadingInstant) {
