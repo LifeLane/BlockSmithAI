@@ -9,26 +9,25 @@ import { Loader2, Bot, BrainCircuit, Play, Trash2, LogIn, ShieldX, Target, Check
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import {
-  dismissCustomSignalAction,
   executeCustomSignalAction,
-  fetchAllGeneratedSignalsAction,
   type GeneratedSignal,
+  type Position,
 } from '@/app/actions';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useClientState } from '@/hooks/use-client-state';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
+import { randomUUID } from 'crypto';
 
 const StatusBadge = ({ status }: { status: GeneratedSignal['status'] }) => {
     const statusMap = {
         PENDING_EXECUTION: { icon: <Hourglass className="h-3 w-3 mr-1.5"/>, text: 'Pending', className: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
         EXECUTED: { icon: <CheckCircle2 className="h-3 w-3 mr-1.5"/>, text: 'Executed', className: 'bg-green-500/10 text-green-400 border-green-500/20' },
         DISMISSED: { icon: <Trash2 className="h-3 w-3 mr-1.5"/>, text: 'Dismissed', className: 'bg-gray-500/10 text-gray-400 border-gray-500/20' },
-        ARCHIVED: { icon: <Archive className="h-3 w-3 mr-1.5"/>, text: 'Archived (Hold)', className: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
-        ERROR: { icon: <AlertCircle className="h-3 w-3 mr-1.5"/>, text: 'Error', className: 'bg-red-500/10 text-red-400 border-red-500/20' },
     };
-    const currentStatus = statusMap[status] || statusMap.ARCHIVED;
+    const currentStatus = statusMap[status] || statusMap.PENDING_EXECUTION;
     return (
         <Badge variant="outline" className={cn("text-xs", currentStatus.className)}>
             {currentStatus.icon} {currentStatus.text}
@@ -36,7 +35,7 @@ const StatusBadge = ({ status }: { status: GeneratedSignal['status'] }) => {
     );
 }
 
-const GeneratedSignalCard = ({ signal, onDismiss, onExecute, isProcessing }: { signal: GeneratedSignal, onDismiss: (id: string) => void, onExecute: (id: string) => void, isProcessing: boolean }) => {
+const GeneratedSignalCard = ({ signal, onDismiss, onExecute, isProcessing }: { signal: GeneratedSignal, onDismiss: (id: string) => void, onExecute: (signal: GeneratedSignal) => void, isProcessing: boolean }) => {
     
     const formatPrice = (priceString?: string | null): string => {
         if (!priceString) return 'N/A';
@@ -92,7 +91,7 @@ const GeneratedSignalCard = ({ signal, onDismiss, onExecute, isProcessing }: { s
                         <Button variant="outline" size="sm" className="w-full" onClick={() => onDismiss(signal.id)} disabled={isProcessing}>
                             {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Trash2 className="h-4 w-4 mr-2"/>} Dismiss
                         </Button>
-                        <Button size="sm" className="w-full glow-button" onClick={() => onExecute(signal.id)} disabled={isProcessing}>
+                        <Button size="sm" className="w-full glow-button" onClick={() => onExecute(signal)} disabled={isProcessing}>
                             {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Play className="h-4 w-4 mr-2"/>} Execute
                         </Button>
                 </CardFooter>
@@ -103,56 +102,71 @@ const GeneratedSignalCard = ({ signal, onDismiss, onExecute, isProcessing }: { s
 
 
 export default function SignalsPage() {
-    const [signals, setSignals] = useState<GeneratedSignal[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);
-    const { user, isLoading: isUserLoading, error: userError } = useCurrentUser();
+    const { user, isLoading: isUserLoading, error: userError, refetch: refetchUser } = useCurrentUser();
+    const { generatedSignals, updateGeneratedSignal, addPosition } = useClientState();
     const { toast } = useToast();
     const router = useRouter();
-
-    const fetchSignals = useCallback(async () => {
-        if(!user?.id) return;
-        setIsLoading(true);
-        const result = await fetchAllGeneratedSignalsAction(user.id);
-        if ('error' in result) {
-            toast({ title: "Error", description: result.error, variant: 'destructive' });
-            setSignals([]);
-        } else {
-            setSignals(result);
-        }
-        setIsLoading(false);
-    }, [user?.id, toast]);
-
-    useEffect(() => {
-        if (user?.id) {
-            fetchSignals();
-        } else if (!isUserLoading) {
-            setIsLoading(false);
-        }
-    }, [user, isUserLoading, fetchSignals]);
     
     const handleDismiss = useCallback(async (signalId: string) => {
-        if (!user) return;
         setProcessingId(signalId);
-        
-        const result = await dismissCustomSignalAction(signalId, user.id);
-        
-        if (result.success) {
-            toast({ title: "Signal Dismissed", description: "This signal will no longer be available for execution." });
-            fetchSignals(); // Refetch signals
-        } else {
-            toast({ title: "Dismissal Failed", description: result.error || "Could not dismiss the signal.", variant: 'destructive' });
-        }
+        updateGeneratedSignal(signalId, { status: 'DISMISSED' });
+        toast({ title: "Signal Dismissed", description: "This signal will no longer be available for execution." });
         setProcessingId(null);
-    }, [user, fetchSignals, toast]);
+    }, [updateGeneratedSignal, toast]);
     
-    const handleExecute = useCallback(async (signalId: string) => {
+    const parsePrice = (priceStr: string | undefined | null): number => {
+        if (!priceStr) return NaN;
+        const cleanedStr = priceStr.replace(/[^0-9.-]/g, ' ');
+        const parts = cleanedStr.split(' ').filter(p => p !== '' && !isNaN(parseFloat(p)));
+        if (parts.length === 0) return NaN;
+        if (parts.length === 1) return parseFloat(parts[0]);
+        const sum = parts.reduce((acc, val) => acc + parseFloat(val), 0);
+        return sum / parts.length;
+    };
+    
+    const handleExecute = useCallback(async (signal: GeneratedSignal) => {
         if (!user) return;
-        setProcessingId(signalId);
+        setProcessingId(signal.id);
         
-        const result = await executeCustomSignalAction(signalId, user.id);
+        const result = await executeCustomSignalAction(user.id);
         
         if (result.success) {
+            // Create a new position on the client
+            const newPosition: Position = {
+                id: `pos_${signal.id}`, // or generate a new UUID
+                userId: user.id,
+                symbol: signal.symbol,
+                signalType: signal.signal,
+                status: 'PENDING',
+                entryPrice: parsePrice(signal.entry_zone),
+                stopLoss: parsePrice(signal.stop_loss),
+                takeProfit: parsePrice(signal.take_profit),
+                size: 1, // default size
+                openTimestamp: null,
+                closeTimestamp: null,
+                pnl: null,
+                gainedXp: null,
+                gainedAirdropPoints: null,
+                gasPaid: null,
+                blocksTrained: null,
+                createdAt: new Date().toISOString(),
+                expirationTimestamp: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                type: 'CUSTOM',
+                tradingMode: signal.chosenTradingMode || 'Custom',
+                riskProfile: signal.chosenRiskProfile || 'Medium',
+                gpt_confidence_score: signal.gpt_confidence_score,
+                sentiment: signal.sentiment,
+                strategyId: signal.id,
+            };
+            addPosition(newPosition);
+
+            // Update the signal status
+            updateGeneratedSignal(signal.id, { status: 'EXECUTED' });
+
+            // Refetch user to update points
+            refetchUser();
+
             toast({
                 title: "Signal Executed",
                 description: "Your pending order has been created. Redirecting to portfolio...",
@@ -162,11 +176,11 @@ export default function SignalsPage() {
             toast({ title: "Execution Failed", description: result.error || "Could not execute the signal.", variant: 'destructive' });
             setProcessingId(null);
         }
-    }, [user, toast, router]);
+    }, [user, toast, router, addPosition, updateGeneratedSignal, refetchUser]);
 
 
     const renderContent = () => {
-        if (isLoading || isUserLoading) {
+        if (isUserLoading) {
             return (
                 <div className="flex justify-center items-center h-64">
                     <Loader2 className="h-8 w-8 animate-spin text-primary"/>
@@ -197,7 +211,7 @@ export default function SignalsPage() {
             );
         }
 
-        if (signals.length === 0) {
+        if (generatedSignals.length === 0) {
              return (
                 <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4 interactive-card">
                      <CardHeader>
@@ -222,7 +236,7 @@ export default function SignalsPage() {
 
         return (
             <div className="space-y-4">
-                {signals.map(signal => (
+                {generatedSignals.map(signal => (
                     <GeneratedSignalCard
                         key={signal.id}
                         signal={signal}
@@ -250,8 +264,8 @@ export default function SignalsPage() {
                         A complete log of all signals generated by <strong className="text-accent">SHADOW</strong>. <strong className="text-primary">Custom signals</strong> that have been executed can be tracked in your Portfolio.
                     </CardDescription>
                 </div>
-                 <Button variant="outline" size="icon" onClick={() => user && fetchSignals()} disabled={isLoading}>
-                    <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+                 <Button variant="outline" size="icon" disabled>
+                    <RefreshCw className={cn("h-4 w-4")} />
                  </Button>
             </CardHeader>
         </Card>

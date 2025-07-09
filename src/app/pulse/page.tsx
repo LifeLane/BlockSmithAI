@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useClientState } from '@/hooks/use-client-state';
 import { 
     Loader2, Briefcase, AlertTriangle, LogOut, Sparkles, History, DollarSign, Percent, 
     ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock, PlayCircle, Wallet, 
@@ -15,14 +16,9 @@ import {
     PowerOff, CheckCircle, XCircle, Layers, Bitcoin, Type, BarChart2, Shield, Info, BarChartHorizontal
 } from 'lucide-react';
 import {
-    fetchPortfolioStatsAction,
     generatePerformanceReviewAction,
     killSwitchAction,
-    fetchPendingAndOpenPositionsAction,
-    fetchTradeHistoryAction,
     closePositionAction,
-    activatePendingPositionAction,
-    cancelPendingPositionAction,
     type Position,
     type PortfolioStats,
     type PerformanceReviewOutput,
@@ -172,7 +168,8 @@ const RewardInfo = ({ label, value, icon, valueClassName }: { label: string, val
     </div>
 );
 
-const PositionCard = ({ position, refetchData }: { position: Position, refetchData: () => void }) => {
+const PositionCard = ({ position, updatePosition, activatePosition }: { position: Position, updatePosition: (id: string, updates: Partial<Position>) => void, activatePosition: (id: string) => void }) => {
+    const { user, refetch: refetchUser } = useCurrentUser();
     const [livePrice, setLivePrice] = useState<number | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [timeLeft, setTimeLeft] = useState('');
@@ -213,7 +210,7 @@ const PositionCard = ({ position, refetchData }: { position: Position, refetchDa
     }, [position.status, position.expirationTimestamp]);
 
     const pnl = position.status === 'CLOSED' ? (position.pnl ?? 0)
-        : position.status === 'OPEN' && livePrice ? (isBuy ? livePrice - position.entryPrice : position.entryPrice - livePrice)
+        : position.status === 'OPEN' && livePrice ? (isBuy ? livePrice - position.entryPrice : position.entryPrice - livePrice) * position.size
         : 0;
     const pnlColor = pnl >= 0 ? 'text-green-400' : 'text-destructive';
 
@@ -222,42 +219,41 @@ const PositionCard = ({ position, refetchData }: { position: Position, refetchDa
         return `$${value.toFixed(2)}`;
     }
     
-    const handleAction = async (action: 'activate' | 'cancel' | 'close') => {
-        setIsProcessing(true);
-        let result: { success?: boolean; error?: string; position?: Position };
-        try {
-            switch (action) {
-                case 'activate':
-                    result = await activatePendingPositionAction(position.id);
-                    break;
-                case 'cancel':
-                    result = await cancelPendingPositionAction(position.id);
-                    break;
-                case 'close':
-                    if (!livePrice) {
-                       toast({ title: 'Error', description: 'Could not fetch live price to close position.', variant: 'destructive' });
-                       setIsProcessing(false);
-                       return;
-                    }
-                    result = await closePositionAction(position.id, livePrice);
-                    break;
-            }
+    const handleClose = async () => {
+        if (!livePrice) {
+            toast({ title: 'Error', description: 'Could not fetch live price to close position.', variant: 'destructive' });
+            return;
+        }
+        if (!user) return;
 
-            if (result.success || result.position) {
-                toast({ 
-                    title: `Position ${action}d successfully.`, 
-                    variant: 'default',
-                    description: action === 'close' ? `PnL: $${result.position?.pnl?.toFixed(2)}` : undefined,
-                });
-                refetchData();
-            } else {
-                toast({ title: 'Action Failed', description: result.error, variant: 'destructive' });
-            }
-        } catch (e: any) {
-            toast({ title: 'An unexpected error occurred.', description: e.message, variant: 'destructive' });
+        setIsProcessing(true);
+        const result = await closePositionAction(user.id, position, livePrice);
+        if (result.error) {
+            toast({ title: 'Action Failed', description: result.error, variant: 'destructive' });
+        } else {
+            updatePosition(position.id, result.updatedPosition);
+            toast({
+                title: 'Position Closed',
+                description: `PnL: ${formatCurrency(result.updatedPosition.pnl)}`,
+            });
+            refetchUser(); // Update points
         }
         setIsProcessing(false);
     };
+
+    const handleActivate = () => {
+        setIsProcessing(true);
+        activatePosition(position.id);
+        toast({ title: 'Position Activated', description: 'Your pending order is now open.' });
+        setIsProcessing(false);
+    }
+    
+    const handleCancel = () => {
+        setIsProcessing(true);
+        updatePosition(position.id, { status: 'CLOSED', closeTimestamp: new Date().toISOString(), pnl: 0 });
+        toast({ title: 'Position Canceled', description: 'Your pending order has been removed.' });
+        setIsProcessing(false);
+    }
 
     const statusConfig = {
         PENDING: {
@@ -339,10 +335,10 @@ const PositionCard = ({ position, refetchData }: { position: Position, refetchDa
                 <CardFooter className="flex gap-2">
                     {position.status === 'PENDING' && (
                         <>
-                            <Button variant="outline" size="sm" className="w-full" onClick={() => handleAction('cancel')} disabled={isProcessing}>
+                            <Button variant="outline" size="sm" className="w-full" onClick={handleCancel} disabled={isProcessing}>
                                 <XCircle className="mr-2" /> Cancel
                             </Button>
-                            <Button size="sm" className="w-full glow-button" onClick={() => handleAction('activate')} disabled={isProcessing}>
+                            <Button size="sm" className="w-full glow-button" onClick={handleActivate} disabled={isProcessing}>
                                 <Power className="mr-2"/> Activate
                             </Button>
                         </>
@@ -363,7 +359,7 @@ const PositionCard = ({ position, refetchData }: { position: Position, refetchDa
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleAction('close')} className="bg-destructive hover:bg-destructive/90">
+                                    <AlertDialogAction onClick={handleClose} className="bg-destructive hover:bg-destructive/90">
                                         {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : "Yes, Close Position"}
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
@@ -378,11 +374,8 @@ const PositionCard = ({ position, refetchData }: { position: Position, refetchDa
 
 
 export default function PortfolioPage() {
-    const { user: currentUser, isLoading: isUserLoading, error: userError } = useCurrentUser();
-    const [portfolioStats, setPortfolioStats] = useState<PortfolioStats | null>(null);
-    const [openPositions, setOpenPositions] = useState<Position[]>([]);
-    const [tradeHistory, setTradeHistory] = useState<Position[]>([]);
-    const [isLoadingData, setIsLoadingData] = useState(true);
+    const { user: currentUser, isLoading: isUserLoading, error: userError, refetch: refetchUser } = useCurrentUser();
+    const { positions, updatePosition, activatePosition, isLoading: isClientStateLoading } = useClientState();
 
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [isGeneratingReview, setIsGeneratingReview] = useState(false);
@@ -391,44 +384,76 @@ export default function PortfolioPage() {
     const [isKilling, setIsKilling] = useState(false);
 
     const { toast } = useToast();
-    
-    const fetchData = useCallback(async (userId: string) => {
-        setIsLoadingData(true);
-        try {
-            const [statsResult, openPositionsResult, historyResult] = await Promise.all([
-                fetchPortfolioStatsAction(userId),
-                fetchPendingAndOpenPositionsAction(userId),
-                fetchTradeHistoryAction(userId),
-            ]);
-            
-            if (!('error' in statsResult)) setPortfolioStats(statsResult);
-            if (Array.isArray(openPositionsResult)) setOpenPositions(openPositionsResult.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-            if (Array.isArray(historyResult)) setTradeHistory(historyResult.sort((a,b) => new Date(b.closeTimestamp || 0).getTime() - new Date(a.closeTimestamp || 0).getTime()));
 
-        } catch (e: any) {
-             console.error("Error in fetching portfolio data:", e);
-             toast({ title: "Data Error", description: "Failed to fetch portfolio data.", variant: "destructive" });
-        } finally {
-            setIsLoadingData(false);
+    const { openPositions, tradeHistory } = useMemo(() => {
+        const sortedPositions = [...positions].sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        return {
+            openPositions: sortedPositions.filter(p => p.status === 'OPEN' || p.status === 'PENDING'),
+            tradeHistory: sortedPositions.filter(p => p.status === 'CLOSED'),
         }
-    }, [toast]);
-    
-    useEffect(() => {
-        if (currentUser?.id) {
-            fetchData(currentUser.id);
-        } else if (!isUserLoading) {
-            setIsLoadingData(false);
-        }
-    }, [currentUser?.id, fetchData, isUserLoading]); 
+    }, [positions]);
 
+    const portfolioStats: PortfolioStats | null = useMemo(() => {
+        if (!currentUser || !tradeHistory) return null;
+        
+        const totalTrades = tradeHistory.length;
+        if (totalTrades === 0) {
+            return {
+                totalTrades: 0, winRate: 0, winningTrades: 0, totalPnl: 0,
+                totalPnlPercentage: 0, bestTradePnl: 0, worstTradePnl: 0,
+                lifetimeRewards: currentUser.airdropPoints || 0,
+                nodesTrained: 0, // This info is lost with localStorage approach, can be tracked separately if needed
+                xpGained: currentUser.weeklyPoints || 0,
+            };
+        }
+
+        const winningTrades = tradeHistory.filter((t) => t.pnl && t.pnl > 0).length;
+        const winRate = (winningTrades / totalTrades) * 100;
+        const totalPnl = tradeHistory.reduce((acc, t) => acc + (t.pnl || 0), 0);
+        const bestTradePnl = Math.max(...tradeHistory.map((t) => t.pnl || 0), 0);
+        const worstTradePnl = Math.min(...tradeHistory.map((t) => t.pnl || 0), 0);
+        
+        return {
+            totalTrades, winRate, winningTrades, totalPnl,
+            totalPnlPercentage: 0, // Simplified for now
+            bestTradePnl, worstTradePnl,
+            lifetimeRewards: currentUser.airdropPoints || 0,
+            nodesTrained: 0, // This info is lost
+            xpGained: currentUser.weeklyPoints || 0
+        };
+    }, [tradeHistory, currentUser]);
+    
     const handleGenerateReview = useCallback(async () => {
         if (!currentUser) return;
         setIsGeneratingReview(true);
         setReviewData(null);
         setReviewError(null);
         setIsReviewModalOpen(true);
+        
+        const serializableHistory = tradeHistory.map(t => ({
+            id: t.id,
+            symbol: t.symbol,
+            signalType: t.signalType,
+            entryPrice: t.entryPrice,
+            closePrice: t.closePrice,
+            pnl: t.pnl,
+            openTimestamp: t.openTimestamp,
+            closeTimestamp: t.closeTimestamp,
+        }));
+        
+        const reviewInput = {
+            stats: {
+                totalTrades: portfolioStats?.totalTrades || 0,
+                winRate: portfolioStats?.winRate || 0,
+                winningTrades: portfolioStats?.winningTrades || 0,
+                totalPnl: portfolioStats?.totalPnl || 0,
+                bestTradePnl: portfolioStats?.bestTradePnl || 0,
+                worstTradePnl: portfolioStats?.worstTradePnl || 0,
+            },
+            tradeHistory: serializableHistory
+        };
 
-        const result = await generatePerformanceReviewAction(currentUser.id);
+        const result = await generatePerformanceReviewAction(currentUser.id, reviewInput);
         
         if ('error' in result) {
             setReviewError(result.error);
@@ -436,22 +461,34 @@ export default function PortfolioPage() {
             setReviewData(result);
         }
         setIsGeneratingReview(false);
-    }, [currentUser]);
+    }, [currentUser, tradeHistory, portfolioStats]);
 
     const handleKillSwitch = useCallback(async () => {
         if (!currentUser) return;
         setIsKilling(true);
-        const result = await killSwitchAction(currentUser.id);
-        toast({
-            title: result.success ? "Kill Switch Activated" : "Kill Switch Failed",
-            description: result.message,
-            variant: result.success ? "default" : "destructive",
-        });
-        if(result.success) {
-            fetchData(currentUser.id); // Refresh data on success
+        const openTrades = openPositions.filter(p => p.status === 'OPEN');
+        if (openTrades.length === 0) {
+            toast({ title: 'No active positions to close.' });
+            setIsKilling(false);
+            return;
         }
+
+        for (const pos of openTrades) {
+            const marketData = await fetchMarketDataAction({symbol: pos.symbol});
+            const closePrice = 'error' in marketData ? pos.entryPrice : parseFloat(marketData.lastPrice);
+            const result = await closePositionAction(currentUser.id, pos, closePrice);
+            if (!result.error) {
+                updatePosition(pos.id, result.updatedPosition);
+            }
+        }
+
+        await refetchUser();
+        toast({
+            title: "Kill Switch Activated",
+            description: `Successfully closed ${openTrades.length} open positions.`,
+        });
         setIsKilling(false);
-    }, [currentUser, toast, fetchData]);
+    }, [currentUser, toast, openPositions, updatePosition, refetchUser]);
     
     const renderEmptyState = (title: string, message: string) => (
         <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4 interactive-card">
@@ -515,7 +552,7 @@ export default function PortfolioPage() {
       <div className="container mx-auto px-4 py-8 pb-20">
         <PortfolioStatsDisplay 
             stats={portfolioStats} 
-            isLoading={isLoadingData}
+            isLoading={isUserLoading || isClientStateLoading}
             onGenerateReview={handleGenerateReview}
             isGeneratingReview={isGeneratingReview}
             onKillSwitch={handleKillSwitch}
@@ -527,19 +564,19 @@ export default function PortfolioPage() {
                 <TabsTrigger value="history" className="data-[state=active]:shadow-active-tab-glow">Trade History ({tradeHistory.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="open" className="mt-4 space-y-3">
-                {isLoadingData && openPositions.length === 0 ? (
+                {isClientStateLoading ? (
                      <div className="flex justify-center items-center h-24"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
                 ) : openPositions.length > 0 ? (
-                    openPositions.map(pos => <PositionCard key={pos.id} position={pos} refetchData={() => fetchData(currentUser.id)} />)
+                    openPositions.map(pos => <PositionCard key={pos.id} position={pos} updatePosition={updatePosition} activatePosition={activatePosition} />)
                 ) : (
                     renderEmptyState("No Active Positions", "Simulated positions appear here after execution from the Core Console.")
                 )}
             </TabsContent>
             <TabsContent value="history" className="mt-4 space-y-3">
-                 {isLoadingData && tradeHistory.length === 0 ? (
+                 {isClientStateLoading ? (
                      <div className="flex justify-center items-center h-24"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
                  ) : tradeHistory.length > 0 ? (
-                    tradeHistory.map(pos => <PositionCard key={pos.id} position={pos} refetchData={() => fetchData(currentUser.id)} />)
+                    tradeHistory.map(pos => <PositionCard key={pos.id} position={pos} updatePosition={updatePosition} activatePosition={activatePosition} />)
                 ) : (
                     renderEmptyState("No Trade History", "Your closed trades will appear here.")
                 )}

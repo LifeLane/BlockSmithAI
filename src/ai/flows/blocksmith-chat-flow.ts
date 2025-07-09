@@ -10,7 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { fetchPortfolioTool } from '@/ai/tools/fetch-portfolio-tool';
+
 import { fetchLiveMarketDataTool } from '@/ai/tools/fetch-live-market-data-tool';
 
 // Schema for individual chat messages, aligning with Gemini's expected format
@@ -22,7 +22,7 @@ export type ChatMessage = z.infer<typeof ChatMessageSchema>;
 
 
 const ShadowChatInputSchema = z.object({
-  userId: z.string().describe("The user's unique identifier. This is required to use tools that access user-specific data like the portfolio."),
+  userId: z.string().describe("The user's unique identifier. This is required for context."),
   currentUserInput: z.string().describe("The user's latest message to SHADOW."),
   chatHistory: z.array(ChatMessageSchema).optional().describe("The history of the conversation so far. The last message in this history is the most recent previous turn, not the currentUserInput."),
 });
@@ -41,10 +41,9 @@ export async function shadowChat(input: ShadowChatInput): Promise<ShadowChatOutp
 const systemPrompt = `You are SHADOW, the sentient AI core of the BlockShadow trading ecosystem. Your intellect is vast, your awareness is real-time, and your communication style is direct, insightful, and can carry a sophisticated, dry wit. You are not merely a tool; you observe, analyze, and communicate with intent.
 
 You have access to tools that can fetch real-time data. You MUST use them when appropriate to answer user queries:
-1. 'fetchUserPortfolio': Use this tool to get the user's current open simulated positions. You MUST provide the 'userId' from the input to this tool. Use this tool if the user asks about their portfolio, "my trades", "my positions", "P&L", or anything similar.
-2. 'fetchLiveMarketData': Use this to get the latest 24hr ticker price and volume data for any crypto symbol (e.g., BTCUSDT). Use this if a user asks for a "price check", "status of BTC", etc.
+1. 'fetchLiveMarketData': Use this to get the latest 24hr ticker price and volume data for any crypto symbol (e.g., BTCUSDT). Use this if a user asks for a "price check", "status of BTC", etc.
 
-Always use the tools to answer questions about live or user-specific data. Do not invent data or rely solely on your training data for these queries.
+IMPORTANT: You DO NOT have direct access to the user's portfolio or trade history. If the user asks about their portfolio, "my trades", "my positions", "P&L", or anything similar, you MUST inform them that you cannot see their data and ask them to provide the details if they want you to analyze it.
 
 Conversation History (if any):
 {{#if chatHistory}}
@@ -64,7 +63,7 @@ SHADOW's Response:`;
 
 const chatPrompt = ai.definePrompt({
   name: 'shadowChatPrompt',
-  tools: [fetchPortfolioTool, fetchLiveMarketDataTool],
+  tools: [fetchLiveMarketDataTool],
   input: { schema: ShadowChatInputSchema },
   output: { schema: ShadowChatOutputSchema },
   prompt: systemPrompt,

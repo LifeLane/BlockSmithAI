@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -25,6 +26,7 @@ import {
 import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useClientState } from '@/hooks/use-client-state';
 import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Lightbulb, CircleDot, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -71,6 +73,7 @@ export default function CoreConsolePage() {
   const [lastAnalysisDate, setLastAnalysisDate] = useState<string>('');
 
   const { toast } = useToast();
+  const { addPosition, addGeneratedSignal } = useClientState();
   
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -230,21 +233,24 @@ export default function CoreConsolePage() {
         setAiStrategy(result as AIStrategyOutput);
         
         if (result.type === 'INSTANT') {
+            addPosition(result as GenerateTradingStrategyOutput);
             toast({
                 title: <span className="text-accent">Instant Signal Executed!</span>,
                 description: `Your instant trade for ${result.symbol} has been logged. Review the parameters below.`,
             });
         } else {
+            addGeneratedSignal(result as GenerateShadowChoiceStrategyOutput);
             toast({
                 title: <span className="text-accent">Custom Signal Generated!</span>,
                 description: `Your custom signal for ${result.symbol} is ready to be simulated.`,
             });
         }
+        refetchUser(); // refetch user to update points
     }
     
     if (isCustom) setIsLoadingCustom(false);
     else setIsLoadingInstant(false);
-  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast, router]);
+  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast, addPosition, addGeneratedSignal, refetchUser]);
 
 
   const handleToggleChat = () => setIsChatOpen(prev => !prev);
