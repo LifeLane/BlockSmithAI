@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { getOrCreateUserAction, fetchCurrentUserJson, type UserProfile } from '@/app/actions';
+import { getOrCreateUserAction, type UserProfile } from '@/app/actions';
 
 const getCurrentUserId = (): string | null => {
   if (typeof window !== 'undefined') {
@@ -16,6 +17,11 @@ export const useCurrentUser = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchUser = useCallback(async () => {
+      // Don't refetch if we already have a user
+      if (user) {
+          setIsLoading(false);
+          return;
+      }
       setIsLoading(true);
       setError(null);
       const userIdFromStorage = getCurrentUserId();
@@ -36,15 +42,31 @@ export const useCurrentUser = () => {
       } finally {
         setIsLoading(false);
       }
-  }, []);
+  }, [user]); // Add user to dependency array
 
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
 
   const refetch = useCallback(async () => {
-    await fetchUser();
-  }, [fetchUser]);
+    // Force a refetch by clearing the user state first
+    setUser(null);
+    setIsLoading(true);
+    
+    const userIdFromStorage = getCurrentUserId();
+     try {
+        const userProfile = await getOrCreateUserAction(userIdFromStorage);
+        if (!userProfile || !userProfile.id) throw new Error("Received invalid user profile from server.");
+        setUser(userProfile);
+      } catch (e: any) {
+        console.error("Failed to refetch user session:", e);
+        setError("Could not re-establish user session. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+  }, []);
 
   return { user, isLoading, error, refetch };
 };
+
+    

@@ -8,17 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Bot, BrainCircuit, Play, Trash2, LogIn, ShieldX, Target, CheckCircle2, Hourglass, RefreshCw, AlertTriangle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
-import {
-  executeCustomSignalAction,
-  dismissSignalAction,
-  fetchGeneratedSignalsAction,
-  type GeneratedSignal,
-} from '@/app/actions';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useClientState, type GeneratedSignal, type Position } from '@/hooks/use-client-state';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { useRouter } from 'next/navigation';
 
 const StatusBadge = ({ status }: { status: GeneratedSignal['status'] }) => {
     const statusMap = {
@@ -29,6 +23,16 @@ const StatusBadge = ({ status }: { status: GeneratedSignal['status'] }) => {
     const currentStatus = statusMap[status] || statusMap.PENDING_EXECUTION;
     return <Badge variant="outline" className={cn("text-xs", currentStatus.className)}> {currentStatus.icon} {currentStatus.text} </Badge>;
 }
+
+const parsePrice = (priceStr: string | undefined | null): number => {
+    if (!priceStr) return NaN;
+    const cleanedStr = priceString.replace(/[^0-9.-]/g, ' ');
+    const parts = cleanedStr.split(' ').filter(p => p !== '' && !isNaN(parseFloat(p)));
+    if (parts.length === 0) return NaN;
+    if (parts.length === 1) return parseFloat(parts[0]);
+    const sum = parts.reduce((acc, val) => acc + parseFloat(val), 0);
+    return sum / parts.length;
+};
 
 const GeneratedSignalCard = ({ signal, onDismiss, onExecute, isProcessing }: { signal: GeneratedSignal, onDismiss: (id: string) => void, onExecute: (signal: GeneratedSignal) => void, isProcessing: boolean }) => {
     const formatPrice = (priceString?: string | null): string => {
@@ -78,54 +82,31 @@ const GeneratedSignalCard = ({ signal, onDismiss, onExecute, isProcessing }: { s
 
 export default function SignalsPage() {
     const [processingId, setProcessingId] = useState<string | null>(null);
-    const { user, isLoading: isUserLoading, error: userError, refetch: refetchUser } = useCurrentUser();
-    const [signals, setSignals] = useState<GeneratedSignal[]>([]);
-    const [isLoadingSignals, setIsLoadingSignals] = useState(true);
+    const { user, isLoading: isUserLoading, error: userError } = useCurrentUser();
+    const { signals, addPosition, updateSignal, dismissSignal, executeSignal } = useClientState();
+    const [isClientLoaded, setIsClientLoaded] = useState(false);
     const { toast } = useToast();
-    const router = useRouter();
-
-    const fetchSignals = useCallback(async () => {
-        if (!user) return;
-        setIsLoadingSignals(true);
-        const result = await fetchGeneratedSignalsAction(user.id);
-        if (result.error) {
-            toast({ title: "Error", description: "Failed to load signals.", variant: 'destructive' });
-        } else {
-            setSignals(result.signals);
-        }
-        setIsLoadingSignals(false);
-    }, [user, toast]);
-
-    useEffect(() => {
-        fetchSignals();
-    }, [fetchSignals]);
     
-    const handleDismiss = useCallback(async (signalId: string) => {
-        if (!user) return;
+    useEffect(() => {
+        setIsClientLoaded(true);
+    }, []);
+    
+    const handleDismiss = useCallback((signalId: string) => {
         setProcessingId(signalId);
-        await dismissSignalAction(signalId, user.id);
-        setSignals(prev => prev.map(s => s.id === signalId ? { ...s, status: 'DISMISSED' } : s));
+        dismissSignal(signalId);
         toast({ title: "Signal Dismissed" });
         setProcessingId(null);
-    }, [user, toast]);
+    }, [dismissSignal, toast]);
     
-    const handleExecute = useCallback(async (signal: GeneratedSignal) => {
-        if (!user) return;
+    const handleExecute = useCallback((signal: GeneratedSignal) => {
         setProcessingId(signal.id);
-        const result = await executeCustomSignalAction(signal.id, user.id);
-        
-        if (result.error) {
-            toast({ title: "Execution Failed", description: result.error, variant: 'destructive' });
-            setProcessingId(null);
-        } else {
-            refetchUser();
-            toast({ title: "Signal Executed", description: "Your pending order has been created. Redirecting...", });
-            router.push('/pulse');
-        }
-    }, [user, toast, router, refetchUser]);
+        executeSignal(signal.id);
+        toast({ title: "Signal Executed", description: "Your pending order has been created. Check your portfolio.", });
+        setProcessingId(null);
+    }, [executeSignal, toast]);
 
     const renderContent = () => {
-        if (isUserLoading || isLoadingSignals) {
+        if (isUserLoading || !isClientLoaded) {
             return <div className="flex justify-center items-center h-64"> <Loader2 className="h-8 w-8 animate-spin text-primary"/> </div>;
         }
         
@@ -192,7 +173,7 @@ export default function SignalsPage() {
                     <CardTitle className="flex items-center text-lg text-primary"> <BrainCircuit className="mr-3 h-5 w-5"/> <GlyphScramble text="Signal Log" /> </CardTitle>
                     <CardDescription> A log of signals generated by <strong className="text-accent">SHADOW</strong>. Executed signals become positions in your Portfolio. </CardDescription>
                 </div>
-                 <Button variant="outline" size="icon" onClick={fetchSignals} disabled={isLoadingSignals}> <RefreshCw className={cn("h-4 w-4", isLoadingSignals && "animate-spin")} /> </Button>
+                 <Button variant="outline" size="icon" onClick={() => window.location.reload()} disabled={!isClientLoaded}> <RefreshCw className={cn("h-4 w-4", !isClientLoaded && "animate-spin")} /> </Button>
             </CardHeader>
         </Card>
         {renderContent()}
@@ -200,3 +181,5 @@ export default function SignalsPage() {
     </>
   );
 }
+
+    
