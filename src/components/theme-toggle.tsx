@@ -5,7 +5,6 @@ import { Paintbrush } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 const THEMES = [
   { value: "dark", label: "Default Dark" },
@@ -24,9 +23,13 @@ export function ThemeToggle() {
     setMounted(true)
   }, [])
 
-  // Render nothing on the server and on the initial client render to prevent hydration mismatch
   if (!mounted) {
-    return null
+    return (
+      <Button variant="ghost" size="icon" disabled>
+        <Paintbrush className="h-[1.2rem] w-[1.2rem]" />
+        <span className="sr-only">Toggle theme</span>
+      </Button>
+    )
   }
 
   const handleToggle = () => {
@@ -34,20 +37,11 @@ export function ThemeToggle() {
     const nextIndex = (currentIndex + 1) % THEMES.length;
     setTheme(THEMES[nextIndex].value);
   };
-  
-  const currentThemeLabel = THEMES.find(t => t.value === theme)?.label || "Change Theme";
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button variant="ghost" size="icon" onClick={handleToggle}>
-          <Paintbrush className="h-[1.2rem] w-[1.2rem]" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p>Switch Theme ({currentThemeLabel})</p>
-      </TooltipContent>
-    </Tooltip>
+    <Button variant="ghost" size="icon" onClick={handleToggle}>
+      <Paintbrush className="h-[1.2rem] w-[1.2rem]" />
+      <span className="sr-only">Toggle theme</span>
+    </Button>
   )
 }
