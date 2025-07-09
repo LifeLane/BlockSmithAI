@@ -1,4 +1,3 @@
-
 'use client';
 import { useState } from 'react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
@@ -6,8 +5,9 @@ import { useClientState } from '@/hooks/use-client-state';
 import { syncClientStateAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Wifi, WifiOff, Loader2, UserCheck } from 'lucide-react';
+import { WifiOff, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 const ConnectionStatus = () => {
     const { user, connectionStatus, refetchUser, isLoading: isUserLoading } = useCurrentUser();
@@ -20,53 +20,59 @@ const ConnectionStatus = () => {
         if (!user || user.status === 'Guest' || !isInitialized) return;
 
         setIsSyncing(true);
-        toast({ title: "Syncing Progress...", description: "Attempting to sync your local data with the server." });
-        
         const result = await syncClientStateAction(user.id, { positions, signals });
         
         if (result.error) {
-            toast({ title: "Sync Failed", description: result.error, variant: 'destructive' });
+            toast({ title: "Connection Failed", description: result.error, variant: 'destructive' });
         } else {
-            toast({ title: "Sync Successful!", description: "Your progress has been saved online." });
+            toast({ title: "Connection Successful!", description: "Your progress has been synced to the Mainnet." });
             await refetchUser();
         }
         setIsSyncing(false);
     };
     
-    // Hide component if user is loading, or if they are online
-    if (isUserLoading || connectionStatus === 'online') {
+    // Don't render anything if we're still loading or if the user is online and registered.
+    if (isUserLoading || !isInitialized || (connectionStatus === 'online' && user?.status !== 'Guest')) {
         return null; 
     }
     
-    // Also hide if the client state hasn't been loaded from local storage yet
-    if (!isInitialized || !user) {
-        return null;
+    const isGuest = user?.status === 'Guest';
+
+    let icon = <WifiOff className="h-5 w-5 text-destructive animate-pulse" />;
+    let text = 'Mainnet Offline';
+    let buttonText: React.ReactNode = 'Connect to Mainnet';
+    let buttonAction: () => void = handleSync;
+
+    if (isGuest) {
+        buttonText = 'Register to Connect';
+        buttonAction = () => router.push('/profile');
+    }
+    
+    if (isSyncing && !isGuest) {
+        icon = <Loader2 className="h-5 w-5 text-destructive animate-spin" />;
+        text = 'Connecting...';
+        buttonText = 'Connecting...';
     }
 
-    const isGuest = user.status === 'Guest';
-    const message = isGuest ? "You are in Guest Mode. Progress is local." : "You are offline. Progress is not being saved online.";
-    const buttonText = isGuest ? "Register to Save" : "Sync Now";
-
     return (
-        <div className="fixed top-0 left-0 right-0 h-12 bg-destructive/90 border-b border-destructive/50 z-[200] flex items-center justify-center px-4 shadow-lg text-destructive-foreground">
-            <div className="flex items-center gap-3 text-sm">
-                {isSyncing ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                ) : isGuest ? (
-                    <UserCheck className="h-5 w-5" />
-                ) : (
-                    <WifiOff className="h-5 w-5" />
-                )}
-                <span className="font-semibold">{message}</span>
-                <Button 
-                    size="sm" 
-                    className="bg-background text-foreground hover:bg-background/80"
-                    onClick={isGuest ? () => router.push('/profile') : handleSync}
-                    disabled={isSyncing}
-                >
-                    {isSyncing ? 'Syncing...' : buttonText}
-                </Button>
+        <div className={cn(
+            "fixed bottom-4 left-1/2 -translate-x-1/2 z-[200] w-full max-w-sm sm:max-w-md",
+            "rounded-xl border bg-card/80 p-3 shadow-2xl shadow-black/30 backdrop-blur-xl",
+            "flex items-center justify-between gap-4 transition-all",
+            "border-destructive/50"
+        )}>
+            <div className="flex items-center gap-3">
+                {icon}
+                <span className="text-sm font-semibold text-foreground">{text}</span>
             </div>
+            <Button 
+                size="sm" 
+                className="bg-primary/10 hover:bg-primary/20 shrink-0 border border-primary/20 text-sm font-bold text-primary-foreground"
+                onClick={buttonAction}
+                disabled={isSyncing}
+            >
+                {buttonText}
+            </Button>
         </div>
     );
 };
