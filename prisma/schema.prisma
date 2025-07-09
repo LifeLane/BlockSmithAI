@@ -1,41 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
 
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
 model User {
-  id                String    @id @default(uuid())
-  username          String    @unique
-  shadowId          String    @unique
+  id                String    @id @default(cuid())
+  shadowId          String    @unique @default(cuid())
+  username          String    @default("Guest Analyst")
+  status            String?
   weeklyPoints      Int       @default(0)
   airdropPoints     Int       @default(0)
-  status            String    @default("Guest") // Guest, Registered
   claimedMissions   String[]  @default([])
-  email             String?
+  email             String?   @unique
   phone             String?
   wallet_address    String?
   wallet_type       String?
   x_handle          String?
   telegram_handle   String?
   youtube_handle    String?
+
+  badges            Badge[]
+
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
-  badges            Badge[]
 }
 
 model Badge {
-  id          String   @id @default(uuid())
+  id          String   @id @default(cuid())
   name        String
   description String
   icon        String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String
 }
