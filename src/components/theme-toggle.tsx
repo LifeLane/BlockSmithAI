@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -17,7 +18,20 @@ const THEMES = [
 ]
 
 export function ThemeToggle() {
+  const [mounted, setMounted] = React.useState(false)
   const { setTheme, theme } = useTheme()
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <Button variant="ghost" size="icon" disabled>
+        <Paintbrush className="h-[1.2rem] w-[1.2rem]" />
+      </Button>
+    )
+  }
 
   const handleToggle = () => {
     const currentIndex = THEMES.findIndex((t) => t.value === theme);
