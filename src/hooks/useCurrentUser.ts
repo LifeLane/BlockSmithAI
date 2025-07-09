@@ -16,57 +16,39 @@ export const useCurrentUser = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUser = useCallback(async () => {
-      // Don't refetch if we already have a user
-      if (user) {
-          setIsLoading(false);
-          return;
+  const loadUser = useCallback(async (userId: string | null) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const userProfile = await getOrCreateUserAction(userId);
+
+      if (!userProfile || !userProfile.id) {
+        throw new Error("Received invalid user profile from the server.");
       }
-      setIsLoading(true);
-      setError(null);
-      const userIdFromStorage = getCurrentUserId();
-      try {
-        const userProfile = await getOrCreateUserAction(userIdFromStorage);
-        
-        if (!userProfile || !userProfile.id) {
-          throw new Error("Received invalid user profile from the server.");
-        }
-        
-        setUser(userProfile);
-        if (userProfile.id !== userIdFromStorage) {
-          localStorage.setItem('currentUserId', userProfile.id);
-        }
-      } catch (e: any) {
-        console.error("Failed to initialize user session:", e);
-        setError("Could not establish a user session. Please try again.");
-      } finally {
-        setIsLoading(false);
+
+      setUser(userProfile);
+      if (userProfile.id !== userId) {
+        localStorage.setItem('currentUserId', userProfile.id);
       }
-  }, [user]); // Add user to dependency array
+    } catch (e: any) {
+      console.error("Failed to initialize user session:", e);
+      setError("Could not establish a user session. Please try again.");
+      setUser(null); // Clear user on error
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
-
-  const refetch = useCallback(async () => {
-    // Force a refetch by clearing the user state first
-    setUser(null);
-    setIsLoading(true);
-    
     const userIdFromStorage = getCurrentUserId();
-     try {
-        const userProfile = await getOrCreateUserAction(userIdFromStorage);
-        if (!userProfile || !userProfile.id) throw new Error("Received invalid user profile from server.");
-        setUser(userProfile);
-      } catch (e: any) {
-        console.error("Failed to refetch user session:", e);
-        setError("Could not re-establish user session. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-  }, []);
+    loadUser(userIdFromStorage);
+  }, [loadUser]);
+
+  const refetch = useCallback(() => {
+    const userIdFromStorage = getCurrentUserId();
+    // Just call loadUser again. It will handle loading states.
+    loadUser(userIdFromStorage);
+  }, [loadUser]);
 
   return { user, isLoading, error, refetch };
 };
-
-    
