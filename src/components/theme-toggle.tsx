@@ -24,12 +24,9 @@ export function ThemeToggle() {
     setMounted(true)
   }, [])
 
+  // Render nothing on the server and on the initial client render to prevent hydration mismatch
   if (!mounted) {
-    return (
-      <Button variant="ghost" size="icon" disabled>
-        <Paintbrush className="h-[1.2rem] w-[1.2rem]" />
-      </Button>
-    )
+    return null
   }
 
   const handleToggle = () => {
