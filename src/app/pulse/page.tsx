@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
@@ -360,7 +359,7 @@ export default function PortfolioPage() {
                 <CardTitle className="mt-4">{title}</CardTitle>
                 <CardDescription className="mt-2 text-base">{message}</CardDescription>
             </CardHeader>
-            <CardContent> <Button asChild className="glow-button"> <Link href="/core">Go to Core Console</Link> </Button> </CardContent>
+            <CardContent><Button asChild className="glow-button"><Link href="/core">Go to Core Console</Link></Button></CardContent>
         </Card>
     );
 
@@ -380,7 +379,7 @@ export default function PortfolioPage() {
                         </CardHeader>
                         <CardContent>
                             <p className="text-base text-destructive-foreground">{userError}</p>
-                            <Button asChild className="glow-button mt-4"> <Link href="/core">Return to Core</Link> </Button>
+                            <Button asChild className="glow-button mt-4"><Link href="/core">Return to Core</Link></Button>
                         </CardContent>
                     </Card>
                 </div>
@@ -420,5 +419,3 @@ export default function PortfolioPage() {
     </>
   );
 }
-
-    

@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
@@ -26,7 +25,7 @@ const StatusBadge = ({ status }: { status: GeneratedSignal['status'] }) => {
 
 const parsePrice = (priceStr: string | undefined | null): number => {
     if (!priceStr) return NaN;
-    const cleanedStr = priceString.replace(/[^0-9.-]/g, ' ');
+    const cleanedStr = priceStr.replace(/[^0-9.-]/g, ' ');
     const parts = cleanedStr.split(' ').filter(p => p !== '' && !isNaN(parseFloat(p)));
     if (parts.length === 0) return NaN;
     if (parts.length === 1) return parseFloat(parts[0]);
@@ -119,7 +118,7 @@ export default function SignalsPage() {
                     </CardHeader>
                     <CardContent>
                         <p className="text-base text-destructive-foreground">{userError}</p>
-                        <Button asChild className="glow-button mt-4"> <Link href="/core">Return to Core</Link> </Button>
+                        <Button asChild className="glow-button mt-4"><Link href="/core">Return to Core</Link></Button>
                     </CardContent>
                 </Card>
             );
@@ -133,7 +132,7 @@ export default function SignalsPage() {
                         <CardTitle className="mt-4">No Generated Signals</CardTitle>
                         <CardDescription className="mt-2 text-base"> Generate a signal from the <strong className="text-primary">Core Console</strong> to see it here. </CardDescription>
                     </CardHeader>
-                    <CardContent> <Button asChild className="glow-button"> <Link href="/core"> Go to Core Console </Link> </Button> </CardContent>
+                    <CardContent><Button asChild className="glow-button"><Link href="/core">Go to Core Console</Link></Button></CardContent>
                 </Card>
             );
         }
@@ -181,5 +180,3 @@ export default function SignalsPage() {
     </>
   );
 }
-
-    
