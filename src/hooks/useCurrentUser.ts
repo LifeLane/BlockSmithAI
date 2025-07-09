@@ -43,17 +43,7 @@ export const useCurrentUser = () => {
   }, [fetchUser]);
 
   const refetch = useCallback(async () => {
-    const userId = getCurrentUserId();
-    if (userId) {
-        setIsLoading(true);
-        const userProfile = await fetchCurrentUserJson(userId);
-        if (userProfile) {
-            setUser(userProfile);
-        }
-        setIsLoading(false);
-    } else {
-        await fetchUser();
-    }
+    await fetchUser();
   }, [fetchUser]);
 
   return { user, isLoading, error, refetch };

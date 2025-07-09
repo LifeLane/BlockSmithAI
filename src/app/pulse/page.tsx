@@ -213,7 +213,7 @@ const PositionCard = ({ position, refetchData }: { position: Position, refetchDa
     }, [position.status, position.expirationTimestamp]);
 
     const pnl = position.status === 'CLOSED' ? (position.pnl ?? 0)
-        : position.status === 'OPEN' && livePrice ? (isBuy ? livePrice - position.entryPrice : position.entryPrice - livePrice) * position.size
+        : position.status === 'OPEN' && livePrice ? (isBuy ? livePrice - position.entryPrice : position.entryPrice - livePrice)
         : 0;
     const pnlColor = pnl >= 0 ? 'text-green-400' : 'text-destructive';
 
@@ -416,8 +416,10 @@ export default function PortfolioPage() {
     useEffect(() => {
         if (currentUser?.id) {
             fetchData(currentUser.id);
+        } else if (!isUserLoading) {
+            setIsLoadingData(false);
         }
-    }, [currentUser?.id, fetchData]); 
+    }, [currentUser?.id, fetchData, isUserLoading]); 
 
     const handleGenerateReview = useCallback(async () => {
         if (!currentUser) return;

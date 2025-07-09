@@ -171,8 +171,10 @@ export default function ProfilePage() {
     if (currentUser) {
       setUsername(currentUser.username);
       loadPageData();
+    } else if (!isUserLoading) {
+        setLoading(false);
     }
-  }, [currentUser, loadPageData]);
+  }, [currentUser, loadPageData, isUserLoading]);
 
   const handleClaim = async (missionId: string) => {
       if (!currentUser) return;
@@ -222,7 +224,7 @@ export default function ProfilePage() {
     setSettingsOpen(false);
   };
   
-  if (isUserLoading || (loading && !currentUser)) {
+  if (isUserLoading || loading) {
     return (
         <>
             <AppHeader />
@@ -247,9 +249,9 @@ export default function ProfilePage() {
                     </CardHeader>
                     <CardContent>
                         <p className="text-muted-foreground">{userError || "Please visit the Core Console to initialize your session."}</p>
-                         <Button asChild className="mt-4 glow-button">
+                         <Button asChild className="glow-button mt-4">
                              <Link href="/core">
-                                Go to Core Console
+                                Return to Core
                             </Link>
                         </Button>
                     </CardContent>

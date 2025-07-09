@@ -5,7 +5,7 @@ import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Bot, BrainCircuit, Play, Trash2, LogIn, ShieldX, Target, CheckCircle2, AlertCircle, Hourglass, Archive, RefreshCw } from 'lucide-react';
+import { Loader2, Bot, BrainCircuit, Play, Trash2, LogIn, ShieldX, Target, CheckCircle2, AlertCircle, Hourglass, Archive, RefreshCw, AlertTriangle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import {
@@ -106,7 +106,7 @@ export default function SignalsPage() {
     const [signals, setSignals] = useState<GeneratedSignal[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);
-    const { user, isLoading: isUserLoading } = useCurrentUser();
+    const { user, isLoading: isUserLoading, error: userError } = useCurrentUser();
     const { toast } = useToast();
     const router = useRouter();
 
@@ -162,7 +162,7 @@ export default function SignalsPage() {
             toast({ title: "Execution Failed", description: result.error || "Could not execute the signal.", variant: 'destructive' });
             setProcessingId(null);
         }
-    }, [user, toast, router, fetchSignals]);
+    }, [user, toast, router]);
 
 
     const renderContent = () => {
@@ -174,23 +174,22 @@ export default function SignalsPage() {
             );
         }
         
-        if (!user) {
-            // New state for non-logged-in users
+        if (userError || !user) {
             return (
-                <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4 interactive-card">
+                <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4 border-destructive interactive-card">
                      <CardHeader>
-                        <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">
-                            <Bot className="h-10 w-10 text-primary" />
+                        <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
+                            <AlertTriangle className="h-10 w-10 text-destructive" />
                         </div>
-                        <CardTitle className="mt-4">Please Log In</CardTitle>
-                        <CardDescription className="mt-2 text-base">
-                           You need to have a <strong className="text-primary">user session</strong> to view or generate signals.
+                        <CardTitle className="mt-4 text-destructive">Access Denied</CardTitle>
+                        <CardDescription className="mt-2 text-base text-destructive-foreground">
+                           {userError || "A user session is required to view your signals."}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                          <Button asChild className="glow-button">
                              <Link href="/core">
-                                Go to Core Console
+                                Return to Core
                             </Link>
                         </Button>
                     </CardContent>
