@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -6,7 +5,7 @@ import { Paintbrush } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 const THEMES = [
   { value: "dark", label: "Default Dark" },
@@ -42,18 +41,16 @@ export function ThemeToggle() {
   const currentThemeLabel = THEMES.find(t => t.value === theme)?.label || "Change Theme";
 
   return (
-    <TooltipProvider delayDuration={0}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" onClick={handleToggle}>
-            <Paintbrush className="h-[1.2rem] w-[1.2rem] animate-icon-pulse-glow" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Switch Theme ({currentThemeLabel})</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button variant="ghost" size="icon" onClick={handleToggle}>
+          <Paintbrush className="h-[1.2rem] w-[1.2rem] animate-icon-pulse-glow" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>Switch Theme ({currentThemeLabel})</p>
+      </TooltipContent>
+    </Tooltip>
   )
 }
