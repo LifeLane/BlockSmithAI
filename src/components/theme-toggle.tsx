@@ -41,7 +41,7 @@ export function ThemeToggle() {
     <Tooltip>
       <TooltipTrigger asChild>
         <Button variant="ghost" size="icon" onClick={handleToggle}>
-          <Paintbrush className="h-[1.2rem] w-[1.2rem] animate-icon-pulse-glow" />
+          <Paintbrush className="h-[1.2rem] w-[1.2rem]" />
           <span className="sr-only">Toggle theme</span>
         </Button>
       </TooltipTrigger>
