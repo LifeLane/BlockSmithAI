@@ -14,11 +14,11 @@ const getCurrentUserId = (): string | null => {
 export const useCurrentUser = () => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<'online' | 'offline'>('online');
 
   const loadUser = useCallback(async (userId: string | null) => {
     setIsLoading(true);
-    setError(null);
+    setConnectionStatus('online'); // Assume online, prove offline
     try {
       const userProfile = await getOrCreateUserAction(userId);
 
@@ -32,14 +32,14 @@ export const useCurrentUser = () => {
       }
     } catch (e: any) {
       console.error("Failed to initialize user session, creating offline fallback:", e);
-      setError("Offline Mode: Could not connect to the server. Progress will not be saved.");
+      setConnectionStatus('offline');
       
       const guestId = userId || `guest_${Date.now()}`;
       
       const fallbackUser: UserProfile = {
         id: guestId,
-        shadowId: `SHDW-${guestId.substring(guestId.length - 7).toUpperCase()}`,
-        username: `Analyst_${guestId.substring(guestId.length - 6)}`,
+        shadowId: `SHDW-GUEST`,
+        username: `Guest Analyst`,
         status: 'Guest',
         weeklyPoints: 0,
         airdropPoints: 0,
@@ -71,10 +71,10 @@ export const useCurrentUser = () => {
     loadUser(userIdFromStorage);
   }, [loadUser]);
 
-  const refetch = useCallback(() => {
+  const refetchUser = useCallback(() => {
     const userIdFromStorage = getCurrentUserId();
     loadUser(userIdFromStorage);
   }, [loadUser]);
 
-  return { user, isLoading, error, refetch };
+  return { user, isLoading, connectionStatus, refetchUser };
 };
