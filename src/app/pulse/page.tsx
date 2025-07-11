@@ -419,7 +419,7 @@ export default function PortfolioPage() {
         </Card>
     );
 
-    if ((isUserLoading && !isGuest) || !isInitialized) {
+    if (isUserLoading || !isInitialized) {
         return ( <> <AppHeader /> <div className="flex justify-center items-center h-[calc(100vh-8rem)]"> <Loader2 className="h-8 w-8 animate-spin text-primary"/> </div> </> );
     }
 

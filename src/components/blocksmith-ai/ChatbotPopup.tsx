@@ -14,7 +14,7 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const SHADOW_INITIAL_MESSAGE: ChatMessage = {
   role: 'model',
-  parts: [{ text: "I am SHADOW. The market's whispers reach me. What requires my attention?" }],
+  parts: [{ text: "I am SHADOW. Query me." }],
 };
 
 interface ChatbotPopupProps {
@@ -146,7 +146,7 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
               placeholder="Transmit your query to SHADOW..."
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
-              className="flex-grow bg-background focus:ring-accent focus:border-accent"
+              className="bg-background focus:ring-accent focus:border-accent"
               disabled={isLoading}
             />
             <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isLoading || !userInput.trim()}>
