@@ -1,10 +1,10 @@
-
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
-  engineType = "library"
+  provider     = "prisma-client-js"
+  engineType   = "library"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -14,29 +14,83 @@ datasource db {
 
 model User {
   id              String   @id @default(cuid())
-  username        String   @unique
-  shadowId        String   @unique @default(cuid())
-  weeklyPoints    Int      @default(0)
-  airdropPoints   Int      @default(0)
-  status          String   @default("Guest") // e.g., Guest, Registered
-  claimedMissions String[]
-
-  // Optional contact/wallet info
+  username        String?
+  shadowId        String?
+  status          String   @default("Guest")
   email           String?  @unique
-  phone           String?  @unique
-  wallet_address  String?
-  wallet_type     String?  // e.g., ETH, SOL
+  phone           String?
   x_handle        String?
   telegram_handle String?
   youtube_handle  String?
+  wallet_address  String?
+  wallet_type     String?
+  weeklyPoints    Int      @default(0)
+  airdropPoints   Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  claimedMissions String[]
 
-  // Relations
-  badges    Badge[]
-  positions Position[]
-  signals   GeneratedSignal[]
+  positions        Position[]
+  generated_signals GeneratedSignal[]
+  badges           Badge[]
+}
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Position {
+  id                  String   @id @default(cuid())
+  userId              String
+  symbol              String
+  signalType          String // "BUY" or "SELL"
+  status              String // "OPEN" or "CLOSED" or "PENDING"
+  entryPrice          Float
+  stopLoss            Float?
+  takeProfit          Float?
+  size                Float    @default(1)
+  tradingMode         String
+  riskProfile         String
+  type                String   // "INSTANT" or "CUSTOM"
+  sentiment           String?
+  gpt_confidence_score String?
+
+  createdAt           DateTime  @default(now())
+  openTimestamp       DateTime?
+  closeTimestamp      DateTime?
+  closePrice          Float?
+  pnl                 Float?
+  gainedXp            Int?
+  gainedAirdropPoints Int?
+  gasPaid             Float?
+  blocksTrained       Int?
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategyId String?   @unique
+  strategy   GeneratedSignal? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
+}
+
+model GeneratedSignal {
+  id                   String   @id @default(cuid())
+  userId               String
+  symbol               String
+  signal               String // "BUY" or "SELL"
+  entry_zone           String
+  stop_loss            String
+  take_profit          String
+  confidence           String
+  gpt_confidence_score String
+  risk_rating          String
+  sentiment            String
+  currentThought       String
+  shortTermPrediction  String
+  sentimentTransition  String?
+  chosenTradingMode    String
+  chosenRiskProfile    String
+  strategyReasoning    String
+  analysisSummary      String
+  newsAnalysis         String?
+  status               String   @default("PENDING_EXECUTION") // "PENDING_EXECUTION", "EXECUTED", "DISMISSED"
+  createdAt            DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  position Position?
 }
 
 model Badge {
@@ -44,69 +98,9 @@ model Badge {
   name        String
   description String
   icon        String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-}
 
-model Position {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  symbol    String
-  signalType String // BUY or SELL
-  status    String   // PENDING, OPEN, or CLOSED
-  entryPrice Float
-  stopLoss   Float?
-  takeProfit Float?
-  size      Float    @default(1)
-
-  tradingMode String
-  riskProfile String
-  type        String // INSTANT or CUSTOM
-  sentiment   String
-  gpt_confidence_score String
-
-  createdAt DateTime  @default(now())
-  openTimestamp DateTime?
-  closeTimestamp DateTime?
-  closePrice Float?
-  pnl       Float?
-
-  gainedXp Int?
-  gainedAirdropPoints Int?
-  gasPaid Float?
-  blocksTrained Int?
-
-  strategyId String? @unique
-  strategy   GeneratedSignal? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
-}
-
-model GeneratedSignal {
-  id           String @id @default(cuid())
-  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String
-  symbol       String
-  signal       String // BUY or SELL
-  status       String // PENDING_EXECUTION, EXECUTED, DISMISSED
-  entry_zone   String
-  stop_loss    String
-  take_profit  String
-  confidence   String
-  risk_rating  String
-  gpt_confidence_score String
-  sentiment    String
-  currentThought String
-  shortTermPrediction String
-  sentimentTransition String?
-  chosenTradingMode String
-  chosenRiskProfile String
-  strategyReasoning String
-  analysisSummary String
-  newsAnalysis String?
-  createdAt DateTime @default(now())
-  
-  // Relation to the position created from this signal
-  Position Position?
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
