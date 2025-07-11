@@ -1,7 +1,7 @@
-
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { fetchMarketDataAction } from '@/services/market-data-service';
+import { updateUserPointsForClosedTradeAction } from '@/app/actions';
 
 // --- Type Definitions for Client-Side State ---
 
@@ -16,8 +16,8 @@ export interface Position {
   signalType: SignalType;
   status: PositionStatus;
   entryPrice: number;
-  stopLoss: number;
-  takeProfit: number;
+  stopLoss: number | null;
+  takeProfit: number | null;
   size: number;
   tradingMode: string;
   riskProfile: string;
@@ -87,6 +87,19 @@ const useLocalStorage = <T>(key: string, initialValue: T) => {
     }
   };
 
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+        if (e.key === key && e.newValue) {
+            setStoredValue(JSON.parse(e.newValue));
+        }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [key]);
+
+
   return [storedValue, setValue] as const;
 };
 
@@ -150,6 +163,11 @@ export const useClientState = () => {
             gasPaid: parseFloat(gasPaid.toFixed(2)),
             blocksTrained
           };
+
+          if (p.userId && !p.userId.startsWith('guest_')) {
+            updateUserPointsForClosedTradeAction(p.userId, pnl, p.tradingMode, p.riskProfile);
+          }
+
           return closedPosition;
         }
         return p;
@@ -172,7 +190,7 @@ export const useClientState = () => {
 
     let closedCount = 0;
     setPositions(prev => {
-        return prev.map(p => {
+        const newPositions = prev.map(p => {
             if (p.status !== 'OPEN') return p;
             
             const marketData = prices.find(price => !('error' in price) && price.symbol === p.symbol);
@@ -180,11 +198,15 @@ export const useClientState = () => {
                 closedCount++;
                 const closePrice = parseFloat(marketData.lastPrice);
                 const pnl = (p.signalType === 'BUY' ? closePrice - p.entryPrice : p.entryPrice - closePrice) * p.size;
+                 if (p.userId && !p.userId.startsWith('guest_')) {
+                    updateUserPointsForClosedTradeAction(p.userId, pnl, p.tradingMode, p.riskProfile);
+                }
                 return { ...p, status: 'CLOSED', closePrice, pnl, closeTimestamp: new Date().toISOString() };
             }
             // If price fetch fails, leave it open
             return p;
         });
+        return newPositions;
     });
     return closedCount;
   }, [positions, setPositions]);
@@ -207,7 +229,8 @@ export const useClientState = () => {
     const signal = signals.find(s => s.id === signalId);
     if (!signal) return;
 
-    const parsePrice = (priceStr: string): number => {
+    const parsePrice = (priceStr: string | null): number | null => {
+        if (!priceStr) return null;
         const cleanedStr = priceStr.replace(/[^0-9.-]/g, ' ');
         const parts = cleanedStr.split(' ').filter(p => p !== '' && !isNaN(parseFloat(p)));
         if (parts.length === 0) return NaN;
@@ -216,13 +239,19 @@ export const useClientState = () => {
         return sum / parts.length;
     };
 
+    const entryPrice = parsePrice(signal.entry_zone);
+    if (entryPrice === null) {
+        console.error("Could not parse entry price from signal", signal);
+        return;
+    }
+
     const newPosition: Position = {
       id: `pos_${new Date().getTime()}`,
       userId: signal.userId,
       symbol: signal.symbol,
       signalType: signal.signal,
       status: 'PENDING',
-      entryPrice: parsePrice(signal.entry_zone),
+      entryPrice: entryPrice,
       stopLoss: parsePrice(signal.stop_loss),
       takeProfit: parsePrice(signal.take_profit),
       size: 1, // Default size
@@ -259,5 +288,3 @@ export const useClientState = () => {
     isInitialized,
   };
 };
-
-    

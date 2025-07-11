@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { FunctionComponent } from 'react';
@@ -29,7 +28,7 @@ import { useRouter } from 'next/navigation';
 type AIStrategyOutput = (Position | GeneratedSignal) & { 
   id?: string;
   type: 'INSTANT' | 'CUSTOM';
-  disclaimer?: string;
+  disclaimer: string;
   analysisSummary?: string | null;
   newsAnalysis?: string | null;
 };
@@ -207,7 +206,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
                     </div>
                 </div>
                 <p className="shadow-edict-body">
-                    {disclaimer}
+                    <GlyphScramble text={disclaimer} />
                 </p>
             </div>
         )}
@@ -216,5 +215,3 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
 };
 
 export default SignalTracker;
-
-    

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -14,6 +13,7 @@ import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import {
   generateTradingStrategyAction,
   generateShadowChoiceStrategyAction,
+  generateSarcasticDisclaimer,
   type Position,
   type GeneratedSignal,
 } from '@/app/actions';
@@ -29,6 +29,7 @@ import { useClientState } from '@/hooks/use-client-state';
 import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
+import DailyGreeting from '@/components/blocksmith-ai/DailyGreeting';
 
 type AIStrategyOutput = (Position | GeneratedSignal) & { 
   type: 'INSTANT' | 'CUSTOM';
@@ -190,11 +191,18 @@ export default function CoreConsolePage() {
 
     const marketDataForAIString = JSON.stringify(currentDataToUse);
     let result;
+    let disclaimerResult;
 
     if (isCustom) {
-        result = await generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString }, currentUser.id);
+        [result, disclaimerResult] = await Promise.all([
+            generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString }, currentUser.id),
+            generateSarcasticDisclaimer()
+        ]);
     } else {
-        result = await generateTradingStrategyAction({ symbol, tradingMode, riskProfile, marketData: marketDataForAIString, userId: currentUser.id });
+        [result, disclaimerResult] = await Promise.all([
+            generateTradingStrategyAction({ symbol, tradingMode, riskProfile, marketData: marketDataForAIString, userId: currentUser.id }),
+            generateSarcasticDisclaimer()
+        ]);
     }
     
     if ('error' in result) {
@@ -202,6 +210,7 @@ export default function CoreConsolePage() {
       toast({ title: "SHADOW's Insight Blocked", description: result.error, variant: "destructive" });
       if(currentUser.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
     } else {
+        const disclaimer = disclaimerResult.disclaimer || "My analysis is a beacon in the chaos, not a crystal ball. Tread wisely.";
         if (isCustom) {
           const newSignal: GeneratedSignal = {
             ...result.strategy,
@@ -212,7 +221,7 @@ export default function CoreConsolePage() {
             createdAt: new Date().toISOString(),
           };
           addSignal(newSignal);
-          setAiStrategy({ ...newSignal, type: 'CUSTOM', disclaimer: "This is a mock disclaimer."});
+          setAiStrategy({ ...newSignal, type: 'CUSTOM', disclaimer });
           toast({ title: <span className="text-accent">Custom Signal Generated!</span>, description: `View and simulate in the Signals tab.`, });
         } else {
           const newPosition: Position = {
@@ -235,14 +244,9 @@ export default function CoreConsolePage() {
             closePrice: null,
             pnl: null,
             size: 1, // Default size
-            gainedAirdropPoints: null,
-            gainedXp: null,
-            gasPaid: null,
-            blocksTrained: null,
-            strategyId: null,
           };
           addPosition(newPosition);
-          setAiStrategy({ ...newPosition, type: 'INSTANT', disclaimer: "This is a mock disclaimer."});
+          setAiStrategy({ ...newPosition, type: 'INSTANT', disclaimer });
           toast({ title: <span className="text-accent">Instant Signal Executed!</span>, description: `View your new position in the Portfolio tab.`, });
         }
         refetchUser(); // Update points display
@@ -280,6 +284,7 @@ export default function CoreConsolePage() {
         
         <div className={cn("w-full space-y-3 transition-all duration-500", !showResults && 'flex-grow flex flex-col justify-center')}>
             <div className="space-y-3">
+                <DailyGreeting />
                 <div id="market-data-display">
                     <MarketDataDisplay liveMarketData={liveMarketData} isLoading={isLoadingMarketData} error={marketDataError} symbolForDisplay={symbol} />
                 </div>
