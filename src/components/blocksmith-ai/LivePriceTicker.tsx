@@ -1,9 +1,9 @@
-
 'use client';
 
 import type { FunctionComponent} from 'react';
 import { useState, useEffect } from 'react';
-import { fetchTopSymbolsForTickerAction, type TickerSymbolData } from '@/app/actions';
+import { fetchTopSymbolsForTickerAction } from '@/services/market-data-service';
+import type { TickerSymbolData } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import { TrendingUp, Loader2 } from 'lucide-react';
 
