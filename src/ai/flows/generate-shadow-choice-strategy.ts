@@ -54,7 +54,7 @@ const ShadowChoiceStrategyCoreOutputSchema = z.object({
 export type ShadowChoiceStrategyCoreOutput = z.infer<typeof ShadowChoiceStrategyCoreOutputSchema>;
 
 // This is the main function that will be called by the server action.
-export async function generateShadowChoiceStrategy(input: PromptInput): Promise<ShadowChoiceStrategyCoreOutput> {
+export async function generateShadowChoiceStrategy(input: PromptInputSchema): Promise<ShadowChoiceStrategyCoreOutput> {
   return shadowChoiceStrategyFlow(input);
 }
 
