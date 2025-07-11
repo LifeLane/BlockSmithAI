@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Mail, Gift, Rocket, Sparkles, Phone, User, Bot } from 'lucide-react';
+import { Mail, Gift, Rocket, Sparkles, Phone, User, Bot, Loader2 } from 'lucide-react';
 import { handleAirdropSignupAction, type AirdropFormData } from '@/app/actions';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 
@@ -41,7 +41,7 @@ const YouTubeIcon = () => (
 interface AirdropSignupModalProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onSignupSuccess: () => void;
+  onSignupSuccess: () => Promise<void>;
   userId: string;
 }
 
@@ -74,18 +74,17 @@ const signupSchema = z.object({
 type SignupFormData = z.infer<typeof signupSchema>;
 
 const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen, onOpenChange, onSignupSuccess, userId }) => {
-  const { user } = useCurrentUser();
+  const { user, setUser } = useCurrentUser();
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      email: user?.email || '',
-      phone: user?.phone || '',
-      x_handle: user?.x_handle || '',
-      telegram_handle: user?.telegram_handle || '',
-      youtube_handle: user?.youtube_handle || '',
-      wallet_address: user?.wallet_address || '',
-      wallet_type: user?.wallet_type as 'ETH' | 'SOL' | 'TON' | undefined,
+      email: '',
+      phone: '',
+      x_handle: '',
+      telegram_handle: '',
+      youtube_handle: '',
+      wallet_address: '',
     },
   });
 
@@ -101,7 +100,7 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
             wallet_type: user.wallet_type as 'ETH' | 'SOL' | 'TON' | undefined,
         });
     }
-  }, [user, form]);
+  }, [user, form, isOpen]);
 
 
   const selectedWalletType = useWatch({
@@ -124,23 +123,16 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
         return;
     }
 
-    console.log("Submitting Airdrop Signup Data:", data);
     try {
       const result = await handleAirdropSignupAction(data, userId);
-      if ('userId' in result) {
-        console.log("Airdrop signup successful for User ID:", result.userId);
-        onSignupSuccess();
-        form.reset();
-        onOpenChange(false);
-      } else if ('error' in result) {
-        console.error("Airdrop signup failed:", result.error);
+      if ('error' in result) {
         alert(`Signup failed: ${result.error}`);
       } else {
-         console.error("Airdrop signup failed with unexpected response:", result);
-         alert("Signup failed with an unexpected error.");
+        setUser(result); // Immediately update the user state
+        await onSignupSuccess();
+        onOpenChange(false);
       }
     } catch (error: any) {
-      console.error("An error occurred during airdrop signup submission:", error);
       alert(`An error occurred during signup: ${error.message || "Unknown error"}`);
     }
   };
@@ -218,7 +210,7 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
                 className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 text-base"
                 disabled={form.formState.isSubmitting}
               >
-                <Rocket className="mr-2 h-5 w-5" />
+                {form.formState.isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Rocket className="mr-2 h-5 w-5" />}
                 {user?.status === 'Registered' ? 'Update Registration' : 'Confirm Eligibility & Register'}
               </Button>
             </DialogFooter>

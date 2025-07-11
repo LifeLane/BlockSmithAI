@@ -75,15 +75,15 @@ export type { PerformanceReviewOutput };
 export async function getOrCreateUserAction(userId: string | null): Promise<UserProfile> {
     const userQuery = { include: { badges: true } };
 
-    if (userId) {
+    if (userId && !userId.startsWith('guest_')) {
         const existingUser = await prisma.user.findUnique({ where: { id: userId }, ...userQuery });
         if(existingUser) return existingUser;
     }
 
+    // If no valid userId or user not found, create a new one.
     const newUser = await prisma.user.create({
         data: {
-            username: `Analyst_${randomUUID().substring(0, 6)}`,
-            shadowId: `SHDW-${randomUUID().substring(0, 7).toUpperCase()}`,
+            // Default values are now handled by the schema
         },
         ...userQuery
     });
@@ -99,9 +99,9 @@ export async function updateUserSettingsJson(userId: string, data: { username?: 
     });
 }
 
-export async function handleAirdropSignupAction(formData: AirdropFormData, userId: string): Promise<{ userId: string; } | { error: string; }> {
+export async function handleAirdropSignupAction(formData: AirdropFormData, userId: string): Promise<UserProfile | { error: string; }> {
     if (!userId) return { error: "User not found." };
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
         where: { id: userId },
         data: {
             status: "Registered",
@@ -112,9 +112,10 @@ export async function handleAirdropSignupAction(formData: AirdropFormData, userI
             x_handle: formData.x_handle,
             telegram_handle: formData.telegram_handle,
             youtube_handle: formData.youtube_handle,
-        }
+        },
+        include: { badges: true },
     });
-    return { userId };
+    return updatedUser;
 }
 
 export async function fetchLeaderboardDataJson(): Promise<LeaderboardUser[]> {
@@ -161,10 +162,12 @@ export async function generateTradingStrategyAction(
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
 
         // Only update user points, do not create a position in the DB
-        await prisma.user.update({
-            where: { id: input.userId },
-            data: { weeklyPoints: { increment: 25 }, airdropPoints: { increment: 50 } }
-        });
+        if (!input.userId.startsWith('guest_')) {
+            await prisma.user.update({
+                where: { id: input.userId },
+                data: { weeklyPoints: { increment: 25 }, airdropPoints: { increment: 50 } }
+            });
+        }
         
         return { strategy };
 
@@ -196,10 +199,12 @@ export async function generateShadowChoiceStrategyAction(
         if (!strategy) return { error: "SHADOW Core failed to generate an autonomous strategy." };
         
         // Only update user points, do not create a signal in the DB
-        await prisma.user.update({
-            where: { id: userId },
-            data: { airdropPoints: { increment: 10 } }
-        });
+        if (!userId.startsWith('guest_')) {
+            await prisma.user.update({
+                where: { id: userId },
+                data: { airdropPoints: { increment: 10 } }
+            });
+        }
 
         return { strategy };
 
@@ -218,6 +223,9 @@ export async function updateUserPointsForClosedTradeAction(
   tradingMode: string,
   riskProfile: string
 ): Promise<{ success: boolean; error?: string }> {
+  if (userId.startsWith('guest_')) {
+    return { success: true }; // Don't update points for guests
+  }
   try {
     const modeMultipliers: { [key: string]: number } = { Scalper: 1.0, Sniper: 1.1, Intraday: 1.2, Swing: 1.5, Custom: 1.2 };
     const riskMultipliers: { [key: string]: number } = { Low: 0.8, Medium: 1.0, High: 1.3 };
@@ -246,7 +254,7 @@ export async function updateUserPointsForClosedTradeAction(
 
 // --- Syncing Action ---
 export async function syncClientStateAction(userId: string, data: { positions: any[], signals: any[] }): Promise<{ success: true } | { error:string }> {
-  if (!userId || !data) return { error: "Invalid data for sync." };
+  if (!userId || !data || userId.startsWith('guest_')) return { error: "Invalid data for sync." };
 
   try {
       await prisma.$transaction(async (tx) => {
@@ -297,6 +305,7 @@ export async function getDailyGreeting(): Promise<GenerateDailyGreetingOutput> {
 }
 
 export async function claimMissionRewardAction(userId: string, missionId: string): Promise<{ success: boolean; message: string }> {
+    if (userId.startsWith('guest_')) return { success: false, message: 'Guests cannot claim mission rewards. Please register first.'}
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return { success: false, message: 'User not found.' };
 
@@ -363,5 +372,3 @@ export async function fetchTopSymbolsForTickerAction(): Promise<TickerSymbolData
         return { error: `Network error while fetching symbols: ${error.message}` };
     }
 }
-
-    

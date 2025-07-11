@@ -76,24 +76,13 @@ export default function CoreConsolePage() {
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
   
-  const { user: currentUser, isLoading: isUserLoading, error: userError, refetch: refetchUser } = useCurrentUser();
+  const { user: currentUser, isLoading: isUserLoading, refetchUser } = useCurrentUser();
   const { addPosition, addSignal } = useClientState();
   
   const [analysisCount, setAnalysisCount] = useState<number>(0);
   const [lastAnalysisDate, setLastAnalysisDate] = useState<string>('');
 
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (userError) {
-      toast({
-        title: "Offline Mode",
-        description: userError,
-        variant: "destructive",
-        duration: 900000,
-      });
-    }
-  }, [userError, toast]);
   
   useEffect(() => {
     if (typeof window === 'undefined' || !currentUser || currentUser.status !== 'Guest') {
@@ -287,7 +276,7 @@ export default function CoreConsolePage() {
   return (
     <>
       <AppHeader />
-      <div className="container mx-auto px-4 py-2 flex flex-col w-full min-h-[calc(100vh-140px)]">
+      <div className="container mx-auto px-4 py-2 flex flex-col w-full pb-24">
         
         <div className={cn("w-full space-y-3 transition-all duration-500", !showResults && 'flex-grow flex flex-col justify-center')}>
             <div className="space-y-3">

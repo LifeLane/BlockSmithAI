@@ -150,19 +150,7 @@ const MiningRigCard = ({ rig, userXp }: { rig: typeof MINING_RIGS[0], userXp: nu
 
 
 export default function VaultPage() {
-    const { user: currentUser, isLoading: isUserLoading, error: userError } = useCurrentUser();
-    const { toast } = useToast();
-
-    useEffect(() => {
-        if (userError) {
-          toast({
-            title: "Offline Mode",
-            description: userError,
-            variant: "destructive",
-            duration: 900000,
-          });
-        }
-    }, [userError, toast]);
+    const { user: currentUser, isLoading: isUserLoading } = useCurrentUser();
 
     const renderContent = () => {
         if (isUserLoading || !currentUser) {

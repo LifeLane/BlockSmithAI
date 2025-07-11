@@ -275,8 +275,8 @@ const PositionCard = ({ position, closePosition, activatePosition }: { position:
 }
 
 export default function PortfolioPage() {
-    const { user: currentUser, isLoading: isUserLoading, error: userError, refetch: refetchUser } = useCurrentUser();
-    const { positions, updatePosition, closePosition, activatePosition, closeAllPositions } = useClientState();
+    const { user: currentUser, isLoading: isUserLoading, refetchUser } = useCurrentUser();
+    const { positions, closePosition, activatePosition, closeAllPositions } = useClientState();
     const [isClientLoaded, setIsClientLoaded] = useState(false);
     
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -290,17 +290,6 @@ export default function PortfolioPage() {
         // This ensures the component only renders on the client where localStorage is available.
         setIsClientLoaded(true);
     }, []);
-
-    useEffect(() => {
-      if (userError) {
-        toast({
-          title: "Offline Mode",
-          description: userError,
-          variant: "destructive",
-          duration: 900000,
-        });
-      }
-    }, [userError, toast]);
 
     const { openPositions, tradeHistory } = useMemo(() => {
         return {
@@ -382,7 +371,7 @@ export default function PortfolioPage() {
     return (
     <>
       <AppHeader />
-      <div className="container mx-auto px-4 py-8 pb-20">
+      <div className="container mx-auto px-4 py-8 pb-24">
         <PortfolioStatsDisplay 
             stats={portfolioStats} 
             isLoading={isUserLoading} 

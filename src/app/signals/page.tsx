@@ -82,25 +82,14 @@ const GeneratedSignalCard = ({ signal, onDismiss, onExecute, isProcessing }: { s
 
 export default function SignalsPage() {
     const [processingId, setProcessingId] = useState<string | null>(null);
-    const { user, isLoading: isUserLoading, error: userError } = useCurrentUser();
-    const { signals, addPosition, updateSignal, dismissSignal, executeSignal } = useClientState();
+    const { user, isLoading: isUserLoading } = useCurrentUser();
+    const { signals, dismissSignal, executeSignal } = useClientState();
     const [isClientLoaded, setIsClientLoaded] = useState(false);
     const { toast } = useToast();
     
     useEffect(() => {
         setIsClientLoaded(true);
     }, []);
-
-    useEffect(() => {
-        if (userError) {
-          toast({
-            title: "Offline Mode",
-            description: userError,
-            variant: "destructive",
-            duration: 900000,
-          });
-        }
-      }, [userError, toast]);
     
     const handleDismiss = useCallback((signalId: string) => {
         setProcessingId(signalId);
@@ -129,7 +118,11 @@ export default function SignalsPage() {
                         <CardTitle className="mt-4">No Generated Signals</CardTitle>
                         <CardDescription className="mt-2 text-base"> Generate a signal from the <strong className="text-primary">Core Console</strong> to see it here. </CardDescription>
                     </CardHeader>
-                    <CardContent><Button asChild className="glow-button"><Link href="/core">Go to Core Console</Link></Button></CardContent>
+                    <CardContent>
+                        <Button asChild className="glow-button">
+                            <Link href="/core">Go to Core Console</Link>
+                        </Button>
+                    </CardContent>
                 </Card>
             );
         }
@@ -162,7 +155,7 @@ export default function SignalsPage() {
   return (
     <>
       <AppHeader />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pb-24">
         <Card className="mb-8 bg-card/80 backdrop-blur-sm border-primary/50 shadow-lg shadow-primary/10 interactive-card">
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>

@@ -150,19 +150,8 @@ export default function ProfilePage() {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(true);
   const [showAirdropModal, setShowAirdropModal] = useState(false);
-  const { user: currentUser, isLoading: isUserLoading, error: userError, refetch: refetchUser } = useCurrentUser();
+  const { user: currentUser, isLoading: isUserLoading, refetchUser } = useCurrentUser();
   const { toast } = useToast();
-  
-  useEffect(() => {
-    if (userError) {
-      toast({
-        title: "Offline Mode",
-        description: userError,
-        variant: "destructive",
-        duration: 900000,
-      });
-    }
-  }, [userError, toast]);
   
   const loadPageData = useCallback(async () => {
     setLoading(true);
@@ -181,7 +170,11 @@ export default function ProfilePage() {
   useEffect(() => {
     if (currentUser) {
       setUsername(currentUser.username);
-      loadPageData();
+      if (currentUser.status !== 'Guest') {
+        loadPageData();
+      } else {
+        setLoading(false);
+      }
     } else if (!isUserLoading) {
         setLoading(false);
     }
@@ -210,13 +203,13 @@ export default function ProfilePage() {
       }
   };
 
-  const handleAirdropSignupSuccess = useCallback(() => {
+  const handleAirdropSignupSuccess = useCallback(async () => {
       setShowAirdropModal(false);
       toast({
         title: <span className="text-accent">BlockShadow Registration Complete!</span>,
         description: <span className="text-foreground">Your eligibility is confirmed. Welcome to the Initiative.</span>,
       });
-      refetchUser();
+      await refetchUser();
   }, [refetchUser, toast]);
 
 

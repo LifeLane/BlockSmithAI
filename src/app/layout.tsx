@@ -35,7 +35,7 @@ export default function RootLayout({
           <ConnectionStatus />
           <ParticleBackground />
           <div className="relative z-10 text-foreground min-h-screen flex flex-col pt-12">
-            <main className="flex-grow pb-16">
+            <main className="flex-grow">
               {children}
             </main>
             <BottomNav />
