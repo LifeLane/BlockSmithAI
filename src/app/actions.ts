@@ -1,7 +1,7 @@
 
 "use server";
 import { prisma } from '@/lib/prisma';
-import type { User as PrismaUser, Badge as PrismaBadge, Position as PrismaPosition, GeneratedSignal as PrismaGeneratedSignal } from '@prisma/client';
+import type { User as PrismaUser, Badge as PrismaBadge } from '@prisma/client';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 
@@ -256,29 +256,9 @@ export async function syncClientStateAction(userId: string, data: { positions: a
   if (!userId || !data || userId.startsWith('guest_')) return { error: "Invalid data for sync." };
 
   try {
-      await prisma.$transaction(async (tx) => {
-          // Upsert positions
-          for (const pos of data.positions) {
-              const { id, userId: clientUserId, ...rest } = pos;
-              if (clientUserId !== userId) continue; // Security check for multi-user scenarios
-              
-              await tx.position.upsert({
-                  where: { id },
-                  update: rest,
-                  create: { id, userId, ...rest }
-              });
-          }
-          // Upsert signals
-           for (const sig of data.signals) {
-              const { id, userId: clientUserId, ...rest } = sig;
-              if (clientUserId !== userId) continue;
-              await tx.generatedSignal.upsert({
-                  where: { id },
-                  update: rest,
-                  create: { id, userId, ...rest }
-              });
-           }
-      });
+      // Syncing logic is now disabled since the models are removed.
+      // This function can be re-enabled if server-side persistence is restored.
+      console.log('Client state sync requested, but is currently a client-only feature.');
       return { success: true };
   } catch (e:any) {
       console.error("Sync error:", e);

@@ -1,6 +1,6 @@
 
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useClientState } from '@/hooks/use-client-state';
 import { syncClientStateAction } from '@/app/actions';
@@ -18,7 +18,9 @@ const ConnectionStatus = () => {
     const router = useRouter();
 
     const handleSync = async () => {
-        if (!user || user.status === 'Guest' || !isInitialized) {
+        if (!user || !isInitialized) return;
+
+        if (user.status === 'Guest') {
             router.push('/profile');
             return;
         }
@@ -28,11 +30,12 @@ const ConnectionStatus = () => {
         
         if (result.error) {
             toast({ title: "Connection Failed", description: result.error, variant: 'destructive' });
+            setIsSyncing(false);
         } else {
             toast({ title: "Connection Successful!", description: "Your progress has been synced to the Mainnet." });
             await refetchUser();
+            setIsSyncing(false);
         }
-        setIsSyncing(false);
     };
     
     // Don't render anything if we're still loading, or if the user is online and not a guest.
@@ -41,7 +44,6 @@ const ConnectionStatus = () => {
     }
     
     const isGuest = user?.status === 'Guest';
-    const isOffline = connectionStatus === 'offline';
 
     let icon = isGuest ? <WifiOff className="h-5 w-5 text-yellow-400" /> : <WifiOff className="h-5 w-5 text-destructive animate-pulse" />;
     let text = isGuest ? 'Guest Session' : 'Mainnet Offline';

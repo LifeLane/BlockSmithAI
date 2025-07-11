@@ -2,123 +2,46 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
 }
 
 datasource db {
-  provider     = "postgresql"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id              String    @id @default(cuid())
-  shadowId        String    @unique @default(" analyst_id")
-  username        String    @default("Analyst")
-  status          String?   @default("Guest")
-  weeklyPoints    Int?      @default(0)
-  airdropPoints   Int?      @default(0)
-  claimedMissions String[]
-  badges          Badge[]
-  email           String?
-  phone           String?
-  wallet_address  String?
-  wallet_type     String?
-  x_handle        String?
-  telegram_handle String?
-  youtube_handle  String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                  String   @id @default(cuid())
+  shadowId            String   @unique @default(cuid())
+  username            String   @default("Analyst")
+  status              String   @default("Guest")
+  weeklyPoints        Int      @default(0)
+  airdropPoints       Int      @default(0)
+  claimedMissions     String[]
+  
+  // Optional contact/wallet info for airdrop
+  email               String?  @unique
+  phone               String?  @unique
+  wallet_address      String?
+  wallet_type         String?
+  x_handle            String?
+  telegram_handle     String?
+  youtube_handle      String?
+  
+  badges              Badge[]
 
-  positions Position[]
-  signals   GeneratedSignal[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
 
 model Badge {
   id          String   @id @default(cuid())
   name        String
-  description String?
-  icon        String?
+  description String
+  icon        String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-}
-
-// Enums for Position model
-enum SignalType {
-  BUY
-  SELL
-}
-
-enum PositionStatus {
-  PENDING
-  OPEN
-  CLOSED
-}
-
-enum PositionType {
-  INSTANT
-  CUSTOM
-}
-
-model Position {
-  id                   String         @id
-  user                 User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId               String
-  symbol               String
-  signalType           SignalType
-  status               PositionStatus
-  entryPrice           Float
-  stopLoss             Float
-  takeProfit           Float
-  size                 Float          @default(1)
-  tradingMode          String
-  riskProfile          String
-  type                 PositionType
-  sentiment            String
-  gpt_confidence_score String
-  createdAt            DateTime
-  openTimestamp        DateTime?
-  closeTimestamp       DateTime?
-  closePrice           Float?
-  pnl                  Float?
-  gainedXp             Int?
-  gainedAirdropPoints  Int?
-  gasPaid              Float?
-  blocksTrained        Int?
-  strategyId           String?
-  updatedAt            DateTime       @updatedAt
-}
-
-// Enum for GeneratedSignal model
-enum GeneratedSignalStatus {
-  PENDING_EXECUTION
-  EXECUTED
-  DISMISSED
-}
-
-model GeneratedSignal {
-  id                   String                @id
-  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId               String
-  symbol               String
-  signal               SignalType
-  entry_zone           String
-  stop_loss            String
-  take_profit          String
-  confidence           String
-  gpt_confidence_score String
-  risk_rating          String
-  sentiment            String
-  currentThought       String
-  shortTermPrediction  String
-  chosenTradingMode    String
-  chosenRiskProfile    String
-  strategyReasoning    String
-  analysisSummary      String
-  newsAnalysis         String?
-  status               GeneratedSignalStatus
-  createdAt            DateTime
-  updatedAt            DateTime              @updatedAt
 }
