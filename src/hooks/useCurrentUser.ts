@@ -11,45 +11,55 @@ interface CurrentUserContextType {
   refetchUser: () => Promise<void>;
 }
 
-export const useCurrentUser = () => {
+export const useCurrentUser = (): CurrentUserContextType => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('currentUserId');
+    }
+    return null;
+  });
 
-  const loadUser = useCallback(async (userId: string | null) => {
+  const refetchUser = useCallback(async () => {
     setIsLoading(true);
     try {
       const userProfile = await getOrCreateUserAction(userId);
       setUser(userProfile);
-      if (typeof window !== 'undefined' && userProfile.id !== userId) {
+
+      if (userId !== userProfile.id) {
         localStorage.setItem('currentUserId', userProfile.id);
+        setUserId(userProfile.id);
       }
     } catch (e) {
-      console.error("Failed to fetch or create user:", e);
-      // In case of a catastrophic server error, we might still want a fallback
-      // but for now, we assume the server action is robust.
+      console.error("Failed to refetch user:", e);
       setUser(null);
     } finally {
       setIsLoading(false);
     }
-  }, []);
-
-  const updateUser = useCallback((updatedUser: UserProfile | null) => {
-    setUser(updatedUser);
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const userIdFromStorage = localStorage.getItem('currentUserId');
-      loadUser(userIdFromStorage);
-    }
-  }, [loadUser]);
+    const loadUser = async () => {
+      setIsLoading(true);
+      try {
+        const userProfile = await getOrCreateUserAction(userId);
+        setUser(userProfile);
 
-  const refetchUser = useCallback(async () => {
-    if (typeof window !== 'undefined') {
-      const userIdFromStorage = localStorage.getItem('currentUserId');
-      await loadUser(userIdFromStorage);
-    }
-  }, [loadUser]);
+        if (userId !== userProfile.id) {
+          localStorage.setItem('currentUserId', userProfile.id);
+          setUserId(userProfile.id);
+        }
+      } catch (e) {
+        console.error("Failed to fetch or create user:", e);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  return { user, setUser: updateUser, isLoading, refetchUser };
+    loadUser();
+  }, [userId]);
+
+  return { user, setUser, isLoading, refetchUser };
 };
