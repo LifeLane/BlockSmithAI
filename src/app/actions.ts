@@ -196,10 +196,12 @@ export async function generateTradingStrategyAction(
             }
         });
 
-        await prisma.user.update({
-            where: { id: input.userId },
-            data: { weeklyPoints: { increment: 25 }, airdropPoints: { increment: 50 } }
-        });
+        if (!input.userId.startsWith('guest_')) {
+            await prisma.user.update({
+                where: { id: input.userId },
+                data: { weeklyPoints: { increment: 25 }, airdropPoints: { increment: 50 } }
+            });
+        }
         
         return { position };
 
@@ -237,7 +239,21 @@ export async function generateShadowChoiceStrategyAction(
                 symbol: input.symbol,
                 signal: strategy.signal,
                 status: 'PENDING_EXECUTION',
-                ...strategy,
+                entry_zone: strategy.entry_zone,
+                stop_loss: strategy.stop_loss,
+                take_profit: strategy.take_profit,
+                confidence: strategy.confidence,
+                risk_rating: strategy.risk_rating,
+                gpt_confidence_score: strategy.gpt_confidence_score,
+                sentiment: strategy.sentiment,
+                currentThought: strategy.currentThought,
+                shortTermPrediction: strategy.shortTermPrediction,
+                sentimentTransition: strategy.sentimentTransition,
+                chosenTradingMode: strategy.chosenTradingMode,
+                chosenRiskProfile: strategy.chosenRiskProfile,
+                strategyReasoning: strategy.strategyReasoning,
+                analysisSummary: strategy.analysisSummary,
+                newsAnalysis: strategy.newsAnalysis,
             }
         });
         
@@ -324,7 +340,7 @@ export async function executeSignalAction(signalId: string, userId: string): Pro
         const signal = await prisma.generatedSignal.findUnique({ where: { id: signalId, userId: userId }});
         if (!signal || signal.status !== 'PENDING_EXECUTION') return { error: 'Signal not found or already processed.'};
         
-        const updatedSignal = await prisma.generatedSignal.update({ where: { id: signalId }, data: { status: 'EXECUTED' }});
+        await prisma.generatedSignal.update({ where: { id: signalId }, data: { status: 'EXECUTED' }});
 
         const position = await prisma.position.create({
             data: {
@@ -413,7 +429,7 @@ export async function closeAllPositionsAction(userId: string): Promise<{ closedC
                     where: { id: userId },
                     data: {
                         weeklyPoints: { increment: 10 }, // Simplified for bulk close
-                        airdropPoints: { increment: pnl > 0 ? pnl : 0 }
+                        airdropPoints: { increment: pnl > 0 ? Math.round(pnl) : 0 }
                     }
                 });
                 updatePromises.push(updatePositionPromise, updateUserPromise);
