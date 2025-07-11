@@ -13,7 +13,6 @@ import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import {
   generateTradingStrategyAction,
   generateShadowChoiceStrategyAction,
-  type Position,
   type GeneratedSignal,
 } from '@/app/actions';
 import { 
@@ -27,10 +26,9 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
-import { useRouter } from 'next/navigation';
 import { useClientState } from '@/hooks/use-client-state';
 
-type AIStrategyOutput = (Position | GeneratedSignal) & { 
+type AIStrategyOutput = GeneratedSignal & { 
   disclaimer: string;
 };
 
@@ -78,8 +76,7 @@ export default function CoreConsolePage() {
   const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
   
   const { user, isLoading: isUserLoading, refetchUser } = useCurrentUser();
-  const { addPosition: addClientPosition, addSignal: addClientSignal } = useClientState();
-  const router = useRouter();
+  const { addSignal: addClientSignal } = useClientState();
   
   const [analysisCount, setAnalysisCount] = useState<number>(0);
   const [lastAnalysisDate, setLastAnalysisDate] = useState<string>('');
@@ -221,12 +218,11 @@ export default function CoreConsolePage() {
           toast({ title: "SHADOW's Insight Blocked", description: result.error, variant: "destructive" });
           if(user.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
         } else {
-            const strategyResult = 'position' in result ? result.position : result.signal;
+            const strategyResult = result.signal;
             setAiStrategy({ ...strategyResult, disclaimer: STATIC_DISCLAIMER });
             
             if (user.status === 'Guest') {
-                if ('position' in result) addClientPosition(result.position);
-                else addClientSignal(result.signal);
+                addClientSignal(result.signal);
             } else {
                 refetchUser(); // Update points display
             }
@@ -244,7 +240,7 @@ export default function CoreConsolePage() {
         stopLoadingAnimation();
     }
 
-  }, [symbol, tradingMode, riskProfile, liveMarketData, user, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast, refetchUser, addClientPosition, addClientSignal, stopLoadingAnimation]);
+  }, [symbol, tradingMode, riskProfile, liveMarketData, user, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast, refetchUser, addClientSignal, stopLoadingAnimation]);
 
   useEffect(() => {
     return () => {

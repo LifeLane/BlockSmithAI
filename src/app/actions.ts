@@ -148,28 +148,33 @@ const parsePrice = (priceStr: string | undefined | null): number => {
 
 export async function generateTradingStrategyAction(
   input: GenerateTradingStrategyInput & { userId: string }
-): Promise<{ position: Position } | { error: string }> {
+): Promise<{ signal: GeneratedSignal } | { error: string }> {
 
     try {
         const strategy = await genCoreStrategy(input);
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
 
-        const position = await prisma.position.create({
+        const signal = await prisma.generatedSignal.create({
             data: {
                 userId: input.userId,
                 symbol: input.symbol,
-                signalType: strategy.signal,
-                status: 'OPEN',
-                entryPrice: parsePrice(strategy.entry_zone),
-                stopLoss: parsePrice(strategy.stop_loss),
-                takeProfit: parsePrice(strategy.take_profit),
-                tradingMode: input.tradingMode,
-                riskProfile: input.riskProfile,
-                type: 'INSTANT',
-                sentiment: strategy.sentiment,
+                signal: strategy.signal,
+                status: 'PENDING_EXECUTION',
+                entry_zone: strategy.entry_zone,
+                stop_loss: strategy.stop_loss,
+                take_profit: strategy.take_profit,
+                confidence: strategy.confidence,
+                risk_rating: strategy.risk_rating,
                 gpt_confidence_score: strategy.gpt_confidence_score,
-                openTimestamp: new Date(),
-                size: 1, // Default size
+                sentiment: strategy.sentiment,
+                currentThought: strategy.currentThought,
+                shortTermPrediction: strategy.shortTermPrediction,
+                sentimentTransition: strategy.sentimentTransition,
+                chosenTradingMode: input.tradingMode,
+                chosenRiskProfile: input.riskProfile,
+                strategyReasoning: 'N/A for instant signal.', // Not applicable here
+                analysisSummary: strategy.analysisSummary,
+                newsAnalysis: strategy.newsAnalysis,
             }
         });
 
@@ -180,7 +185,7 @@ export async function generateTradingStrategyAction(
             });
         }
         
-        return { position };
+        return { signal };
 
     } catch (error: any) {
         console.error("Error in generateTradingStrategyAction:", error);
@@ -277,7 +282,7 @@ export async function closePositionAction(positionId: string, closePrice: number
                 pnl,
                 closeTimestamp: new Date(),
                 gainedXp: Math.round(gainedXp),
-                gainedAirdropPoints: Math.round(gainedAirdropPoints),
+                gainedAirdropPoints: gainedAirdropPoints,
                 gasPaid: parseFloat(gasPaid.toFixed(2)),
                 blocksTrained
             }
@@ -287,7 +292,7 @@ export async function closePositionAction(positionId: string, closePrice: number
             where: { id: userId },
             data: {
                 weeklyPoints: { increment: Math.round(gainedXp) },
-                airdropPoints: { increment: Math.round(gainedAirdropPoints) },
+                airdropPoints: { increment: gainedAirdropPoints },
             }
         });
 
@@ -316,7 +321,7 @@ export async function executeSignalAction(signalId: string, userId: string): Pro
                 takeProfit: parsePrice(signal.take_profit),
                 tradingMode: signal.chosenTradingMode,
                 riskProfile: signal.chosenRiskProfile,
-                type: 'CUSTOM',
+                type: signal.chosenTradingMode === 'Custom' ? 'CUSTOM' : 'INSTANT',
                 sentiment: signal.sentiment,
                 gpt_confidence_score: signal.gpt_confidence_score,
                 openTimestamp: null,
@@ -326,7 +331,8 @@ export async function executeSignalAction(signalId: string, userId: string): Pro
         });
 
         return position;
-    } catch(e) {
+    } catch(e: any) {
+        console.error(e);
         return { error: 'Failed to execute signal.'}
     }
 }
@@ -392,7 +398,7 @@ export async function closeAllPositionsAction(userId: string): Promise<{ closedC
                     where: { id: userId },
                     data: {
                         weeklyPoints: { increment: 10 }, // Simplified for bulk close
-                        airdropPoints: { increment: pnl > 0 ? Math.round(pnl) : 0 }
+                        airdropPoints: { increment: pnl > 0 ? pnl : 0 }
                     }
                 });
                 updatePromises.push(updatePositionPromise, updateUserPromise);

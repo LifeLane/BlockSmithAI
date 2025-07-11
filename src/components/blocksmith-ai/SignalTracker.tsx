@@ -3,7 +3,6 @@
 
 import type { FunctionComponent } from 'react';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import {
   LogIn,
   ShieldX,
@@ -17,12 +16,11 @@ import {
   Zap,
   PlayCircle,
   MessageSquareHeart,
-  Briefcase,
   Newspaper,
   BrainCircuit,
   Trash2,
 } from 'lucide-react';
-import type { LiveMarketData, Position, GeneratedSignal } from '@/app/actions';
+import type { LiveMarketData, GeneratedSignal } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import GlyphScramble from './GlyphScramble';
@@ -32,7 +30,7 @@ import { useClientState } from '@/hooks/use-client-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from '../ui/card';
 
-type AIStrategyOutput = (Position | GeneratedSignal) & { 
+type AIStrategyOutput = GeneratedSignal & { 
   disclaimer: string;
 };
 
@@ -80,10 +78,13 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
     return null;
   }
   
-  const { signal, entry_zone, stop_loss, take_profit, confidence, gpt_confidence_score, risk_rating, sentiment, analysisSummary, newsAnalysis, disclaimer } = aiStrategy as any;
-  const isInstantSignal = 'entryPrice' in aiStrategy;
-  const type = isInstantSignal ? 'INSTANT' : 'CUSTOM';
-
+  const { 
+      signal, entry_zone, stop_loss, take_profit, confidence, gpt_confidence_score, 
+      risk_rating, sentiment, analysisSummary, newsAnalysis, disclaimer 
+  } = aiStrategy;
+  
+  const isInstantSignal = 'entryPrice' in aiStrategy; // This check is no longer valid as we always create a signal
+  const type = aiStrategy.chosenTradingMode === 'Custom' ? 'CUSTOM' : 'INSTANT';
 
   const isBuy = signal === 'BUY';
 
@@ -172,19 +173,19 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <ParameterCard 
                 label={type === 'CUSTOM' ? "Limit Entry" : "Market Entry"}
-                value={`$${formatPrice(entry_zone || (aiStrategy as Position).entryPrice)}`}
+                value={`$${formatPrice(entry_zone)}`}
                 icon={<LogIn className="mr-2 h-3 w-3" />}
                 valueClassName="text-foreground"
             />
             <ParameterCard 
                 label="Stop Loss" 
-                value={`$${formatPrice(stop_loss || (aiStrategy as Position).stopLoss)}`}
+                value={`$${formatPrice(stop_loss)}`}
                 icon={<ShieldX className="mr-2 h-3 w-3" />}
                 valueClassName="text-red-400"
             />
             <ParameterCard 
                 label="Take Profit" 
-                value={`$${formatPrice(take_profit || (aiStrategy as Position).takeProfit)}`}
+                value={`$${formatPrice(take_profit)}`}
                 icon={<Target className="mr-2 h-3 w-3" />}
                 valueClassName="text-green-400"
             />
