@@ -50,12 +50,18 @@ const generateDailyGreetingFlow = ai.defineFlow(
     outputSchema: GenerateDailyGreetingOutputSchema,
   },
   async () => {
-    const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    const {output} = await prompt({ currentDate });
+    try {
+      const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const {output} = await prompt({ currentDate });
 
-    if (!output) {
-      return { greeting: "The ether stirs. Prepare for the day's signals." };
+      if (!output) {
+        return { greeting: "The ether stirs. Prepare for the day's signals." };
+      }
+      return output;
+    } catch (error) {
+      console.error("Error in generateDailyGreetingFlow:", error);
+      // Return a static fallback greeting if the API fails
+      return { greeting: "The data stream is temporarily unavailable. Proceed with caution." };
     }
-    return output;
   }
 );
