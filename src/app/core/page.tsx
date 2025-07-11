@@ -8,13 +8,12 @@ import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
 import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardContent, CardTitle, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import {
   generateTradingStrategyAction,
   generateShadowChoiceStrategyAction,
-  generateSarcasticDisclaimer,
   type Position,
   type GeneratedSignal,
 } from '@/app/actions';
@@ -26,10 +25,9 @@ import {
 import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-react';
+import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
-import DailyGreeting from '@/components/blocksmith-ai/DailyGreeting';
 import { useRouter } from 'next/navigation';
 
 type AIStrategyOutput = (Position | GeneratedSignal) & { 
@@ -56,6 +54,9 @@ const LOADING_STEPS = [
     "Calculating Risk Parameters...",
     "Finalizing SHADOW Edict...",
 ];
+
+const STATIC_DISCLAIMER = "My analysis is a beacon in the chaos, not a crystal ball. The market writes its own script. Tread wisely.";
+const STATIC_GREETING = "The market breathes in cycles of fear and greed. Observe the patterns, not just the noise.";
 
 export default function CoreConsolePage() {
   const [symbol, setSymbol] = useState<string>(INITIAL_DEFAULT_SYMBOL);
@@ -209,19 +210,12 @@ export default function CoreConsolePage() {
 
     const marketDataForAIString = JSON.stringify(currentDataToUse);
     let result;
-    let disclaimerResult;
 
     try {
         if (isCustom) {
-            [result, disclaimerResult] = await Promise.all([
-                generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString }, currentUser.id),
-                generateSarcasticDisclaimer()
-            ]);
+            result = await generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString }, currentUser.id);
         } else {
-            [result, disclaimerResult] = await Promise.all([
-                generateTradingStrategyAction({ symbol, tradingMode, riskProfile, marketData: marketDataForAIString, userId: currentUser.id }),
-                generateSarcasticDisclaimer()
-            ]);
+            result = await generateTradingStrategyAction({ symbol, tradingMode, riskProfile, marketData: marketDataForAIString, userId: currentUser.id });
         }
         
         if ('error' in result) {
@@ -229,9 +223,8 @@ export default function CoreConsolePage() {
           toast({ title: "SHADOW's Insight Blocked", description: result.error, variant: "destructive" });
           if(currentUser.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
         } else {
-            const disclaimer = disclaimerResult.disclaimer || "My analysis is a beacon in the chaos, not a crystal ball. Tread wisely.";
             const strategyResult = 'position' in result ? result.position : result.signal;
-            setAiStrategy({ ...strategyResult, disclaimer });
+            setAiStrategy({ ...strategyResult, disclaimer: STATIC_DISCLAIMER });
 
             if ('position' in result) {
                 toast({ title: <span className="text-accent">Instant Signal Executed!</span>, description: `View your new position in the Portfolio tab.`, });
@@ -288,7 +281,18 @@ export default function CoreConsolePage() {
         
         <div className={cn("w-full space-y-3 transition-all duration-500", !showResults && 'flex-grow flex flex-col justify-center')}>
             <div className="space-y-3">
-                <DailyGreeting />
+                <Card className="mb-4 bg-card/80 backdrop-blur-sm border-primary/20 interactive-card">
+                    <CardContent className="p-4 flex items-center gap-4">
+                        <div className="p-2 bg-primary/10 rounded-full">
+                            <Bot className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="flex-grow">
+                             <p className="text-sm text-muted-foreground italic">
+                                "<GlyphScramble text={STATIC_GREETING} />"
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
                 <div id="market-data-display">
                     <MarketDataDisplay liveMarketData={liveMarketData} isLoading={isLoadingMarketData} error={marketDataError} symbolForDisplay={symbol} />
                 </div>

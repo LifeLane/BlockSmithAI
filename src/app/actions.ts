@@ -7,7 +7,6 @@ import { randomUUID } from 'crypto';
 
 // AI Flow Imports
 import { generateTradingStrategy as genCoreStrategy, type GenerateTradingStrategyInput, type GenerateTradingStrategyCoreOutput } from '@/ai/flows/generate-trading-strategy';
-import { generateSarcasticDisclaimer as genSarcasticDisclaimer, type SarcasticDisclaimerOutput } from '@/ai/flows/generate-sarcastic-disclaimer';
 import { shadowChat as shadowChatFlow, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
 import { generateShadowChoiceStrategy as genShadowChoice, type ShadowChoiceStrategyInput, type ShadowChoiceStrategyCoreOutput } from '@/ai/flows/generate-shadow-choice-strategy';
@@ -415,10 +414,6 @@ export async function shadowChatAction(input: ShadowChatInput): Promise<ShadowCh
     } catch (error: any) {
         return { error: `SHADOW's response was lost in the ether: ${error.message}` };
     }
-}
-
-export async function generateSarcasticDisclaimer(): Promise<SarcasticDisclaimerOutput> {
-    return genSarcasticDisclaimer();
 }
 
 export async function getDailyGreeting(): Promise<GenerateDailyGreetingOutput> {
