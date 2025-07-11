@@ -1,44 +1,45 @@
-
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-datasource db {
-  provider     = "postgresql"
-  url          = env("DATABASE_URL")
-  directUrl    = env("DIRECT_URL")
+generator client {
+  provider        = "prisma-client-js"
 }
 
-generator client {
-  provider = "prisma-client-js"
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id              String    @id @default(cuid())
-  shadowId        String    @unique @default(cuid())
-  username        String    @default("Guest Analyst")
-  status          String    @default("Guest")
-  weeklyPoints    Int       @default(0)
-  airdropPoints   Int       @default(0)
+  id              String   @id @default(cuid())
+  shadowId        String   @unique
+  username        String
+  status          String   @default("Guest") // Guest, Registered
+  weeklyPoints    Int      @default(0)
+  airdropPoints   Int      @default(0)
   claimedMissions String[]
-  badges          Badge[]
 
-  email           String?
-  phone           String?
+  // Airdrop Signup Fields
+  email           String?  @unique
+  phone           String?  @unique
   wallet_address  String?
-  wallet_type     String?
+  wallet_type     String? // e.g. ETH, SOL
   x_handle        String?
   telegram_handle String?
   youtube_handle  String?
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+
+  badges          Badge[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model Badge {
   id          String   @id @default(cuid())
   name        String
   description String
-  icon        String
+  icon        String // Lucide icon name or URL
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   createdAt   DateTime @default(now())
