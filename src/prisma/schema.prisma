@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-generator client {
-  provider        = "prisma-client-js"
-}
 
 datasource db {
   provider  = "postgresql"
@@ -11,28 +5,31 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id                  String   @id @default(cuid())
-  shadowId            String   @unique @default(cuid())
-  username            String   @default("Analyst")
-  status              String   @default("Guest")
-  weeklyPoints        Int      @default(0)
-  airdropPoints       Int      @default(0)
-  claimedMissions     String[]
-  
-  // Optional contact/wallet info for airdrop
-  email               String?  @unique
-  phone               String?  @unique
-  wallet_address      String?
-  wallet_type         String?
-  x_handle            String?
-  telegram_handle     String?
-  youtube_handle      String?
-  
-  badges              Badge[]
+generator client {
+  provider        = "prisma-client-js"
+}
 
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+model User {
+  id              String    @id @default(cuid())
+  shadowId        String    @unique @default(cuid())
+  username        String    @default("Analyst")
+  email           String?   @unique
+  phone           String?
+  wallet_address  String?
+  wallet_type     String?   // e.g., 'ETH', 'SOL'
+  x_handle        String?
+  telegram_handle String?
+  youtube_handle  String?
+
+  status          String    @default("Guest") // e.g., 'Guest', 'Registered'
+  weeklyPoints    Int       @default(0)
+  airdropPoints   Int       @default(0)
+
+  claimedMissions String[]
+  badges          Badge[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 model Badge {
@@ -40,8 +37,9 @@ model Badge {
   name        String
   description String
   icon        String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
