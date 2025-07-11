@@ -11,55 +11,75 @@ interface CurrentUserContextType {
   refetchUser: () => Promise<void>;
 }
 
-export const useCurrentUser = (): CurrentUserContextType => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('currentUserId');
-    }
-    return null;
-  });
+// Store context in a higher scope to persist across renders
+let userState: UserProfile | null = null;
+let listeners: ((user: UserProfile | null) => void)[] = [];
 
-  const refetchUser = useCallback(async () => {
+const setUserState = (user: UserProfile | null) => {
+  userState = user;
+  listeners.forEach((listener) => listener(user));
+};
+
+export const useCurrentUser = (): CurrentUserContextType => {
+  const [user, setUser] = useState<UserProfile | null>(userState);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const refetchUser = useCallback(async (currentUserId: string | null) => {
     setIsLoading(true);
     try {
-      const userProfile = await getOrCreateUserAction(userId);
-      setUser(userProfile);
-
-      if (userId !== userProfile.id) {
-        localStorage.setItem('currentUserId', userProfile.id);
-        setUserId(userProfile.id);
-      }
+      const userProfile = await getOrCreateUserAction(currentUserId);
+      localStorage.setItem('currentUserId', userProfile.id);
+      setUserState(userProfile);
     } catch (e) {
       console.error("Failed to refetch user:", e);
-      setUser(null);
+      setUserState(null);
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
+    // Subscribe to the shared state
+    listeners.push(setUser);
+    
     const loadUser = async () => {
+      // If user is already in shared state, don't refetch unless necessary.
+      if (userState) {
+        setUser(userState);
+        setIsLoading(false);
+        return;
+      }
+      
       setIsLoading(true);
       try {
-        const userProfile = await getOrCreateUserAction(userId);
-        setUser(userProfile);
+        const storedUserId = localStorage.getItem('currentUserId');
+        const userProfile = await getOrCreateUserAction(storedUserId);
 
-        if (userId !== userProfile.id) {
+        // If the returned ID is different, it means a new user was created.
+        if (storedUserId !== userProfile.id) {
           localStorage.setItem('currentUserId', userProfile.id);
-          setUserId(userProfile.id);
         }
+        setUserState(userProfile);
       } catch (e) {
         console.error("Failed to fetch or create user:", e);
-        setUser(null);
+        setUserState(null);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadUser();
-  }, [userId]);
 
-  return { user, setUser, isLoading, refetchUser };
+    // Cleanup listener on unmount
+    return () => {
+      listeners = listeners.filter(l => l !== setUser);
+    };
+  }, []);
+
+  const externalRefetch = useCallback(async () => {
+      const currentUserId = localStorage.getItem('currentUserId');
+      await refetchUser(currentUserId);
+  }, [refetchUser]);
+
+  return { user, setUser: setUserState, isLoading, refetchUser: externalRefetch };
 };

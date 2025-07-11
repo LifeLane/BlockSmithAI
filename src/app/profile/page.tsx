@@ -190,8 +190,8 @@ export default function ProfilePage() {
       
       if (result.success) {
           toast({
-              title: <span className="text-accent">{`Reward Claimed for "${mission.title}"!`}</span>,
-              description: <span className="text-foreground">{result.message}</span>,
+              title: <span className="text-accent">{`Reward Claimed!`}</span>,
+              description: <span className="text-foreground">{`Reward for "${mission.title}" has been added.`}</span>,
           });
           refetchUser(); 
       } else {
@@ -315,7 +315,7 @@ export default function ProfilePage() {
                                 <p className="text-lg font-semibold text-tertiary">{currentUser.weeklyPoints?.toLocaleString() || 0}</p>
                             </div>
                              <div>
-                                <p className="text-sm font-medium text-muted-foreground flex items-center"><TrendingDown className="mr-1.5 h-4 w-4"/>Total Airdrop Points:</p>
+                                <p className="text-sm font-medium text-muted-foreground flex items-center"><Gift className="mr-1.5 h-4 w-4"/>Total Airdrop Points:</p>
                                 <p className="text-lg font-semibold text-orange-400">{currentUser.airdropPoints?.toLocaleString() || 0}</p>
                             </div>
                         </CardContent>

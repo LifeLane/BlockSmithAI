@@ -91,7 +91,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, onGenerateReview, isGeneratin
                     </Tooltip>
                 </TooltipProvider>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <CardContent className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <StatCard title="Total Trades" value={stats.totalTrades} icon={<History size={14} />} />
                 <StatCard title="Win Rate" icon={<Percent size={14} />} value={`${stats.winRate.toFixed(1)}%`} subValue={stats.totalTrades > 0 ? `(${stats.winningTrades} Wins)` : undefined} valueClassName={winRateColor} />
                 <StatCard title="Total Closed PnL" icon={<DollarSign size={14} />} value={`$${stats.totalPnl.toFixed(2)}`} valueClassName={closedPnlColor} />
@@ -190,7 +190,7 @@ const PositionCard = ({ position, onProcess }: { position: Position, onProcess: 
         OPEN: { icon: <Activity className="h-4 w-4" />, label: 'OPEN', className: 'border-primary/50 text-primary animate-pulse' },
         CLOSED: { icon: <CheckCircle className="h-4 w-4" />, label: 'CLOSED', className: 'border-muted text-muted-foreground' },
     };
-    const currentStatus = statusConfig[position.status];
+    const currentStatus = statusConfig[position.status as keyof typeof statusConfig];
 
     return (
         <Card className="bg-card/90 interactive-card">
@@ -347,15 +347,15 @@ export default function PortfolioPage() {
     }, [currentUser, loadData, refetchUser, toast]);
     
     const handleGenerateReview = useCallback(async () => {
-        if (!currentUser) return;
+        if (!currentUser || !portfolioStats) return;
         setIsGeneratingReview(true);
         setReviewData(null);
         setReviewError(null);
         setIsReviewModalOpen(true);
         
         const result = await generatePerformanceReviewAction(currentUser.id, {
-            stats: portfolioStats!,
-            tradeHistory: tradeHistory.map(t => ({...t, entryPrice: t.entryPrice, closePrice: t.closePrice || 0, openTimestamp: t.openTimestamp?.toString() || ''}))
+            stats: portfolioStats,
+            tradeHistory: tradeHistory.map(t => ({...t, entryPrice: t.entryPrice, closePrice: t.closePrice || 0, openTimestamp: t.openTimestamp?.toString() || '', closeTimestamp: t.closeTimestamp?.toString() || null, pnl: t.pnl || null }))
         });
         
         if ('error' in result) setReviewError(result.error);

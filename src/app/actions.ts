@@ -470,7 +470,7 @@ export async function claimMissionRewardAction(userId: string, missionId: string
         where: { id: userId },
         data: { claimedMissions: { push: missionId } }
     });
-    return { success: true, message: `Mission reward claimed.` };
+    return { success: true, message: `Reward claimed for mission.` };
 }
 
 export async function generatePerformanceReviewAction(userId: string, input: PerformanceReviewInput): Promise<PerformanceReviewOutput | { error: string }> {
