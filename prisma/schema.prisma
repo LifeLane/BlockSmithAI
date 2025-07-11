@@ -1,4 +1,3 @@
-
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -13,94 +12,100 @@ datasource db {
 }
 
 model User {
-  id              String   @id @default(cuid())
-  username        String   @unique
-  shadowId        String   @unique
-  email           String?  @unique
-  phone           String?
-  wallet_address  String?
-  wallet_type     String?
-  x_handle        String?
-  telegram_handle String?
-  youtube_handle  String?
-  weeklyPoints    Int      @default(0)
-  airdropPoints   Float    @default(0)
-  status          String   @default("Guest")
-  claimedMissions String[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                String    @id @default(cuid())
+  username          String    @unique
+  shadowId          String    @unique
+  weeklyPoints      Int       @default(0)
+  airdropPoints     Int       @default(0)
+  status            String    @default("Guest") // e.g., Guest, Registered, Verified
+  claimedMissions   String[]  @default([])
+  email             String?
+  phone             String?
+  wallet_address    String?
+  wallet_type       String?
+  x_handle          String?
+  telegram_handle   String?
+  youtube_handle    String?
+  
+  badges            Badge[]
+  positions         Position[]
+  generatedSignals  GeneratedSignal[]
 
-  badges   Badge[]
-  positions Position[]
-  signals   GeneratedSignal[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }
 
 model Badge {
   id          String   @id @default(cuid())
   name        String
   description String
-  icon        String
+  icon        String // Lucide icon name
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
 }
 
 model Position {
-  id                  String   @id @default(cuid())
+  id                  String      @id @default(cuid())
   userId              String
   symbol              String
-  signalType          String   // BUY or SELL
-  status              String   // PENDING, OPEN, or CLOSED
+  signalType          String // "BUY" or "SELL"
+  status              String // "OPEN", "CLOSED", "PENDING"
   entryPrice          Float
   stopLoss            Float?
   takeProfit          Float?
-  size                Float    @default(1)
+  size                Float
   tradingMode         String
   riskProfile         String
-  type                String   // INSTANT or CUSTOM
-  sentiment           String?
+  type                String // "INSTANT", "CUSTOM"
+  sentiment           String
   gpt_confidence_score String?
-  createdAt           DateTime @default(now())
+  
+  createdAt           DateTime    @default(now())
   openTimestamp       DateTime?
   closeTimestamp      DateTime?
   closePrice          Float?
   pnl                 Float?
-  gainedXp            Float?
-  gainedAirdropPoints Float?
+  
+  gainedXp            Int?
+  gainedAirdropPoints Int?
   gasPaid             Float?
   blocksTrained       Int?
-  strategyId          String?  @unique
+  
+  strategyId          String?     @unique
+  signal              GeneratedSignal? @relation(fields: [strategyId], references: [id])
+  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  generatedSignal GeneratedSignal? @relation(fields: [strategyId], references: [id])
+  @@index([userId])
 }
 
 model GeneratedSignal {
-  id                    String   @id @default(cuid())
-  userId                String
-  symbol                String
-  signal                String   // BUY or SELL
-  status                String   // PENDING_EXECUTION, EXECUTED, DISMISSED
-  entry_zone            String
-  stop_loss             String
-  take_profit           String
-  confidence            String
-  risk_rating           String
-  gpt_confidence_score  String
-  sentiment             String?
-  currentThought        String?
-  shortTermPrediction   String?
-  sentimentTransition   String?
-  chosenTradingMode     String
-  chosenRiskProfile     String
-  strategyReasoning     String
-  analysisSummary       String
-  newsAnalysis          String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id                   String    @id @default(cuid())
+  userId               String
+  symbol               String
+  signal               String // "BUY" or "SELL"
+  status               String // "PENDING_EXECUTION", "EXECUTED", "DISMISSED"
+  entry_zone           String
+  stop_loss            String
+  take_profit          String
+  confidence           String
+  risk_rating          String
+  gpt_confidence_score String?
+  sentiment            String
+  currentThought       String
+  shortTermPrediction  String
+  sentimentTransition  String?
+  chosenTradingMode    String
+  chosenRiskProfile    String
+  strategyReasoning    String
+  analysisSummary      String
+  newsAnalysis         String?
+  
+  position             Position?
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  position Position?
+  @@index([userId])
 }
