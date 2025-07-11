@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import StrategySelectors from '@/components/blocksmith-ai/StrategySelectors';
 import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
@@ -44,6 +44,19 @@ const DEFAULT_SYMBOLS: FormattedSymbol[] = [
 const INITIAL_DEFAULT_SYMBOL = 'BTCUSDT';
 const MAX_GUEST_ANALYSES = 5;
 
+const LOADING_STEPS = [
+    "Initiating Neural Core...",
+    "Fusing Live Market Data...",
+    "Analyzing Multi-Timeframe Trends...",
+    "Scanning News & Sentiment...",
+    "Querying On-Chain Intelligence...",
+    "Assessing Volatility Matrix...",
+    "Formulating Core Strategy...",
+    "Pinpointing Entry & Exit Vectors...",
+    "Calculating Risk Parameters...",
+    "Finalizing SHADOW Edict...",
+];
+
 export default function CoreConsolePage() {
   const [symbol, setSymbol] = useState<string>(INITIAL_DEFAULT_SYMBOL);
   const [tradingMode, setTradingMode] = useState<string>('Intraday');
@@ -53,6 +66,7 @@ export default function CoreConsolePage() {
   const [isLoadingInstant, setIsLoadingInstant] = useState<boolean>(false);
   const [isLoadingCustom, setIsLoadingCustom] = useState<boolean>(false);
   const [strategyError, setStrategyError] = useState<string | null>(null);
+  const [loadingText, setLoadingText] = useState<string>(LOADING_STEPS[0]);
 
   const [liveMarketData, setLiveMarketData] = useState<LiveMarketData | null>(null);
   const [isLoadingMarketData, setIsLoadingMarketData] = useState<boolean>(true);
@@ -71,6 +85,7 @@ export default function CoreConsolePage() {
   const [lastAnalysisDate, setLastAnalysisDate] = useState<string>('');
 
   const { toast } = useToast();
+  const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   useEffect(() => {
     if (typeof window === 'undefined' || !currentUser || currentUser.status !== 'Guest') {
@@ -140,6 +155,15 @@ export default function CoreConsolePage() {
     }
   }, [symbol, fetchAndSetMarketData, isUserLoading]);
 
+  const stopLoadingAnimation = useCallback(() => {
+    if (loadingIntervalRef.current) {
+        clearInterval(loadingIntervalRef.current);
+        loadingIntervalRef.current = null;
+    }
+    setIsLoadingCustom(false);
+    setIsLoadingInstant(false);
+  }, []);
+
 
   const handleGenerateStrategy = useCallback(async ({ isCustom }: { isCustom: boolean }) => {
     setTimeout(() => document.getElementById('results-block')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
@@ -164,13 +188,20 @@ export default function CoreConsolePage() {
     setStrategyError(null);
     setAiStrategy(null);
 
+    let step = 0;
+    setLoadingText(LOADING_STEPS[step]);
+    loadingIntervalRef.current = setInterval(() => {
+        step = (step + 1) % LOADING_STEPS.length;
+        setLoadingText(LOADING_STEPS[step]);
+    }, 1500);
+
     let currentDataToUse = liveMarketData;
     if (!currentDataToUse || (currentDataToUse.symbol !== symbol)) {
       const result = await fetchAndSetMarketData(symbol, true);
       if ('error' in result) {
         setStrategyError("Market data unavailable. Strategy generation aborted.");
         if(currentUser.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
-        if (isCustom) setIsLoadingCustom(false); else setIsLoadingInstant(false);
+        stopLoadingAnimation();
         return;
       }
       currentDataToUse = result;
@@ -180,39 +211,53 @@ export default function CoreConsolePage() {
     let result;
     let disclaimerResult;
 
-    if (isCustom) {
-        [result, disclaimerResult] = await Promise.all([
-            generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString }, currentUser.id),
-            generateSarcasticDisclaimer()
-        ]);
-    } else {
-        [result, disclaimerResult] = await Promise.all([
-            generateTradingStrategyAction({ symbol, tradingMode, riskProfile, marketData: marketDataForAIString, userId: currentUser.id }),
-            generateSarcasticDisclaimer()
-        ]);
-    }
-    
-    if ('error' in result) {
-      setStrategyError(result.error);
-      toast({ title: "SHADOW's Insight Blocked", description: result.error, variant: "destructive" });
-      if(currentUser.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
-    } else {
-        const disclaimer = disclaimerResult.disclaimer || "My analysis is a beacon in the chaos, not a crystal ball. Tread wisely.";
-        const strategyResult = 'position' in result ? result.position : result.signal;
-        setAiStrategy({ ...strategyResult, disclaimer });
-
-        if ('position' in result) {
-            toast({ title: <span className="text-accent">Instant Signal Executed!</span>, description: `View your new position in the Portfolio tab.`, });
-            router.push('/pulse');
+    try {
+        if (isCustom) {
+            [result, disclaimerResult] = await Promise.all([
+                generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString }, currentUser.id),
+                generateSarcasticDisclaimer()
+            ]);
         } else {
-            toast({ title: <span className="text-accent">Custom Signal Generated!</span>, description: `View and simulate in the Signals tab.`, });
-            router.push('/signals');
+            [result, disclaimerResult] = await Promise.all([
+                generateTradingStrategyAction({ symbol, tradingMode, riskProfile, marketData: marketDataForAIString, userId: currentUser.id }),
+                generateSarcasticDisclaimer()
+            ]);
         }
-        refetchUser(); // Update points display
+        
+        if ('error' in result) {
+          setStrategyError(result.error);
+          toast({ title: "SHADOW's Insight Blocked", description: result.error, variant: "destructive" });
+          if(currentUser.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
+        } else {
+            const disclaimer = disclaimerResult.disclaimer || "My analysis is a beacon in the chaos, not a crystal ball. Tread wisely.";
+            const strategyResult = 'position' in result ? result.position : result.signal;
+            setAiStrategy({ ...strategyResult, disclaimer });
+
+            if ('position' in result) {
+                toast({ title: <span className="text-accent">Instant Signal Executed!</span>, description: `View your new position in the Portfolio tab.`, });
+                router.push('/pulse');
+            } else {
+                toast({ title: <span className="text-accent">Custom Signal Generated!</span>, description: `View and simulate in the Signals tab.`, });
+                router.push('/signals');
+            }
+            refetchUser(); // Update points display
+        }
+    } catch (e: any) {
+        setStrategyError(e.message || "An unexpected server error occurred.");
+        toast({ title: "SHADOW Core Fault", description: e.message, variant: "destructive" });
+    } finally {
+        stopLoadingAnimation();
     }
-    
-    if (isCustom) setIsLoadingCustom(false); else setIsLoadingInstant(false);
-  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast, refetchUser, router]);
+
+  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast, refetchUser, router, stopLoadingAnimation]);
+
+  useEffect(() => {
+    return () => {
+        if (loadingIntervalRef.current) {
+            clearInterval(loadingIntervalRef.current);
+        }
+    }
+  }, []);
 
   const handleAirdropSignupSuccess = async () => {
     setShowAirdropModal(false);
@@ -265,7 +310,7 @@ export default function CoreConsolePage() {
                                  <div className="flex flex-col items-center">
                                     <div className="flex items-center">
                                         {isLoadingInstant ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5" />}
-                                        {isLoadingInstant ? "SHADOW is Executing..." : <GlyphScramble text="Instant Signal" />}
+                                        {isLoadingInstant ? "Executing..." : <GlyphScramble text="Instant Signal" />}
                                     </div>
                                     <span className="text-xs font-normal opacity-80 mt-1">Market price, instant execution.</span>
                                 </div>
@@ -275,7 +320,7 @@ export default function CoreConsolePage() {
                                 <div className="flex flex-col items-center">
                                     <div className="flex items-center">
                                         {isLoadingCustom ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
-                                        {isLoadingCustom ? "SHADOW is Deciding..." : <GlyphScramble text="SHADOW's Signal" />}
+                                        {isLoadingCustom ? "Deciding..." : <GlyphScramble text="SHADOW's Signal" />}
                                     </div>
                                     <span className="text-xs font-normal opacity-80 mt-1">AI-chosen custom limit order.</span>
                                 </div>
@@ -298,10 +343,17 @@ export default function CoreConsolePage() {
             <div id="results-block" className="w-full space-y-6 mt-8">
                 {isLoadingCustom || isLoadingInstant ? (
                     <Card className="shadow-lg w-full bg-card/80 backdrop-blur-sm border-0 transition-all duration-300 ease-in-out">
-                        <CardHeader className="items-center text-center"> <Skeleton className="h-8 w-3/4 mb-2 bg-muted" /> <Skeleton className="h-5 w-1/2 bg-muted" /> </CardHeader>
-                        <CardContent className="space-y-4 p-6">
-                            <div className="flex justify-center"> <Loader2 className="h-12 w-12 animate-spin text-primary" /> </div>
-                            <p className="text-center text-muted-foreground font-semibold animate-pulse">SHADOW is analyzing data streams...</p>
+                        <CardHeader className="items-center text-center">
+                            <CardTitle className="text-primary text-xl font-headline flex items-center gap-2">
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                                SHADOW is Analyzing...
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4 p-6 text-center">
+                           <p className="text-lg font-semibold text-accent animate-pulse">
+                                <GlyphScramble text={loadingText} />
+                           </p>
+                           <p className="text-xs text-muted-foreground">Please stand by. Cognitive processes engaged.</p>
                         </CardContent>
                     </Card>
                 ) : strategyError ? (
