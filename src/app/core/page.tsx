@@ -29,6 +29,7 @@ import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-r
 import { cn } from '@/lib/utils';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import { useRouter } from 'next/navigation';
+import { useClientState } from '@/hooks/use-client-state';
 
 type AIStrategyOutput = (Position | GeneratedSignal) & { 
   disclaimer: string;
@@ -79,6 +80,7 @@ export default function CoreConsolePage() {
   const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
   
   const { user: currentUser, isLoading: isUserLoading, refetchUser } = useCurrentUser();
+  const { addPosition: addClientPosition, addSignal: addClientSignal } = useClientState();
   const router = useRouter();
   
   const [analysisCount, setAnalysisCount] = useState<number>(0);
@@ -224,15 +226,18 @@ export default function CoreConsolePage() {
         } else {
             const strategyResult = 'position' in result ? result.position : result.signal;
             setAiStrategy({ ...strategyResult, disclaimer: STATIC_DISCLAIMER });
-
-            if ('position' in result) {
-                toast({ title: <span className="text-accent">Instant Signal Executed!</span>, description: `View your new position in the Portfolio tab.`, });
-                router.push('/pulse');
+            
+            if (currentUser.status === 'Guest') {
+                if ('position' in result) addClientPosition(result.position);
+                else addClientSignal(result.signal);
             } else {
-                toast({ title: <span className="text-accent">Custom Signal Generated!</span>, description: `View and simulate in the Signals tab.`, });
-                router.push('/signals');
+                refetchUser(); // Update points display
             }
-            refetchUser(); // Update points display
+            
+            toast({ 
+                title: <span className="text-accent">Signal Generated!</span>, 
+                description: `SHADOW's analysis for ${symbol} is complete.`, 
+            });
         }
     } catch (e: any) {
         const errorMessage = e.message || "An unexpected server error occurred.";
@@ -242,7 +247,7 @@ export default function CoreConsolePage() {
         stopLoadingAnimation();
     }
 
-  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast, refetchUser, router, stopLoadingAnimation]);
+  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast, refetchUser, addClientPosition, addClientSignal]);
 
   useEffect(() => {
     return () => {
@@ -302,9 +307,9 @@ export default function CoreConsolePage() {
                                  <div className="flex flex-col items-center">
                                     <div className="flex items-center">
                                         {isLoadingInstant ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5" />}
-                                        {isLoadingInstant ? "Executing..." : <GlyphScramble text="Instant Signal" />}
+                                        {isLoadingInstant ? "Analyzing..." : <GlyphScramble text="Instant Signal" />}
                                     </div>
-                                    <span className="text-xs font-normal opacity-80 mt-1">Market price, instant execution.</span>
+                                    <span className="text-xs font-normal opacity-80 mt-1">AI-driven market order analysis.</span>
                                 </div>
                             </Button>
 

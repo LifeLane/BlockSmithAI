@@ -18,6 +18,7 @@ import {
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
+import { useClientState } from '@/hooks/use-client-state';
 
 const StatusBadge = ({ status }: { status: GeneratedSignal['status'] }) => {
     const statusMap = {
@@ -77,77 +78,81 @@ const GeneratedSignalCard = ({ signal, onDismiss, onExecute, isProcessing }: { s
 
 export default function SignalsPage() {
     const { user, isLoading: isUserLoading } = useCurrentUser();
-    const [signals, setSignals] = useState<GeneratedSignal[]>([]);
+    const [dbSignals, setDbSignals] = useState<GeneratedSignal[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);
     const { toast } = useToast();
     const router = useRouter();
 
+    const { 
+        signals: clientSignals, 
+        dismissSignal: dismissClientSignal, 
+        executeSignal: executeClientSignal,
+        isInitialized 
+    } = useClientState();
+    
+    const isGuest = user?.status === 'Guest';
+    const signals = isGuest ? clientSignals : dbSignals;
+
     const loadData = useCallback(async () => {
-        if (!user || user.status === 'Guest') {
-            setIsLoadingData(false);
-            return;
-        };
+        if (!user || isGuest) return;
         setIsLoadingData(true);
         const result = await fetchPositionsAndSignalsAction(user.id);
         if ('error' in result) {
             toast({ title: 'Error', description: result.error, variant: 'destructive'});
         } else {
-            setSignals(result.signals);
+            setDbSignals(result.signals);
         }
         setIsLoadingData(false);
-    }, [user, toast]);
+    }, [user, isGuest, toast]);
     
     useEffect(() => {
-        if (user) loadData();
-    }, [user, loadData]);
+        if (user && !isGuest && isInitialized) {
+            loadData();
+        } else if (isGuest || !isUserLoading) {
+            setIsLoadingData(false);
+        }
+    }, [user, isGuest, loadData, isUserLoading, isInitialized]);
     
     const handleDismiss = useCallback(async (signalId: string) => {
         if (!user) return;
         setProcessingId(signalId);
-        const result = await dismissSignalAction(signalId, user.id);
-        if ('error' in result) {
-            toast({ title: 'Error', description: result.error, variant: 'destructive' });
+        if (isGuest) {
+            dismissClientSignal(signalId);
         } else {
-            toast({ title: "Signal Dismissed" });
-            loadData();
+            const result = await dismissSignalAction(signalId, user.id);
+            if ('error' in result) {
+                toast({ title: 'Error', description: result.error, variant: 'destructive' });
+            } else {
+                toast({ title: "Signal Dismissed" });
+                loadData();
+            }
         }
         setProcessingId(null);
-    }, [user, loadData, toast]);
+    }, [user, isGuest, dismissClientSignal, loadData, toast]);
     
     const handleExecute = useCallback(async (signalId: string) => {
         if (!user) return;
         setProcessingId(signalId);
-        const result = await executeSignalAction(signalId, user.id);
-        if ('error' in result) {
-            toast({ title: "Error", description: result.error, variant: 'destructive'});
-        } else {
+        if (isGuest) {
+            executeClientSignal(signalId);
             toast({ title: "Signal Executed", description: "Your pending order has been created. Check your portfolio.", });
             router.push('/pulse');
+        } else {
+            const result = await executeSignalAction(signalId, user.id);
+            if ('error' in result) {
+                toast({ title: "Error", description: result.error, variant: 'destructive'});
+            } else {
+                toast({ title: "Signal Executed", description: "Your pending order has been created. Check your portfolio.", });
+                router.push('/pulse');
+            }
         }
         setProcessingId(null);
-    }, [user, router, toast]);
+    }, [user, isGuest, executeClientSignal, router, toast]);
 
     const renderContent = () => {
-        if (isUserLoading || isLoadingData) {
+        if ((isUserLoading && !isGuest) || !isInitialized) {
             return <div className="flex justify-center items-center h-64"> <Loader2 className="h-8 w-8 animate-spin text-primary"/> </div>;
-        }
-
-        if (user?.status === 'Guest') {
-             return (
-                <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4 interactive-card">
-                     <CardHeader>
-                        <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit"> <Bot className="h-10 w-10 text-primary" /> </div>
-                        <CardTitle className="mt-4">Signals Locked</CardTitle>
-                        <CardDescription className="mt-2 text-base">Please <strong className="text-primary">register</strong> to generate and manage trading signals.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Button asChild className="glow-button">
-                            <Link href="/profile">Register Now</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
-            );
         }
 
         if (signals.length === 0) {

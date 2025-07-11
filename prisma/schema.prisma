@@ -10,7 +10,7 @@ generator client {
 datasource db {
   provider     = "postgresql"
   url          = env("DATABASE_URL")
-  directUrl    = env("DIRECT_DATABASE_URL")
+  // Removed directUrl to resolve build error.
 }
 
 // User model to store user profile, settings, and points

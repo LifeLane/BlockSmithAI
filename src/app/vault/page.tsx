@@ -166,7 +166,7 @@ export default function VaultPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center text-lg text-orange-400">
                             <Database className="mr-3 h-5 w-5"/>
-                            My SHADOW Balance
+                            My $BSAI Balance
                         </CardTitle>
                         <CardDescription>
                             Your available <strong className="text-orange-400">$BSAI</strong> balance for staking and other operations.
@@ -174,7 +174,7 @@ export default function VaultPage() {
                     </CardHeader>
                     <CardContent>
                         <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-orange-400 font-mono tracking-wider">
-                            {(currentUser.airdropPoints || 0).toLocaleString()} <span className="text-2xl">$BSAI</span>
+                            {(currentUser.airdropPoints || 0).toLocaleString()}
                         </p>
                     </CardContent>
                 </Card>

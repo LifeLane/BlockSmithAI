@@ -23,7 +23,6 @@ import {
     type PerformanceReviewOutput,
     type PortfolioStats,
     type Position,
-    type GeneratedSignal
 } from '@/app/actions';
 import { fetchMarketDataAction } from '@/services/market-data-service';
 import { Button } from '@/components/ui/button';
@@ -42,6 +41,7 @@ import {
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { useClientState } from '@/hooks/use-client-state';
 
 const StatCard = ({ title, value, subValue, icon, valueClassName }: { title: string; value: React.ReactNode; subValue?: React.ReactNode; icon: React.ReactNode; valueClassName?: string }) => (
     <div className="flex flex-col items-center justify-center p-3 bg-secondary rounded-lg text-center border border-border/30 h-full">
@@ -277,8 +277,16 @@ const PositionCard = ({ position, onProcess }: { position: Position, onProcess: 
 
 export default function PortfolioPage() {
     const { user: currentUser, isLoading: isUserLoading, refetchUser } = useCurrentUser();
-    const [positions, setPositions] = useState<Position[]>([]);
+    const [dbPositions, setDbPositions] = useState<Position[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(true);
+    
+    const { 
+        positions: clientPositions, 
+        closePosition: closeClientPosition, 
+        activatePosition: activateClientPosition,
+        closeAllPositions: closeAllClientPositions,
+        isInitialized
+    } = useClientState();
     
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [isGeneratingReview, setIsGeneratingReview] = useState(false);
@@ -287,21 +295,28 @@ export default function PortfolioPage() {
     const [isKilling, setIsKilling] = useState(false);
     const { toast } = useToast();
 
+    const isGuest = currentUser?.status === 'Guest';
+    const positions = isGuest ? clientPositions : dbPositions;
+
     const loadData = useCallback(async () => {
-        if (!currentUser) return;
+        if (!currentUser || isGuest) return;
         setIsLoadingData(true);
         const result = await fetchPositionsAndSignalsAction(currentUser.id);
         if ('error' in result) {
             toast({ title: 'Error', description: result.error, variant: 'destructive'});
         } else {
-            setPositions(result.positions);
+            setDbPositions(result.positions);
         }
         setIsLoadingData(false);
-    }, [currentUser, toast]);
+    }, [currentUser, isGuest, toast]);
 
     useEffect(() => {
-        if (currentUser) loadData();
-    }, [currentUser, loadData]);
+        if (currentUser && !isGuest && isInitialized) {
+            loadData();
+        } else if (isGuest || !isUserLoading) {
+            setIsLoadingData(false);
+        }
+    }, [currentUser, isGuest, loadData, isUserLoading, isInitialized]);
 
     const { openPositions, tradeHistory } = useMemo(() => {
         return {
@@ -327,6 +342,14 @@ export default function PortfolioPage() {
     
     const handleProcessPosition = useCallback(async (type: 'close' | 'activate', id: string, price?: number) => {
         if (!currentUser) return;
+        
+        if (isGuest) {
+            if (type === 'close' && price !== undefined) closeClientPosition(id, price);
+            if (type === 'activate') activateClientPosition(id);
+            toast({ title: 'Success', description: `Position ${type}d successfully.`});
+            return;
+        }
+
         let result;
         if (type === 'close' && price !== undefined) {
             result = await closePositionAction(id, price, currentUser.id);
@@ -343,7 +366,7 @@ export default function PortfolioPage() {
             loadData(); // Reload all data
             refetchUser(); // Update user points
         }
-    }, [currentUser, loadData, refetchUser, toast]);
+    }, [currentUser, isGuest, closeClientPosition, activateClientPosition, loadData, refetchUser, toast]);
     
     const handleGenerateReview = useCallback(async () => {
         if (!currentUser || !portfolioStats) return;
@@ -366,18 +389,24 @@ export default function PortfolioPage() {
     const handleKillSwitch = useCallback(async () => {
         if (!currentUser) return;
         setIsKilling(true);
-        const result = await closeAllPositionsAction(currentUser.id);
-        if ('error' in result) {
-            toast({ title: 'Error', description: result.error, variant: 'destructive' });
-        } else if (result.closedCount > 0) {
-            toast({ title: "Kill Switch Activated", description: `Successfully closed ${result.closedCount} open positions.` });
-            loadData();
-            refetchUser();
+
+        if (isGuest) {
+            await closeAllClientPositions();
+            toast({ title: "Kill Switch Activated", description: `Successfully closed all open positions.` });
         } else {
-            toast({ title: 'Kill Switch', description: 'No open positions to close.' });
+            const result = await closeAllPositionsAction(currentUser.id);
+            if ('error' in result) {
+                toast({ title: 'Error', description: result.error, variant: 'destructive' });
+            } else if (result.closedCount > 0) {
+                toast({ title: "Kill Switch Activated", description: `Successfully closed ${result.closedCount} open positions.` });
+                loadData();
+                refetchUser();
+            } else {
+                toast({ title: 'Kill Switch', description: 'No open positions to close.' });
+            }
         }
         setIsKilling(false);
-    }, [currentUser, toast, loadData, refetchUser]);
+    }, [currentUser, isGuest, closeAllClientPositions, toast, loadData, refetchUser]);
     
     const renderEmptyState = (title: string, message: string) => (
         <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4 interactive-card">
@@ -390,19 +419,8 @@ export default function PortfolioPage() {
         </Card>
     );
 
-    if (isUserLoading || !currentUser) {
+    if ((isUserLoading && !isGuest) || !isInitialized) {
         return ( <> <AppHeader /> <div className="flex justify-center items-center h-[calc(100vh-8rem)]"> <Loader2 className="h-8 w-8 animate-spin text-primary"/> </div> </> );
-    }
-
-    if (currentUser.status === 'Guest') {
-         return (
-            <>
-              <AppHeader />
-              <div className="container mx-auto px-4 py-8 pb-24">
-                {renderEmptyState("Portfolio Locked", "Please register to track your portfolio and trade history.")}
-              </div>
-            </>
-        )
     }
 
     return (

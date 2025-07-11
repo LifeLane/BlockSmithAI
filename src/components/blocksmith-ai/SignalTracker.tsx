@@ -20,13 +20,15 @@ import {
   Briefcase,
   Newspaper,
   BrainCircuit,
+  Trash2,
 } from 'lucide-react';
 import type { LiveMarketData, Position, GeneratedSignal } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import GlyphScramble from './GlyphScramble';
 import { useRouter } from 'next/navigation';
-import { executeSignalAction } from '@/app/actions';
+import { executeSignalAction, dismissSignalAction } from '@/app/actions';
+import { useClientState } from '@/hooks/use-client-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from '../ui/card';
 
@@ -51,6 +53,8 @@ const ParameterCard = ({ label, value, icon, valueClassName, isLarge = false }: 
 const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, liveMarketData, userId }) => {
   const { toast } = useToast();
   const router = useRouter();
+  const { executeSignal: executeClientSignal, dismissSignal: dismissClientSignal } = useClientState();
+  const isGuest = userId.startsWith('guest_');
 
   const formatPrice = (priceString?: string | number | null): string => {
     if (priceString === null || priceString === undefined) return 'N/A';
@@ -88,23 +92,51 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
   
   const currentPriceFormatted = liveMarketData?.lastPrice ? `$${formatPrice(liveMarketData.lastPrice)}` : 'N/A';
   
-  const titleText = type === 'INSTANT' 
-    ? `Instant Signal Executed: ${aiStrategy.symbol}` 
-    : `SHADOW's Insight Unveiled: ${aiStrategy.symbol}`;
+  const titleText = `SHADOW's Insight Unveiled: ${aiStrategy.symbol}`;
 
   const handleExecute = async () => {
-    if (type !== 'CUSTOM' || !aiStrategy.id) return;
+    if (!aiStrategy.id) return;
+    
+    if (isGuest) {
+      executeClientSignal(aiStrategy.id);
+      toast({
+          title: <span className="text-accent">Signal Simulated!</span>,
+          description: <span className="text-foreground">Your pending order for <strong className="text-primary">{aiStrategy.symbol}</strong> is now active.</span>,
+      });
+      router.push('/pulse');
+      return;
+    }
+
     const result = await executeSignalAction(aiStrategy.id, userId);
 
     if ('error' in result) {
          toast({ title: 'Error', description: result.error, variant: 'destructive' });
     } else {
         toast({
-            title: <span className="text-accent">Custom Signal Simulated!</span>,
+            title: <span className="text-accent">Signal Simulated!</span>,
             description: <span className="text-foreground">Your pending order for <strong className="text-primary">{aiStrategy.symbol}</strong> is now active.</span>,
         });
         router.push('/pulse');
     }
+  };
+
+  const handleDismiss = async () => {
+      if (!aiStrategy.id) return;
+
+      if (isGuest) {
+          dismissClientSignal(aiStrategy.id);
+          toast({ title: "Signal Dismissed", description: "The signal has been removed from your local log." });
+          router.push('/signals');
+          return;
+      }
+
+      const result = await dismissSignalAction(aiStrategy.id, userId);
+      if ('error' in result) {
+           toast({ title: 'Error', description: result.error, variant: 'destructive' });
+      } else {
+           toast({ title: "Signal Dismissed" });
+           router.push('/signals');
+      }
   };
 
   return (
@@ -139,7 +171,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <ParameterCard 
-                label={type === 'CUSTOM' ? "Limit Entry" : "Executed Entry"}
+                label={type === 'CUSTOM' ? "Limit Entry" : "Market Entry"}
                 value={`$${formatPrice(entry_zone || (aiStrategy as Position).entryPrice)}`}
                 icon={<LogIn className="mr-2 h-3 w-3" />}
                 valueClassName="text-foreground"
@@ -200,23 +232,22 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
             </TabsContent>
         </Tabs>
 
-        <div className="pt-2">
-            {type === 'CUSTOM' ? (
-                <Button 
-                    className="w-full glow-button"
-                    onClick={handleExecute} 
-                >
-                    <PlayCircle className="mr-2 h-4 w-4"/>
-                    Simulate Signal
-                </Button>
-            ) : (
-                 <Button asChild className="w-full glow-button">
-                    <Link href="/pulse">
-                         <Briefcase className="mr-2 h-4 w-4"/>
-                         Track in Portfolio
-                    </Link>
-                </Button>
-            )}
+        <div className="pt-2 flex flex-col sm:flex-row gap-2">
+            <Button 
+                variant="outline"
+                className="w-full"
+                onClick={handleDismiss} 
+            >
+                <Trash2 className="mr-2 h-4 w-4"/>
+                Dismiss Signal
+            </Button>
+            <Button 
+                className="w-full glow-button"
+                onClick={handleExecute} 
+            >
+                <PlayCircle className="mr-2 h-4 w-4"/>
+                Simulate Signal
+            </Button>
         </div>
 
         {disclaimer && (
