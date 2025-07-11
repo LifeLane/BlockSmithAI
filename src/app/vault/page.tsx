@@ -10,7 +10,6 @@ import { Loader2, AlertTriangle, Lock, Unlock, Zap, Database, Cpu, Atom, Layers,
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -167,7 +166,7 @@ export default function VaultPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center text-lg text-orange-400">
                             <Database className="mr-3 h-5 w-5"/>
-                            <GlyphScramble text="My SHADOW Balance" />
+                            My SHADOW Balance
                         </CardTitle>
                         <CardDescription>
                             Your available <strong className="text-orange-400">$BSAI</strong> balance for staking and other operations.
@@ -187,7 +186,7 @@ export default function VaultPage() {
                         <CardHeader>
                             <CardTitle className="flex items-center text-lg text-accent">
                                 <Cpu className="mr-3 h-5 w-5"/>
-                                <GlyphScramble text="Mining Operations" />
+                                Mining Operations
                             </CardTitle>
                             <CardDescription>
                                 Activate mining rigs to generate <strong className="text-orange-400">$BSAI</strong> passively. Better rigs unlock with <strong className="text-tertiary">more XP</strong>.

@@ -25,7 +25,7 @@ import {
 import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Bot } from 'lucide-react';
+import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import { useRouter } from 'next/navigation';
@@ -56,7 +56,6 @@ const LOADING_STEPS = [
 ];
 
 const STATIC_DISCLAIMER = "My analysis is a beacon in the chaos, not a crystal ball. The market writes its own script. Tread wisely.";
-const STATIC_GREETING = "The market breathes in cycles of fear and greed. Observe the patterns, not just the noise.";
 
 export default function CoreConsolePage() {
   const [symbol, setSymbol] = useState<string>(INITIAL_DEFAULT_SYMBOL);
@@ -236,8 +235,9 @@ export default function CoreConsolePage() {
             refetchUser(); // Update points display
         }
     } catch (e: any) {
-        setStrategyError(e.message || "An unexpected server error occurred.");
-        toast({ title: "SHADOW Core Fault", description: e.message, variant: "destructive" });
+        const errorMessage = e.message || "An unexpected server error occurred.";
+        setStrategyError(errorMessage);
+        toast({ title: "SHADOW Core Fault", description: errorMessage, variant: "destructive" });
     } finally {
         stopLoadingAnimation();
     }
@@ -281,18 +281,6 @@ export default function CoreConsolePage() {
         
         <div className={cn("w-full space-y-3 transition-all duration-500", !showResults && 'flex-grow flex flex-col justify-center')}>
             <div className="space-y-3">
-                <Card className="mb-4 bg-card/80 backdrop-blur-sm border-primary/20 interactive-card">
-                    <CardContent className="p-4 flex items-center gap-4">
-                        <div className="p-2 bg-primary/10 rounded-full">
-                            <Bot className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="flex-grow">
-                             <p className="text-sm text-muted-foreground italic">
-                                "<GlyphScramble text={STATIC_GREETING} />"
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
                 <div id="market-data-display">
                     <MarketDataDisplay liveMarketData={liveMarketData} isLoading={isLoadingMarketData} error={marketDataError} symbolForDisplay={symbol} />
                 </div>

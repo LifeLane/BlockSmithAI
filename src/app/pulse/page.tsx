@@ -40,7 +40,6 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
@@ -59,7 +58,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, onGenerateReview, isGeneratin
         return (
              <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30 interactive-card">
                 <CardHeader className="pb-4">
-                    <CardTitle className="text-lg flex items-center gap-2 text-accent font-headline"><Briefcase /> <GlyphScramble text="Performance Matrix" /></CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2 text-accent font-headline"><Briefcase /> Performance Matrix</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="flex justify-center items-center h-24"> <Loader2 className="h-8 w-8 animate-spin text-primary"/> </div>
@@ -77,7 +76,7 @@ const PortfolioStatsDisplay = ({ stats, isLoading, onGenerateReview, isGeneratin
         <Card className="mb-4 bg-card/80 backdrop-blur-sm border-accent/30 interactive-card">
             <CardHeader className="flex-col sm:flex-row items-start sm:items-center justify-between pb-4">
                 <div className="space-y-1 mb-4 sm:mb-0">
-                    <CardTitle className="text-lg flex items-center gap-2 text-accent font-headline"><Briefcase /> <GlyphScramble text="Performance Matrix" /></CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2 text-accent font-headline"><Briefcase /> Performance Matrix</CardTitle>
                     <CardDescription>A summary of your <strong className="text-accent">lifetime activity</strong>.</CardDescription>
                 </div>
                 <TooltipProvider>
