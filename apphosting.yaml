@@ -1,5 +1,7 @@
 # apphosting.yaml
 run:
+  prebuild:
+    - npx prisma db push
   build:
     - npm install
     - npm run build
