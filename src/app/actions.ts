@@ -74,7 +74,7 @@ export type { PerformanceReviewOutput };
 export async function getOrCreateUserAction(userId: string | null): Promise<UserProfile> {
     const userQuery = { include: { badges: true } };
 
-    if (userId && !userId.startsWith('guest_')) {
+    if (userId) {
         const existingUser = await prisma.user.findUnique({ where: { id: userId }, ...userQuery });
         if(existingUser) return existingUser;
     }
@@ -83,7 +83,8 @@ export async function getOrCreateUserAction(userId: string | null): Promise<User
         data: {
              // Explicitly set default values here to satisfy Prisma client validation
             username: `Analyst-${randomUUID().substring(0, 6)}`,
-            shadowId: `SHDW-${randomUUID().toUpperCase()}`
+            shadowId: `SHDW-${randomUUID().toUpperCase()}`,
+            status: 'Guest'
         },
         ...userQuery
     });
@@ -157,7 +158,6 @@ const timeframeMappings: { [key: string]: { short: string; medium: string; long:
 export async function generateTradingStrategyAction(
   input: Omit<TradingStrategyPromptInput, 'shortTermCandles' | 'mediumTermCandles' | 'longTermCandles'> & { userId: string }
 ): Promise<{ position: Position } | { error: string }> {
-    if (input.userId.startsWith('guest_')) return { error: 'Guests cannot generate signals. Please register.' };
 
     try {
         const timeframes = timeframeMappings[input.tradingMode] || timeframeMappings.Intraday;
@@ -212,7 +212,6 @@ export async function generateTradingStrategyAction(
 export async function generateShadowChoiceStrategyAction(
   input: ShadowChoiceStrategyInput, userId: string
 ): Promise<{ signal: GeneratedSignal } | { error: string }> {
-     if (userId.startsWith('guest_')) return { error: 'Guests cannot generate signals. Please register.' };
 
     try {
         const timeframes = { short: '15m', medium: '1h', long: '4h' };
