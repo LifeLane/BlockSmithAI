@@ -2,137 +2,17 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider      = "prisma-client-js"
-  // The `engineType` is a crucial setting for ensuring compatibility with serverless environments.
-  // 'library' is the recommended engine for platforms like Vercel or Firebase App Hosting.
-  engineType    = "library"
-  // The 'accelerate' feature flag is required to use Prisma Accelerate.
-  previewFeatures = ["accelerate"]
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider  = "postgresql"
-  // The main DATABASE_URL should be your Prisma Accelerate connection string.
-  // This is used by your running application for efficient, pooled database access.
   url       = env("DATABASE_URL")
-  // The directUrl is a direct connection to your database.
-  // It's used by Prisma CLI for migration commands like `db push` during the build process.
-  // It is marked as optional to prevent validation errors in environments where it's not set.
   directUrl = env("DIRECT_DATABASE_URL")
 }
 
-model User {
-  id              String   @id @default(cuid())
-  username        String   @unique
-  shadowId        String   @unique
-  email           String?  @unique
-  phone           String?
-  wallet_address  String?
-  wallet_type     String?
-  x_handle        String?
-  telegram_handle String?
-  youtube_handle  String?
-
-  status          String   @default("Guest") // e.g., Guest, Registered, Verified
-
-  weeklyPoints    Int      @default(0)
-  airdropPoints   Int      @default(0)
-
-  claimedMissions String[]
-
-  badges          Badge[]
-  positions       Position[]
-  generatedSignals GeneratedSignal[]
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([username])
-}
-
-model Badge {
-  id          String   @id @default(cuid())
-  name        String
-  description String
-  icon        String // e.g., name of a lucide-react icon
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String
-  createdAt   DateTime @default(now())
-
-  @@index([userId])
-}
-
-model Position {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  symbol      String
-  signalType  SignalType
-  status      PositionStatus
-  entryPrice  Float
-  closePrice  Float?
-  stopLoss    Float?
-  takeProfit  Float?
-  pnl         Float?
-  size        Float    @default(1)
-  
-  tradingMode String
-  riskProfile String
-  type        PositionType // INSTANT or CUSTOM
-  sentiment   String
-  gpt_confidence_score String
-
-  createdAt       DateTime @default(now())
-  openTimestamp   DateTime?
-  closeTimestamp  DateTime?
-
-  // Analytics
-  gainedXp            Int?
-  gainedAirdropPoints Int?
-  gasPaid             Float?
-  blocksTrained       Int?
-  
-  // Link to the generated signal if it was a CUSTOM type
-  strategyId String?  @unique
-  strategy   GeneratedSignal? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
-
-
-  @@index([userId, status])
-}
-
-model GeneratedSignal {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  symbol      String
-  signal      SignalType
-  entry_zone  String
-  stop_loss   String
-  take_profit String
-  confidence  String
-  risk_rating String
-  gpt_confidence_score String
-  sentiment   String
-  currentThought String
-  shortTermPrediction String
-  sentimentTransition String?
-  
-  chosenTradingMode String
-  chosenRiskProfile String
-  strategyReasoning String
-  analysisSummary   String
-  newsAnalysis      String?
-  
-  status      GeneratedSignalStatus @default(PENDING_EXECUTION)
-  createdAt   DateTime @default(now())
-  
-  // The position that was created from this signal
-  executedPosition Position?
-
-  @@index([userId, status])
-}
-
-
+// Define Enums
 enum SignalType {
   BUY
   SELL
@@ -140,4 +20,113 @@ enum SignalType {
 
 enum PositionStatus {
   PENDING
-  
+  OPEN
+  CLOSED
+}
+
+enum PositionType {
+  INSTANT
+  CUSTOM
+}
+
+enum GeneratedSignalStatus {
+  PENDING_EXECUTION
+  EXECUTED
+  DISMISSED
+}
+
+// Models
+model User {
+  id              String   @id @default(cuid())
+  username        String   @unique
+  shadowId        String   @unique
+  weeklyPoints    Int      @default(0)
+  airdropPoints   Float    @default(0)
+  status          String   @default("Guest") // e.g., Guest, Registered
+  claimedMissions String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Airdrop/Profile Info
+  email           String?
+  phone           String?
+  wallet_address  String?
+  wallet_type     String? // e.g., ETH, SOL
+  x_handle        String?
+  telegram_handle String?
+  youtube_handle  String?
+
+  // Relations
+  positions        Position[]
+  generatedSignals GeneratedSignal[]
+  badges           Badge[]
+}
+
+model Position {
+  id                   String         @id @default(cuid())
+  userId               String
+  user                 User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbol               String
+  signalType           SignalType
+  status               PositionStatus
+  entryPrice           Float
+  stopLoss             Float?
+  takeProfit           Float?
+  size                 Int
+  tradingMode          String
+  riskProfile          String
+  type                 PositionType
+  sentiment            String?
+  gpt_confidence_score String?
+  createdAt            DateTime       @default(now())
+  openTimestamp        DateTime?
+  closeTimestamp       DateTime?
+  closePrice           Float?
+  pnl                  Float?
+  gainedXp             Int?
+  gainedAirdropPoints  Int?
+  gasPaid              Float?
+  blocksTrained        Int?
+
+  // Link to a generated signal if it was created from one
+  strategyId String?          @unique
+  signal     GeneratedSignal?
+}
+
+model GeneratedSignal {
+  id                   String                @id @default(cuid())
+  userId               String
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbol               String
+  signal               SignalType
+  entry_zone           String
+  stop_loss            String
+  take_profit          String
+  confidence           String
+  gpt_confidence_score String
+  risk_rating          String
+  sentiment            String
+  currentThought       String
+  shortTermPrediction  String
+  sentimentTransition  String?
+  chosenTradingMode    String
+  chosenRiskProfile    String
+  strategyReasoning    String
+  analysisSummary      String
+  newsAnalysis         String?
+  status               GeneratedSignalStatus
+  createdAt            DateTime              @default(now())
+
+  // The position executed from this signal
+  position Position? @relation(fields: [id], references: [strategyId])
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  icon        String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
