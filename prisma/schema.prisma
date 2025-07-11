@@ -12,15 +12,16 @@ datasource db {
 }
 
 model User {
-  id              String   @id @default(cuid())
-  shadowId        String   @unique @default(cuid())
-  username        String   @default("Analyst")
-  status          String   @default("Guest")
-  weeklyPoints    Int      @default(0)
-  airdropPoints   Int      @default(0)
+  id        String   @id @default(cuid())
+  shadowId  String   @unique @default(cuid())
+  username  String   @default("Guest Analyst")
+  status    String   @default("Guest")
+
+  weeklyPoints  Int      @default(0)
+  airdropPoints Int      @default(0)
+
   claimedMissions String[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  badges          Badge[]
 
   email           String?
   phone           String?
@@ -30,11 +31,8 @@ model User {
   telegram_handle String?
   youtube_handle  String?
 
-  badges   Badge[]
-  // Positions and GeneratedSignals are stored on the client
-  // but can be synced to the DB for persistence.
-  positions Position[]
-  signals GeneratedSignal[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Badge {
@@ -42,55 +40,8 @@ model Badge {
   name        String
   description String
   icon        String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
-}
-
-model Position {
-  id            String   @id
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  symbol        String
-  signalType    String
-  status        String
-  entryPrice    Float
-  stopLoss      Float
-  takeProfit    Float
-  size          Float
-  tradingMode   String
-  riskProfile   String
-  type          String
-  sentiment     String
-  gpt_confidence_score String
-  createdAt     DateTime @default(now())
-  openTimestamp DateTime?
-  closeTimestamp DateTime?
-  closePrice    Float?
-  pnl           Float?
-}
-
-model GeneratedSignal {
-    id            String   @id
-    userId        String
-    user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    symbol        String
-    signal        String
-    entry_zone    String
-    stop_loss     String
-    take_profit   String
-    confidence    String
-    gpt_confidence_score String
-    risk_rating   String
-    sentiment     String
-    currentThought String
-    shortTermPrediction String
-    chosenTradingMode String
-    chosenRiskProfile String
-    strategyReasoning String
-    analysisSummary String
-    newsAnalysis  String?
-    status        String
-    createdAt     DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
