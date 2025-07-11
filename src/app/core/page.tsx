@@ -8,8 +8,7 @@ import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
 import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardContent, CardTitle, CardFooter } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import {
   generateTradingStrategyAction,
@@ -64,11 +63,10 @@ export default function CoreConsolePage() {
   const [riskProfile, setRiskProfile] = useState<string>('Medium');
 
   const [aiStrategy, setAiStrategy] = useState<AIStrategyOutput | null>(null);
-  const [isLoadingInstant, setIsLoadingInstant] = useState<boolean>(false);
-  const [isLoadingCustom, setIsLoadingCustom] = useState<boolean>(false);
-  const [strategyError, setStrategyError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingText, setLoadingText] = useState<string>(LOADING_STEPS[0]);
-
+  const [strategyError, setStrategyError] = useState<string | null>(null);
+  
   const [liveMarketData, setLiveMarketData] = useState<LiveMarketData | null>(null);
   const [isLoadingMarketData, setIsLoadingMarketData] = useState<boolean>(true);
   const [marketDataError, setMarketDataError] = useState<string | null>(null);
@@ -79,7 +77,7 @@ export default function CoreConsolePage() {
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
   
-  const { user: currentUser, isLoading: isUserLoading, refetchUser } = useCurrentUser();
+  const { user, isLoading: isUserLoading, refetchUser } = useCurrentUser();
   const { addPosition: addClientPosition, addSignal: addClientSignal } = useClientState();
   const router = useRouter();
   
@@ -90,7 +88,7 @@ export default function CoreConsolePage() {
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   useEffect(() => {
-    if (typeof window === 'undefined' || !currentUser || currentUser.status !== 'Guest') {
+    if (typeof window === 'undefined' || !user || user.status !== 'Guest') {
         setAnalysisCount(0);
         return;
     }
@@ -107,7 +105,7 @@ export default function CoreConsolePage() {
     }
     setLastAnalysisDate(today);
 
-  }, [currentUser]);
+  }, [user]);
 
   const updateUsageData = useCallback((newCount: number) => {
     const today = new Date().toISOString().split('T')[0];
@@ -162,20 +160,19 @@ export default function CoreConsolePage() {
         clearInterval(loadingIntervalRef.current);
         loadingIntervalRef.current = null;
     }
-    setIsLoadingCustom(false);
-    setIsLoadingInstant(false);
+    setIsLoading(false);
   }, []);
 
 
   const handleGenerateStrategy = useCallback(async ({ isCustom }: { isCustom: boolean }) => {
     setTimeout(() => document.getElementById('results-block')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
 
-    if (!currentUser) {
+    if (!user) {
         toast({ title: "User Session Required", description: "Your guest session is still being created. Please try again in a moment." });
         return;
     }
 
-    if (currentUser.status === 'Guest') {
+    if (user.status === 'Guest') {
       const today = new Date().toISOString().split('T')[0];
       let currentCount = lastAnalysisDate !== today ? 0 : analysisCount;
       if (currentCount >= MAX_GUEST_ANALYSES) {
@@ -186,7 +183,7 @@ export default function CoreConsolePage() {
       updateUsageData(currentCount + 1);
     }
 
-    if (isCustom) setIsLoadingCustom(true); else setIsLoadingInstant(true);
+    setIsLoading(true);
     setStrategyError(null);
     setAiStrategy(null);
 
@@ -202,7 +199,7 @@ export default function CoreConsolePage() {
       const result = await fetchAndSetMarketData(symbol, true);
       if ('error' in result) {
         setStrategyError("Market data unavailable. Strategy generation aborted.");
-        if(currentUser.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
+        if(user.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
         stopLoadingAnimation();
         return;
       }
@@ -214,20 +211,20 @@ export default function CoreConsolePage() {
 
     try {
         if (isCustom) {
-            result = await generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString }, currentUser.id);
+            result = await generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString }, user.id);
         } else {
-            result = await generateTradingStrategyAction({ symbol, tradingMode, riskProfile, marketData: marketDataForAIString, userId: currentUser.id });
+            result = await generateTradingStrategyAction({ symbol, tradingMode, riskProfile, marketData: marketDataForAIString, userId: user.id });
         }
         
         if ('error' in result) {
           setStrategyError(result.error);
           toast({ title: "SHADOW's Insight Blocked", description: result.error, variant: "destructive" });
-          if(currentUser.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
+          if(user.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
         } else {
             const strategyResult = 'position' in result ? result.position : result.signal;
             setAiStrategy({ ...strategyResult, disclaimer: STATIC_DISCLAIMER });
             
-            if (currentUser.status === 'Guest') {
+            if (user.status === 'Guest') {
                 if ('position' in result) addClientPosition(result.position);
                 else addClientSignal(result.signal);
             } else {
@@ -247,7 +244,7 @@ export default function CoreConsolePage() {
         stopLoadingAnimation();
     }
 
-  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast, refetchUser, addClientPosition, addClientSignal]);
+  }, [symbol, tradingMode, riskProfile, liveMarketData, user, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast, refetchUser, addClientPosition, addClientSignal, stopLoadingAnimation]);
 
   useEffect(() => {
     return () => {
@@ -263,11 +260,11 @@ export default function CoreConsolePage() {
     await refetchUser();
   };
 
-  const isButtonDisabled = isUserLoading || isLoadingInstant || isLoadingCustom || isLoadingSymbols;
-  const showResults = aiStrategy || isLoadingCustom || isLoadingInstant || strategyError;
-  const isLimitReached = currentUser?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES;
+  const isButtonDisabled = isUserLoading || isLoading || isLoadingSymbols;
+  const showResults = aiStrategy || isLoading || strategyError;
+  const isLimitReached = user?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES;
 
-  if (isUserLoading || !currentUser) {
+  if (isUserLoading || !user) {
     return (
       <>
         <AppHeader />
@@ -295,7 +292,7 @@ export default function CoreConsolePage() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-4 pt-2">
                     {isLimitReached ? (
-                        <Button onClick={() => setShowAirdropModal(true)} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out glow-button generate-buttons h-auto md:col-span-2">
+                        <Button onClick={() => setShowAirdropModal(true)} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out glow-button h-auto md:col-span-2">
                             <div className="flex flex-col items-center">
                                 <div className="flex items-center"> <Unlock className="mr-2 h-5 w-5" /> Join for Unlimited Signals </div>
                                 <span className="text-xs font-normal opacity-80 mt-1">Register for full access.</span>
@@ -303,21 +300,21 @@ export default function CoreConsolePage() {
                         </Button>
                     ) : (
                         <>
-                            <Button onClick={() => handleGenerateStrategy({ isCustom: false })} disabled={isButtonDisabled} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out generate-signal-button generate-buttons h-auto">
+                            <Button onClick={() => handleGenerateStrategy({ isCustom: false })} disabled={isButtonDisabled} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out generate-signal-button h-auto">
                                  <div className="flex flex-col items-center">
                                     <div className="flex items-center">
-                                        {isLoadingInstant ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5" />}
-                                        {isLoadingInstant ? "Analyzing..." : <GlyphScramble text="Instant Signal" />}
+                                        {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5" />}
+                                        {isLoading ? "Analyzing..." : <GlyphScramble text="Instant Signal" />}
                                     </div>
                                     <span className="text-xs font-normal opacity-80 mt-1">AI-driven market order analysis.</span>
                                 </div>
                             </Button>
 
-                            <Button onClick={() => handleGenerateStrategy({ isCustom: true })} disabled={isButtonDisabled} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out shadow-choice-button generate-buttons h-auto">
+                            <Button onClick={() => handleGenerateStrategy({ isCustom: true })} disabled={isButtonDisabled} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out shadow-choice-button h-auto">
                                 <div className="flex flex-col items-center">
                                     <div className="flex items-center">
-                                        {isLoadingCustom ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
-                                        {isLoadingCustom ? "Deciding..." : <GlyphScramble text="SHADOW's Signal" />}
+                                        {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
+                                        {isLoading ? "Deciding..." : <GlyphScramble text="SHADOW's Signal" />}
                                     </div>
                                     <span className="text-xs font-normal opacity-80 mt-1">AI-chosen custom limit order.</span>
                                 </div>
@@ -325,7 +322,7 @@ export default function CoreConsolePage() {
                         </>
                     )}
                     
-                    {currentUser?.status === 'Guest' && (
+                    {user?.status === 'Guest' && (
                         <p className="text-xs text-center text-muted-foreground mt-2 md:col-span-2">
                         {isLimitReached ? <>You've reached your daily limit of <strong className="text-primary">{MAX_GUEST_ANALYSES} analyses</strong>.</>
                          : <>Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Register</button> for <strong className="text-orange-400">unlimited</strong>.</>
@@ -338,7 +335,7 @@ export default function CoreConsolePage() {
 
         {showResults && (
             <div id="results-block" className="w-full space-y-6 mt-8">
-                {isLoadingCustom || isLoadingInstant ? (
+                {isLoading ? (
                     <Card className="shadow-lg w-full bg-card/80 backdrop-blur-sm border-0 transition-all duration-300 ease-in-out">
                         <CardHeader className="items-center text-center">
                             <CardTitle className="text-primary text-xl font-headline flex items-center gap-2">
@@ -362,14 +359,14 @@ export default function CoreConsolePage() {
                         </CardContent>
                     </Card>
                 ) : aiStrategy && (
-                    <SignalTracker aiStrategy={aiStrategy} liveMarketData={liveMarketData} userId={currentUser?.id || ''} />
+                    <SignalTracker aiStrategy={aiStrategy} liveMarketData={liveMarketData} userId={user?.id || ''} />
                 )}
             </div>
         )}
         
       </div>
       <ChatbotPopup isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
-      {currentUser && <AirdropSignupModal isOpen={showAirdropModal} onOpenChange={setShowAirdropModal} onSignupSuccess={handleAirdropSignupSuccess} userId={currentUser.id} />}
+      {user && <AirdropSignupModal isOpen={showAirdropModal} onOpenChange={setShowAirdropModal} onSignupSuccess={handleAirdropSignupSuccess} userId={user.id} />}
     </>
   );
 }

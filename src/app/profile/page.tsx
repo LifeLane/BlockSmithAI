@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Crown, Shield, Trophy, Settings, Award, AlertTriangle, User, BarChart2, TrendingUp, TrendingDown, Zap, ShieldCheck, Gift, Clock, CheckCircle, Users, Repeat } from 'lucide-react';
+import { Crown, Shield, Trophy, Settings, Award, User, BarChart2, Zap, ShieldCheck, Gift, Clock, CheckCircle, Users, Repeat, TrendingUp } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,16 +13,12 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
-import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-
-// Import JSON-based actions and types from app/actions.ts
 import { 
   fetchLeaderboardDataJson, 
   updateUserSettingsJson, 
   claimMissionRewardAction,
-  type UserProfile, 
   type LeaderboardUser,
 } from '../actions';
 
@@ -382,14 +378,14 @@ export default function ProfilePage() {
                         <Label htmlFor="username">Username</Label>
                         <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} />
                     </div>
-                    <Button onClick={handleSaveSettings}>Save Changes</Button>
+                    <Button onClick={handleSaveSettings} className="glow-button">Save Changes</Button>
                     </CardContent>
                 )}
                 </Card>
             </TabsContent>
 
             <TabsContent value="missions" className="mt-6">
-                <Card className="mb-8 bg-card/80 backdrop-blur-sm border-accent/50 shadow-lg shadow-accent/10 interactive-card">
+                <Card className="mb-8 interactive-card">
                     <CardHeader>
                         <CardTitle className="flex items-center text-xl text-accent">
                             <Award className="mr-3 h-6 w-6"/>
@@ -418,7 +414,7 @@ export default function ProfilePage() {
                     </CardFooter>
                 </Card>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {missionsList.map(mission => (
                         <MissionCard 
                             key={mission.id}

@@ -30,8 +30,8 @@ export default function BottomNav() {
         const isActive = isMounted && pathname === item.href;
         return (
           <Link href={item.href} key={item.href} className="flex flex-col items-center justify-center w-full h-full text-muted-foreground hover:text-primary transition-colors">
-            <item.icon className={cn('h-7 w-7 sm:h-6 sm:w-6 mb-0 sm:mb-1 transition-all', isActive ? 'text-primary nav-icon-active-glow' : '')} />
-            <span className={cn('text-xs font-medium hidden sm:inline', isActive ? 'text-primary' : '')}>
+            <item.icon className={cn('h-7 w-7 sm:h-6 sm:w-6 mb-0 sm:mb-1 transition-all', isActive && 'text-primary nav-icon-active-glow')} />
+            <span className={cn('text-xs font-medium hidden sm:inline', isActive && 'text-primary')}>
               {item.label}
             </span>
           </Link>

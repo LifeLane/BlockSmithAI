@@ -1,14 +1,13 @@
 
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Loader2, AlertTriangle, Lock, Unlock, Zap, Database, Cpu, Atom, Layers, PlusCircle, ShoppingCart } from 'lucide-react';
+import { Loader2, Lock, Zap, Database, Cpu, Atom, Layers, PlusCircle, ShoppingCart } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import Link from 'next/link';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -64,7 +63,7 @@ const StakingCard = ({ shadowBalance }: { shadowBalance: number }) => {
     }
 
     return (
-        <Card className="interactive-card border-primary/50 shadow-lg shadow-primary/10">
+        <Card className="interactive-card">
             <CardHeader>
                 <CardTitle className="flex items-center text-primary"><Layers className="mr-3 h-5 w-5"/> Staking Vault</CardTitle>
                 <CardDescription>Stake your <strong className="text-orange-400">$BSAI</strong> to earn rewards. APY is dynamic based on network activity.</CardDescription>
@@ -162,7 +161,7 @@ export default function VaultPage() {
 
         return (
              <div className="space-y-8">
-                <Card className="bg-card/80 backdrop-blur-sm border-orange-400/50 shadow-lg shadow-orange-400/10 interactive-card">
+                <Card className="interactive-card">
                     <CardHeader>
                         <CardTitle className="flex items-center text-lg text-orange-400">
                             <Database className="mr-3 h-5 w-5"/>
@@ -182,7 +181,7 @@ export default function VaultPage() {
                 <StakingCard shadowBalance={currentUser.airdropPoints || 0} />
                 
                 <div>
-                     <Card className="mb-8 bg-card/80 backdrop-blur-sm border-accent/50 shadow-lg shadow-accent/10 interactive-card">
+                     <Card className="mb-8 interactive-card">
                         <CardHeader>
                             <CardTitle className="flex items-center text-lg text-accent">
                                 <Cpu className="mr-3 h-5 w-5"/>
@@ -206,7 +205,7 @@ export default function VaultPage() {
                     </div>
                 </div>
 
-                <Card className="interactive-card border-tertiary/50 shadow-lg shadow-tertiary/10">
+                <Card className="interactive-card">
                     <CardHeader>
                          <CardTitle className="flex items-center text-tertiary"><PlusCircle className="mr-3 h-5 w-5"/> Purchase Power</CardTitle>
                          <CardDescription>Future integration: Directly purchase more hash power or $BSAI tokens.</CardDescription>
