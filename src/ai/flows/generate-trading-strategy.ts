@@ -50,7 +50,7 @@ const GenerateTradingStrategyCoreOutputSchema = z.object({
   shortTermPrediction: z.string().describe("A very brief prediction, e.g., '13m until breakout scenario', 'Consolidation expected next 30m'. Max 1 short phrase."),
   sentimentTransition: z.string().optional().describe("If applicable, a brief note on sentiment change, e.g., 'Bearish -> Cautiously Neutral', 'Bullish trend strengthening'. If no significant recent transition, omit or state 'Sentiment stable'."),
   analysisSummary: z.string().describe("A brief summary of the technical analysis performed, mentioning key indicators like RSI, MACD, and Bollinger Bands, and how data from CoinGecko/CMC/Etherscan influenced the decision."),
-  newsAnalysis: z.string().optional().describe("A brief summary of how recent news and market sentiment influenced the trading decision."),
+  newsAnalysis: z.string().describe("A brief summary of how recent news and market sentiment influenced the trading decision. If no significant news was found, state that and explain that the decision is purely technical."),
 });
 export type GenerateTradingStrategyCoreOutput = z.infer<typeof GenerateTradingStrategyCoreOutputSchema>;
 
@@ -117,7 +117,7 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   10. **shortTermPrediction:** (A very brief, specific prediction.)
   11. **sentimentTransition:** (Note on sentiment change if observed.)
   12. **analysisSummary:** (A brief summary of my technical analysis, referencing the indicators used and how fundamental data influenced the decision.)
-  13. **newsAnalysis:** (A summary of how news influenced the strategy. If no significant news, state that. E.g., "Positive news flow supports the bullish technical setup," or "No major news; the trade is based purely on technicals.")
+  13. **newsAnalysis:** (A summary of how news influenced the strategy. If no significant news was found, state that and explain that the trade is based purely on technicals.)
 
   My output must be direct and solely focused on providing these 13 parameters. The chain is listening.
 `,

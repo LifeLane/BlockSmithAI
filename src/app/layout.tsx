@@ -4,7 +4,6 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import BottomNav from '@/components/layout/BottomNav';
 import { ThemeProvider } from "@/components/theme-provider";
-import ParticleBackground from '@/components/blocksmith-ai/ParticleBackground';
 
 export const metadata: Metadata = {
   title: 'BlockShadow',
@@ -31,7 +30,6 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <ParticleBackground />
           <div className="relative z-10 text-foreground min-h-screen flex flex-col">
             <main className="flex-grow flex flex-col">
               {children}

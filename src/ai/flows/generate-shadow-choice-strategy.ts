@@ -49,7 +49,7 @@ const ShadowChoiceStrategyCoreOutputSchema = z.object({
   chosenRiskProfile: z.string().describe("The risk profile I have determined is optimal (Low, Medium, or High)."),
   strategyReasoning: z.string().describe("My concise reasoning for choosing the specified trading mode and risk profile. Explain WHY based on market conditions like volatility or trend strength."),
   analysisSummary: z.string().describe("A brief summary of the technical analysis performed, mentioning key indicators like RSI, MACD, and Bollinger Bands."),
-  newsAnalysis: z.string().optional().describe("A brief summary of how recent news and market sentiment influenced the autonomous mode and risk selection."),
+  newsAnalysis: z.string().describe("A brief summary of how recent news and market sentiment influenced the autonomous mode and risk selection. If no significant news was found, state that and explain that the decision is purely technical."),
 });
 export type ShadowChoiceStrategyCoreOutput = z.infer<typeof ShadowChoiceStrategyCoreOutputSchema>;
 
@@ -146,6 +146,7 @@ const shadowChoiceStrategyFlow = ai.defineFlow(
         gpt_confidence_score: score,
         risk_rating: output.risk_rating || "Medium",
         analysisSummary: output.analysisSummary || "Analysis summary was not generated.",
+        newsAnalysis: output.newsAnalysis || "News context was not analyzed."
     };
   }
 );

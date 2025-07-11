@@ -18,6 +18,8 @@ import {
   PlayCircle,
   MessageSquareHeart,
   Briefcase,
+  Newspaper,
+  BrainCircuit,
 } from 'lucide-react';
 import type { LiveMarketData, Position, GeneratedSignal } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +27,8 @@ import { cn } from '@/lib/utils';
 import GlyphScramble from './GlyphScramble';
 import { useRouter } from 'next/navigation';
 import { executeSignalAction } from '@/app/actions';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from '../ui/card';
 
 type AIStrategyOutput = (Position | GeneratedSignal) & { 
   disclaimer: string;
@@ -72,7 +76,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
     return null;
   }
   
-  const { signal, entry_zone, stop_loss, take_profit, confidence, gpt_confidence_score, risk_rating, sentiment, analysisSummary, disclaimer } = aiStrategy as any;
+  const { signal, entry_zone, stop_loss, take_profit, confidence, gpt_confidence_score, risk_rating, sentiment, analysisSummary, newsAnalysis, disclaimer } = aiStrategy as any;
   const isInstantSignal = 'entryPrice' in aiStrategy;
   const type = isInstantSignal ? 'INSTANT' : 'CUSTOM';
 
@@ -175,12 +179,26 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
             />
         </div>
 
-        {analysisSummary && (
-             <div className="p-4 bg-secondary rounded-lg shadow-inner">
-                <h4 className="flex items-center text-sm font-semibold text-primary mb-2"><Zap className="mr-2 h-4 w-4"/>SHADOW's Technical Analysis</h4>
-                <p className="text-xs text-muted-foreground italic">"{analysisSummary}"</p>
-            </div>
-        )}
+        <Tabs defaultValue="analysis" className="w-full pt-2">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="analysis"><BrainCircuit className="h-4 w-4 mr-2" />Technical Analysis</TabsTrigger>
+                <TabsTrigger value="news"><Newspaper className="h-4 w-4 mr-2" />News & Sentiment</TabsTrigger>
+            </TabsList>
+            <TabsContent value="analysis" className="mt-2">
+                 <Card className="bg-secondary/50">
+                    <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground italic">"{analysisSummary}"</p>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="news" className="mt-2">
+                <Card className="bg-secondary/50">
+                    <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground italic">"{newsAnalysis}"</p>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+        </Tabs>
 
         <div className="pt-2">
             {type === 'CUSTOM' ? (
