@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -25,14 +26,13 @@ import {
 import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useClientState } from '@/hooks/use-client-state';
-import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import DailyGreeting from '@/components/blocksmith-ai/DailyGreeting';
+import { useRouter } from 'next/navigation';
 
 type AIStrategyOutput = (Position | GeneratedSignal) & { 
-  type: 'INSTANT' | 'CUSTOM';
   disclaimer: string;
 };
 
@@ -43,19 +43,6 @@ const DEFAULT_SYMBOLS: FormattedSymbol[] = [
 ];
 const INITIAL_DEFAULT_SYMBOL = 'BTCUSDT';
 const MAX_GUEST_ANALYSES = 5;
-
-// Helper to parse the AI's price string (which can be a range) into a single number
-const parsePrice = (priceStr: string | undefined | null): number => {
-    if (!priceStr) return NaN;
-    const cleanedStr = priceStr.replace(/[^0-9.-]/g, ' ');
-    const parts = cleanedStr.split(' ').filter(p => p !== '' && !isNaN(parseFloat(p)));
-    if (parts.length === 0) return NaN;
-    if (parts.length === 1) return parseFloat(parts[0]);
-    // For a range like "60000 - 61000", take the average.
-    const sum = parts.reduce((acc, val) => acc + parseFloat(val), 0);
-    return sum / parts.length;
-};
-
 
 export default function CoreConsolePage() {
   const [symbol, setSymbol] = useState<string>(INITIAL_DEFAULT_SYMBOL);
@@ -78,7 +65,7 @@ export default function CoreConsolePage() {
   const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
   
   const { user: currentUser, isLoading: isUserLoading, refetchUser } = useCurrentUser();
-  const { addPosition, addSignal } = useClientState();
+  const router = useRouter();
   
   const [analysisCount, setAnalysisCount] = useState<number>(0);
   const [lastAnalysisDate, setLastAnalysisDate] = useState<string>('');
@@ -211,49 +198,21 @@ export default function CoreConsolePage() {
       if(currentUser.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
     } else {
         const disclaimer = disclaimerResult.disclaimer || "My analysis is a beacon in the chaos, not a crystal ball. Tread wisely.";
-        if (isCustom) {
-          const newSignal: GeneratedSignal = {
-            ...result.strategy,
-            id: `sig_${new Date().getTime()}`, // Client-side ID
-            userId: currentUser.id,
-            symbol: symbol,
-            status: 'PENDING_EXECUTION',
-            createdAt: new Date().toISOString(),
-          };
-          addSignal(newSignal);
-          setAiStrategy({ ...newSignal, type: 'CUSTOM', disclaimer });
-          toast({ title: <span className="text-accent">Custom Signal Generated!</span>, description: `View and simulate in the Signals tab.`, });
+        const strategyResult = 'position' in result ? result.position : result.signal;
+        setAiStrategy({ ...strategyResult, disclaimer });
+
+        if ('position' in result) {
+            toast({ title: <span className="text-accent">Instant Signal Executed!</span>, description: `View your new position in the Portfolio tab.`, });
+            router.push('/pulse');
         } else {
-          const newPosition: Position = {
-            id: `pos_${new Date().getTime()}`, // Client-side ID
-            userId: currentUser.id,
-            symbol: symbol,
-            signalType: result.strategy.signal,
-            status: 'OPEN',
-            entryPrice: parsePrice(result.strategy.entry_zone),
-            stopLoss: parsePrice(result.strategy.stop_loss),
-            takeProfit: parsePrice(result.strategy.take_profit),
-            tradingMode: tradingMode,
-            riskProfile: riskProfile,
-            type: 'INSTANT',
-            sentiment: result.strategy.sentiment,
-            gpt_confidence_score: result.strategy.gpt_confidence_score,
-            createdAt: new Date().toISOString(),
-            openTimestamp: new Date().toISOString(),
-            closeTimestamp: null,
-            closePrice: null,
-            pnl: null,
-            size: 1, // Default size
-          };
-          addPosition(newPosition);
-          setAiStrategy({ ...newPosition, type: 'INSTANT', disclaimer });
-          toast({ title: <span className="text-accent">Instant Signal Executed!</span>, description: `View your new position in the Portfolio tab.`, });
+            toast({ title: <span className="text-accent">Custom Signal Generated!</span>, description: `View and simulate in the Signals tab.`, });
+            router.push('/signals');
         }
         refetchUser(); // Update points display
     }
     
     if (isCustom) setIsLoadingCustom(false); else setIsLoadingInstant(false);
-  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast, refetchUser, addPosition, addSignal]);
+  }, [symbol, tradingMode, riskProfile, liveMarketData, currentUser, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast, refetchUser, router]);
 
   const handleAirdropSignupSuccess = async () => {
     setShowAirdropModal(false);

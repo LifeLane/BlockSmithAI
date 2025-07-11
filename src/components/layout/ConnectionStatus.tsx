@@ -1,9 +1,7 @@
 
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useClientState } from '@/hooks/use-client-state';
-import { syncClientStateAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { WifiOff, Loader2 } from 'lucide-react';
@@ -11,35 +9,28 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 const ConnectionStatus = () => {
-    const { user, connectionStatus, refetchUser, isLoading: isUserLoading } = useCurrentUser();
-    const { positions, signals, isInitialized } = useClientState();
+    const { user, connectionStatus, isLoading: isUserLoading } = useCurrentUser();
     const [isSyncing, setIsSyncing] = useState(false);
     const { toast } = useToast();
     const router = useRouter();
 
-    const handleSync = async () => {
-        if (!user || !isInitialized) return;
-
-        if (user.status === 'Guest') {
-            router.push('/profile');
-            return;
-        }
-
+    const handleConnect = async () => {
+        if (isSyncing) return;
         setIsSyncing(true);
-        const result = await syncClientStateAction(user.id, { positions, signals });
-        
-        if (result.error) {
-            toast({ title: "Connection Failed", description: result.error, variant: 'destructive' });
+        toast({ title: "Connecting to Mainnet...", description: "Please wait while we establish a secure connection." });
+
+        // In a real scenario, this would involve a connection attempt.
+        // Here, we'll just simulate a delay and then redirect to registration
+        // as that's the primary action for a guest.
+        setTimeout(() => {
+            router.push('/profile');
+            toast({ title: "Registration Required", description: "Please register to connect to the mainnet." });
             setIsSyncing(false);
-        } else {
-            toast({ title: "Connection Successful!", description: "Your progress has been synced to the Mainnet." });
-            await refetchUser();
-            setIsSyncing(false);
-        }
+        }, 1500);
     };
     
     // Don't render anything if we're still loading, or if the user is online and not a guest.
-    if (isUserLoading || !isInitialized || (connectionStatus === 'online' && user?.status !== 'Guest')) {
+    if (isUserLoading || (connectionStatus === 'online' && user?.status !== 'Guest')) {
         return null; 
     }
     
@@ -47,11 +38,7 @@ const ConnectionStatus = () => {
 
     let icon = isGuest ? <WifiOff className="h-5 w-5 text-yellow-400" /> : <WifiOff className="h-5 w-5 text-destructive animate-pulse" />;
     let text = isGuest ? 'Guest Session' : 'Mainnet Offline';
-    let buttonText: React.ReactNode = 'Connect to Mainnet';
-
-    if (isGuest) {
-        buttonText = 'Register to Connect';
-    }
+    let buttonText: React.ReactNode = 'Register to Connect';
     
     if (isSyncing) {
         icon = <Loader2 className="h-5 w-5 text-primary animate-spin" />;
@@ -77,7 +64,7 @@ const ConnectionStatus = () => {
                     isGuest ? "bg-yellow-400/10 hover:bg-yellow-400/20 border-yellow-400/20 text-yellow-300" 
                             : "bg-primary/10 hover:bg-primary/20 border-primary/20 text-primary"
                 )}
-                onClick={handleSync}
+                onClick={handleConnect}
                 disabled={isSyncing}
             >
                 {buttonText}

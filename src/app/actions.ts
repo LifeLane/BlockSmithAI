@@ -1,7 +1,7 @@
 
 "use server";
 import { prisma } from '@/lib/prisma';
-import type { User as PrismaUser, Badge as PrismaBadge } from '@prisma/client';
+import type { User as PrismaUser, Badge as PrismaBadge, Position as PrismaPosition, GeneratedSignal as PrismaSignal } from '@prisma/client';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 
@@ -19,9 +19,8 @@ import {
 import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
 
 // --- Type Definitions ---
-// Note: Position and GeneratedSignal are now primarily client-side types,
-// defined in use-client-state.ts and passed to components.
-export type { Position, GeneratedSignal } from '@/hooks/use-client-state';
+export type Position = PrismaPosition;
+export type GeneratedSignal = PrismaSignal;
 
 const userWithRelations = Prisma.validator<Prisma.UserDefaultArgs>()({
   include: { badges: true },
@@ -80,8 +79,6 @@ export async function getOrCreateUserAction(userId: string | null): Promise<User
         if(existingUser) return existingUser;
     }
 
-    // If no valid userId or user not found, create a new one.
-    // The data property is required, but can be empty to use schema defaults.
     const newUser = await prisma.user.create({
         data: {
              // Explicitly set default values here to satisfy Prisma client validation
@@ -136,6 +133,20 @@ export async function fetchLeaderboardDataJson(): Promise<LeaderboardUser[]> {
 }
 
 // --- Trading & Signal Actions ---
+
+// Helper to parse the AI's price string (which can be a range) into a single number
+const parsePrice = (priceStr: string | undefined | null): number => {
+    if (!priceStr) return NaN;
+    const cleanedStr = priceStr.replace(/[^0-9.-]/g, ' ');
+    const parts = cleanedStr.split(' ').filter(p => p !== '' && !isNaN(parseFloat(p)));
+    if (parts.length === 0) return NaN;
+    if (parts.length === 1) return parseFloat(parts[0]);
+    // For a range like "60000 - 61000", take the average.
+    const sum = parts.reduce((acc, val) => acc + parseFloat(val), 0);
+    return sum / parts.length;
+};
+
+
 const timeframeMappings: { [key: string]: { short: string; medium: string; long: string; } } = {
     Scalper: { short: '1m', medium: '3m', long: '5m' },
     Sniper: { short: '5m', medium: '15m', long: '30m' },
@@ -145,7 +156,9 @@ const timeframeMappings: { [key: string]: { short: string; medium: string; long:
 
 export async function generateTradingStrategyAction(
   input: Omit<TradingStrategyPromptInput, 'shortTermCandles' | 'mediumTermCandles' | 'longTermCandles'> & { userId: string }
-): Promise<{ strategy: GenerateTradingStrategyCoreOutput } | { error: string }> {
+): Promise<{ position: Position } | { error: string }> {
+    if (input.userId.startsWith('guest_')) return { error: 'Guests cannot generate signals. Please register.' };
+
     try {
         const timeframes = timeframeMappings[input.tradingMode] || timeframeMappings.Intraday;
 
@@ -164,15 +177,31 @@ export async function generateTradingStrategyAction(
         const strategy = await genCoreStrategy(promptInput);
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
 
-        // Only update user points, do not create a position in the DB
-        if (!input.userId.startsWith('guest_')) {
-            await prisma.user.update({
-                where: { id: input.userId },
-                data: { weeklyPoints: { increment: 25 }, airdropPoints: { increment: 50 } }
-            });
-        }
+        const position = await prisma.position.create({
+            data: {
+                userId: input.userId,
+                symbol: input.symbol,
+                signalType: strategy.signal,
+                status: 'OPEN',
+                entryPrice: parsePrice(strategy.entry_zone),
+                stopLoss: parsePrice(strategy.stop_loss),
+                takeProfit: parsePrice(strategy.take_profit),
+                tradingMode: input.tradingMode,
+                riskProfile: input.riskProfile,
+                type: 'INSTANT',
+                sentiment: strategy.sentiment,
+                gpt_confidence_score: strategy.gpt_confidence_score,
+                openTimestamp: new Date(),
+                size: 1, // Default size
+            }
+        });
+
+        await prisma.user.update({
+            where: { id: input.userId },
+            data: { weeklyPoints: { increment: 25 }, airdropPoints: { increment: 50 } }
+        });
         
-        return { strategy };
+        return { position };
 
     } catch (error: any) {
         console.error("Error in generateTradingStrategyAction:", error);
@@ -182,7 +211,9 @@ export async function generateTradingStrategyAction(
 
 export async function generateShadowChoiceStrategyAction(
   input: ShadowChoiceStrategyInput, userId: string
-): Promise<{ strategy: ShadowChoiceStrategyCoreOutput } | { error: string }> {
+): Promise<{ signal: GeneratedSignal } | { error: string }> {
+     if (userId.startsWith('guest_')) return { error: 'Guests cannot generate signals. Please register.' };
+
     try {
         const timeframes = { short: '15m', medium: '1h', long: '4h' };
 
@@ -201,7 +232,16 @@ export async function generateShadowChoiceStrategyAction(
         const strategy = await genShadowChoice(promptInput);
         if (!strategy) return { error: "SHADOW Core failed to generate an autonomous strategy." };
         
-        // Only update user points, do not create a signal in the DB
+        const signal = await prisma.generatedSignal.create({
+            data: {
+                userId: userId,
+                symbol: input.symbol,
+                signal: strategy.signal,
+                status: 'PENDING_EXECUTION',
+                ...strategy,
+            }
+        });
+        
         if (!userId.startsWith('guest_')) {
             await prisma.user.update({
                 where: { id: userId },
@@ -209,7 +249,7 @@ export async function generateShadowChoiceStrategyAction(
             });
         }
 
-        return { strategy };
+        return { signal };
 
     } catch (error: any) {
         console.error("Error in generateShadowChoiceStrategyAction:", error);
@@ -217,62 +257,177 @@ export async function generateShadowChoiceStrategyAction(
     }
 }
 
-// Note: Functions for fetching/manipulating positions and signals (e.g., fetchPositionsAction, closePositionAction)
-// are removed from here. Their logic is now handled on the client-side by the `useClientState` hook.
+export async function fetchPositionsAndSignalsAction(userId: string): Promise<{ positions: Position[], signals: GeneratedSignal[] } | { error: string }> {
+    if (!userId || userId.startsWith('guest_')) return { positions: [], signals: [] };
 
-export async function updateUserPointsForClosedTradeAction(
-  userId: string,
-  pnl: number,
-  tradingMode: string,
-  riskProfile: string
-): Promise<{ success: boolean; error?: string }> {
-  if (userId.startsWith('guest_')) {
-    return { success: true }; // Don't update points for guests
-  }
-  try {
-    const modeMultipliers: { [key: string]: number } = { Scalper: 1.0, Sniper: 1.1, Intraday: 1.2, Swing: 1.5, Custom: 1.2 };
-    const riskMultipliers: { [key: string]: number } = { Low: 0.8, Medium: 1.0, High: 1.3 };
-    const modeMultiplier = modeMultipliers[tradingMode] || 1.0;
-    const riskMultiplier = riskMultipliers[riskProfile] || 1.0;
+    try {
+        const [positions, signals] = await Promise.all([
+            prisma.position.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 50 }),
+            prisma.generatedSignal.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 50 }),
+        ]);
+        return { positions, signals };
+    } catch (error: any) {
+        return { error: 'Failed to fetch account data.' };
+    }
+}
+
+export async function closePositionAction(positionId: string, closePrice: number, userId: string): Promise<Position | { error: string }> {
+    try {
+        const position = await prisma.position.findUnique({ where: { id: positionId, userId: userId }});
+        if (!position || position.status !== 'OPEN') return { error: 'Position not found or not open.' };
+        
+        const pnl = (position.signalType === 'BUY' ? closePrice - position.entryPrice : position.entryPrice - closePrice) * position.size;
+          
+        const modeMultipliers: { [key: string]: number } = { Scalper: 1.0, Sniper: 1.1, Intraday: 1.2, Swing: 1.5, Custom: 1.2 };
+        const riskMultipliers: { [key: string]: number } = { Low: 0.8, Medium: 1.0, High: 1.3 };
+        const modeMultiplier = modeMultipliers[position.tradingMode] || 1.0;
+        const riskMultiplier = riskMultipliers[position.riskProfile] || 1.0;
+        
+        const BASE_WIN_XP = 50, BASE_LOSS_XP = 10;
+        const BASE_WIN_AIRDROP_BONUS = 25, BASE_LOSS_AIRDROP_BONUS = 5;
+
+        const gainedXp = pnl > 0 ? BASE_WIN_XP * modeMultiplier * riskMultiplier : BASE_LOSS_XP * modeMultiplier;
+        const gainedAirdropPoints = pnl > 0 ? pnl + (BASE_WIN_AIRDROP_BONUS * modeMultiplier * riskMultiplier) : pnl + BASE_LOSS_AIRDROP_BONUS;
+        const gasPaid = 1.25 + (riskMultiplier - 1) + (modeMultiplier - 1);
+        const blocksTrained = 100 + Math.floor(Math.abs(pnl) * 2);
+
+        const updatedPosition = await prisma.position.update({
+            where: { id: positionId },
+            data: {
+                status: 'CLOSED',
+                closePrice,
+                pnl,
+                closeTimestamp: new Date(),
+                gainedXp: Math.round(gainedXp),
+                gainedAirdropPoints: Math.round(gainedAirdropPoints),
+                gasPaid: parseFloat(gasPaid.toFixed(2)),
+                blocksTrained
+            }
+        });
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: {
+                weeklyPoints: { increment: Math.round(gainedXp) },
+                airdropPoints: { increment: Math.round(gainedAirdropPoints) },
+            }
+        });
+
+        return updatedPosition;
+
+    } catch (e) {
+        return { error: "Failed to close position." }
+    }
+}
+
+export async function executeSignalAction(signalId: string, userId: string): Promise<Position | { error: string }> {
+    try {
+        const signal = await prisma.generatedSignal.findUnique({ where: { id: signalId, userId: userId }});
+        if (!signal || signal.status !== 'PENDING_EXECUTION') return { error: 'Signal not found or already processed.'};
+        
+        const updatedSignal = await prisma.generatedSignal.update({ where: { id: signalId }, data: { status: 'EXECUTED' }});
+
+        const position = await prisma.position.create({
+            data: {
+                userId: userId,
+                symbol: signal.symbol,
+                signalType: signal.signal,
+                status: 'PENDING',
+                entryPrice: parsePrice(signal.entry_zone),
+                stopLoss: parsePrice(signal.stop_loss),
+                takeProfit: parsePrice(signal.take_profit),
+                tradingMode: signal.chosenTradingMode,
+                riskProfile: signal.chosenRiskProfile,
+                type: 'CUSTOM',
+                sentiment: signal.sentiment,
+                gpt_confidence_score: signal.gpt_confidence_score,
+                openTimestamp: null,
+                size: 1, // Default size
+                strategyId: signal.id,
+            }
+        });
+
+        return position;
+    } catch(e) {
+        return { error: 'Failed to execute signal.'}
+    }
+}
+
+export async function dismissSignalAction(signalId: string, userId: string): Promise<GeneratedSignal | { error: string }> {
+    try {
+        const signal = await prisma.generatedSignal.findUnique({ where: { id: signalId, userId: userId }});
+        if (!signal) return { error: "Signal not found." };
+        return prisma.generatedSignal.update({
+            where: { id: signalId },
+            data: { status: 'DISMISSED' },
+        });
+    } catch (e) {
+        return { error: "Failed to dismiss signal." };
+    }
+}
+
+export async function activatePositionAction(positionId: string, userId: string): Promise<Position | { error: string }> {
+     try {
+        const position = await prisma.position.findUnique({ where: { id: positionId, userId: userId }});
+        if (!position || position.status !== 'PENDING') return { error: 'Position not found or not pending.' };
+
+        return prisma.position.update({
+            where: { id: positionId },
+            data: { status: 'OPEN', openTimestamp: new Date() },
+        });
+    } catch (e) {
+        return { error: "Failed to activate position." };
+    }
+}
+
+export async function closeAllPositionsAction(userId: string): Promise<{ closedCount: number } | { error: string }> {
+    if (!userId || userId.startsWith('guest_')) return { error: 'User not found.' };
     
-    const BASE_WIN_XP = 50, BASE_LOSS_XP = 10;
-    const BASE_WIN_AIRDROP_BONUS = 25, BASE_LOSS_AIRDROP_BONUS = 5;
+    try {
+        const openPositions = await prisma.position.findMany({ where: { userId, status: 'OPEN' }});
+        if (openPositions.length === 0) return { closedCount: 0 };
+        
+        const symbolsToFetch = [...new Set(openPositions.map(p => p.symbol))];
+        const pricePromises = symbolsToFetch.map(symbol => fetchMarketDataAction({ symbol }));
+        const priceResults = await Promise.all(pricePromises);
+        
+        const prices: Record<string, number> = {};
+        for(const result of priceResults) {
+            if(!('error' in result)) {
+                prices[result.symbol] = parseFloat(result.lastPrice);
+            }
+        }
 
-    const gainedXp = pnl > 0 ? BASE_WIN_XP * modeMultiplier * riskMultiplier : BASE_LOSS_XP * modeMultiplier;
-    const gainedAirdropPoints = pnl > 0 ? pnl + (BASE_WIN_AIRDROP_BONUS * modeMultiplier * riskMultiplier) : pnl + BASE_LOSS_AIRDROP_BONUS;
+        let closedCount = 0;
+        const updatePromises = [];
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        airdropPoints: { increment: Math.round(gainedAirdropPoints) },
-        weeklyPoints: { increment: Math.round(gainedXp) }
-      }
-    });
-    return { success: true };
-  } catch (error: any) {
-    console.error("Failed to update user points:", error);
-    return { success: false, error: "Database error while updating points." };
-  }
+        for (const position of openPositions) {
+            const closePrice = prices[position.symbol];
+            if (closePrice) {
+                closedCount++;
+                const pnl = (position.signalType === 'BUY' ? closePrice - position.entryPrice : position.entryPrice - closePrice) * position.size;
+                const updatePositionPromise = prisma.position.update({
+                    where: { id: position.id },
+                    data: { status: 'CLOSED', closePrice, pnl, closeTimestamp: new Date() }
+                });
+                 const updateUserPromise = prisma.user.update({
+                    where: { id: userId },
+                    data: {
+                        weeklyPoints: { increment: 10 }, // Simplified for bulk close
+                        airdropPoints: { increment: pnl > 0 ? pnl : 0 }
+                    }
+                });
+                updatePromises.push(updatePositionPromise, updateUserPromise);
+            }
+        }
+        
+        await prisma.$transaction(updatePromises);
+        return { closedCount };
+
+    } catch (error: any) {
+        return { error: 'Failed to close all positions.' };
+    }
 }
-
-// --- Syncing Action ---
-export async function syncClientStateAction(userId: string, data: { positions: any[], signals: any[] }): Promise<{ success: true } | { error:string }> {
-  if (!userId || !data || userId.startsWith('guest_')) return { error: "Invalid data for sync." };
-
-  try {
-      // Syncing logic is now disabled since the models are removed.
-      // This function can be re-enabled if server-side persistence is restored.
-      console.log('Client state sync requested, but is currently a client-only feature.');
-      return { success: true };
-  } catch (e:any) {
-      console.error("Sync error:", e);
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-           return { error: `Database error during sync: ${e.code}` };
-      }
-      return { error: "An unexpected error occurred during sync." };
-  }
-}
-
 
 // --- Other Actions ---
 export async function shadowChatAction(input: ShadowChatInput): Promise<ShadowChatOutput | { error: string }> {
@@ -308,3 +463,5 @@ export async function generatePerformanceReviewAction(userId: string, input: Per
     
     return genPerformanceReview(input);
 }
+
+    

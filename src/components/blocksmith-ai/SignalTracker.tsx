@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { FunctionComponent } from 'react';
@@ -19,18 +20,14 @@ import {
   Briefcase,
 } from 'lucide-react';
 import type { LiveMarketData, Position, GeneratedSignal } from '@/app/actions';
-import { useClientState } from '@/hooks/use-client-state';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import GlyphScramble from './GlyphScramble';
 import { useRouter } from 'next/navigation';
+import { executeSignalAction } from '@/app/actions';
 
 type AIStrategyOutput = (Position | GeneratedSignal) & { 
-  id?: string;
-  type: 'INSTANT' | 'CUSTOM';
   disclaimer: string;
-  analysisSummary?: string | null;
-  newsAnalysis?: string | null;
 };
 
 interface SignalTrackerProps {
@@ -48,7 +45,6 @@ const ParameterCard = ({ label, value, icon, valueClassName, isLarge = false }: 
 
 
 const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, liveMarketData, userId }) => {
-  const { executeSignal } = useClientState();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -76,7 +72,10 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
     return null;
   }
   
-  const { signal, type, entry_zone, stop_loss, take_profit, confidence, gpt_confidence_score, risk_rating, sentiment, analysisSummary, disclaimer } = aiStrategy as any;
+  const { signal, entry_zone, stop_loss, take_profit, confidence, gpt_confidence_score, risk_rating, sentiment, analysisSummary, disclaimer } = aiStrategy as any;
+  const isInstantSignal = 'entryPrice' in aiStrategy;
+  const type = isInstantSignal ? 'INSTANT' : 'CUSTOM';
+
 
   const isBuy = signal === 'BUY';
 
@@ -89,14 +88,19 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
     ? `Instant Signal Executed: ${aiStrategy.symbol}` 
     : `SHADOW's Insight Unveiled: ${aiStrategy.symbol}`;
 
-  const handleExecute = () => {
+  const handleExecute = async () => {
     if (type !== 'CUSTOM' || !aiStrategy.id) return;
-    executeSignal(aiStrategy.id);
-    toast({
-        title: <span className="text-accent">Custom Signal Simulated!</span>,
-        description: <span className="text-foreground">Your pending order for <strong className="text-primary">{aiStrategy.symbol}</strong> is now active.</span>,
-    });
-    router.push('/pulse');
+    const result = await executeSignalAction(aiStrategy.id, userId);
+
+    if ('error' in result) {
+         toast({ title: 'Error', description: result.error, variant: 'destructive' });
+    } else {
+        toast({
+            title: <span className="text-accent">Custom Signal Simulated!</span>,
+            description: <span className="text-foreground">Your pending order for <strong className="text-primary">{aiStrategy.symbol}</strong> is now active.</span>,
+        });
+        router.push('/pulse');
+    }
   };
 
   return (
@@ -132,19 +136,19 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <ParameterCard 
                 label={type === 'CUSTOM' ? "Limit Entry" : "Executed Entry"}
-                value={`$${formatPrice(entry_zone || aiStrategy.entryPrice)}`}
+                value={`$${formatPrice(entry_zone || (aiStrategy as Position).entryPrice)}`}
                 icon={<LogIn className="mr-2 h-3 w-3" />}
                 valueClassName="text-foreground"
             />
             <ParameterCard 
                 label="Stop Loss" 
-                value={`$${formatPrice(stop_loss || aiStrategy.stopLoss)}`}
+                value={`$${formatPrice(stop_loss || (aiStrategy as Position).stopLoss)}`}
                 icon={<ShieldX className="mr-2 h-3 w-3" />}
                 valueClassName="text-red-400"
             />
             <ParameterCard 
                 label="Take Profit" 
-                value={`$${formatPrice(take_profit || aiStrategy.takeProfit)}`}
+                value={`$${formatPrice(take_profit || (aiStrategy as Position).takeProfit)}`}
                 icon={<Target className="mr-2 h-3 w-3" />}
                 valueClassName="text-green-400"
             />

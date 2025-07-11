@@ -8,7 +8,6 @@ import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useClientState, type Position } from '@/hooks/use-client-state';
 import { 
     Loader2, Briefcase, AlertTriangle, LogOut, History, DollarSign, Percent, 
     ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock,
@@ -17,9 +16,14 @@ import {
 } from 'lucide-react';
 import {
     generatePerformanceReviewAction,
-    updateUserPointsForClosedTradeAction,
+    closePositionAction,
+    closeAllPositionsAction,
+    activatePositionAction,
+    fetchPositionsAndSignalsAction,
     type PerformanceReviewOutput,
     type PortfolioStats,
+    type Position,
+    type GeneratedSignal
 } from '@/app/actions';
 import { fetchMarketDataAction } from '@/services/market-data-service';
 import { Button } from '@/components/ui/button';
@@ -138,7 +142,7 @@ const RewardInfo = ({ label, value, icon, valueClassName }: { label: string, val
     </div>
 );
 
-const PositionCard = ({ position, closePosition, activatePosition }: { position: Position, closePosition: (id: string, closePrice: number) => void, activatePosition: (id: string) => void }) => {
+const PositionCard = ({ position, onProcess }: { position: Position, onProcess: (type: 'close' | 'activate', id: string, price?: number) => void }) => {
     const [livePrice, setLivePrice] = useState<number | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const { toast } = useToast();
@@ -171,15 +175,13 @@ const PositionCard = ({ position, closePosition, activatePosition }: { position:
             return;
         }
         setIsProcessing(true);
-        closePosition(position.id, livePrice);
-        toast({ title: 'Position Closed', description: `PnL: ${formatCurrency(pnl)}` });
+        await onProcess('close', position.id, livePrice);
         setIsProcessing(false);
     };
 
     const handleActivate = async () => {
         setIsProcessing(true);
-        activatePosition(position.id);
-        toast({ title: 'Position Activated', description: 'Your pending order is now open.' });
+        await onProcess('activate', position.id);
         setIsProcessing(false);
     }
     
@@ -276,8 +278,8 @@ const PositionCard = ({ position, closePosition, activatePosition }: { position:
 
 export default function PortfolioPage() {
     const { user: currentUser, isLoading: isUserLoading, refetchUser } = useCurrentUser();
-    const { positions, closePosition, activatePosition, closeAllPositions } = useClientState();
-    const [isClientLoaded, setIsClientLoaded] = useState(false);
+    const [positions, setPositions] = useState<Position[]>([]);
+    const [isLoadingData, setIsLoadingData] = useState(true);
     
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [isGeneratingReview, setIsGeneratingReview] = useState(false);
@@ -286,10 +288,21 @@ export default function PortfolioPage() {
     const [isKilling, setIsKilling] = useState(false);
     const { toast } = useToast();
 
+    const loadData = useCallback(async () => {
+        if (!currentUser) return;
+        setIsLoadingData(true);
+        const result = await fetchPositionsAndSignalsAction(currentUser.id);
+        if ('error' in result) {
+            toast({ title: 'Error', description: result.error, variant: 'destructive'});
+        } else {
+            setPositions(result.positions);
+        }
+        setIsLoadingData(false);
+    }, [currentUser, toast]);
+
     useEffect(() => {
-        // This ensures the component only renders on the client where localStorage is available.
-        setIsClientLoaded(true);
-    }, []);
+        if (currentUser) loadData();
+    }, [currentUser, loadData]);
 
     const { openPositions, tradeHistory } = useMemo(() => {
         return {
@@ -305,7 +318,7 @@ export default function PortfolioPage() {
         const totalPnl = tradeHistory.reduce((acc, t) => acc + (t.pnl || 0), 0);
         return {
             totalTrades,
-            winRate: (winningTrades / totalTrades) * 100,
+            winRate: totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0,
             winningTrades,
             totalPnl,
             bestTradePnl: Math.max(...tradeHistory.map(t => t.pnl || 0), 0),
@@ -313,14 +326,25 @@ export default function PortfolioPage() {
         };
     }, [tradeHistory]);
     
-    const handleClosePosition = (id: string, closePrice: number) => {
+    const handleProcessPosition = useCallback(async (type: 'close' | 'activate', id: string, price?: number) => {
         if (!currentUser) return;
-        const closed = closePosition(id, closePrice);
-        if (closed) {
-            updateUserPointsForClosedTradeAction(currentUser.id, closed.pnl!, closed.tradingMode, closed.riskProfile);
-            refetchUser(); // Update points in header
+        let result;
+        if (type === 'close' && price !== undefined) {
+            result = await closePositionAction(id, price, currentUser.id);
+        } else if (type === 'activate') {
+            result = await activatePositionAction(id, currentUser.id);
+        } else {
+            return;
         }
-    };
+
+        if (result && 'error' in result) {
+            toast({ title: 'Error', description: result.error, variant: 'destructive'});
+        } else {
+            toast({ title: 'Success', description: `Position ${type}d successfully.`});
+            loadData(); // Reload all data
+            refetchUser(); // Update user points
+        }
+    }, [currentUser, loadData, refetchUser, toast]);
     
     const handleGenerateReview = useCallback(async () => {
         if (!currentUser) return;
@@ -331,7 +355,7 @@ export default function PortfolioPage() {
         
         const result = await generatePerformanceReviewAction(currentUser.id, {
             stats: portfolioStats!,
-            tradeHistory: tradeHistory.map(t => ({...t, closePrice: t.closePrice || 0}))
+            tradeHistory: tradeHistory.map(t => ({...t, entryPrice: t.entryPrice, closePrice: t.closePrice || 0, openTimestamp: t.openTimestamp?.toString() || ''}))
         });
         
         if ('error' in result) setReviewError(result.error);
@@ -343,15 +367,18 @@ export default function PortfolioPage() {
     const handleKillSwitch = useCallback(async () => {
         if (!currentUser) return;
         setIsKilling(true);
-        const closedCount = await closeAllPositions();
-        if (closedCount > 0) {
-            toast({ title: "Kill Switch Activated", description: `Successfully closed ${closedCount} open positions.` });
+        const result = await closeAllPositionsAction(currentUser.id);
+        if ('error' in result) {
+            toast({ title: 'Error', description: result.error, variant: 'destructive' });
+        } else if (result.closedCount > 0) {
+            toast({ title: "Kill Switch Activated", description: `Successfully closed ${result.closedCount} open positions.` });
+            loadData();
             refetchUser();
         } else {
-            toast({ title: 'Kill Switch', description: 'No open positions to close.', variant: 'destructive' });
+            toast({ title: 'Kill Switch', description: 'No open positions to close.' });
         }
         setIsKilling(false);
-    }, [currentUser, toast, closeAllPositions, refetchUser]);
+    }, [currentUser, toast, loadData, refetchUser]);
     
     const renderEmptyState = (title: string, message: string) => (
         <Card className="text-center py-12 px-6 bg-card/80 backdrop-blur-sm mt-4 interactive-card">
@@ -364,8 +391,19 @@ export default function PortfolioPage() {
         </Card>
     );
 
-    if (isUserLoading || !isClientLoaded || !currentUser) {
+    if (isUserLoading || !currentUser) {
         return ( <> <AppHeader /> <div className="flex justify-center items-center h-[calc(100vh-8rem)]"> <Loader2 className="h-8 w-8 animate-spin text-primary"/> </div> </> );
+    }
+
+    if (currentUser.status === 'Guest') {
+         return (
+            <>
+              <AppHeader />
+              <div className="container mx-auto px-4 py-8 pb-24">
+                {renderEmptyState("Portfolio Locked", "Please register to track your portfolio and trade history.")}
+              </div>
+            </>
+        )
     }
 
     return (
@@ -374,7 +412,7 @@ export default function PortfolioPage() {
       <div className="container mx-auto px-4 py-8 pb-24">
         <PortfolioStatsDisplay 
             stats={portfolioStats} 
-            isLoading={isUserLoading} 
+            isLoading={isLoadingData} 
             onGenerateReview={handleGenerateReview} 
             isGeneratingReview={isGeneratingReview} 
             onKillSwitch={handleKillSwitch} 
@@ -387,11 +425,13 @@ export default function PortfolioPage() {
                 <TabsTrigger value="history" className="data-[state=active]:shadow-active-tab-glow">Trade History ({tradeHistory.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="open" className="mt-4 space-y-3">
-                {openPositions.length > 0 ? openPositions.map(pos => <PositionCard key={pos.id} position={pos} closePosition={handleClosePosition} activatePosition={activatePosition} />)
+                {isLoadingData ? <div className="flex justify-center items-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
+                : openPositions.length > 0 ? openPositions.map(pos => <PositionCard key={pos.id} position={pos} onProcess={handleProcessPosition} />)
                 : renderEmptyState("No Active Positions", "Simulated positions appear here after execution from the Core Console.")}
             </TabsContent>
             <TabsContent value="history" className="mt-4 space-y-3">
-                 {tradeHistory.length > 0 ? tradeHistory.map(pos => <PositionCard key={pos.id} position={pos} closePosition={handleClosePosition} activatePosition={activatePosition} />)
+                 {isLoadingData ? <div className="flex justify-center items-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
+                 : tradeHistory.length > 0 ? tradeHistory.map(pos => <PositionCard key={pos.id} position={pos} onProcess={handleProcessPosition} />)
                 : renderEmptyState("No Trade History", "Your closed trades will appear here.")}
             </TabsContent>
         </Tabs>
