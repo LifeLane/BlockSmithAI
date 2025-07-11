@@ -338,7 +338,7 @@ export default function CoreConsolePage() {
                 {isLoading ? (
                     <Card className="shadow-lg w-full bg-card/80 backdrop-blur-sm border-0 transition-all duration-300 ease-in-out">
                         <CardHeader className="items-center text-center">
-                            <CardTitle className="text-primary text-xl font-headline flex items-center gap-2">
+                            <CardTitle className="text-primary text-xl flex items-center gap-2">
                                 <Loader2 className="h-5 w-5 animate-spin" />
                                 SHADOW is Analyzing...
                             </CardTitle>
@@ -352,7 +352,7 @@ export default function CoreConsolePage() {
                     </Card>
                 ) : strategyError ? (
                     <Card className="shadow-lg border border-destructive/50 w-full bg-card transition-all duration-300 ease-in-out">
-                        <CardHeader className="items-center text-center"> <CardTitle className="flex items-center text-destructive text-xl font-headline"> <AlertTriangle className="mr-2 h-6 w-6" /> Analysis Disrupted </CardTitle> </CardHeader>
+                        <CardHeader className="items-center text-center"> <CardTitle className="flex items-center text-destructive text-xl"> <AlertTriangle className="mr-2 h-6 w-6" /> Analysis Disrupted </CardTitle> </CardHeader>
                         <CardContent className="text-center p-6">
                             <p className="text-destructive-foreground text-base">{strategyError}</p>
                             <p className="text-sm text-muted-foreground mt-3"> My quantum awareness encounters interference. The signal is unclear. Please try again. </p>
