@@ -30,6 +30,12 @@ export const fetchNewsTool = ai.defineTool(
     outputSchema: FetchNewsOutputSchema,
   },
   async (input) => {
+    // Check for API key at the tool level before calling the service
+    const apiKey = process.env.NEWS_API_KEY;
+    if (!apiKey || apiKey.includes("YOUR_")) {
+        return { error: 'News API key is not configured. News service is unavailable.' };
+    }
+
     const result = await fetchRecentNews(input);
 
     if ('error' in result) {

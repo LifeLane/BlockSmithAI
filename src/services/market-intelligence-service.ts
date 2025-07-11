@@ -13,7 +13,7 @@ interface CmcParams {
 export async function getCoinMarketCapData(params: CmcParams): Promise<{ data: any } | { error: string }> {
   const apiKey = process.env.COINMARKETCAP_API_KEY;
   if (!apiKey || apiKey.includes("YOUR_")) {
-    return { error: 'CoinMarketCap API key is not configured.' };
+    return { error: 'CoinMarketCap API key is not configured. This service is unavailable.' };
   }
 
   const url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${params.symbol.toUpperCase()}`;
@@ -40,6 +40,11 @@ interface CgParams {
 
 export async function getCoinGeckoData(params: CgParams): Promise<{ data: any } | { error: string }> {
   const apiKey = process.env.COINGECKO_API_KEY;
+  // Public API does not require a key. This check allows graceful degradation if a pro key is expected but not provided.
+  if (process.env.USE_COINGECKO_PRO && (!apiKey || apiKey.includes("YOUR_"))) {
+      return { error: "CoinGecko Pro API key is not configured. This service is unavailable." };
+  }
+
   const baseUrl = apiKey && !apiKey.includes("YOUR_") ? 'https://pro-api.coingecko.com/api/v3' : 'https://api.coingecko.com/api/v3';
   const headers: HeadersInit = apiKey && !apiKey.includes("YOUR_") ? { 'x-cg-pro-api-key': apiKey } : {};
 
@@ -62,7 +67,7 @@ export async function getCoinGeckoData(params: CgParams): Promise<{ data: any } 
 export async function getEtherscanGasOracle(): Promise<{ data: any } | { error: string }> {
   const apiKey = process.env.ETHERSCAN_API_KEY;
   if (!apiKey || apiKey.includes("YOUR_")) {
-    return { error: 'Etherscan API key is not configured.' };
+    return { error: 'Etherscan API key is not configured. This service is unavailable.' };
   }
 
   const url = `https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=${apiKey}`;
