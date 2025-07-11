@@ -81,10 +81,8 @@ export async function getOrCreateUserAction(userId: string | null): Promise<User
     }
 
     // If no valid userId or user not found, create a new one.
+    // The data property is removed to allow Prisma to use schema defaults.
     const newUser = await prisma.user.create({
-        data: {
-            // Default values are now handled by the schema
-        },
         ...userQuery
     });
     return newUser;
