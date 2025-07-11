@@ -1,5 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider        = "prisma-client-js"
@@ -7,31 +5,28 @@ generator client {
 }
 
 datasource db {
-  provider     = "postgresql"
-  url          = env("STORAGE_PRISMA_DATABASE_URL") // uses connection pooling
-  directUrl    = env("STORAGE_POSTGRES_URL") // uses a direct connection
-  relationMode = "prisma"
+  provider  = "postgresql"
+  url       = env("STORAGE_PRISMA_DATABASE_URL")
+  directUrl = env("STORAGE_POSTGRES_URL")
 }
 
 model User {
-  id                String            @id @default(cuid())
-  shadowId          String            @unique @default(cuid())
+  id                String           @id @default(cuid())
+  shadowId          String           @unique @default(cuid())
   username          String
-  status            String?           @default("Guest") // Guest, Registered
-  weeklyPoints      Int?              @default(0)
-  airdropPoints     Int?              @default(0)
-  claimedMissions   String[]
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  // Contact & Wallet
-  email             String?           @unique
+  email             String?          @unique
   phone             String?
   wallet_address    String?
-  wallet_type       String? // e.g. ETH, SOL
+  wallet_type       String?
   x_handle          String?
   telegram_handle   String?
   youtube_handle    String?
-  // Relations
+  status            String           @default("Guest")
+  weeklyPoints      Int              @default(0)
+  airdropPoints     Int              @default(0)
+  claimedMissions   String[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
   badges            Badge[]
   positions         Position[]
   generatedSignals  GeneratedSignal[]
@@ -43,63 +38,63 @@ model Badge {
   description String
   icon        String
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt // Added this line
+  updatedAt   DateTime @updatedAt
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Position {
-  id                   String        @id @default(cuid())
-  userId               String
-  user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  symbol               String
-  signalType           String // BUY or SELL
-  status               String // PENDING, OPEN, or CLOSED
-  entryPrice           Float
-  stopLoss             Float?
-  takeProfit           Float?
-  size                 Float         @default(1)
-  tradingMode          String
-  riskProfile          String
-  type                 String // INSTANT or CUSTOM
-  sentiment            String?
-  gpt_confidence_score String?
-  openTimestamp        DateTime?
-  closeTimestamp       DateTime?
-  closePrice           Float?
-  pnl                  Float?
-  gainedXp             Int?
-  gainedAirdropPoints  Float?
-  gasPaid              Float?
-  blocksTrained        Int?
-  strategyId           String?       @unique // links to a GeneratedSignal
-  GeneratedSignal      GeneratedSignal? @relation(fields: [strategyId], references: [id])
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
+  id                  String   @id @default(cuid())
+  symbol              String
+  signalType          String // "BUY" or "SELL"
+  status              String // "PENDING", "OPEN", "CLOSED"
+  entryPrice          Float
+  stopLoss            Float?
+  takeProfit          Float?
+  size                Float    @default(1)
+  tradingMode         String
+  riskProfile         String
+  type                String // "INSTANT" or "CUSTOM"
+  sentiment           String
+  gpt_confidence_score String
+  openTimestamp       DateTime?
+  closeTimestamp      DateTime?
+  closePrice          Float?
+  pnl                 Float?
+  gainedXp            Float?
+  gainedAirdropPoints Float?
+  gasPaid             Float?
+  blocksTrained       Int?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategyId          String?  @unique
+  strategy            GeneratedSignal? @relation(fields: [strategyId], references: [id])
 }
 
 model GeneratedSignal {
-  id                    String        @id @default(cuid())
-  userId                String
-  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  symbol                String
-  signal                String // BUY or SELL
-  entry_zone            String
-  stop_loss             String
-  take_profit           String
-  confidence            String
-  gpt_confidence_score  String
-  risk_rating           String
-  sentiment             String
-  currentThought        String
-  shortTermPrediction   String
-  chosenTradingMode     String
-  chosenRiskProfile     String
-  strategyReasoning     String
-  analysisSummary       String
-  newsAnalysis          String?
-  status                String        @default("PENDING_EXECUTION") // PENDING_EXECUTION, EXECUTED, DISMISSED
-  position              Position?
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
+  id                   String   @id @default(cuid())
+  symbol               String
+  signal               String // "BUY" or "SELL"
+  entry_zone           String
+  stop_loss            String
+  take_profit          String
+  confidence           String
+  gpt_confidence_score String
+  risk_rating          String
+  sentiment            String
+  currentThought       String
+  shortTermPrediction  String
+  chosenTradingMode    String
+  chosenRiskProfile    String
+  strategyReasoning    String
+  analysisSummary      String
+  newsAnalysis         String?
+  status               String // "PENDING_EXECUTION", "EXECUTED", "DISMISSED"
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  executedPosition     Position?
 }
