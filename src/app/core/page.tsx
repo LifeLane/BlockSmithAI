@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -228,7 +227,7 @@ export default function CoreConsolePage() {
     return (
       <>
         <AppHeader />
-        <div className="flex flex-col flex-grow items-center justify-center h-[calc(100vh-140px)]">
+        <div className="flex flex-col flex-grow items-center justify-center h-full text-center px-4">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
           <p className="mt-4 text-muted-foreground font-semibold">Initializing SHADOW Interface...</p>
         </div>

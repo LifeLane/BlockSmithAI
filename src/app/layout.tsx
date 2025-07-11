@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster"
 import BottomNav from '@/components/layout/BottomNav';
 import { ThemeProvider } from "@/components/theme-provider";
 import ParticleBackground from '@/components/blocksmith-ai/ParticleBackground';
-import ConnectionStatus from '@/components/layout/ConnectionStatus';
 
 export const metadata: Metadata = {
   title: 'BlockShadow',
@@ -32,10 +31,9 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <ConnectionStatus />
           <ParticleBackground />
-          <div className="relative z-10 text-foreground min-h-screen flex flex-col pt-12">
-            <main className="flex-grow">
+          <div className="relative z-10 text-foreground min-h-screen flex flex-col">
+            <main className="flex-grow flex flex-col">
               {children}
             </main>
             <BottomNav />
