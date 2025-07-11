@@ -51,14 +51,27 @@ export const useCurrentUser = () => {
     } catch (e) {
       console.error("Mainnet connection failed, creating guest session:", e);
       setConnectionStatus('offline');
-      // Always create a guest profile if offline, ensuring a consistent state.
       const guestId = userId && userId.startsWith('guest_') ? userId : `guest_${Date.now()}`;
-      setUser(createGuestProfile(guestId));
-      if (typeof window !== 'undefined' && guestId !== userId) {
-            localStorage.setItem('currentUserId', guestId);
+      if (typeof window !== 'undefined') {
+        const storedGuest = localStorage.getItem('guestUser');
+        if (storedGuest) {
+            setUser(JSON.parse(storedGuest));
+        } else {
+            const newGuestProfile = createGuestProfile(guestId);
+            setUser(newGuestProfile);
+            localStorage.setItem('guestUser', JSON.stringify(newGuestProfile));
+        }
+        localStorage.setItem('currentUserId', guestId);
       }
     } finally {
       setIsLoading(false);
+    }
+  }, []);
+
+  const updateUser = useCallback((updatedUser: UserProfile | null) => {
+    setUser(updatedUser);
+    if (updatedUser && updatedUser.status === 'Guest') {
+        localStorage.setItem('guestUser', JSON.stringify(updatedUser));
     }
   }, []);
 
@@ -67,8 +80,7 @@ export const useCurrentUser = () => {
       const userIdFromStorage = localStorage.getItem('currentUserId');
       loadUser(userIdFromStorage);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadUser]);
 
   const refetchUser = useCallback(async () => {
     if (typeof window !== 'undefined') {
@@ -77,5 +89,5 @@ export const useCurrentUser = () => {
     }
   }, [loadUser]);
 
-  return { user, setUser, isLoading, connectionStatus, refetchUser };
+  return { user, setUser: updateUser, isLoading, connectionStatus, refetchUser };
 };

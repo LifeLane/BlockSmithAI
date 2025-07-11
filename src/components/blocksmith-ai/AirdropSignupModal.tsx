@@ -20,6 +20,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Mail, Gift, Rocket, Sparkles, Phone, User, Bot, Loader2 } from 'lucide-react';
 import { handleAirdropSignupAction, type AirdropFormData } from '@/app/actions';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useToast } from '@/hooks/use-toast';
 
 const TwitterIcon = () => (
   <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary">
@@ -75,6 +76,7 @@ type SignupFormData = z.infer<typeof signupSchema>;
 
 const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen, onOpenChange, onSignupSuccess, userId }) => {
   const { user, setUser } = useCurrentUser();
+  const { toast } = useToast();
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -119,21 +121,21 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
 
   const onSubmit = async (data: AirdropFormData) => {
     if (!userId) {
-        alert("Could not find your user session. Please refresh the page and try again.");
+        toast({ title: "Session Error", description: "Could not find user session. Please refresh.", variant: "destructive" });
         return;
     }
 
     try {
       const result = await handleAirdropSignupAction(data, userId);
       if ('error' in result) {
-        alert(`Signup failed: ${result.error}`);
+        toast({ title: "Signup Failed", description: result.error, variant: "destructive" });
       } else {
         setUser(result); // Immediately update the user state
         await onSignupSuccess();
         onOpenChange(false);
       }
     } catch (error: any) {
-      alert(`An error occurred during signup: ${error.message || "Unknown error"}`);
+      toast({ title: "An Error Occurred", description: `An unexpected error occurred during signup: ${error.message || "Unknown error"}`, variant: "destructive" });
     }
   };
 

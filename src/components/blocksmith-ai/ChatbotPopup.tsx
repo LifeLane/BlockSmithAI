@@ -10,23 +10,17 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Send, Sparkles, MessageSquareQuote } from 'lucide-react';
 import { shadowChatAction, type ChatMessage } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
-
-interface ChatbotPopupProps {
-  isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
-}
-
-const getCurrentUserIdClient = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('currentUserId');
-  }
-  return null;
-};
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const SHADOW_INITIAL_MESSAGE: ChatMessage = {
   role: 'model',
   parts: [{ text: "I am SHADOW. The market's whispers reach me. What requires my attention?" }],
 };
+
+interface ChatbotPopupProps {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+}
 
 const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChange }) => {
   const [userInput, setUserInput] = useState('');
@@ -35,6 +29,7 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { user } = useCurrentUser();
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -43,7 +38,7 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
     if (isOpen && messages.length <= 1) {
         setMessages([SHADOW_INITIAL_MESSAGE]);
     }
-  }, [isOpen]);
+  }, [isOpen, messages.length]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -52,17 +47,7 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!userInput.trim()) return;
-
-    const userId = getCurrentUserIdClient();
-    if (!userId) {
-        toast({
-            title: "User Session Error",
-            description: "Cannot communicate with SHADOW without a user session. Please refresh.",
-            variant: "destructive"
-        });
-        return;
-    }
+    if (!userInput.trim() || !user) return;
 
     const newUserMessage: ChatMessage = { role: 'user', parts: [{ text: userInput.trim() }] };
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
@@ -73,7 +58,7 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
 
     try {
       const result = await shadowChatAction({
-        userId: userId,
+        userId: user.id,
         currentUserInput: newUserMessage.parts[0].text,
         chatHistory: historyForAI,
       });
