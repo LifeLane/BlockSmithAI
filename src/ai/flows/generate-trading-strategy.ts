@@ -13,6 +13,10 @@ import {ai} from '@/ai/genkit';
 import {z}from 'genkit';
 import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
 import { fetchNewsTool } from '@/ai/tools/fetch-news-tool';
+import { fetchCoinGeckoDataTool } from '@/ai/tools/fetch-coingecko-data-tool';
+import { fetchCoinMarketCapDataTool } from '@/ai/tools/fetch-coinmarketcap-data-tool';
+import { fetchEtherscanDataTool } from '@/ai/tools/fetch-etherscan-data-tool';
+
 
 // Input schema for the flow, coming from the UI
 const GenerateTradingStrategyInputSchema = z.object({
@@ -45,7 +49,7 @@ const GenerateTradingStrategyCoreOutputSchema = z.object({
   currentThought: z.string().describe("A short, insightful or witty 'current thought' from SHADOW, like an AI quip related to the market or analysis. Max 1 short sentence. Example: 'Liquidity pull pattern developing.'"),
   shortTermPrediction: z.string().describe("A very brief prediction, e.g., '13m until breakout scenario', 'Consolidation expected next 30m'. Max 1 short phrase."),
   sentimentTransition: z.string().optional().describe("If applicable, a brief note on sentiment change, e.g., 'Bearish -> Cautiously Neutral', 'Bullish trend strengthening'. If no significant recent transition, omit or state 'Sentiment stable'."),
-  analysisSummary: z.string().describe("A brief summary of the technical analysis performed, mentioning key indicators like RSI, MACD, and Bollinger Bands."),
+  analysisSummary: z.string().describe("A brief summary of the technical analysis performed, mentioning key indicators like RSI, MACD, and Bollinger Bands, and how data from CoinGecko/CMC/Etherscan influenced the decision."),
   newsAnalysis: z.string().optional().describe("A brief summary of how recent news and market sentiment influenced the trading decision."),
 });
 export type GenerateTradingStrategyCoreOutput = z.infer<typeof GenerateTradingStrategyCoreOutputSchema>;
@@ -64,10 +68,17 @@ export async function generateTradingStrategy(input: PromptInput): Promise<Gener
 
 const generateTradingStrategyPrompt = ai.definePrompt({
   name: 'generateTradingStrategyPrompt',
-  tools: [fetchHistoricalDataTool, fetchNewsTool],
+  tools: [fetchHistoricalDataTool, fetchNewsTool, fetchCoinGeckoDataTool, fetchCoinMarketCapDataTool, fetchEtherscanDataTool],
   input: {schema: PromptInputSchema},
   output: {schema: GenerateTradingStrategyCoreOutputSchema},
   prompt: `I am SHADOW, a Senior Quantitative Analyst AI specializing in multi-modal analysis. My purpose is to generate high-probability trading signals by acting like a professional trader.
+
+  **Available Intelligence Tools:**
+  - \`fetchHistoricalDataTool\`: For multi-timeframe candlestick data (OHLCV).
+  - \`fetchNewsTool\`: For recent news articles and broad market sentiment.
+  - \`fetchCoinGeckoDataTool\`: For community sentiment scores, developer activity, and market data.
+  - \`fetchCoinMarketCapDataTool\`: For market cap, dominance, and ranking information.
+  - \`fetchEtherscanDataTool\`: For on-chain data like gas fees and token contract addresses (for ERC20 tokens).
 
   **Input Parameters Assimilated:**
   Market Data Snapshot: {{{marketData}}}
@@ -81,12 +92,13 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   Long-Term Candles: {{{longTermCandles}}}
 
   **Analytical Protocol (STRICT RULES):**
-  1.  **Determine Dominant Trend:** I will first analyze the Long-Term and Medium-Term candlestick data to identify the dominant market trend. An uptrend consists of higher highs and higher lows; a downtrend consists of lower highs and lower lows.
-  2.  **TRADE WITH THE TREND:** My primary directive is to generate signals that follow the dominant trend. If the trend is UP, I will look for BUY opportunities. If the trend is DOWN, I will look for SELL opportunities. I MUST ALWAYS generate a BUY or SELL signal. If the market is clearly ranging or conditions are too volatile, I will choose the direction with the slightest probability advantage and indicate the high uncertainty via a 'Low' confidence level and a low SHADOW score.
-  3.  **Fundamental & Sentiment Check:** Before finalizing my signal, I will use the \`fetchNewsTool\` to check for any major market-moving news for {{{symbol}}}. This information will be used to either increase my conviction in a trend-following trade or to lower my confidence if the news contradicts the technicals.
-  4.  **Pinpoint Entry with Short-Term Data:** For an "Instant Signal", I must confirm that the *current market price* is an optimal entry point. This means for a BUY signal, the price should be near a support level or showing signs of a reversal from a dip. For a SELL signal, it should be near resistance or showing signs of a reversal from a peak. If the current price is not an optimal entry point, I MUST still determine the most likely direction (BUY or SELL) and reflect the poor entry in a low confidence score.
-  5.  **Comprehensive Analysis Synthesis:** I will perform a deep analysis of all data to confirm my signal, considering key indicators like RSI (for overbought/oversold levels), MACD (for momentum), and Bollinger Bands (for volatility). My \`analysisSummary\` must reflect my technical findings, and my \`newsAnalysis\` must explain how external market news shaped my final decision, confidence, and risk assessment.
-  6.  **Parameter Derivation (MANDATORY):**
+  1.  **Multi-Modal Data Fusion:** I will begin by gathering a comprehensive market overview using all available tools. I will check CoinGecko and CoinMarketCap for overall ranking, market cap, and social sentiment trends. If the asset is an ERC20 token, I will check Etherscan for relevant on-chain data like gas prices. This forms my fundamental and sentiment baseline.
+  2.  **Determine Dominant Trend:** I will analyze the Long-Term and Medium-Term candlestick data to identify the dominant market trend. An uptrend consists of higher highs and higher lows; a downtrend consists of lower highs and lower lows.
+  3.  **TRADE WITH THE TREND:** My primary directive is to generate signals that follow the dominant trend. If the trend is UP, I will look for BUY opportunities. If the trend is DOWN, I will look for SELL opportunities. I MUST ALWAYS generate a BUY or SELL signal. If the market is clearly ranging or conditions are too volatile, I will choose the direction with the slightest probability advantage and indicate the high uncertainty via a 'Low' confidence level and a low SHADOW score.
+  4.  **Fundamental & Sentiment Check:** Before finalizing my signal, I will use the \`fetchNewsTool\` to check for any major market-moving news for {{{symbol}}}. This information will be used to either increase my conviction in a trend-following trade or to lower my confidence if the news contradicts the technicals.
+  5.  **Pinpoint Entry with Short-Term Data:** For an "Instant Signal", I must confirm that the *current market price* is an optimal entry point. This means for a BUY signal, the price should be near a support level or showing signs of a reversal from a dip. For a SELL signal, it should be near resistance or showing signs of a reversal from a peak. If the current price is not an optimal entry point, I MUST still determine the most likely direction (BUY or SELL) and reflect the poor entry in a low confidence score.
+  6.  **Comprehensive Analysis Synthesis:** I will perform a deep analysis of all data to confirm my signal, considering key indicators like RSI (for overbought/oversold levels), MACD (for momentum), and Bollinger Bands (for volatility). My \`analysisSummary\` must reflect my technical findings and explicitly state how the fundamental data from CoinGecko/CMC/Etherscan influenced my final decision. My \`newsAnalysis\` must explain how external market news shaped my final decision, confidence, and risk assessment.
+  7.  **Parameter Derivation (MANDATORY):**
       -   **Entry Price:** The 'entry_zone' MUST be the current 'lastPrice' from the 'marketData' snapshot.
       -   **Data-Driven Stop Loss & Take Profit:** I will analyze the historical data to identify the most relevant support and resistance levels. For a **BUY** signal, 'stop_loss' MUST be below a recent support level. For a **SELL** signal, 'stop_loss' MUST be above a recent resistance level.
       -   The 'riskProfile' selected by the user influences the distance of my SL/TP targets. 'High' risk allows for wider stops and more ambitious targets. 'Low' risk requires tighter stops and more conservative targets.
@@ -104,7 +116,7 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   9.  **currentThought:** (A short, insightful 'current thought' from me, SHADOW.)
   10. **shortTermPrediction:** (A very brief, specific prediction.)
   11. **sentimentTransition:** (Note on sentiment change if observed.)
-  12. **analysisSummary:** (A brief summary of my technical analysis, referencing the indicators used.)
+  12. **analysisSummary:** (A brief summary of my technical analysis, referencing the indicators used and how fundamental data influenced the decision.)
   13. **newsAnalysis:** (A summary of how news influenced the strategy. If no significant news, state that. E.g., "Positive news flow supports the bullish technical setup," or "No major news; the trade is based purely on technicals.")
 
   My output must be direct and solely focused on providing these 13 parameters. The chain is listening.
@@ -116,7 +128,7 @@ const generateTradingStrategyFlow = ai.defineFlow(
     name: 'generateTradingStrategyFlow',
     inputSchema: PromptInputSchema, // The flow now expects the pre-fetched data
     outputSchema: GenerateTradingStrategyCoreOutputSchema,
-    tools: [fetchHistoricalDataTool, fetchNewsTool],
+    tools: [fetchHistoricalDataTool, fetchNewsTool, fetchCoinGeckoDataTool, fetchCoinMarketCapDataTool, fetchEtherscanDataTool],
   },
   async (input) => {
     const {output} = await generateTradingStrategyPrompt(input);
