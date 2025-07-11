@@ -52,12 +52,14 @@ export const useCurrentUser = (): CurrentUserContextType => {
       
       setIsLoading(true);
       try {
-        const storedUserId = localStorage.getItem('currentUserId');
+        const storedUserId = typeof window !== 'undefined' ? localStorage.getItem('currentUserId') : null;
         const userProfile = await getOrCreateUserAction(storedUserId);
 
         // If the returned ID is different, it means a new user was created.
         if (storedUserId !== userProfile.id) {
-          localStorage.setItem('currentUserId', userProfile.id);
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('currentUserId', userProfile.id);
+            }
         }
         setUserState(userProfile);
       } catch (e) {
@@ -77,7 +79,7 @@ export const useCurrentUser = (): CurrentUserContextType => {
   }, []);
 
   const externalRefetch = useCallback(async () => {
-      const currentUserId = localStorage.getItem('currentUserId');
+      const currentUserId = typeof window !== 'undefined' ? localStorage.getItem('currentUserId') : null;
       await refetchUser(currentUserId);
   }, [refetchUser]);
 

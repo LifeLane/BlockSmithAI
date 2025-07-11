@@ -2,112 +2,122 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider      = "prisma-client-js"
-  engineType    = "library"
-  previewFeatures = ["driverAdapters"]
+  provider        = "prisma-client-js"
+  // The `library` engine type is needed for compatibility with serverless environments
+  engineType      = "library"
 }
 
 datasource db {
   provider     = "postgresql"
   url          = env("DATABASE_URL")
   directUrl    = env("DIRECT_DATABASE_URL")
-  relationMode = "prisma"
 }
 
+// User model to store user profile, settings, and points
 model User {
   id              String   @id @default(cuid())
   username        String   @unique
   shadowId        String   @unique
-  status          String   @default("Guest")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  // Weekly points for rank, resets periodically
+  status          String   @default("Guest") // e.g., Guest, Registered
   weeklyPoints    Int      @default(0)
-  
-  // Lifetime points for airdrop
   airdropPoints   Int      @default(0)
+  claimedMissions String[] @default([])
 
-  // Wallet and contact info for airdrop registration
+  // Contact & Wallet Info for Airdrop/Registration
+  email           String?  @unique
+  phone           String?
   wallet_address  String?
   wallet_type     String?
-  email           String?
-  phone           String?
   x_handle        String?
   telegram_handle String?
   youtube_handle  String?
 
-  // Gameplay elements
-  claimedMissions String[]
+  // User-specific data relationships
   badges          Badge[]
   positions       Position[]
   generatedSignals GeneratedSignal[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
+// Badge model for user achievements
 model Badge {
   id          String   @id @default(cuid())
   name        String
   description String
   icon        String
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
 }
 
+// Model for simulated trading positions created instantly by the user
 model Position {
-  id                  String   @id @default(cuid())
-  userId              String
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  symbol              String
-  signalType          SignalType
-  status              PositionStatus
-  entryPrice          Float
-  stopLoss            Float?
-  takeProfit          Float?
-  size                Float
-  tradingMode         String
-  riskProfile         String
-  type                PositionType
-  sentiment           String
+  id                   String      @id @default(cuid())
+  userId               String
+  symbol               String
+  signalType           SignalType // BUY or SELL
+  status               PositionStatus // PENDING, OPEN, or CLOSED
+  entryPrice           Float
+  stopLoss             Float?
+  takeProfit           Float?
+  size                 Float       @default(1)
+  tradingMode          String
+  riskProfile          String
+  type                 PositionType // INSTANT or CUSTOM
+  sentiment            String
   gpt_confidence_score String
-  createdAt           DateTime @default(now())
-  openTimestamp       DateTime?
-  closeTimestamp      DateTime?
-  closePrice          Float?
-  pnl                 Float?
-  gainedXp            Int?
-  gainedAirdropPoints Int?
-  gasPaid             Float?
-  blocksTrained       Int?
-  strategyId          String? @unique
-  strategy            GeneratedSignal? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
+
+  createdAt            DateTime    @default(now())
+  openTimestamp        DateTime?
+  closeTimestamp       DateTime?
+  closePrice           Float?
+  pnl                  Float?
+
+  // Post-trade analytics
+  gainedXp             Int?
+  gainedAirdropPoints  Int?
+  gasPaid              Float?
+  blocksTrained        Int?
+
+  // Link back to the user and the generated signal if it's from one
+  user                 User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategyId           String?     @unique
+  strategy             GeneratedSignal? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
 }
 
+// Model for AI-generated trading signals (SHADOW's Choice) that await user action
 model GeneratedSignal {
-  id                  String   @id @default(cuid())
-  userId              String
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  symbol              String
-  signal              SignalType
-  entry_zone          String
-  stop_loss           String
-  take_profit         String
-  confidence          String
+  id                   String   @id @default(cuid())
+  userId               String
+  symbol               String
+  signal               SignalType
+  entry_zone           String
+  stop_loss            String
+  take_profit          String
+  confidence           String
   gpt_confidence_score String
-  risk_rating         String
-  sentiment           String
-  currentThought      String
-  shortTermPrediction String
-  chosenTradingMode   String
-  chosenRiskProfile   String
-  strategyReasoning   String
-  analysisSummary     String
-  newsAnalysis        String?
-  status              GeneratedSignalStatus
-  createdAt           DateTime @default(now())
-  position            Position?
-}
+  risk_rating          String
+  sentiment            String
+  currentThought       String
+  shortTermPrediction  String
+  sentimentTransition  String?
 
+  // Autonomous choices by SHADOW
+  chosenTradingMode    String
+  chosenRiskProfile    String
+  strategyReasoning    String
+  analysisSummary      String
+  newsAnalysis         String?
+  
+  status               GeneratedSignalStatus @default(PENDING_EXECUTION) // PENDING_EXECUTION, EXECUTED, DISMISSED
+  createdAt            DateTime @default(now())
+
+  // Relationships
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  executedPosition     Position?
+}
 
 enum SignalType {
   BUY

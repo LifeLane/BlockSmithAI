@@ -435,5 +435,9 @@ export async function claimMissionRewardAction(userId: string, missionId: string
 export async function generatePerformanceReviewAction(userId: string, input: PerformanceReviewInput): Promise<PerformanceReviewOutput | { error: string }> {
     if (input.tradeHistory.length < 3) return { error: 'Insufficient trade history for analysis. Complete at least 3 trades.' };
     
-    return genPerformanceReview(input);
+    const result = await genPerformanceReview(input);
+    if (!result || 'error' in result) {
+      return { error: (result as any)?.error || 'The AI failed to generate a review.' };
+    }
+    return result;
 }
