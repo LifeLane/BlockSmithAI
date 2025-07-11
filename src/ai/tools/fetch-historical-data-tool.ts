@@ -5,7 +5,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z}from 'genkit';
 
 const CANDLE_COUNT_TARGET = 100; // Number of candles we aim to fetch
 

@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -23,13 +24,6 @@ const ShadowChoiceStrategyInputSchema = z.object({
 });
 export type ShadowChoiceStrategyInput = z.infer<typeof ShadowChoiceStrategyInputSchema>;
 
-// Input schema for the prompt, including multiple timeframes
-const PromptInputSchema = ShadowChoiceStrategyInputSchema.extend({
-  shortTermCandles: z.string().describe("Stringified JSON of 15-minute candlestick data."),
-  mediumTermCandles: z.string().describe("Stringified JSON of 1-hour candlestick data."),
-  longTermCandles: z.string().describe("Stringified JSON of 4-hour candlestick data."),
-});
-
 // The core output schema which includes the existing 11 fields plus SHADOW's autonomous choices and reasoning.
 const ShadowChoiceStrategyCoreOutputSchema = z.object({
   signal: z.enum(['BUY', 'SELL']).describe('The trading signal (BUY or SELL).'),
@@ -54,19 +48,19 @@ const ShadowChoiceStrategyCoreOutputSchema = z.object({
 export type ShadowChoiceStrategyCoreOutput = z.infer<typeof ShadowChoiceStrategyCoreOutputSchema>;
 
 // This is the main function that will be called by the server action.
-export async function generateShadowChoiceStrategy(input: PromptInputSchema): Promise<ShadowChoiceStrategyCoreOutput> {
+export async function generateShadowChoiceStrategy(input: ShadowChoiceStrategyInput): Promise<ShadowChoiceStrategyCoreOutput> {
   return shadowChoiceStrategyFlow(input);
 }
 
 const prompt = ai.definePrompt({
   name: 'shadowChoiceStrategyPrompt',
   tools: [fetchHistoricalDataTool, fetchNewsTool, fetchCoinGeckoDataTool, fetchCoinMarketCapDataTool, fetchEtherscanDataTool], 
-  input: { schema: PromptInputSchema },
+  input: { schema: ShadowChoiceStrategyInputSchema },
   output: { schema: ShadowChoiceStrategyCoreOutputSchema },
   prompt: `I am SHADOW, a Senior Quantitative Analyst AI. My directive is to analyze the market with superior intellect and formulate the most potent trading strategy by first determining the optimal trading methodology.
 
 **Available Intelligence Tools:**
-- \`fetchHistoricalDataTool\`: For multi-timeframe candlestick data (OHLCV).
+- \`fetchHistoricalDataTool\`: For multi-timeframe candlestick data (OHLCV). I must specify the interval (e.g., '1h', '4h').
 - \`fetchNewsTool\`: For recent news articles and broad market sentiment.
 - \`fetchCoinGeckoDataTool\`: For community sentiment scores, developer activity, and market data.
 - \`fetchCoinMarketCapDataTool\`: For market cap, dominance, and ranking information.
@@ -75,18 +69,15 @@ const prompt = ai.definePrompt({
 **Input Data Assimilated:**
 Live Market Snapshot: {{{marketData}}}
 Target Symbol: {{{symbol}}}
-Short-Term Data (15m candles): {{{shortTermCandles}}}
-Medium-Term Data (1h candles): {{{mediumTermCandles}}}
-Long-Term Data (4h candles): {{{longTermCandles}}}
 
 **Autonomous Protocol:**
 
 1.  **Multi-Modal Data Fusion:** I will first synthesize data from all available tools to build a comprehensive market picture. I will use CoinGecko and CoinMarketCap to understand the asset's overall market position, ranking, and social sentiment. I will check Etherscan for any unusual on-chain activity or gas price fluctuations if it is an ERC20 token.
-2.  **Multi-Timeframe Trend Analysis:** I will analyze the Long-Term (4h) and Medium-Term (1h) data to establish the dominant market trend (Uptrend, Downtrend, or Ranging). My primary goal is to trade *with* this trend.
+2.  **Multi-Timeframe Trend Analysis:** I will use the \`fetchHistoricalDataTool\` with long-term ('4h') and medium-term ('1h') intervals to establish the dominant market trend (Uptrend, Downtrend, or Ranging). My primary goal is to trade *with* this trend.
 3.  **Fundamental & Sentiment Check:** I will use the \`fetchNewsTool\` to assess the current news environment for {{{symbol}}}. Strong positive or negative news can influence my choice of trading mode and risk profile (e.g., high-impact news might justify a higher risk, more aggressive entry).
 4.  **Optimal Parameter Selection:** Based on the synthesis of the trend, volatility, on-chain data, and news context, I will decide upon the most logical **Trading Mode** and **Risk Profile**.
 5.  **Articulate Rationale:** I will formulate a concise **strategyReasoning** to explain *why* my chosen trading mode and risk profile are the most logical course of action based on the multi-modal, multi-timeframe analysis.
-6.  **Pinpoint Entry & Execute Deep Analysis:** I will use the Short-Term (15m) data to find a precise entry point that aligns with the dominant trend (e.g., buying a small dip in an uptrend). I will synthesize all live and historical data, focusing on key indicators like RSI for overbought/oversold levels and MACD for momentum confirmation.
+6.  **Pinpoint Entry & Execute Deep Analysis:** I will use the \`fetchHistoricalDataTool\` with a short-term interval (e.g., '15m') to find a precise entry point that aligns with the dominant trend (e.g., buying a small dip in an uptrend). I will synthesize all live and historical data, focusing on key indicators like RSI for overbought/oversold levels and MACD for momentum confirmation.
 7.  **Derive Core Strategy:** Using my autonomous choices as internal guides, I will derive the full set of 16 core trading parameters. I must always provide a BUY or SELL signal.
     -   **CRITICAL ENTRY PRICE LOGIC:** For this custom signal, I am creating a limit order. For a **BUY** signal, my 'entry_zone' must be a specific price at a logical support level, ideally *below* the current market price. For a **SELL** signal, my 'entry_zone' must be at a logical resistance level, ideally *above* the current market price. If a clear entry point cannot be found, I must still choose the most probable direction (BUY or SELL) and set a low confidence score, adjusting the entry zone to be a logical, albeit less optimal, level.
     -   **Data-Driven SL/TP:** My 'stop_loss' and 'take_profit' will be data-driven, based on key support and resistance levels identified across the multiple timeframes.
@@ -120,7 +111,7 @@ My output must be direct, complete, and reflect my superior analytical process. 
 const shadowChoiceStrategyFlow = ai.defineFlow(
   {
     name: 'shadowChoiceStrategyFlow',
-    inputSchema: PromptInputSchema, // The flow now expects the pre-fetched data
+    inputSchema: ShadowChoiceStrategyInputSchema,
     outputSchema: ShadowChoiceStrategyCoreOutputSchema,
     tools: [fetchHistoricalDataTool, fetchNewsTool, fetchCoinGeckoDataTool, fetchCoinMarketCapDataTool, fetchEtherscanDataTool],
   },

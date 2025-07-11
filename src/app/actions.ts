@@ -6,7 +6,7 @@ import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 
 // AI Flow Imports
-import { generateTradingStrategy as genCoreStrategy, type PromptInput as TradingStrategyPromptInput, type GenerateTradingStrategyCoreOutput } from '@/ai/flows/generate-trading-strategy';
+import { generateTradingStrategy as genCoreStrategy, type GenerateTradingStrategyInput, type GenerateTradingStrategyCoreOutput } from '@/ai/flows/generate-trading-strategy';
 import { generateSarcasticDisclaimer as genSarcasticDisclaimer, type SarcasticDisclaimerOutput } from '@/ai/flows/generate-sarcastic-disclaimer';
 import { shadowChat as shadowChatFlow, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
@@ -16,7 +16,7 @@ import {
     type PerformanceReviewInput,
     type PerformanceReviewOutput
 } from '@/ai/flows/generate-performance-review';
-import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
+import { fetchMarketDataAction } from '@/services/market-data-service';
 
 // --- Type Definitions ---
 export type Position = PrismaPosition;
@@ -147,34 +147,12 @@ const parsePrice = (priceStr: string | undefined | null): number => {
     return sum / parts.length;
 };
 
-
-const timeframeMappings: { [key: string]: { short: string; medium: string; long: string; } } = {
-    Scalper: { short: '1m', medium: '3m', long: '5m' },
-    Sniper: { short: '5m', medium: '15m', long: '30m' },
-    Intraday: { short: '15m', medium: '30m', long: '1h' },
-    Swing: { short: '1h', medium: '4h', long: '1d' },
-};
-
 export async function generateTradingStrategyAction(
-  input: Omit<TradingStrategyPromptInput, 'shortTermCandles' | 'mediumTermCandles' | 'longTermCandles'> & { userId: string }
+  input: GenerateTradingStrategyInput & { userId: string }
 ): Promise<{ position: Position } | { error: string }> {
 
     try {
-        const timeframes = timeframeMappings[input.tradingMode] || timeframeMappings.Intraday;
-
-        const [shortTermResult, mediumTermResult, longTermResult] = await Promise.all([
-            fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.short }),
-            fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.medium }),
-            fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.long }),
-        ]);
-
-        if (shortTermResult.error || mediumTermResult.error || longTermResult.error) {
-            return { error: `Failed to retrieve market data. Reason: ${shortTermResult.error || mediumTermResult.error || longTermResult.error}` };
-        }
-
-        const promptInput: TradingStrategyPromptInput = { ...input, shortTermCandles: JSON.stringify(shortTermResult.candles), mediumTermCandles: JSON.stringify(mediumTermResult.candles), longTermCandles: JSON.stringify(longTermResult.candles) };
-
-        const strategy = await genCoreStrategy(promptInput);
+        const strategy = await genCoreStrategy(input);
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
 
         const position = await prisma.position.create({
@@ -216,21 +194,7 @@ export async function generateShadowChoiceStrategyAction(
 ): Promise<{ signal: GeneratedSignal } | { error: string }> {
 
     try {
-        const timeframes = { short: '15m', medium: '1h', long: '4h' };
-
-        const [shortTermResult, mediumTermResult, longTermResult] = await Promise.all([
-            fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.short }),
-            fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.medium }),
-            fetchHistoricalDataTool({ symbol: input.symbol, appInterval: timeframes.long }),
-        ]);
-
-        if (shortTermResult.error || mediumTermResult.error || longTermResult.error) {
-            return { error: `Failed to retrieve market data. Reason: ${shortTermResult.error || mediumTermResult.error || longTermResult.error}` };
-        }
-
-        const promptInput = { ...input, shortTermCandles: JSON.stringify(shortTermResult.candles), mediumTermCandles: JSON.stringify(mediumTermResult.candles), longTermCandles: JSON.stringify(longTermResult.candles) };
-
-        const strategy = await genShadowChoice(promptInput);
+        const strategy = await genShadowChoice(input);
         if (!strategy) return { error: "SHADOW Core failed to generate an autonomous strategy." };
         
         const signal = await prisma.generatedSignal.create({
