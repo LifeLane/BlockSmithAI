@@ -271,24 +271,25 @@ export async function closePositionAction(positionId: string, closePrice: number
 
         let gainedXp = 0;
         let gainedAirdropPoints = 0;
-
-        if (pnl && !isNaN(pnl)) {
-            gainedXp = pnl > 0 ? BASE_WIN_XP * modeMultiplier * riskMultiplier : BASE_LOSS_XP * modeMultiplier;
-            gainedAirdropPoints = pnl > 0 ? pnl + (BASE_WIN_AIRDROP_BONUS * modeMultiplier * riskMultiplier) : pnl + BASE_LOSS_AIRDROP_BONUS;
+        
+        const numericPnl = Number(pnl);
+        if (isFinite(numericPnl)) {
+            gainedXp = numericPnl > 0 ? BASE_WIN_XP * modeMultiplier * riskMultiplier : BASE_LOSS_XP * modeMultiplier;
+            gainedAirdropPoints = numericPnl > 0 ? numericPnl + (BASE_WIN_AIRDROP_BONUS * modeMultiplier * riskMultiplier) : numericPnl + BASE_LOSS_AIRDROP_BONUS;
         }
 
         const gasPaid = 1.25 + (riskMultiplier - 1) + (modeMultiplier - 1);
-        const blocksTrained = 100 + Math.floor(Math.abs(pnl || 0) * 2);
+        const blocksTrained = 100 + Math.floor(Math.abs(numericPnl || 0) * 2);
 
         const updatedPosition = await prisma.position.update({
             where: { id: positionId },
             data: {
                 status: 'CLOSED',
                 closePrice,
-                pnl,
+                pnl: numericPnl,
                 closeTimestamp: new Date(),
                 gainedXp: Math.round(gainedXp),
-                gainedAirdropPoints: gainedAirdropPoints,
+                gainedAirdropPoints: Math.round(gainedAirdropPoints),
                 gasPaid: parseFloat(gasPaid.toFixed(2)),
                 blocksTrained
             }
@@ -298,7 +299,7 @@ export async function closePositionAction(positionId: string, closePrice: number
             where: { id: userId },
             data: {
                 weeklyPoints: { increment: Math.round(gainedXp) },
-                airdropPoints: { increment: gainedAirdropPoints },
+                airdropPoints: { increment: Math.round(gainedAirdropPoints) },
             }
         });
 
@@ -398,9 +399,13 @@ export async function closeAllPositionsAction(userId: string): Promise<{ closedC
 
         for (const position of openPositions) {
             const closePrice = prices[position.symbol];
-            if (closePrice) {
+            if (isFinite(closePrice)) {
                 const pnl = (position.signalType === 'BUY' ? closePrice - position.entryPrice : position.entryPrice - closePrice) * position.size;
-                const airdropPointsForTrade = (pnl && !isNaN(pnl) && pnl > 0) ? pnl : 0;
+                const numericPnl = Number(pnl);
+                let airdropPointsForTrade = 0;
+                if(isFinite(numericPnl) && numericPnl > 0) {
+                     airdropPointsForTrade = numericPnl;
+                }
                 
                 totalAirdropPointsGained += airdropPointsForTrade;
 
@@ -409,9 +414,9 @@ export async function closeAllPositionsAction(userId: string): Promise<{ closedC
                     data: { 
                         status: 'CLOSED', 
                         closePrice, 
-                        pnl, 
+                        pnl: numericPnl, 
                         closeTimestamp: new Date(),
-                        gainedAirdropPoints: airdropPointsForTrade
+                        gainedAirdropPoints: Math.round(airdropPointsForTrade)
                     }
                 });
 
@@ -428,7 +433,7 @@ export async function closeAllPositionsAction(userId: string): Promise<{ closedC
                 where: { id: userId },
                 data: {
                     weeklyPoints: { increment: 10 * updates.length },
-                    airdropPoints: { increment: totalAirdropPointsGained }
+                    airdropPoints: { increment: Math.round(totalAirdropPointsGained) }
                 }
             });
         }
