@@ -65,6 +65,7 @@ const chatPrompt = ai.definePrompt({
   input: { schema: ShadowChatInputSchema },
   output: { schema: ShadowChatOutputSchema },
   prompt: systemPrompt,
+  model: 'googleai/gemini-1.5-flash-latest',
   config: {
     temperature: 0.6,
   }

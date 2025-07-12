@@ -9,10 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { 
-    Loader2, Briefcase, AlertTriangle, LogOut, History, DollarSign, Percent, 
+    Loader2, Briefcase, Bot,
     ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock,
-    Activity, BrainCircuit, ShieldAlert, Bot, Hourglass, CheckCircle,
-    Layers, Bitcoin, Type, BarChart2, Shield, Info, BarChartHorizontal, Power, PowerOff, Newspaper, Brain
+    Activity, BrainCircuit, ShieldAlert, Hourglass, CheckCircle,
+    Layers, Bitcoin, Type, BarChart2, Shield, Info, BarChartHorizontal, Power, PowerOff, Newspaper, Brain, DollarSign, Percent, History
 } from 'lucide-react';
 import {
     generatePerformanceReviewAction,
@@ -150,12 +150,14 @@ const PositionCard = ({ position, onProcess }: { position: Position, onProcess: 
 
     useEffect(() => {
         if (position.status !== 'OPEN') return;
-        setIsProcessing(true);
+        
         const fetchPrice = async () => {
+            setIsProcessing(true);
             const result = await fetchMarketDataAction({ symbol: position.symbol });
             if (!('error' in result) && result.lastPrice) setLivePrice(parseFloat(result.lastPrice));
             setIsProcessing(false);
         };
+
         fetchPrice();
         const interval = setInterval(fetchPrice, 15000);
         return () => clearInterval(interval);
@@ -208,8 +210,8 @@ const PositionCard = ({ position, onProcess }: { position: Position, onProcess: 
             <CardContent>
                 <Tabs defaultValue="details" className="w-full">
                     <TabsList className="grid w-full grid-cols-2 h-9">
-                        <TabsTrigger value="details" className="text-xs"><Info className="mr-1.5" /> Details</TabsTrigger>
-                        <TabsTrigger value="strategy" className="text-xs"><BarChartHorizontal className="mr-1.5" /> Strategy</TabsTrigger>
+                        <TabsTrigger value="details" className="text-xs data-[state=active]:shadow-active-tab-glow"><Info className="mr-1.5 h-4 w-4" /> Details</TabsTrigger>
+                        <TabsTrigger value="strategy" className="text-xs data-[state=active]:shadow-active-tab-glow"><BarChartHorizontal className="mr-1.5 h-4 w-4" /> Strategy</TabsTrigger>
                     </TabsList>
                     <TabsContent value="details" className="mt-4 space-y-4">
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs p-3 bg-secondary rounded-lg">
@@ -467,5 +469,3 @@ export default function PortfolioPage() {
     </>
   );
 }
-
-    
