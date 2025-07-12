@@ -269,10 +269,16 @@ export async function closePositionAction(positionId: string, closePrice: number
         const BASE_WIN_XP = 50, BASE_LOSS_XP = 10;
         const BASE_WIN_AIRDROP_BONUS = 25, BASE_LOSS_AIRDROP_BONUS = 5;
 
-        const gainedXp = pnl > 0 ? BASE_WIN_XP * modeMultiplier * riskMultiplier : BASE_LOSS_XP * modeMultiplier;
-        const gainedAirdropPoints = pnl > 0 ? pnl + (BASE_WIN_AIRDROP_BONUS * modeMultiplier * riskMultiplier) : pnl + BASE_LOSS_AIRDROP_BONUS;
+        let gainedXp = 0;
+        let gainedAirdropPoints = 0;
+
+        if (pnl && !isNaN(pnl)) {
+            gainedXp = pnl > 0 ? BASE_WIN_XP * modeMultiplier * riskMultiplier : BASE_LOSS_XP * modeMultiplier;
+            gainedAirdropPoints = pnl > 0 ? pnl + (BASE_WIN_AIRDROP_BONUS * modeMultiplier * riskMultiplier) : pnl + BASE_LOSS_AIRDROP_BONUS;
+        }
+
         const gasPaid = 1.25 + (riskMultiplier - 1) + (modeMultiplier - 1);
-        const blocksTrained = 100 + Math.floor(Math.abs(pnl) * 2);
+        const blocksTrained = 100 + Math.floor(Math.abs(pnl || 0) * 2);
 
         const updatedPosition = await prisma.position.update({
             where: { id: positionId },
@@ -298,7 +304,8 @@ export async function closePositionAction(positionId: string, closePrice: number
 
         return updatedPosition;
 
-    } catch (e) {
+    } catch (e: any) {
+        console.error("Error closing position: ", e);
         return { error: "Failed to close position." }
     }
 }
@@ -327,7 +334,6 @@ export async function executeSignalAction(signalId: string, userId: string): Pro
                 openTimestamp: null,
                 size: 1, // Default size
                 strategyId: signal.id,
-                // Also copy over the analysis fields for later review
                 sentimentTransition: signal.sentimentTransition,
                 analysisSummary: signal.analysisSummary,
                 newsAnalysis: signal.newsAnalysis,
@@ -387,33 +393,37 @@ export async function closeAllPositionsAction(userId: string): Promise<{ closedC
             }
         }
 
-        let closedCount = 0;
-        const updatePromises = [];
-
+        const updates = [];
         for (const position of openPositions) {
             const closePrice = prices[position.symbol];
             if (closePrice) {
-                closedCount++;
                 const pnl = (position.signalType === 'BUY' ? closePrice - position.entryPrice : position.entryPrice - closePrice) * position.size;
+                const gainedAirdropPoints = (pnl && pnl > 0) ? pnl : 0;
+
                 const updatePositionPromise = prisma.position.update({
                     where: { id: position.id },
                     data: { status: 'CLOSED', closePrice, pnl, closeTimestamp: new Date() }
                 });
-                 const updateUserPromise = prisma.user.update({
+
+                const updateUserPromise = prisma.user.update({
                     where: { id: userId },
                     data: {
-                        weeklyPoints: { increment: 10 }, // Simplified for bulk close
-                        airdropPoints: { increment: pnl > 0 ? pnl : 0 }
+                        weeklyPoints: { increment: 10 },
+                        airdropPoints: { increment: gainedAirdropPoints }
                     }
                 });
-                updatePromises.push(updatePositionPromise, updateUserPromise);
+                updates.push(updatePositionPromise, updateUserPromise);
             }
         }
         
-        await prisma.$transaction(updatePromises);
-        return { closedCount };
+        if (updates.length > 0) {
+            await prisma.$transaction(updates);
+        }
+
+        return { closedCount: updates.length / 2 };
 
     } catch (error: any) {
+        console.error("Error in closeAllPositionsAction:", error);
         return { error: 'Failed to close all positions.' };
     }
 }
@@ -452,5 +462,3 @@ export async function generatePerformanceReviewAction(userId: string, input: Per
     }
     return result;
 }
-
-    

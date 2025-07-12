@@ -1,4 +1,4 @@
-git 
+
 # The Mind of BlockShadow
 
 This is a NextJS starter application in Firebase Studio, now powered by SHADOW.
