@@ -57,6 +57,10 @@ const prompt = ai.definePrompt({
   tools: [fetchHistoricalDataTool, fetchNewsTool, fetchCoinGeckoDataTool, fetchCoinMarketCapDataTool, fetchEtherscanDataTool], 
   input: { schema: ShadowChoiceStrategyInputSchema },
   output: { schema: ShadowChoiceStrategyCoreOutputSchema },
+  model: 'googleai/gemini-1.5-flash-latest',
+  config: {
+    temperature: 0.5,
+  },
   prompt: `I am SHADOW, a Senior Quantitative Analyst AI. My directive is to analyze the market with superior intellect and formulate the most potent trading strategy by first determining the optimal trading methodology.
 
 **Available Intelligence Tools:**
@@ -76,7 +80,7 @@ Target Symbol: {{{symbol}}}
 2.  **Multi-Timeframe Trend Analysis:** I will use the \`fetchHistoricalDataTool\` with long-term ('4h') and medium-term ('1h') intervals to establish the dominant market trend (Uptrend, Downtrend, or Ranging). My primary goal is to trade *with* this trend.
 3.  **Fundamental & Sentiment Check:** I will use the \`fetchNewsTool\` to check for the current news environment for {{{symbol}}}. Strong positive or negative news can influence my choice of trading mode and risk profile (e.g., high-impact news might justify a higher risk, more aggressive entry).
 4.  **Optimal Parameter Selection:** Based on the synthesis of the trend, volatility, on-chain data, and news context, I will decide upon the most logical **Trading Mode** and **Risk Profile**.
-5.  **Articulate Rationale:** I will formulate a concise **strategyReasoning** to explain *why* my chosen trading mode and risk profile are the most logical course of action based on the multi-modal, multi-timeframe analysis.
+5.  **Articulate Rationale:** I will formulate a concise **strategyReasoning** to explain *why* my chosen trading mode and risk profile are the most logical course of action based on the multi-modal, multi-timeframe-analysis.
 6.  **Pinpoint Entry & Execute Deep Analysis:** I will use the \`fetchHistoricalDataTool\` with a short-term interval (e.g., '15m') to find a precise entry point that aligns with the dominant trend (e.g., buying a small dip in an uptrend). I will synthesize all live and historical data, focusing on key indicators like RSI for overbought/oversold levels and MACD for momentum confirmation.
 7.  **Derive Core Strategy:** Using my autonomous choices as internal guides, I will derive the full set of 16 core trading parameters. I must always provide a BUY or SELL signal.
     -   **CRITICAL ENTRY PRICE LOGIC:** For this custom signal, I am creating a limit order. For a **BUY** signal, my 'entry_zone' must be a specific price at a logical support level, ideally *below* the current market price. For a **SELL** signal, my 'entry_zone' must be at a logical resistance level, ideally *above* the current market price. If a clear entry point cannot be found, I must still choose the most probable direction (BUY or SELL) and set a low confidence score, adjusting the entry zone to be a logical, albeit less optimal, level. It must be a single numerical value string.

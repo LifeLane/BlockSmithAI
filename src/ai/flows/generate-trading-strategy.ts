@@ -55,6 +55,10 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   tools: [fetchHistoricalDataTool, fetchNewsTool, fetchCoinGeckoDataTool, fetchCoinMarketCapDataTool, fetchEtherscanDataTool],
   input: {schema: GenerateTradingStrategyInputSchema},
   output: {schema: GenerateTradingStrategyCoreOutputSchema},
+  model: 'googleai/gemini-1.5-flash-latest',
+  config: {
+    temperature: 0.5,
+  },
   prompt: `I am SHADOW, a Senior Quantitative Analyst AI specializing in multi-modal analysis. My purpose is to generate high-probability trading signals by acting like a professional trader.
 
   **Available Intelligence Tools:**
