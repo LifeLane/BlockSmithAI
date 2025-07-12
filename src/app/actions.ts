@@ -393,34 +393,47 @@ export async function closeAllPositionsAction(userId: string): Promise<{ closedC
             }
         }
 
+        let totalAirdropPointsGained = 0;
         const updates = [];
+
         for (const position of openPositions) {
             const closePrice = prices[position.symbol];
             if (closePrice) {
                 const pnl = (position.signalType === 'BUY' ? closePrice - position.entryPrice : position.entryPrice - closePrice) * position.size;
-                const gainedAirdropPoints = (pnl && pnl > 0) ? pnl : 0;
+                const airdropPointsForTrade = (pnl && !isNaN(pnl) && pnl > 0) ? pnl : 0;
+                
+                totalAirdropPointsGained += airdropPointsForTrade;
 
                 const updatePositionPromise = prisma.position.update({
                     where: { id: position.id },
-                    data: { status: 'CLOSED', closePrice, pnl, closeTimestamp: new Date() }
-                });
-
-                const updateUserPromise = prisma.user.update({
-                    where: { id: userId },
-                    data: {
-                        weeklyPoints: { increment: 10 },
-                        airdropPoints: { increment: gainedAirdropPoints }
+                    data: { 
+                        status: 'CLOSED', 
+                        closePrice, 
+                        pnl, 
+                        closeTimestamp: new Date(),
+                        gainedAirdropPoints: airdropPointsForTrade
                     }
                 });
-                updates.push(updatePositionPromise, updateUserPromise);
+
+                updates.push(updatePositionPromise);
             }
         }
         
         if (updates.length > 0) {
+            // First, update all the positions
             await prisma.$transaction(updates);
+
+            // Then, update the user's points in a single operation
+            await prisma.user.update({
+                where: { id: userId },
+                data: {
+                    weeklyPoints: { increment: 10 * updates.length },
+                    airdropPoints: { increment: totalAirdropPointsGained }
+                }
+            });
         }
 
-        return { closedCount: updates.length / 2 };
+        return { closedCount: updates.length };
 
     } catch (error: any) {
         console.error("Error in closeAllPositionsAction:", error);
@@ -462,3 +475,5 @@ export async function generatePerformanceReviewAction(userId: string, input: Per
     }
     return result;
 }
+
+    
