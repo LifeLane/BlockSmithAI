@@ -6,7 +6,7 @@
  * This flow generates core trading parameters and SHADOW's thoughts based on multi-timeframe analysis.
  * - generateTradingStrategy - Handles the generation of trading strategies.
  * - GenerateTradingStrategyInput - Input type.
- * - GenerateTradingStrategyOutput - Return type (includes core params, thoughts, and disclaimer).
+ * - GenerateTradingStrategyCoreOutput - Return type (includes core params, thoughts, and disclaimer).
  */
 
 import {ai} from '@/ai/genkit';
@@ -44,13 +44,6 @@ const GenerateTradingStrategyCoreOutputSchema = z.object({
   newsAnalysis: z.string().describe("A brief summary of how recent news and market sentiment influenced the trading decision. If no significant news was found, state that and explain that the decision is purely technical."),
 });
 export type GenerateTradingStrategyCoreOutput = z.infer<typeof GenerateTradingStrategyCoreOutputSchema>;
-
-// Final output schema including the disclaimer
-const GenerateTradingStrategyOutputSchema = GenerateTradingStrategyCoreOutputSchema.extend({
-  disclaimer: z.string().describe('A SHADOW-generated disclaimer.'),
-  symbol: z.string().describe("The symbol the strategy is for.")
-});
-export type GenerateTradingStrategyOutput = z.infer<typeof GenerateTradingStrategyOutputSchema>;
 
 
 export async function generateTradingStrategy(input: GenerateTradingStrategyInput): Promise<GenerateTradingStrategyCoreOutput> {
@@ -140,3 +133,5 @@ const generateTradingStrategyFlow = ai.defineFlow(
     };
   }
 );
+
+    

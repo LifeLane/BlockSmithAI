@@ -327,6 +327,11 @@ export async function executeSignalAction(signalId: string, userId: string): Pro
                 openTimestamp: null,
                 size: 1, // Default size
                 strategyId: signal.id,
+                // Also copy over the analysis fields for later review
+                sentimentTransition: signal.sentimentTransition,
+                analysisSummary: signal.analysisSummary,
+                newsAnalysis: signal.newsAnalysis,
+                strategyReasoning: signal.strategyReasoning,
             }
         });
 
@@ -447,3 +452,5 @@ export async function generatePerformanceReviewAction(userId: string, input: Per
     }
     return result;
 }
+
+    

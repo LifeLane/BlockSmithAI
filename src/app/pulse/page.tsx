@@ -12,7 +12,7 @@ import {
     Loader2, Briefcase, AlertTriangle, LogOut, History, DollarSign, Percent, 
     ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock,
     Activity, BrainCircuit, ShieldAlert, Bot, Hourglass, CheckCircle,
-    Layers, Bitcoin, Type, BarChart2, Shield, Info, BarChartHorizontal, Power, PowerOff
+    Layers, Bitcoin, Type, BarChart2, Shield, Info, BarChartHorizontal, Power, PowerOff, Newspaper, Brain
 } from 'lucide-react';
 import {
     generatePerformanceReviewAction,
@@ -242,6 +242,16 @@ const PositionCard = ({ position, onProcess }: { position: Position, onProcess: 
                             <PositionInfo label="Sentiment" value={position.sentiment || 'N/A'} icon={<BrainCircuit size={14} />} />
                             <PositionInfo label="SHADOW Score" value={`${position.gpt_confidence_score || '0'}%`} icon={<Percent size={14} />} />
                          </div>
+                         <div className="p-3 bg-secondary rounded-lg space-y-3">
+                             <div>
+                                 <h4 className="text-xs text-muted-foreground flex items-center gap-1.5"><Brain size={14}/> SHADOW Analysis</h4>
+                                 <p className="text-xs text-foreground mt-1 italic">"{position.analysisSummary || 'N/A'}"</p>
+                             </div>
+                              <div>
+                                 <h4 className="text-xs text-muted-foreground flex items-center gap-1.5"><Newspaper size={14}/> News Context</h4>
+                                 <p className="text-xs text-foreground mt-1 italic">"{position.newsAnalysis || 'N/A'}"</p>
+                             </div>
+                         </div>
                     </TabsContent>
                 </Tabs>
             </CardContent>
@@ -320,8 +330,8 @@ export default function PortfolioPage() {
 
     const { openPositions, tradeHistory } = useMemo(() => {
         return {
-            openPositions: positions.filter(p => p.status === 'OPEN' || p.status === 'PENDING'),
-            tradeHistory: positions.filter(p => p.status === 'CLOSED'),
+            openPositions: positions.filter(p => p.status === 'OPEN' || p.status === 'PENDING').sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+            tradeHistory: positions.filter(p => p.status === 'CLOSED').sort((a,b) => new Date(b.closeTimestamp || 0).getTime() - new Date(a.closeTimestamp || 0).getTime()),
         }
     }, [positions]);
 
@@ -457,3 +467,5 @@ export default function PortfolioPage() {
     </>
   );
 }
+
+    
