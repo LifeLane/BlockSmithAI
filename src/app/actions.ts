@@ -89,6 +89,7 @@ export async function getOrCreateUserAction(userId: string | null): Promise<User
             status: 'Guest',
             weeklyPoints: 0,
             airdropPoints: 0,
+            claimedMissions: '[]',
         },
         ...userQuery
     });
@@ -477,12 +478,27 @@ export async function getDailyGreeting(): Promise<GenerateDailyGreetingOutput> {
 
 export async function claimMissionRewardAction(userId: string, missionId: string): Promise<{ success: boolean; message: string }> {
     if (userId.startsWith('guest_')) return { success: false, message: 'Guests cannot claim mission rewards. Please register first.'}
+    
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return { success: false, message: 'User not found.' };
 
+    let claimedMissions: string[] = [];
+    try {
+        claimedMissions = JSON.parse(user.claimedMissions);
+    } catch (e) {
+        console.error("Failed to parse claimedMissions JSON", e);
+        // If parsing fails, we can assume it's an empty list or handle the error as needed.
+    }
+
+    if (claimedMissions.includes(missionId)) {
+        return { success: false, message: "Mission already claimed." };
+    }
+
+    claimedMissions.push(missionId);
+    
     await prisma.user.update({
         where: { id: userId },
-        data: { claimedMissions: { push: missionId } }
+        data: { claimedMissions: JSON.stringify(claimedMissions) }
     });
     return { success: true, message: `Reward claimed for mission.` };
 }

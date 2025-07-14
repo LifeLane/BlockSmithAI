@@ -7,125 +7,112 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider  = "sqlite"
+  url       = "file:./dev.db"
+  // For App Hosting, follow the format: "file:/data/sqlite.db"
+  // url    = "file:/data/sqlite.db" 
 }
 
-// --- User and Profile ---
 model User {
-  id              String   @id @default(uuid())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  username        String   @unique
-  shadowId        String   @unique
-  status          String   @default("Guest") // e.g., Guest, Registered, Premium
-  claimedMissions String[]
-
-  // Points & Ranking
-  weeklyPoints  Int @default(0)
-  airdropPoints Int @default(0)
-
-  // User Details (for airdrop and contact)
-  email           String? @unique
-  phone           String?
+  id              String  @id @default(cuid())
+  username        String  @unique
+  shadowId        String  @unique
+  weeklyPoints    Int     @default(0)
+  airdropPoints   Int     @default(0)
+  status          String
+  
+  // Fields for Airdrop Registration
   wallet_address  String?
-  wallet_type     String? // e.g., ETH, SOL, BTC
+  wallet_type     String? // e.g., ETH, SOL
+  email           String? @unique
+  phone           String? @unique
   x_handle        String?
   telegram_handle String?
   youtube_handle  String?
 
-  // Relations
+  claimedMissions String    @default("[]") // Storing as JSON string for compatibility
+  badges          Badge[]
+  positions       Position[]
   generatedSignals GeneratedSignal[]
-  positions        Position[]
-  badges           Badge[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model Badge {
-  id          String   @id @default(uuid())
-  createdAt   DateTime @default(now())
-  userId      String
+  id          String  @id @default(cuid())
   name        String
   description String
-  icon        String // e.g., lucide-react icon name
+  icon        String
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-// --- Trading and Signals ---
-model GeneratedSignal {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Core Signal Details
-  symbol String
-  signal String // "BUY" or "SELL"
-  status String // "PENDING_EXECUTION", "EXECUTED", "DISMISSED"
-
-  // AI-Generated Parameters
-  entry_zone             String
-  stop_loss              String
-  take_profit            String
-  confidence             String
-  gpt_confidence_score   String
-  risk_rating            String
-  sentiment              String
-  currentThought         String
-  shortTermPrediction    String
-  chosenTradingMode      String
-  chosenRiskProfile      String
-  strategyReasoning      String? @db.Text
-  analysisSummary        String? @db.Text
-  newsAnalysis           String? @db.Text
-
-  // Relation to an executed position
-  position   Position?
-  positionId String?   @unique
+  createdAt   DateTime @default(now())
 }
 
 model Position {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Associated Signal
-  strategy   GeneratedSignal @relation(fields: [strategyId], references: [id], onDelete:Cascade)
-  strategyId String          @unique
-
-  // Trade Details
-  symbol       String
-  signalType   String // "BUY" or "SELL"
-  status       String // "PENDING", "OPEN", "CLOSED"
-  type         String // "INSTANT" or "CUSTOM"
-  entryPrice   Float
-  stopLoss     Float?
-  takeProfit   Float?
-  closePrice   Float?
-  size         Float    @default(1)
-  pnl          Float?
-  openTimestamp  DateTime?
-  closeTimestamp DateTime?
-
-  // AI Analysis at time of trade
-  sentiment              String?
-  gpt_confidence_score   String?
-  analysisSummary        String? @db.Text
-  newsAnalysis           String? @db.Text
-  strategyReasoning      String? @db.Text
-  sentimentTransition    String? // ADDED THIS LINE
-
-  // Gamification / Rewards
-  gainedXp             Int?
-  gainedAirdropPoints  Int?
-  gasPaid              Float?
-  blocksTrained        Int?
-
-  // Core Strategy Parameters
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbol String
+  signalType String // "BUY" or "SELL"
+  status String @default("PENDING") // "PENDING", "OPEN", "CLOSED"
+  entryPrice Float
+  stopLoss Float?
+  takeProfit Float?
+  size Float @default(1)
+  
   tradingMode String
   riskProfile String
+  type String // "INSTANT" or "CUSTOM"
+  sentiment String
+  gpt_confidence_score String
+  strategyReasoning String?
+
+  createdAt DateTime @default(now())
+  openTimestamp DateTime?
+  closeTimestamp DateTime?
+  closePrice Float?
+  pnl Float?
+
+  // Post-trade analysis fields
+  gainedXp Int?
+  gainedAirdropPoints Int?
+  gasPaid Float?
+  blocksTrained Int?
+  
+  // Link back to the signal that created this position
+  strategyId String?
+  strategy   GeneratedSignal? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
+
+  analysisSummary String?
+  newsAnalysis String?
+}
+
+model GeneratedSignal {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbol String
+  signal String // "BUY" or "SELL"
+  entry_zone String
+  stop_loss String
+  take_profit String
+  confidence String
+  gpt_confidence_score String
+  risk_rating String
+  sentiment String
+  currentThought String
+  shortTermPrediction String
+  chosenTradingMode String
+  chosenRiskProfile String
+  strategyReasoning String
+  analysisSummary String
+  newsAnalysis String?
+  status String @default("PENDING_EXECUTION") // "PENDING_EXECUTION", "EXECUTED", "DISMISSED"
+  
+  position Position?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
