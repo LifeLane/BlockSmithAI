@@ -4,62 +4,34 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { LiveMarketData } from '@/app/actions';
 import { fetchMarketDataAction } from '@/services/market-data-service';
+import type { Position as DbPosition, GeneratedSignal as DbGeneratedSignal } from '@prisma/client'
 
+// Redefine types for client-side usage to avoid direct Prisma dependency on the client
 export type PositionStatus = 'PENDING' | 'OPEN' | 'CLOSED';
 export type SignalType = 'BUY' | 'SELL';
 export type PositionType = 'INSTANT' | 'CUSTOM';
 
-export interface Position {
-  id: string;
-  userId: string;
-  symbol: string;
-  signalType: SignalType;
-  status: PositionStatus;
-  entryPrice: number;
-  stopLoss: number | null;
-  takeProfit: number | null;
-  size: number;
-  tradingMode: string;
-  riskProfile: string;
-  type: PositionType;
-  sentiment: string;
-  gpt_confidence_score: string;
-  createdAt: string;
-  openTimestamp: string | null;
-  closeTimestamp: string | null;
-  closePrice: number | null;
-  pnl: number | null;
-  gainedXp?: number | null;
-  gainedAirdropPoints?: number | null;
-  gasPaid?: number | null;
-  blocksTrained?: number | null;
-  strategyId?: string | null;
-}
+export type Position = Omit<DbPosition, 'signalType' | 'status' | 'type' | 'createdAt' | 'openTimestamp' | 'closeTimestamp'> & {
+    signalType: SignalType;
+    status: PositionStatus;
+    type: PositionType;
+    createdAt: string;
+    openTimestamp: string | null;
+    closeTimestamp: string | null;
+    analysisSummary: string | null;
+    newsAnalysis: string | null;
+    strategyReasoning: string | null;
+};
 
 export type GeneratedSignalStatus = 'PENDING_EXECUTION' | 'EXECUTED' | 'DISMISSED';
 
-export interface GeneratedSignal {
-  id: string;
-  userId: string;
-  symbol: string;
-  signal: SignalType;
-  entry_zone: string;
-  stop_loss: string;
-  take_profit: string;
-  confidence: string;
-  gpt_confidence_score: string;
-  risk_rating: string;
-  sentiment: string;
-  currentThought: string;
-  shortTermPrediction: string;
-  chosenTradingMode: string;
-  chosenRiskProfile: string;
-  strategyReasoning: string;
-  analysisSummary: string;
-  newsAnalysis?: string | null;
-  status: GeneratedSignalStatus;
-  createdAt: string;
-}
+export type GeneratedSignal = Omit<DbGeneratedSignal, 'signal' | 'status' | 'createdAt' | 'position'> & {
+    signal: SignalType;
+    status: GeneratedSignalStatus;
+    createdAt: string;
+    position: Position | null;
+};
+
 
 const parsePrice = (priceStr: string | undefined | null): number => {
     if (!priceStr) return NaN;
@@ -213,8 +185,6 @@ const useClientState = () => {
         const signal = clientSignals.find(s => s.id === signalId);
         if (!signal || signal.status !== 'PENDING_EXECUTION') return;
 
-        updateSignal({ ...signal, status: 'EXECUTED' });
-        
         const newPosition: Position = {
             id: `pos_${signal.id}`,
             userId: signal.userId,
@@ -236,7 +206,20 @@ const useClientState = () => {
             size: 1,
             strategyId: signal.id,
             createdAt: new Date().toISOString(),
+            analysisSummary: signal.analysisSummary,
+            newsAnalysis: signal.newsAnalysis,
+            strategyReasoning: signal.strategyReasoning,
+            gainedXp: 0,
+            gainedAirdropPoints: 0,
         };
+
+        const updatedSignal: GeneratedSignal = {
+            ...signal,
+            status: 'EXECUTED',
+            position: newPosition
+        };
+        
+        updateSignal(updatedSignal);
         addPosition(newPosition);
     }, [updateSignal, addPosition]);
 
@@ -257,3 +240,5 @@ const useClientState = () => {
 };
 
 export { useClientState };
+
+    

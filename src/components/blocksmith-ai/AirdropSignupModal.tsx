@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Mail, Gift, Rocket, Sparkles, Phone, User, Bot, Loader2 } from 'lucide-react';
-import { handleAirdropSignupAction, type AirdropFormData } from '@/app/actions';
+import { handleAirdropSignupAction, type AirdropFormData, type UserProfile } from '@/app/actions';
 import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
 import { useToast } from '@/hooks/use-toast';
 
@@ -130,7 +130,9 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
       if ('error' in result) {
         toast({ title: "Signup Failed", description: result.error, variant: "destructive" });
       } else {
-        setUser(result); // Immediately update the user state
+        const newUser = result as UserProfile;
+        setUser(newUser); // Immediately update the user state
+        localStorage.setItem('currentUserId', newUser.id); // Persist the new, real ID
         await onSignupSuccess();
         onOpenChange(false);
       }
@@ -224,3 +226,5 @@ const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen
 };
 
 export default AirdropSignupModal;
+
+    

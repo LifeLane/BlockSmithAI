@@ -82,16 +82,41 @@ export type { PerformanceReviewOutput };
 export async function getOrCreateUserAction(userId: string | null): Promise<UserProfile> {
     const userQuery = { include: { badges: true } };
 
-    if (userId) {
+    if (userId && !userId.startsWith('guest_')) {
         const existingUser = await prisma.user.findUnique({ where: { id: userId }, ...userQuery });
         if(existingUser) return existingUser;
+    }
+
+    // If it's a guest or a new user, create a user object.
+    // For guests, this will not be saved but returned as a temporary profile.
+    // For new registered users, we will create it.
+    if (!userId || userId.startsWith('guest_')) {
+        return {
+            id: `guest_${randomUUID()}`,
+            username: `Guest-${randomUUID().substring(0, 6)}`,
+            shadowId: `SHDW-GUEST`,
+            status: 'Guest',
+            weeklyPoints: 0,
+            airdropPoints: 0,
+            claimedMissions: '[]',
+            badges: [],
+            email: null,
+            phone: null,
+            x_handle: null,
+            telegram_handle: null,
+            youtube_handle: null,
+            wallet_address: null,
+            wallet_type: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        };
     }
 
     const newUser = await prisma.user.create({
         data: {
             username: `Analyst-${randomUUID().substring(0, 6)}`,
             shadowId: `SHDW-${randomUUID().toUpperCase()}`,
-            status: 'Guest',
+            status: 'Guest', // Initial status is Guest until they register
             weeklyPoints: 0,
             airdropPoints: 0,
             claimedMissions: '[]',
@@ -112,9 +137,22 @@ export async function updateUserSettingsJson(userId: string, data: { username?: 
 
 export async function handleAirdropSignupAction(formData: AirdropFormData, userId: string): Promise<UserProfile | { error: string; }> {
     if (!userId) return { error: "User not found." };
-    const updatedUser = await prisma.user.update({
-        where: { id: userId },
-        data: {
+    // Upsert logic: if the user was a guest, create a new record. Otherwise, update.
+    const user = await prisma.user.upsert({
+        where: { id: userId.startsWith('guest_') ? '' : userId }, // Use a non-existent ID for guests to force creation
+        create: {
+            username: `Analyst-${randomUUID().substring(0, 6)}`,
+            shadowId: `SHDW-${randomUUID().toUpperCase()}`,
+            status: "Registered",
+            wallet_address: formData.wallet_address,
+            wallet_type: formData.wallet_type,
+            email: formData.email,
+            phone: formData.phone,
+            x_handle: formData.x_handle,
+            telegram_handle: formData.telegram_handle,
+            youtube_handle: formData.youtube_handle,
+        },
+        update: {
             status: "Registered",
             wallet_address: formData.wallet_address,
             wallet_type: formData.wallet_type,
@@ -126,7 +164,7 @@ export async function handleAirdropSignupAction(formData: AirdropFormData, userI
         },
         include: { badges: true },
     });
-    return updatedUser;
+    return user;
 }
 
 export async function fetchLeaderboardDataJson(): Promise<LeaderboardUser[]> {
@@ -165,6 +203,34 @@ async function unifiedSignalGenerationAction(
     try {
         const strategy: UnifiedStrategyOutput = await generateUnifiedStrategy(input);
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
+
+        // For guest users, we just return the AI output without saving it to DB.
+        if (userId.startsWith('guest_')) {
+            const tempSignal: GeneratedSignal = {
+                id: `guest_sig_${randomUUID()}`,
+                userId: userId,
+                symbol: input.symbol,
+                signal: strategy.signal,
+                status: 'PENDING_EXECUTION',
+                entry_zone: strategy.entry_zone,
+                stop_loss: strategy.stop_loss,
+                take_profit: strategy.take_profit,
+                confidence: strategy.confidence,
+                risk_rating: strategy.risk_rating,
+                gpt_confidence_score: strategy.gpt_confidence_score,
+                sentiment: strategy.sentiment,
+                currentThought: strategy.currentThought,
+                shortTermPrediction: strategy.shortTermPrediction,
+                chosenTradingMode: strategy.chosenTradingMode,
+                chosenRiskProfile: strategy.chosenRiskProfile,
+                strategyReasoning: strategy.strategyReasoning,
+                analysisSummary: strategy.analysisSummary,
+                newsAnalysis: strategy.newsAnalysis,
+                createdAt: new Date().toISOString(),
+                position: null,
+            };
+            return { signal: tempSignal };
+        }
 
         const signal = await prisma.generatedSignal.create({
             data: {
@@ -505,3 +571,5 @@ export async function generatePerformanceReviewAction(userId: string, input: Per
     }
     return result;
 }
+
+    

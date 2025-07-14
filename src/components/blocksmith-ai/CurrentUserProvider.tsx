@@ -22,10 +22,18 @@ export const CurrentUserProvider = ({ children }: { children: ReactNode }) => {
     try {
       const idToFetch = localStorage.getItem('currentUserId');
       const userProfile = await getOrCreateUserAction(idToFetch);
-      localStorage.setItem('currentUserId', userProfile.id);
+      
+      // If the returned user is a guest, we only set their ID in localStorage.
+      // If they are a registered user, we persist their real ID.
+      if (userProfile.id) {
+          localStorage.setItem('currentUserId', userProfile.id);
+      }
+      
       setUser(userProfile);
     } catch (e) {
       console.error("Failed to refetch user:", e);
+      // On failure, clear stored ID and user state
+      localStorage.removeItem('currentUserId');
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -57,3 +65,5 @@ export const useCurrentUserState = (): CurrentUserContextType => {
   }
   return context;
 };
+
+    

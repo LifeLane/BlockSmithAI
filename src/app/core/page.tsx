@@ -71,7 +71,7 @@ export default function CoreConsolePage() {
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
   
-  const { user, isLoading: isUserLoading, refetchUser } = useCurrentUserState();
+  const { user, isLoading: isUserLoading, refetchUser, setUser } = useCurrentUserState();
   const { addSignal: addClientSignal } = useClientState();
   
   const [analysisCount, setAnalysisCount] = useState<number>(0);
@@ -362,3 +362,5 @@ export default function CoreConsolePage() {
     </>
   );
 }
+
+    
