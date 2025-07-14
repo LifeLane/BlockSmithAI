@@ -1,4 +1,6 @@
-// prisma/schema.prisma
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
   provider = "sqlite"
@@ -9,125 +11,112 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// =================================
-//        USER & AUTH MODELS
-// =================================
-
 model User {
-  id              String   @id @default(cuid())
-  username        String   @unique
-  shadowId        String   @unique
-  email           String?  @unique
+  id              String  @id @default(cuid())
+  username        String  @unique
+  shadowId        String  @unique
+  weeklyPoints    Int     @default(0)
+  airdropPoints   Int     @default(0)
+  status          String  // Corresponds to 'Guest', 'Registered'
+  claimedMissions String // Stored as a JSON string array: '[]'
+  email           String?
   phone           String?
+  wallet_address  String?
+  wallet_type     String? // e.g., 'ETH', 'SOL'
   x_handle        String?
   telegram_handle String?
   youtube_handle  String?
-  wallet_address  String?
-  wallet_type     String?
-  status          String?  @default("Guest")
-  weeklyPoints    Int      @default(0)
-  airdropPoints   Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
 
-  claimedMissions String[]
+  // Relations
   badges          Badge[]
   positions       Position[]
-  signals         GeneratedSignal[]
+  generatedSignals GeneratedSignal[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Badge {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   description String
-  icon        String
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  icon        String // Icon name from lucide-react
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
-}
 
-// =================================
-//      TRADING & SIGNAL MODELS
-// =================================
-
-enum SignalType {
-  BUY
-  SELL
-}
-
-enum PositionStatus {
-  PENDING
-  OPEN
-  CLOSED
-}
-
-enum PositionType {
-  INSTANT
-  CUSTOM
+  createdAt DateTime @default(now())
 }
 
 model Position {
-  id                    String         @id @default(cuid())
-  userId                String
-  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  strategyId            String?        @unique
-  strategy              GeneratedSignal? @relation(fields: [strategyId], references: [id])
-  symbol                String
-  signalType            SignalType
-  status                PositionStatus @default(PENDING)
-  type                  PositionType
-  entryPrice            Float
-  stopLoss              Float?
-  takeProfit            Float?
-  size                  Float          @default(1.0)
-  tradingMode           String
-  riskProfile           String
-  sentiment             String
-  sentimentTransition   String? // AI's view on sentiment shift
-  gpt_confidence_score  String
-  analysisSummary       String?
-  newsAnalysis          String?
-  strategyReasoning     String?
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategyId    String?  @unique
+  strategy      GeneratedSignal? @relation(fields: [strategyId], references: [id], onUpdate: NoAction, onDelete: NoAction)
 
-  createdAt        DateTime  @default(now())
-  openTimestamp    DateTime?
-  closeTimestamp   DateTime?
-  closePrice       Float?
-  pnl              Float?
-  gainedXp         Int?
-  gainedAirdropPoints Int?
-  gasPaid          Float?
-  blocksTrained    Int?
-}
+  symbol        String
+  signalType    String   // "BUY" or "SELL"
+  status        String   // "PENDING", "OPEN", or "CLOSED"
+  type          String   // "INSTANT" or "CUSTOM"
 
-enum GeneratedSignalStatus {
-  PENDING_EXECUTION
-  EXECUTED
-  DISMISSED
+  entryPrice    Float
+  stopLoss      Float?
+  takeProfit    Float?
+  size          Float    @default(1)
+
+  closePrice    Float?
+  pnl           Float?
+  
+  openTimestamp  DateTime?
+  closeTimestamp DateTime?
+
+  tradingMode   String?
+  riskProfile   String?
+  sentiment     String?
+  gpt_confidence_score String?
+  
+  analysisSummary   String?
+  newsAnalysis      String?
+  strategyReasoning String?
+  sentimentTransition String?
+
+  gainedXp             Int?
+  gainedAirdropPoints  Int?
+  gasPaid              Float?
+  blocksTrained        Int?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model GeneratedSignal {
-  id                    String                @id @default(cuid())
-  userId                String
-  user                  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  position              Position?
-  symbol                String
-  signal                SignalType
-  entry_zone            String
-  stop_loss             String
-  take_profit           String
-  confidence            String
-  gpt_confidence_score  String
-  risk_rating           String
-  sentiment             String
-  sentimentTransition   String? // AI's view on sentiment shift
-  currentThought        String
-  shortTermPrediction   String
-  chosenTradingMode     String
-  chosenRiskProfile     String
-  strategyReasoning     String
-  analysisSummary       String
-  newsAnalysis          String?
-  status                GeneratedSignalStatus @default(PENDING_EXECUTION)
-  createdAt             DateTime              @default(now())
+  id            String  @id @default(cuid())
+  userId        String
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  position      Position?
+
+  symbol        String
+  signal        String   // "BUY" or "SELL"
+  status        String   @default("PENDING_EXECUTION") // "PENDING_EXECUTION", "EXECUTED", "DISMISSED"
+
+  entry_zone    String
+  stop_loss     String
+  take_profit   String
+
+  confidence    String
+  gpt_confidence_score String
+  risk_rating   String
+  sentiment     String
+  currentThought String
+  shortTermPrediction String
+  
+  chosenTradingMode String
+  chosenRiskProfile String
+  strategyReasoning String
+  analysisSummary   String
+  newsAnalysis      String?
+  sentimentTransition String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
