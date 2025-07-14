@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { 
     Loader2, Briefcase, Bot,
-    ArrowUp, ArrowDown, Gift, LogIn, Target, ShieldX, Clock,
+    ArrowUp, ArrowDown, Gift, LogIn, LogOut, Target, ShieldX, Clock,
     Activity, BrainCircuit, ShieldAlert, Hourglass, CheckCircle,
     Layers, Bitcoin, Type, BarChart2, Shield, Info, BarChartHorizontal, Power, PowerOff, Newspaper, Brain, DollarSign, Percent, History
 } from 'lucide-react';
@@ -151,16 +151,20 @@ const PositionCard = ({ position, onProcess }: { position: Position, onProcess: 
     useEffect(() => {
         if (position.status !== 'OPEN') return;
         
+        let isMounted = true;
         const fetchPrice = async () => {
-            setIsProcessing(true);
             const result = await fetchMarketDataAction({ symbol: position.symbol });
-            if (!('error' in result) && result.lastPrice) setLivePrice(parseFloat(result.lastPrice));
-            setIsProcessing(false);
+            if (isMounted && !('error' in result) && result.lastPrice) {
+                setLivePrice(parseFloat(result.lastPrice));
+            }
         };
 
         fetchPrice();
         const interval = setInterval(fetchPrice, 15000);
-        return () => clearInterval(interval);
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
     }, [position.status, position.symbol]);
 
     const pnl = position.status === 'CLOSED' ? (position.pnl ?? 0)
@@ -333,7 +337,7 @@ export default function PortfolioPage() {
     const { openPositions, tradeHistory } = useMemo(() => {
         return {
             openPositions: positions.filter(p => p.status === 'OPEN' || p.status === 'PENDING').sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
-            tradeHistory: positions.filter(p => p.status === 'CLOSED').sort((a,b) => new Date(b.closeTimestamp || 0).getTime() - new Date(a.closeTimestamp || 0).getTime()),
+            tradeHistory: positions.filter(p => p.status === 'CLOSED').sort((a,b) => (b.closeTimestamp ? new Date(b.closeTimestamp).getTime() : 0) - (a.closeTimestamp ? new Date(a.closeTimestamp).getTime() : 0)),
         }
     }, [positions]);
 
@@ -448,22 +452,12 @@ export default function PortfolioPage() {
             isKilling={isKilling}
             hasOpenPositions={openPositions.length > 0}
         />
-         <Tabs defaultValue="open" className="mt-4">
-            <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="open" className="data-[state=active]:shadow-active-tab-glow">Active Positions ({openPositions.length})</TabsTrigger>
-                <TabsTrigger value="history" className="data-[state=active]:shadow-active-tab-glow">Trade History ({tradeHistory.length})</TabsTrigger>
-            </TabsList>
-            <TabsContent value="open" className="mt-4 space-y-3">
-                {isLoadingData ? <div className="flex justify-center items-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
-                : openPositions.length > 0 ? openPositions.map(pos => <PositionCard key={pos.id} position={pos} onProcess={handleProcessPosition} />)
-                : renderEmptyState("No Active Positions", "Simulated positions appear here after execution from the Core Console.")}
-            </TabsContent>
-            <TabsContent value="history" className="mt-4 space-y-3">
-                 {isLoadingData ? <div className="flex justify-center items-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
-                 : tradeHistory.length > 0 ? tradeHistory.map(pos => <PositionCard key={pos.id} position={pos} onProcess={handleProcessPosition} />)
-                : renderEmptyState("No Trade History", "Your closed trades will appear here.")}
-            </TabsContent>
-        </Tabs>
+        <div className="mt-4 space-y-3">
+             <h3 className="text-xl font-semibold font-headline text-primary">Active Positions ({openPositions.length})</h3>
+            {isLoadingData ? <div className="flex justify-center items-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
+            : openPositions.length > 0 ? openPositions.map(pos => <PositionCard key={pos.id} position={pos} onProcess={handleProcessPosition} />)
+            : renderEmptyState("No Active Positions", "Positions appear here after executing a signal. Executed trades can be reviewed in the Signal Log.")}
+        </div>
       </div>
        <PerformanceReviewModal isOpen={isReviewModalOpen} onOpenChange={setIsReviewModalOpen} reviewData={reviewData} isLoading={isGeneratingReview} error={reviewError} />
     </>

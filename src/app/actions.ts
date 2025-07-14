@@ -1,5 +1,5 @@
 
-"use server";
+'use server';
 import { prisma } from '@/lib/prisma';
 import type { User as PrismaUser, Badge as PrismaBadge, Position as PrismaPosition, GeneratedSignal as PrismaSignal } from '@prisma/client';
 import { Prisma } from '@prisma/client';
@@ -19,7 +19,11 @@ import { fetchMarketDataAction } from '@/services/market-data-service';
 
 // --- Type Definitions ---
 export type Position = PrismaPosition;
-export type GeneratedSignal = PrismaSignal;
+const generatedSignalWithPosition = Prisma.validator<Prisma.GeneratedSignalDefaultArgs>()({
+    include: { position: true },
+});
+export type GeneratedSignal = Prisma.GeneratedSignalGetPayload<typeof generatedSignalWithPosition>;
+
 
 const userWithRelations = Prisma.validator<Prisma.UserDefaultArgs>()({
   include: { badges: true },
@@ -176,7 +180,8 @@ export async function generateTradingStrategyAction(
                 strategyReasoning: 'N/A for instant signal.', // Not applicable here
                 analysisSummary: strategy.analysisSummary,
                 newsAnalysis: strategy.newsAnalysis,
-            }
+            },
+            include: { position: true },
         });
 
         if (!input.userId.startsWith('guest_')) {
@@ -223,7 +228,8 @@ export async function generateShadowChoiceStrategyAction(
                 strategyReasoning: strategy.strategyReasoning,
                 analysisSummary: strategy.analysisSummary,
                 newsAnalysis: strategy.newsAnalysis,
-            }
+            },
+            include: { position: true },
         });
         
         if (!userId.startsWith('guest_')) {
@@ -247,7 +253,7 @@ export async function fetchPositionsAndSignalsAction(userId: string): Promise<{ 
     try {
         const [positions, signals] = await Promise.all([
             prisma.position.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 50 }),
-            prisma.generatedSignal.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 50 }),
+            prisma.generatedSignal.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 50, include: { position: true } }),
         ]);
         return { positions, signals };
     } catch (error: any) {
@@ -261,26 +267,25 @@ export async function closePositionAction(positionId: string, closePrice: number
         if (!position || position.status !== 'OPEN') return { error: 'Position not found or not open.' };
         
         const pnl = (position.signalType === 'BUY' ? closePrice - position.entryPrice : position.entryPrice - closePrice) * position.size;
-          
-        const modeMultipliers: { [key: string]: number } = { Scalper: 1.0, Sniper: 1.1, Intraday: 1.2, Swing: 1.5, Custom: 1.2 };
-        const riskMultipliers: { [key: string]: number } = { Low: 0.8, Medium: 1.0, High: 1.3 };
-        const modeMultiplier = modeMultipliers[position.tradingMode] || 1.0;
-        const riskMultiplier = riskMultipliers[position.riskProfile] || 1.0;
-        
-        const BASE_WIN_XP = 50, BASE_LOSS_XP = 10;
-        const BASE_WIN_AIRDROP_BONUS = 25, BASE_LOSS_AIRDROP_BONUS = 5;
-
-        let gainedXp = 0;
-        let gainedAirdropPoints = 0;
         
         const numericPnl = Number(pnl);
+        let gainedXp = 0;
+        let gainedAirdropPoints = 0;
 
         if (isFinite(numericPnl)) {
+            const modeMultipliers: { [key: string]: number } = { Scalper: 1.0, Sniper: 1.1, Intraday: 1.2, Swing: 1.5, Custom: 1.2 };
+            const riskMultipliers: { [key: string]: number } = { Low: 0.8, Medium: 1.0, High: 1.3 };
+            const modeMultiplier = modeMultipliers[position.tradingMode] || 1.0;
+            const riskMultiplier = riskMultipliers[position.riskProfile] || 1.0;
+            
+            const BASE_WIN_XP = 50, BASE_LOSS_XP = 10;
+            const BASE_WIN_AIRDROP_BONUS = 25, BASE_LOSS_AIRDROP_BONUS = 5;
+
             gainedXp = numericPnl > 0 ? BASE_WIN_XP * modeMultiplier * riskMultiplier : BASE_LOSS_XP * modeMultiplier;
             gainedAirdropPoints = numericPnl > 0 ? numericPnl + (BASE_WIN_AIRDROP_BONUS * modeMultiplier * riskMultiplier) : BASE_LOSS_AIRDROP_BONUS;
         }
 
-        const gasPaid = 1.25 + (riskMultiplier - 1) + (modeMultiplier - 1);
+        const gasPaid = 1.25;
         const blocksTrained = 100 + Math.floor(Math.abs(numericPnl || 0) * 2);
 
         const roundedGainedXp = Math.round(gainedXp);
@@ -361,6 +366,7 @@ export async function dismissSignalAction(signalId: string, userId: string): Pro
         return prisma.generatedSignal.update({
             where: { id: signalId },
             data: { status: 'DISMISSED' },
+            include: { position: true }
         });
     } catch (e) {
         return { error: "Failed to dismiss signal." };
@@ -400,19 +406,29 @@ export async function closeAllPositionsAction(userId: string): Promise<{ closedC
         }
 
         let totalAirdropPointsGained = 0;
+        let totalXpGained = 0;
         const updates = [];
 
         for (const position of openPositions) {
             const closePrice = prices[position.symbol];
             if (isFinite(closePrice)) {
-                const numericPnl = (position.signalType === 'BUY' ? closePrice - position.entryPrice : position.entryPrice - closePrice) * position.size;
+                const pnl = (position.signalType === 'BUY' ? closePrice - position.entryPrice : position.entryPrice - closePrice) * position.size;
+                const numericPnl = Number(pnl);
+
                 let airdropPointsForTrade = 0;
+                let xpForTrade = 0;
                 
-                if(isFinite(numericPnl) && numericPnl > 0) {
-                     airdropPointsForTrade = numericPnl;
+                if(isFinite(numericPnl)) {
+                    if (numericPnl > 0) {
+                        airdropPointsForTrade = numericPnl;
+                        xpForTrade = 50;
+                    } else {
+                        xpForTrade = 10;
+                    }
                 }
                 
                 totalAirdropPointsGained += airdropPointsForTrade;
+                totalXpGained += xpForTrade;
 
                 const updatePositionPromise = prisma.position.update({
                     where: { id: position.id },
@@ -421,7 +437,8 @@ export async function closeAllPositionsAction(userId: string): Promise<{ closedC
                         closePrice, 
                         pnl: numericPnl, 
                         closeTimestamp: new Date(),
-                        gainedAirdropPoints: Math.round(airdropPointsForTrade)
+                        gainedAirdropPoints: Math.round(airdropPointsForTrade),
+                        gainedXp: Math.round(xpForTrade)
                     }
                 });
 
@@ -430,14 +447,11 @@ export async function closeAllPositionsAction(userId: string): Promise<{ closedC
         }
         
         if (updates.length > 0) {
-            // First, update all the positions
             await prisma.$transaction(updates);
-
-            // Then, update the user's points in a single operation
             await prisma.user.update({
                 where: { id: userId },
                 data: {
-                    weeklyPoints: { increment: 10 * updates.length },
+                    weeklyPoints: { increment: Math.round(totalXpGained) },
                     airdropPoints: { increment: Math.round(totalAirdropPointsGained) }
                 }
             });
