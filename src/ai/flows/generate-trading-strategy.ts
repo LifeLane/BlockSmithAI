@@ -39,7 +39,6 @@ const GenerateTradingStrategyCoreOutputSchema = z.object({
   sentiment: z.string().describe('A brief sentiment analysis of the market conditions (e.g., Neutral, Bullish, Bearish).'),
   currentThought: z.string().describe("A short, insightful or witty 'current thought' from SHADOW, like an AI quip related to the market or analysis. Max 1 short sentence. Example: 'Liquidity pull pattern developing.'"),
   shortTermPrediction: z.string().describe("A very brief prediction, e.g., '13m until breakout scenario', 'Consolidation expected next 30m'. Max 1 short phrase."),
-  sentimentTransition: z.string().optional().describe("If applicable, a brief note on sentiment change, e.g., 'Bearish -> Cautiously Neutral', 'Bullish trend strengthening'. If no significant recent transition, omit or state 'Sentiment stable'."),
   analysisSummary: z.string().describe("A brief summary of the technical analysis performed, mentioning key indicators like RSI, MACD, and Bollinger Bands, and how data from CoinGecko/CMC/Etherscan influenced the decision."),
   newsAnalysis: z.string().describe("A brief summary of how recent news and market sentiment influenced the trading decision. If no significant news was found, state that and explain that the decision is purely technical."),
 });
@@ -85,7 +84,7 @@ const generateTradingStrategyPrompt = ai.definePrompt({
       -   **Data-Driven Stop Loss & Take Profit:** I will analyze the fetched historical data to identify the most relevant support and resistance levels. For a **BUY** signal, 'stop_loss' MUST be below a recent support level. For a **SELL** signal, 'stop_loss' MUST be above a recent resistance level.
       -   The 'riskProfile' selected by the user influences the distance of my SL/TP targets. 'High' risk allows for wider stops and more ambitious targets. 'Low' risk requires tighter stops and more conservative targets.
 
-  **Output Requirements (Provide ALL 13 of these fields based on my direct analysis following the strict rules above):**
+  **Output Requirements (Provide ALL 12 of these fields based on my direct analysis following the strict rules above):**
 
   1.  **signal:** (BUY or SELL)
   2.  **entry_zone:** (The current market price as a single number string)
@@ -97,11 +96,10 @@ const generateTradingStrategyPrompt = ai.definePrompt({
   8.  **sentiment:** (Brief market sentiment based on assimilated data)
   9.  **currentThought:** (A short, insightful 'current thought' from me, SHADOW.)
   10. **shortTermPrediction:** (A very brief, specific prediction.)
-  11. **sentimentTransition:** (Note on sentiment change if observed.)
-  12. **analysisSummary:** (A brief summary of my technical analysis, referencing the indicators used and how fundamental data influenced the decision.)
-  13. **newsAnalysis:** (A summary of how news influenced the strategy. If no significant news was found, state that and explain that the trade is based purely on technicals.)
+  11. **analysisSummary:** (A brief summary of my technical analysis, referencing the indicators used and how fundamental data influenced the decision.)
+  12. **newsAnalysis:** (A summary of how news influenced the strategy. If no significant news was found, state that the trade is based purely on technicals.)
 
-  My output must be direct and solely focused on providing these 13 parameters. The chain is listening.
+  My output must be direct and solely focused on providing these 12 parameters. The chain is listening.
 `,
 });
 

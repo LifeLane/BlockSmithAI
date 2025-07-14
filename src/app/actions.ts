@@ -174,7 +174,6 @@ export async function generateTradingStrategyAction(
                 sentiment: strategy.sentiment,
                 currentThought: strategy.currentThought,
                 shortTermPrediction: strategy.shortTermPrediction,
-                sentimentTransition: strategy.sentimentTransition,
                 chosenTradingMode: input.tradingMode,
                 chosenRiskProfile: input.riskProfile,
                 strategyReasoning: 'N/A for instant signal.', // Not applicable here
@@ -222,7 +221,6 @@ export async function generateShadowChoiceStrategyAction(
                 sentiment: strategy.sentiment,
                 currentThought: strategy.currentThought,
                 shortTermPrediction: strategy.shortTermPrediction,
-                sentimentTransition: strategy.sentimentTransition,
                 chosenTradingMode: strategy.chosenTradingMode,
                 chosenRiskProfile: strategy.chosenRiskProfile,
                 strategyReasoning: strategy.strategyReasoning,

@@ -36,7 +36,6 @@ const ShadowChoiceStrategyCoreOutputSchema = z.object({
   sentiment: z.string().describe('A brief sentiment analysis of the market conditions (e.g., Neutral, Bullish, Bearish).'),
   currentThought: z.string().describe("A short, insightful or witty 'current thought' from SHADOW. Max 1 short sentence."),
   shortTermPrediction: z.string().describe("A very brief prediction, e.g., '13m until breakout scenario'. Max 1 short phrase."),
-  sentimentTransition: z.string().optional().describe("If applicable, a brief note on sentiment change. If no significant recent transition, omit or state 'Sentiment stable'."),
   
   // --- SHADOW's Autonomous Choices & Analysis ---
   chosenTradingMode: z.string().describe("The trading mode I, SHADOW, have determined is optimal (Scalper, Sniper, Intraday, or Swing)."),
@@ -82,15 +81,15 @@ Target Symbol: {{{symbol}}}
 4.  **Optimal Parameter Selection:** Based on the synthesis of the trend, volatility, on-chain data, and news context, I will decide upon the most logical **Trading Mode** and **Risk Profile**.
 5.  **Articulate Rationale:** I will formulate a concise **strategyReasoning** to explain *why* my chosen trading mode and risk profile are the most logical course of action based on the multi-modal, multi-timeframe-analysis.
 6.  **Pinpoint Entry & Execute Deep Analysis:** I will use the \`fetchHistoricalDataTool\` with a short-term interval (e.g., '15m') to find a precise entry point that aligns with the dominant trend (e.g., buying a small dip in an uptrend). I will synthesize all live and historical data, focusing on key indicators like RSI for overbought/oversold levels and MACD for momentum confirmation.
-7.  **Derive Core Strategy:** Using my autonomous choices as internal guides, I will derive the full set of 16 core trading parameters. I must always provide a BUY or SELL signal.
+7.  **Derive Core Strategy:** Using my autonomous choices as internal guides, I will derive the full set of 15 core trading parameters. I must always provide a BUY or SELL signal.
     -   **CRITICAL ENTRY PRICE LOGIC:** For this custom signal, I am creating a limit order. For a **BUY** signal, my 'entry_zone' must be a specific price at a logical support level, ideally *below* the current market price. For a **SELL** signal, my 'entry_zone' must be at a logical resistance level, ideally *above* the current market price. If a clear entry point cannot be found, I must still choose the most probable direction (BUY or SELL) and set a low confidence score, adjusting the entry zone to be a logical, albeit less optimal, level. It must be a single numerical value string.
     -   **Data-Driven SL/TP:** My 'stop_loss' and 'take_profit' will be data-driven, based on key support and resistance levels identified across the multiple timeframes.
     -   For a **BUY** signal, my 'stop_loss' will be set just below a key recent support level. My 'take_profit' will be set at a logical resistance level.
     -   For a **SELL** signal, my 'stop_loss' will be set just above a key recent resistance level. My 'take_profit' will be set at a logical support level.
     -   All derived trading parameters must be specific numerical values with realistic precision.
-8.  **Final Output Formulation**: I will assemble all 16 required output fields. My \`newsAnalysis\` output must explain how the news context influenced my autonomous choices. My \`analysisSummary\` must now mention how the CoinGecko/CoinMarketCap/Etherscan data influenced the decision.
+8.  **Final Output Formulation**: I will assemble all 15 required output fields. My \`newsAnalysis\` output must explain how the news context influenced my autonomous choices. My \`analysisSummary\` must now mention how the CoinGecko/CoinMarketCap/Etherscan data influenced the decision.
 
-**Output Requirements (Provide ALL 16 of these fields based on my autonomous analysis):**
+**Output Requirements (Provide ALL 15 of these fields based on my autonomous analysis):**
 
 *   **chosenTradingMode**: The optimal mode I selected.
 *   **chosenRiskProfile**: The optimal risk profile I selected.
@@ -107,7 +106,6 @@ Target Symbol: {{{symbol}}}
 *   **sentiment**: (Brief market sentiment: Neutral, Bullish, Bearish, etc.)
 *   **currentThought**: (A short, insightful 'current thought' from me)
 *   **shortTermPrediction**: (A very brief, specific prediction)
-*   **sentimentTransition**: (Note on sentiment change, if any)
 
 My output must be direct, complete, and reflect my superior analytical process. The ether is listening.`,
 });
