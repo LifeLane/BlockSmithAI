@@ -80,10 +80,11 @@ export async function getOrCreateUserAction(userId: string | null): Promise<User
 
     const newUser = await prisma.user.create({
         data: {
-             // Explicitly set default values here to satisfy Prisma client validation
             username: `Analyst-${randomUUID().substring(0, 6)}`,
             shadowId: `SHDW-${randomUUID().toUpperCase()}`,
-            status: 'Guest'
+            status: 'Guest',
+            weeklyPoints: 0,
+            airdropPoints: 0,
         },
         ...userQuery
     });
@@ -273,13 +274,17 @@ export async function closePositionAction(positionId: string, closePrice: number
         let gainedAirdropPoints = 0;
         
         const numericPnl = Number(pnl);
+
         if (isFinite(numericPnl)) {
             gainedXp = numericPnl > 0 ? BASE_WIN_XP * modeMultiplier * riskMultiplier : BASE_LOSS_XP * modeMultiplier;
-            gainedAirdropPoints = numericPnl > 0 ? numericPnl + (BASE_WIN_AIRDROP_BONUS * modeMultiplier * riskMultiplier) : numericPnl + BASE_LOSS_AIRDROP_BONUS;
+            gainedAirdropPoints = numericPnl > 0 ? numericPnl + (BASE_WIN_AIRDROP_BONUS * modeMultiplier * riskMultiplier) : BASE_LOSS_AIRDROP_BONUS;
         }
 
         const gasPaid = 1.25 + (riskMultiplier - 1) + (modeMultiplier - 1);
         const blocksTrained = 100 + Math.floor(Math.abs(numericPnl || 0) * 2);
+
+        const roundedGainedXp = Math.round(gainedXp);
+        const roundedAirdropPoints = Math.round(gainedAirdropPoints);
 
         const updatedPosition = await prisma.position.update({
             where: { id: positionId },
@@ -288,8 +293,8 @@ export async function closePositionAction(positionId: string, closePrice: number
                 closePrice,
                 pnl: numericPnl,
                 closeTimestamp: new Date(),
-                gainedXp: Math.round(gainedXp),
-                gainedAirdropPoints: Math.round(gainedAirdropPoints),
+                gainedXp: roundedGainedXp,
+                gainedAirdropPoints: roundedAirdropPoints,
                 gasPaid: parseFloat(gasPaid.toFixed(2)),
                 blocksTrained
             }
@@ -298,8 +303,8 @@ export async function closePositionAction(positionId: string, closePrice: number
         await prisma.user.update({
             where: { id: userId },
             data: {
-                weeklyPoints: { increment: Math.round(gainedXp) },
-                airdropPoints: { increment: Math.round(gainedAirdropPoints) },
+                weeklyPoints: { increment: roundedGainedXp },
+                airdropPoints: { increment: roundedAirdropPoints },
             }
         });
 
@@ -400,9 +405,9 @@ export async function closeAllPositionsAction(userId: string): Promise<{ closedC
         for (const position of openPositions) {
             const closePrice = prices[position.symbol];
             if (isFinite(closePrice)) {
-                const pnl = (position.signalType === 'BUY' ? closePrice - position.entryPrice : position.entryPrice - closePrice) * position.size;
-                const numericPnl = Number(pnl);
+                const numericPnl = (position.signalType === 'BUY' ? closePrice - position.entryPrice : position.entryPrice - closePrice) * position.size;
                 let airdropPointsForTrade = 0;
+                
                 if(isFinite(numericPnl) && numericPnl > 0) {
                      airdropPointsForTrade = numericPnl;
                 }
@@ -480,5 +485,3 @@ export async function generatePerformanceReviewAction(userId: string, input: Per
     }
     return result;
 }
-
-    
