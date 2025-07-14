@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import BottomNav from '@/components/layout/BottomNav';
 import { ThemeProvider } from "@/components/theme-provider";
+import { CurrentUserProvider } from '@/components/blocksmith-ai/CurrentUserProvider';
 
 export const metadata: Metadata = {
   title: 'BlockShadow',
@@ -24,20 +25,22 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased bg-background">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <div className="relative z-10 text-foreground min-h-screen flex flex-col">
-            <main className="flex-grow flex flex-col">
-              {children}
-            </main>
-            <BottomNav />
-          </div>
-          <Toaster />
-        </ThemeProvider>
+        <CurrentUserProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
+            <div className="relative z-10 text-foreground min-h-screen flex flex-col">
+              <main className="flex-grow flex flex-col">
+                {children}
+              </main>
+              <BottomNav />
+            </div>
+            <Toaster />
+          </ThemeProvider>
+        </CurrentUserProvider>
       </body>
     </html>
   );

@@ -1,14 +1,15 @@
+
 'use client';
 
 import { FunctionComponent } from 'react';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
 import { Gift, Fingerprint } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import GlyphScramble from './GlyphScramble';
 
 const AppHeader: FunctionComponent = () => {
-  const { user, isLoading } = useCurrentUser();
+  const { user, isLoading } = useCurrentUserState();
 
   return (
     <header className="py-4 relative border-b border-transparent bg-gradient-to-r from-transparent via-primary/20 to-transparent">

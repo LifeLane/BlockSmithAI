@@ -19,7 +19,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Mail, Gift, Rocket, Sparkles, Phone, User, Bot, Loader2 } from 'lucide-react';
 import { handleAirdropSignupAction, type AirdropFormData } from '@/app/actions';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
 import { useToast } from '@/hooks/use-toast';
 
 const TwitterIcon = () => (
@@ -75,7 +75,7 @@ const signupSchema = z.object({
 type SignupFormData = z.infer<typeof signupSchema>;
 
 const AirdropSignupModal: FunctionComponent<AirdropSignupModalProps> = ({ isOpen, onOpenChange, onSignupSuccess, userId }) => {
-  const { user, setUser } = useCurrentUser();
+  const { user, setUser } = useCurrentUserState();
   const { toast } = useToast();
 
   const form = useForm<SignupFormData>({

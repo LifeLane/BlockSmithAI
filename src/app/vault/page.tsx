@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, Lock, Zap, Database, Cpu, Atom, Layers, PlusCircle, ShoppingCart } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -148,7 +148,7 @@ const MiningRigCard = ({ rig, userXp }: { rig: typeof MINING_RIGS[0], userXp: nu
 
 
 export default function VaultPage() {
-    const { user: currentUser, isLoading: isUserLoading } = useCurrentUser();
+    const { user: currentUser, isLoading: isUserLoading } = useCurrentUserState();
 
     const renderContent = () => {
         if (isUserLoading || !currentUser) {

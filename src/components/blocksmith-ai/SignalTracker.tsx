@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { FunctionComponent, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   LogIn,
@@ -31,12 +31,8 @@ import { useClientState } from '@/hooks/use-client-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from '../ui/card';
 
-type AIStrategyOutput = GeneratedSignal & { 
-  disclaimer: string;
-};
-
 interface SignalTrackerProps {
-  aiStrategy: AIStrategyOutput | null;
+  aiStrategy: GeneratedSignal | null;
   liveMarketData: LiveMarketData | null;
   userId: string;
 }
@@ -82,7 +78,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
   
   const { 
       signal, entry_zone, stop_loss, take_profit, confidence, gpt_confidence_score, 
-      risk_rating, sentiment, analysisSummary, newsAnalysis, disclaimer 
+      risk_rating, sentiment, analysisSummary, newsAnalysis
   } = aiStrategy;
   
   const type = aiStrategy.chosenTradingMode === 'Custom' ? 'CUSTOM' : 'INSTANT';
@@ -141,6 +137,8 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
            router.push('/signals');
       }
   };
+
+  const STATIC_DISCLAIMER = "My analysis is a beacon in the chaos, not a crystal ball. The market writes its own script. Tread wisely.";
 
   return (
     <div className="border border-primary/20 rounded-lg p-4 bg-card/80 backdrop-blur-sm space-y-4 shadow-lg interactive-card">
@@ -255,19 +253,17 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
             </Button>
         </div>
 
-        {disclaimer && (
-            <div className="shadow-edict-container">
-                <div className="shadow-edict-title-container">
-                    <MessageSquareHeart className="h-6 w-6" />
-                    <div className="shadow-edict-title">
-                        <GlyphScramble text="SHADOW's Edict" />
-                    </div>
+        <div className="shadow-edict-container">
+            <div className="shadow-edict-title-container">
+                <MessageSquareHeart className="h-6 w-6" />
+                <div className="shadow-edict-title">
+                    <GlyphScramble text="SHADOW's Edict" />
                 </div>
-                <p className="shadow-edict-body">
-                    <GlyphScramble text={disclaimer} />
-                </p>
             </div>
-        )}
+            <p className="shadow-edict-body">
+                <GlyphScramble text={STATIC_DISCLAIMER} />
+            </p>
+        </div>
     </div>
   );
 };

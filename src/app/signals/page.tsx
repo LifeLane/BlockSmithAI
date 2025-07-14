@@ -5,10 +5,10 @@ import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Bot, BrainCircuit, Play, Trash2, LogIn, ShieldX, Target, CheckCircle2, Hourglass, RefreshCw, Layers, Bitcoin, Zap, Gift, CheckCircle, ArrowRight } from 'lucide-react';
+import { Loader2, Bot, BrainCircuit, Play, Trash2, LogIn, ShieldX, Target, CheckCircle2, Hourglass, RefreshCw, Layers, Bitcoin, Zap, Gift, CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
 import { 
     GeneratedSignal,
     Position,
@@ -73,7 +73,7 @@ const GeneratedSignalCard = ({ signal, onDismiss, onExecute, isProcessing }: { s
 
                 <div className="text-xs p-3 bg-background/50 rounded-md grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <div className="flex flex-col"> <span className="text-muted-foreground flex items-center gap-1"><LogIn size={12}/> Entry Price</span> <span className="font-mono font-semibold">${formatPrice(position.entryPrice)}</span> </div>
-                    <div className="flex flex-col"> <span className="text-muted-foreground flex items-center gap-1"><LogIn size={12}/> Close Price</span> <span className="font-mono font-semibold">{position.closePrice ? `$${formatPrice(position.closePrice)}` : 'N/A'}</span> </div>
+                    <div className="flex flex-col"> <span className="text-muted-foreground flex items-center gap-1"><ArrowLeft size={12}/> Close Price</span> <span className="font-mono font-semibold">{position.closePrice ? `$${formatPrice(position.closePrice)}` : 'N/A'}</span> </div>
                     <div className="flex flex-col"> <span className="text-muted-foreground flex items-center gap-1"><ArrowRight size={12}/> Final PnL</span> <span className={cn("font-mono font-semibold", pnlColor)}>{formatCurrency(position.pnl)}</span> </div>
                 </div>
 
@@ -122,7 +122,7 @@ const GeneratedSignalCard = ({ signal, onDismiss, onExecute, isProcessing }: { s
 
 
 export default function SignalsPage() {
-    const { user, isLoading: isUserLoading } = useCurrentUser();
+    const { user, isLoading: isUserLoading } = useCurrentUserState();
     const [dbSignals, setDbSignals] = useState<GeneratedSignal[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);

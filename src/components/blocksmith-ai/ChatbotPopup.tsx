@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Send, Sparkles, MessageSquareQuote } from 'lucide-react';
 import { shadowChatAction, type ChatMessage } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
-import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
 
 const SHADOW_INITIAL_MESSAGE: ChatMessage = {
   role: 'model',
@@ -29,7 +29,7 @@ const ChatbotPopup: FunctionComponent<ChatbotPopupProps> = ({ isOpen, onOpenChan
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { user } = useCurrentUser();
+  const { user } = useCurrentUserState();
 
   useEffect(() => {
     if (isOpen && inputRef.current) {

@@ -22,15 +22,11 @@ import {
 } from '@/services/market-data-service';
 import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
-import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
 import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import { useClientState } from '@/hooks/use-client-state';
-
-type AIStrategyOutput = GeneratedSignal & { 
-  disclaimer: string;
-};
 
 const DEFAULT_SYMBOLS: FormattedSymbol[] = [
   { value: "BTCUSDT", label: "BTC/USDT" },
@@ -60,7 +56,7 @@ export default function CoreConsolePage() {
   const [tradingMode, setTradingMode] = useState<string>('Intraday');
   const [riskProfile, setRiskProfile] = useState<string>('Medium');
 
-  const [aiStrategy, setAiStrategy] = useState<AIStrategyOutput | null>(null);
+  const [aiStrategy, setAiStrategy] = useState<GeneratedSignal | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingText, setLoadingText] = useState<string>(LOADING_STEPS[0]);
   const [strategyError, setStrategyError] = useState<string | null>(null);
@@ -75,7 +71,7 @@ export default function CoreConsolePage() {
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
   
-  const { user, isLoading: isUserLoading, refetchUser } = useCurrentUser();
+  const { user, isLoading: isUserLoading, refetchUser } = useCurrentUserState();
   const { addSignal: addClientSignal } = useClientState();
   
   const [analysisCount, setAnalysisCount] = useState<number>(0);
@@ -219,7 +215,7 @@ export default function CoreConsolePage() {
           if(user.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
         } else {
             const strategyResult = result.signal;
-            setAiStrategy({ ...strategyResult, disclaimer: STATIC_DISCLAIMER });
+            setAiStrategy(strategyResult);
             
             if (user.status === 'Guest') {
                 addClientSignal(result.signal);

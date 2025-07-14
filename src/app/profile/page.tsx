@@ -14,7 +14,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
 import { Loader2 } from 'lucide-react';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
 import { 
   fetchLeaderboardDataJson, 
   updateUserSettingsJson, 
@@ -145,7 +145,7 @@ export default function ProfilePage() {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(true);
   const [showAirdropModal, setShowAirdropModal] = useState(false);
-  const { user: currentUser, isLoading: isUserLoading, refetchUser } = useCurrentUser();
+  const { user: currentUser, isLoading: isUserLoading, refetchUser } = useCurrentUserState();
   const { toast } = useToast();
   
   const loadPageData = useCallback(async () => {
@@ -237,7 +237,7 @@ export default function ProfilePage() {
   const rankDetails = getRankDetails(currentUser.weeklyPoints || 0);
   const mandatoryMissionsCompleted = missionsList.filter(m => m.type === 'social' && currentUser.claimedMissions?.includes(m.id)).length;
   const totalMandatoryMissions = missionsList.filter(m => m.type === 'social').length;
-  const progress = (mandatoryMissionsCompleted / totalMandatoryMissions) * 100;
+  const progress = totalMandatoryMissions > 0 ? (mandatoryMissionsCompleted / totalMandatoryMissions) * 100 : 0;
 
   return (
     <>
@@ -495,5 +495,3 @@ export default function ProfilePage() {
     </>
   );
 }
-
-    

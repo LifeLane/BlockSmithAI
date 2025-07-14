@@ -5,9 +5,8 @@ import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
 import { 
     Loader2, Briefcase, Bot,
     ArrowUp, ArrowDown, Gift, LogIn, LogOut, Target, ShieldX, Clock,
@@ -42,6 +41,7 @@ import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/comp
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useClientState } from '@/hooks/use-client-state';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const StatCard = ({ title, value, subValue, icon, valueClassName }: { title: string; value: React.ReactNode; subValue?: React.ReactNode; icon: React.ReactNode; valueClassName?: string }) => (
     <div className="flex flex-col items-center justify-center p-3 bg-secondary rounded-lg text-center border border-border/30 h-full">
@@ -206,7 +206,7 @@ const PositionCard = ({ position, onProcess }: { position: Position, onProcess: 
                         <span className="text-foreground">{position.symbol}</span>
                     </CardTitle>
                     <CardDescription className="text-xs">
-                        {position.closeTimestamp ? `Closed ${format(new Date(position.closeTimestamp), 'PPp')}` : `Created ${format(new Date(position.createdAt), 'PPp')}`}
+                        {position.closeTimestamp ? `Closed at ${format(new Date(position.closeTimestamp), 'PPp')}` : (position.openTimestamp ? `Opened at ${format(new Date(position.openTimestamp), 'PPp')}` : `Created at ${format(new Date(position.createdAt), 'PPp')}`)}
                     </CardDescription>
                 </div>
                 <Badge variant="outline" className={cn("text-xs font-bold", currentStatus.className)}>{currentStatus.icon} {currentStatus.label}</Badge>
@@ -223,20 +223,7 @@ const PositionCard = ({ position, onProcess }: { position: Position, onProcess: 
                             <PositionInfo label="Take Profit" value={formatCurrency(position.takeProfit)} icon={<Target size={14} />} valueClassName="text-green-400" />
                             <PositionInfo label="Stop Loss" value={formatCurrency(position.stopLoss)} icon={<ShieldX size={14} />} valueClassName="text-red-400" />
                             {position.status === 'OPEN' && <PositionInfo label="Current PnL" value={formatCurrency(pnl)} icon={<DollarSign size={14} />} valueClassName={pnlColor} />}
-                            {position.status === 'CLOSED' && <PositionInfo label="Final PnL" value={formatCurrency(pnl)} icon={<DollarSign size={14} />} valueClassName={pnlColor} />}
-                            {position.status === 'CLOSED' && <PositionInfo label="Close Price" value={formatCurrency(position.closePrice)} icon={<LogOut size={14} />} />}
                         </div>
-                        {position.status === 'CLOSED' && (
-                        <div>
-                            <h4 className="text-sm font-semibold mb-2 text-muted-foreground">Rewards & Analytics</h4>
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                                <RewardInfo label="$BSAI Gained" value={position.gainedAirdropPoints?.toLocaleString() ?? 'N/A'} icon={<Gift size={16} />} valueClassName="text-orange-400" />
-                                <RewardInfo label="XP Gained" value={position.gainedXp?.toLocaleString() ?? 'N/A'} icon={<Zap size={16} />} valueClassName="text-tertiary" />
-                                <RewardInfo label="Blocks Trained" value={position.blocksTrained?.toLocaleString() ?? 'N/A'} icon={<Layers size={16} />} />
-                                <RewardInfo label="Gas Paid (Mock)" value={formatCurrency(position.gasPaid) ?? 'N/A'} icon={<Bitcoin size={16} />} />
-                            </div>
-                        </div>
-                        )}
                     </TabsContent>
                      <TabsContent value="strategy" className="mt-4 space-y-4">
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs p-3 bg-secondary rounded-lg">
@@ -292,7 +279,7 @@ const PositionCard = ({ position, onProcess }: { position: Position, onProcess: 
 }
 
 export default function PortfolioPage() {
-    const { user: currentUser, isLoading: isUserLoading, refetchUser } = useCurrentUser();
+    const { user: currentUser, isLoading: isUserLoading, refetchUser } = useCurrentUserState();
     const [dbPositions, setDbPositions] = useState<Position[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(true);
     
@@ -334,14 +321,12 @@ export default function PortfolioPage() {
         }
     }, [currentUser, isGuest, loadData, isUserLoading, isInitialized]);
 
-    const { openPositions, tradeHistory } = useMemo(() => {
-        return {
-            openPositions: positions.filter(p => p.status === 'OPEN' || p.status === 'PENDING').sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
-            tradeHistory: positions.filter(p => p.status === 'CLOSED').sort((a,b) => (b.closeTimestamp ? new Date(b.closeTimestamp).getTime() : 0) - (a.closeTimestamp ? new Date(a.closeTimestamp).getTime() : 0)),
-        }
+    const activePositions = useMemo(() => {
+        return positions.filter(p => p.status === 'OPEN' || p.status === 'PENDING').sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     }, [positions]);
 
     const portfolioStats: PortfolioStats | null = useMemo(() => {
+        const tradeHistory = positions.filter(p => p.status === 'CLOSED');
         const totalTrades = tradeHistory.length;
         if (totalTrades === 0) return { totalTrades: 0, winRate: 0, winningTrades: 0, totalPnl: 0, bestTradePnl: 0, worstTradePnl: 0 };
         const winningTrades = tradeHistory.filter(t => t.pnl && t.pnl > 0).length;
@@ -354,7 +339,7 @@ export default function PortfolioPage() {
             bestTradePnl: Math.max(...tradeHistory.map(t => t.pnl || 0), 0),
             worstTradePnl: Math.min(...tradeHistory.map(t => t.pnl || 0), 0),
         };
-    }, [tradeHistory]);
+    }, [positions]);
     
     const handleProcessPosition = useCallback(async (type: 'close' | 'activate', id: string, price?: number) => {
         if (!currentUser) return;
@@ -386,6 +371,7 @@ export default function PortfolioPage() {
     
     const handleGenerateReview = useCallback(async () => {
         if (!currentUser || !portfolioStats) return;
+        const tradeHistory = positions.filter(p => p.status === 'CLOSED');
         setIsGeneratingReview(true);
         setReviewData(null);
         setReviewError(null);
@@ -400,7 +386,7 @@ export default function PortfolioPage() {
         else setReviewData(result);
         
         setIsGeneratingReview(false);
-    }, [currentUser, tradeHistory, portfolioStats]);
+    }, [currentUser, positions, portfolioStats]);
 
     const handleKillSwitch = useCallback(async () => {
         if (!currentUser) return;
@@ -450,12 +436,12 @@ export default function PortfolioPage() {
             isGeneratingReview={isGeneratingReview} 
             onKillSwitch={handleKillSwitch} 
             isKilling={isKilling}
-            hasOpenPositions={openPositions.length > 0}
+            hasOpenPositions={activePositions.length > 0}
         />
         <div className="mt-4 space-y-3">
-             <h3 className="text-xl font-semibold font-headline text-primary">Active Positions ({openPositions.length})</h3>
+             <h3 className="text-xl font-semibold font-headline text-primary">Active Positions ({activePositions.length})</h3>
             {isLoadingData ? <div className="flex justify-center items-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
-            : openPositions.length > 0 ? openPositions.map(pos => <PositionCard key={pos.id} position={pos} onProcess={handleProcessPosition} />)
+            : activePositions.length > 0 ? activePositions.map(pos => <PositionCard key={pos.id} position={pos} onProcess={handleProcessPosition} />)
             : renderEmptyState("No Active Positions", "Positions appear here after executing a signal. Executed trades can be reviewed in the Signal Log.")}
         </div>
       </div>
