@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { FunctionComponent } from 'react';
+import type { FunctionComponent, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   LogIn,
@@ -19,6 +19,7 @@ import {
   Newspaper,
   BrainCircuit,
   Trash2,
+  Loader2,
 } from 'lucide-react';
 import type { LiveMarketData, GeneratedSignal } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
@@ -52,6 +53,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
   const { toast } = useToast();
   const router = useRouter();
   const { executeSignal: executeClientSignal, dismissSignal: dismissClientSignal } = useClientState();
+  const [isProcessing, setIsProcessing] = useState(false);
   const isGuest = userId.startsWith('guest_');
 
   const formatPrice = (priceString?: string | number | null): string => {
@@ -83,20 +85,16 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
       risk_rating, sentiment, analysisSummary, newsAnalysis, disclaimer 
   } = aiStrategy;
   
-  const isInstantSignal = 'entryPrice' in aiStrategy; // This check is no longer valid as we always create a signal
   const type = aiStrategy.chosenTradingMode === 'Custom' ? 'CUSTOM' : 'INSTANT';
-
   const isBuy = signal === 'BUY';
-
   const signalText = isBuy ? 'BUY / LONG' : 'SELL / SHORT';
   const signalIcon = isBuy ? <TrendingUp className="mr-2 h-4 w-4" /> : <TrendingDown className="mr-2 h-4 w-4" />;
-  
   const currentPriceFormatted = liveMarketData?.lastPrice ? `$${formatPrice(liveMarketData.lastPrice)}` : 'N/A';
-  
   const titleText = `SHADOW's Insight Unveiled: ${aiStrategy.symbol}`;
 
   const handleExecute = async () => {
     if (!aiStrategy.id) return;
+    setIsProcessing(true);
     
     if (isGuest) {
       executeClientSignal(aiStrategy.id);
@@ -105,6 +103,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
           description: <span className="text-foreground">Your pending order for <strong className="text-primary">{aiStrategy.symbol}</strong> is now active.</span>,
       });
       router.push('/pulse');
+      // No need to setIsProcessing(false) because of redirect
       return;
     }
 
@@ -112,10 +111,11 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
 
     if ('error' in result) {
          toast({ title: 'Error', description: result.error, variant: 'destructive' });
+         setIsProcessing(false);
     } else {
         toast({
-            title: <span className="text-accent">Signal Simulated!</span>,
-            description: <span className="text-foreground">Your pending order for <strong className="text-primary">{aiStrategy.symbol}</strong> is now active.</span>,
+            title: <span className="text-accent">Signal Executed!</span>,
+            description: <span className="text-foreground">Your pending position for <strong className="text-primary">{aiStrategy.symbol}</strong> has been created.</span>,
         });
         router.push('/pulse');
     }
@@ -123,6 +123,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
 
   const handleDismiss = async () => {
       if (!aiStrategy.id) return;
+      setIsProcessing(true);
 
       if (isGuest) {
           dismissClientSignal(aiStrategy.id);
@@ -134,6 +135,7 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
       const result = await dismissSignalAction(aiStrategy.id, userId);
       if ('error' in result) {
            toast({ title: 'Error', description: result.error, variant: 'destructive' });
+           setIsProcessing(false);
       } else {
            toast({ title: "Signal Dismissed" });
            router.push('/signals');
@@ -238,15 +240,17 @@ const SignalTracker: FunctionComponent<SignalTrackerProps> = ({ aiStrategy, live
                 variant="outline"
                 className="w-full"
                 onClick={handleDismiss} 
+                disabled={isProcessing}
             >
-                <Trash2 className="mr-2 h-4 w-4"/>
+                {isProcessing ? <Loader2 className="animate-spin h-4 w-4 mr-2"/> : <Trash2 className="mr-2 h-4 w-4"/>}
                 Dismiss Signal
             </Button>
             <Button 
                 className="w-full glow-button"
                 onClick={handleExecute} 
+                disabled={isProcessing}
             >
-                <PlayCircle className="mr-2 h-4 w-4"/>
+                {isProcessing ? <Loader2 className="animate-spin h-4 w-4 mr-2"/> : <PlayCircle className="mr-2 h-4 w-4"/>}
                 Simulate Signal
             </Button>
         </div>

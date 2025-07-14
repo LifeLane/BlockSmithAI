@@ -300,7 +300,7 @@ export default function CoreConsolePage() {
                                  <div className="flex flex-col items-center">
                                     <div className="flex items-center">
                                         {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5" />}
-                                        {isLoading ? "Analyzing..." : <GlyphScramble text="Instant Signal" />}
+                                        {isLoading ? "Analyzing..." : <GlyphScramble text="Generate Instant Signal" />}
                                     </div>
                                     <span className="text-xs font-normal opacity-80 mt-1">AI-driven market order analysis.</span>
                                 </div>
@@ -310,7 +310,7 @@ export default function CoreConsolePage() {
                                 <div className="flex flex-col items-center">
                                     <div className="flex items-center">
                                         {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
-                                        {isLoading ? "Deciding..." : <GlyphScramble text="SHADOW's Signal" />}
+                                        {isLoading ? "Deciding..." : <GlyphScramble text="Generate SHADOW's Signal" />}
                                     </div>
                                     <span className="text-xs font-normal opacity-80 mt-1">AI-chosen custom limit order.</span>
                                 </div>
