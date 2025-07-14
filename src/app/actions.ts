@@ -6,10 +6,9 @@ import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 
 // AI Flow Imports
-import { generateTradingStrategy as genCoreStrategy, type GenerateTradingStrategyInput, type GenerateTradingStrategyCoreOutput } from '@/ai/flows/generate-trading-strategy';
+import { generateUnifiedStrategy, type UnifiedStrategyInput, type UnifiedStrategyOutput } from '@/ai/flows/generate-unified-strategy';
 import { shadowChat as shadowChatFlow, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
-import { generateShadowChoiceStrategy as genShadowChoice, type ShadowChoiceStrategyInput, type ShadowChoiceStrategyCoreOutput } from '@/ai/flows/generate-shadow-choice-strategy';
 import {
     generatePerformanceReview as genPerformanceReview,
     type PerformanceReviewInput,
@@ -158,61 +157,15 @@ const parsePrice = (priceStr: string | undefined | null): number => {
     return sum / parts.length;
 };
 
-export async function generateTradingStrategyAction(
-  input: GenerateTradingStrategyInput & { userId: string }
+// This single action now handles both "Instant" and "SHADOW's Choice" signals.
+async function unifiedSignalGenerationAction(
+  input: UnifiedStrategyInput, userId: string, isInstant: boolean
 ): Promise<{ signal: GeneratedSignal } | { error: string }> {
 
     try {
-        const strategy = await genCoreStrategy(input);
+        const strategy: UnifiedStrategyOutput = await generateUnifiedStrategy(input);
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
 
-        const signal = await prisma.generatedSignal.create({
-            data: {
-                userId: input.userId,
-                symbol: input.symbol,
-                signal: strategy.signal,
-                status: 'PENDING_EXECUTION',
-                entry_zone: strategy.entry_zone,
-                stop_loss: strategy.stop_loss,
-                take_profit: strategy.take_profit,
-                confidence: strategy.confidence,
-                risk_rating: strategy.risk_rating,
-                gpt_confidence_score: strategy.gpt_confidence_score,
-                sentiment: strategy.sentiment,
-                currentThought: strategy.currentThought,
-                shortTermPrediction: strategy.shortTermPrediction,
-                chosenTradingMode: input.tradingMode,
-                chosenRiskProfile: input.riskProfile,
-                strategyReasoning: 'N/A for instant signal.', // Not applicable here
-                analysisSummary: strategy.analysisSummary,
-                newsAnalysis: strategy.newsAnalysis,
-            },
-            include: { position: true },
-        });
-
-        if (!input.userId.startsWith('guest_')) {
-            await prisma.user.update({
-                where: { id: input.userId },
-                data: { weeklyPoints: { increment: 25 }, airdropPoints: { increment: 50 } }
-            });
-        }
-        
-        return { signal: signal as GeneratedSignal };
-
-    } catch (error: any) {
-        console.error("Error in generateTradingStrategyAction:", error);
-        return { error: `An unexpected error occurred in SHADOW's cognitive core: ${error.message}` };
-    }
-}
-
-export async function generateShadowChoiceStrategyAction(
-  input: ShadowChoiceStrategyInput, userId: string
-): Promise<{ signal: GeneratedSignal } | { error: string }> {
-
-    try {
-        const strategy = await genShadowChoice(input);
-        if (!strategy) return { error: "SHADOW Core failed to generate an autonomous strategy." };
-        
         const signal = await prisma.generatedSignal.create({
             data: {
                 userId: userId,
@@ -236,21 +189,52 @@ export async function generateShadowChoiceStrategyAction(
             },
             include: { position: true },
         });
-        
+
         if (!userId.startsWith('guest_')) {
+            const xpIncrement = isInstant ? 25 : 0;
+            const airdropIncrement = isInstant ? 50 : 10;
             await prisma.user.update({
                 where: { id: userId },
-                data: { airdropPoints: { increment: 10 } }
+                data: { 
+                    weeklyPoints: { increment: xpIncrement }, 
+                    airdropPoints: { increment: airdropIncrement } 
+                }
             });
         }
-
+        
         return { signal: signal as GeneratedSignal };
 
     } catch (error: any) {
-        console.error("Error in generateShadowChoiceStrategyAction:", error);
-        return { error: `An unexpected error occurred in SHADOW's autonomous core: ${error.message}` };
+        console.error(`Error in ${isInstant ? 'Instant' : 'SHADOW Choice'} Signal Generation:`, error);
+        return { error: `An unexpected error occurred in SHADOW's cognitive core: ${error.message}` };
     }
 }
+
+
+export async function generateTradingStrategyAction(
+  input: { symbol: string; tradingMode: string; riskProfile: string; marketData: string; userId: string }
+): Promise<{ signal: GeneratedSignal } | { error: string }> {
+    const unifiedInput: UnifiedStrategyInput = {
+        symbol: input.symbol,
+        marketData: input.marketData,
+        tradingMode: input.tradingMode,
+        riskProfile: input.riskProfile,
+    };
+    return unifiedSignalGenerationAction(unifiedInput, input.userId, true);
+}
+
+export async function generateShadowChoiceStrategyAction(
+  input: { symbol: string; marketData: string }, userId: string
+): Promise<{ signal: GeneratedSignal } | { error: string }> {
+     const unifiedInput: UnifiedStrategyInput = {
+        symbol: input.symbol,
+        marketData: input.marketData,
+        tradingMode: null, // Pass null to trigger autonomous mode
+        riskProfile: null, // Pass null to trigger autonomous mode
+    };
+    return unifiedSignalGenerationAction(unifiedInput, userId, false);
+}
+
 
 export async function fetchPositionsAndSignalsAction(userId: string): Promise<{ positions: Position[], signals: GeneratedSignal[] } | { error: string }> {
     if (!userId || userId.startsWith('guest_')) return { positions: [], signals: [] };
@@ -306,7 +290,8 @@ export async function closePositionAction(positionId: string, closePrice: number
                 gainedXp: roundedGainedXp,
                 gainedAirdropPoints: roundedAirdropPoints,
                 gasPaid: parseFloat(gasPaid.toFixed(2)),
-                blocksTrained
+                blocksTrained,
+                strategyReasoning: position.strategyReasoning,
             }
         });
 
