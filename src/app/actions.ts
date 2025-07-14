@@ -18,11 +18,16 @@ import {
 import { fetchMarketDataAction } from '@/services/market-data-service';
 
 // --- Type Definitions ---
-export type Position = PrismaPosition;
+export type Position = Omit<PrismaPosition, 'signalType'> & {
+    signalType: 'BUY' | 'SELL';
+};
 const generatedSignalWithPosition = Prisma.validator<Prisma.GeneratedSignalDefaultArgs>()({
     include: { position: true },
 });
-export type GeneratedSignal = Prisma.GeneratedSignalGetPayload<typeof generatedSignalWithPosition>;
+export type GeneratedSignal = Omit<Prisma.GeneratedSignalGetPayload<typeof generatedSignalWithPosition>, 'signal' | 'status'> & {
+    signal: 'BUY' | 'SELL';
+    status: 'PENDING_EXECUTION' | 'EXECUTED' | 'DISMISSED';
+};
 
 
 const userWithRelations = Prisma.validator<Prisma.UserDefaultArgs>()({
@@ -66,6 +71,7 @@ export interface PortfolioStats {
     totalTrades: number;
     winRate: number;
     winningTrades: number;
+
     totalPnl: number;
     bestTradePnl: number;
     worstTradePnl: number;
@@ -191,7 +197,7 @@ export async function generateTradingStrategyAction(
             });
         }
         
-        return { signal };
+        return { signal: signal as GeneratedSignal };
 
     } catch (error: any) {
         console.error("Error in generateTradingStrategyAction:", error);
@@ -238,7 +244,7 @@ export async function generateShadowChoiceStrategyAction(
             });
         }
 
-        return { signal };
+        return { signal: signal as GeneratedSignal };
 
     } catch (error: any) {
         console.error("Error in generateShadowChoiceStrategyAction:", error);
@@ -254,7 +260,7 @@ export async function fetchPositionsAndSignalsAction(userId: string): Promise<{ 
             prisma.position.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 50 }),
             prisma.generatedSignal.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 50, include: { position: true } }),
         ]);
-        return { positions, signals };
+        return { positions: positions as Position[], signals: signals as GeneratedSignal[] };
     } catch (error: any) {
         return { error: 'Failed to fetch account data.' };
     }
@@ -312,7 +318,7 @@ export async function closePositionAction(positionId: string, closePrice: number
             }
         });
 
-        return updatedPosition;
+        return updatedPosition as Position;
 
     } catch (e: any) {
         console.error("Error closing position: ", e);
@@ -350,7 +356,7 @@ export async function executeSignalAction(signalId: string, userId: string): Pro
             }
         });
 
-        return position;
+        return position as Position;
     } catch(e: any) {
         console.error(e);
         return { error: 'Failed to execute signal.'}
@@ -361,11 +367,12 @@ export async function dismissSignalAction(signalId: string, userId: string): Pro
     try {
         const signal = await prisma.generatedSignal.findUnique({ where: { id: signalId, userId: userId }});
         if (!signal) return { error: "Signal not found." };
-        return prisma.generatedSignal.update({
+        const updatedSignal = await prisma.generatedSignal.update({
             where: { id: signalId },
             data: { status: 'DISMISSED' },
             include: { position: true }
         });
+        return updatedSignal as GeneratedSignal;
     } catch (e) {
         return { error: "Failed to dismiss signal." };
     }
@@ -376,10 +383,11 @@ export async function activatePositionAction(positionId: string, userId: string)
         const position = await prisma.position.findUnique({ where: { id: positionId, userId: userId }});
         if (!position || position.status !== 'PENDING') return { error: 'Position not found or not pending.' };
 
-        return prisma.position.update({
+        const updatedPosition = await prisma.position.update({
             where: { id: positionId },
             data: { status: 'OPEN', openTimestamp: new Date() },
         });
+        return updatedPosition as Position;
     } catch (e) {
         return { error: "Failed to activate position." };
     }
