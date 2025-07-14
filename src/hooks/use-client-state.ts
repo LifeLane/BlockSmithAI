@@ -11,16 +11,17 @@ export type PositionStatus = 'PENDING' | 'OPEN' | 'CLOSED';
 export type SignalType = 'BUY' | 'SELL';
 export type PositionType = 'INSTANT' | 'CUSTOM';
 
-export type Position = Omit<DbPosition, 'signalType' | 'status' | 'type' | 'createdAt' | 'openTimestamp' | 'closeTimestamp'> & {
+export type Position = Omit<DbPosition, 'signalType' | 'status' | 'type' | 'createdAt' | 'openTimestamp' | 'closeTimestamp' | 'size' | 'entryPrice' | 'stopLoss' | 'takeProfit'> & {
     signalType: SignalType;
     status: PositionStatus;
     type: PositionType;
     createdAt: string;
     openTimestamp: string | null;
     closeTimestamp: string | null;
-    analysisSummary: string | null;
-    newsAnalysis: string | null;
-    strategyReasoning: string | null;
+    size: number;
+    entryPrice: number;
+    stopLoss: number;
+    takeProfit: number;
 };
 
 export type GeneratedSignalStatus = 'PENDING_EXECUTION' | 'EXECUTED' | 'DISMISSED';
@@ -211,6 +212,8 @@ const useClientState = () => {
             strategyReasoning: signal.strategyReasoning,
             gainedXp: 0,
             gainedAirdropPoints: 0,
+            gasPaid: null,
+            blocksTrained: null,
         };
 
         const updatedSignal: GeneratedSignal = {

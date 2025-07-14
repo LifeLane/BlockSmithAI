@@ -17,15 +17,19 @@ import {
 import { fetchMarketDataAction } from '@/services/market-data-service';
 
 // --- Type Definitions ---
-export type Position = Omit<PrismaPosition, 'signalType'> & {
+export type Position = Omit<PrismaPosition, 'signalType' | 'status' | 'type'> & {
     signalType: 'BUY' | 'SELL';
+    status: 'PENDING' | 'OPEN' | 'CLOSED';
+    type: 'INSTANT' | 'CUSTOM';
 };
+
 const generatedSignalWithPosition = Prisma.validator<Prisma.GeneratedSignalDefaultArgs>()({
     include: { position: true },
 });
-export type GeneratedSignal = Omit<Prisma.GeneratedSignalGetPayload<typeof generatedSignalWithPosition>, 'signal' | 'status'> & {
+export type GeneratedSignal = Omit<Prisma.GeneratedSignalGetPayload<typeof generatedSignalWithPosition>, 'signal' | 'status' | 'position'> & {
     signal: 'BUY' | 'SELL';
     status: 'PENDING_EXECUTION' | 'EXECUTED' | 'DISMISSED';
+    position: Position | null;
 };
 
 
@@ -226,7 +230,7 @@ async function unifiedSignalGenerationAction(
                 strategyReasoning: strategy.strategyReasoning,
                 analysisSummary: strategy.analysisSummary,
                 newsAnalysis: strategy.newsAnalysis,
-                createdAt: new Date().toISOString(),
+                createdAt: new Date(),
                 position: null,
             };
             return { signal: tempSignal };
@@ -547,6 +551,7 @@ export async function claimMissionRewardAction(userId: string, missionId: string
     } catch (e) {
         console.error("Failed to parse claimedMissions JSON", e);
         // If parsing fails, we can assume it's an empty list or handle the error as needed.
+        claimedMissions = [];
     }
 
     if (claimedMissions.includes(missionId)) {
