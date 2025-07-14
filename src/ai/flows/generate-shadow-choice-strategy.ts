@@ -106,7 +106,7 @@ Target Symbol: {{{symbol}}}
 *   **gpt_confidence_score**: (My numerical SHADOW Score, 0-100%)
 *   **sentiment**: (Brief market sentiment: Neutral, Bullish, Bearish, etc.)
 *   **currentThought**: (A short, insightful 'current thought' from me)
-*   **shortTermPrediction**: (A brief, specific prediction)
+*   **shortTermPrediction**: (A very brief, specific prediction)
 *   **sentimentTransition**: (Note on sentiment change, if any)
 
 My output must be direct, complete, and reflect my superior analytical process. The ether is listening.`,

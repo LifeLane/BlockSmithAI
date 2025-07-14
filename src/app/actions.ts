@@ -345,7 +345,6 @@ export async function executeSignalAction(signalId: string, userId: string): Pro
                 openTimestamp: null,
                 size: 1, // Default size
                 strategyId: signal.id,
-                sentimentTransition: signal.sentimentTransition,
                 analysisSummary: signal.analysisSummary,
                 newsAnalysis: signal.newsAnalysis,
                 strategyReasoning: signal.strategyReasoning,
