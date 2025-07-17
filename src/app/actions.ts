@@ -141,35 +141,57 @@ export async function updateUserSettingsJson(userId: string, data: { username?: 
 
 export async function handleAirdropSignupAction(formData: AirdropFormData, userId: string): Promise<UserProfile | { error: string; }> {
     if (!userId) return { error: "User not found." };
-    // Upsert logic: if the user was a guest, create a new record. Otherwise, update.
-    const user = await prisma.user.upsert({
-        where: { id: userId.startsWith('guest_') ? '' : userId }, // Use a non-existent ID for guests to force creation
-        create: {
-            username: `Analyst-${randomUUID().substring(0, 6)}`,
-            shadowId: `SHDW-${randomUUID().toUpperCase()}`,
-            status: "Registered",
-            wallet_address: formData.wallet_address,
-            wallet_type: formData.wallet_type,
-            email: formData.email,
-            phone: formData.phone,
-            x_handle: formData.x_handle,
-            telegram_handle: formData.telegram_handle,
-            youtube_handle: formData.youtube_handle,
-        },
-        update: {
-            status: "Registered",
-            wallet_address: formData.wallet_address,
-            wallet_type: formData.wallet_type,
-            email: formData.email,
-            phone: formData.phone,
-            x_handle: formData.x_handle,
-            telegram_handle: formData.telegram_handle,
-            youtube_handle: formData.youtube_handle,
-        },
-        include: { badges: true },
-    });
-    return user;
+
+    const isGuest = userId.startsWith('guest_');
+
+    try {
+        if (isGuest) {
+            // Create a new user if it's a guest
+            const newUser = await prisma.user.create({
+                data: {
+                    username: `Analyst-${randomUUID().substring(0, 6)}`,
+                    shadowId: `SHDW-${randomUUID().toUpperCase()}`,
+                    status: "Registered",
+                    wallet_address: formData.wallet_address,
+                    wallet_type: formData.wallet_type,
+                    email: formData.email,
+                    phone: formData.phone,
+                    x_handle: formData.x_handle,
+                    telegram_handle: formData.telegram_handle,
+                    youtube_handle: formData.youtube_handle,
+                },
+                include: { badges: true },
+            });
+            return newUser;
+        } else {
+            // Update the existing user if they are already registered
+            const updatedUser = await prisma.user.update({
+                where: { id: userId },
+                data: {
+                    status: "Registered", // Ensure status is set to Registered
+                    wallet_address: formData.wallet_address,
+                    wallet_type: formData.wallet_type,
+                    email: formData.email,
+                    phone: formData.phone,
+                    x_handle: formData.x_handle,
+                    telegram_handle: formData.telegram_handle,
+                    youtube_handle: formData.youtube_handle,
+                },
+                include: { badges: true },
+            });
+            return updatedUser;
+        }
+    } catch (e: any) {
+        console.error("Error in handleAirdropSignupAction:", e);
+        if (e instanceof Prisma.PrismaClientKnownRequestError) {
+            if (e.code === 'P2002') { // Unique constraint violation
+                return { error: 'This wallet address or email is already registered.' };
+            }
+        }
+        return { error: 'An unexpected error occurred during signup.' };
+    }
 }
+
 
 export async function fetchLeaderboardDataJson(): Promise<LeaderboardUser[]> {
     const users = await prisma.user.findMany({
