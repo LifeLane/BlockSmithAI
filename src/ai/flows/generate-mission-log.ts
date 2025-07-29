@@ -34,7 +34,6 @@ const prompt = ai.definePrompt({
   name: 'generateMissionLogPrompt',
   input: {schema: GenerateMissionLogInputSchema},
   output: {schema: GenerateMissionLogOutputSchema},
-  model: 'googleai/gemini-1.5-flash-latest',
   prompt: `You are SHADOW, the AI Core. An allied AI agent has just completed a field operation. Your task is to write its mission log.
 
 Agent Name: {{{agentName}}}

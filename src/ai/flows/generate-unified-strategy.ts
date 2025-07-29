@@ -58,7 +58,6 @@ const prompt = ai.definePrompt({
   tools: [fetchHistoricalDataTool, fetchNewsTool, fetchCoinGeckoDataTool, fetchCoinMarketCapDataTool, fetchEtherscanDataTool], 
   input: { schema: UnifiedStrategyInputSchema },
   output: { schema: UnifiedStrategyOutputSchema },
-  model: 'googleai/gemini-1.5-flash-latest',
   config: {
     temperature: 0.5,
   },
