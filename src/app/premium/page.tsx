@@ -1,4 +1,6 @@
 
+'use client';
+
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
