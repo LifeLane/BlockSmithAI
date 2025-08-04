@@ -34,7 +34,7 @@ const prompt = ai.definePrompt({
   name: 'generateMissionLogPrompt',
   input: {schema: GenerateMissionLogInputSchema},
   output: {schema: GenerateMissionLogOutputSchema},
-  model: 'groq/llama3-70b-8192',
+  model: 'llama3-70b-8192',
   prompt: `You are SHADOW, the AI Core. An allied AI agent has just completed a field operation. Your task is to write its mission log.
 
 Agent Name: {{{agentName}}}
@@ -67,5 +67,3 @@ const generateMissionLogFlow = ai.defineFlow(
     return output;
   }
 );
-
-    

@@ -58,7 +58,7 @@ const prompt = ai.definePrompt({
   tools: [fetchHistoricalDataTool, fetchNewsTool, fetchCoinGeckoDataTool, fetchCoinMarketCapDataTool, fetchEtherscanDataTool], 
   input: { schema: UnifiedStrategyInputSchema },
   output: { schema: UnifiedStrategyOutputSchema },
-  model: 'groq/llama3-70b-8192',
+  model: 'llama3-70b-8192',
   config: {
     temperature: 0.5,
   },
@@ -143,5 +143,3 @@ const generateUnifiedStrategyFlow = ai.defineFlow(
     };
   }
 );
-
-    
