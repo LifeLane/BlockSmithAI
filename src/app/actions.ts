@@ -153,6 +153,7 @@ export async function handleAirdropSignupAction(formData: AirdropFormData, userI
                     phone: formData.phone,
                     wallet_address: formData.wallet_address,
                     wallet_type: formData.wallet_type,
+                    claimedMissions: '[]',
                 },
                 include: { badges: true },
             });
