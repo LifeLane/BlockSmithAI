@@ -5,7 +5,7 @@ import { useMemo, useState, useEffect } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Zap, Star, Rocket, Wallet } from 'lucide-react';
+import { CheckCircle, Zap, Star, Rocket, Wallet, Shield } from 'lucide-react';
 import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
@@ -13,6 +13,17 @@ import SubscriptionCard from '@/components/blocksmith-ai/SubscriptionCard';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const tiers = [
+    {
+        name: 'Trial Subscription',
+        price: 10000,
+        duration: 'Trial',
+        features: [
+            '3 Days Unlimited Signals',
+            'Bonus Airdrop Points',
+            'Entry-level SHADOW Back'
+        ],
+        icon: <Shield className="h-8 w-8 text-green-400" />,
+    },
     {
         name: 'Operator Monthly',
         price: 100000,
@@ -109,7 +120,7 @@ export default function PremiumPage() {
                     </CardContent>
                 </Card>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                    {tiers.map(tier => (
                        <SubscriptionCard key={tier.name} tier={tier} userId={user?.id} />
                    ))}

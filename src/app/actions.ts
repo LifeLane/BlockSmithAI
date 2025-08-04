@@ -359,7 +359,7 @@ export async function closePositionAction(positionId: string, closePrice: number
         }
 
         const gasPaid = 1.25;
-        const blocksTrained = 100 + Math.floor(Math.abs(numericPnl || 0) * 2);
+        const blocksTrained = 100 + Math.floor(Math.abs(pnl || 0) * 2);
 
         const roundedGainedXp = Math.round(gainedXp);
         const roundedAirdropPoints = Math.round(gainedAirdropPoints);
@@ -543,7 +543,7 @@ export async function closeAllPositionsAction(userId: string): Promise<{ closedC
 export async function confirmShadowSubscriptionAction(
     userId: string,
     tierName: string,
-    duration: 'Monthly' | 'Yearly' | 'Lifetime',
+    duration: 'Trial' | 'Monthly' | 'Yearly' | 'Lifetime',
     txSignature: string
 ): Promise<{ success: boolean; error?: string }> {
     if (!userId || userId.startsWith('guest_')) {
@@ -560,7 +560,9 @@ export async function confirmShadowSubscriptionAction(
         const now = new Date();
         let expiresAt: Date | null = null;
         
-        if (duration === 'Monthly') {
+        if (duration === 'Trial') {
+            expiresAt = new Date(now.setDate(now.getDate() + 3));
+        } else if (duration === 'Monthly') {
             expiresAt = new Date(now.setMonth(now.getMonth() + 1));
         } else if (duration === 'Yearly') {
             expiresAt = new Date(now.setFullYear(now.getFullYear() + 1));
@@ -569,6 +571,7 @@ export async function confirmShadowSubscriptionAction(
         }
 
         const tierRewards = {
+            'Trial Subscription': { xp: 100, airdrop: 1000 },
             'Operator Monthly': { xp: 1000, airdrop: 120000 }, // 1.2x of 100k
             'Analyst Yearly': { xp: 10000, airdrop: 1500000 }, // 1.5x of 1M
             'Architect Lifetime': { xp: 50000, airdrop: 20000000 } // 2x of 10M
