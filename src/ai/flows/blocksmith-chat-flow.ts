@@ -7,7 +7,7 @@
  * - ShadowChatOutput - The return type for the chat flow.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai, groqModel } from '@/ai/genkit';
 import { z } from 'genkit';
 
 import { fetchLiveMarketDataTool } from '@/ai/tools/fetch-live-market-data-tool';
@@ -60,6 +60,7 @@ User's latest message: {{{currentUserInput}}}`;
 
 const chatPrompt = ai.definePrompt({
   name: 'shadowChatPrompt',
+  model: `groq/${groqModel}`,
   tools: [fetchLiveMarketDataTool],
   input: { schema: ShadowChatInputSchema },
   output: { schema: ShadowChatOutputSchema },

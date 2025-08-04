@@ -8,7 +8,7 @@
  * - UnifiedStrategyOutput - Return type for the flow.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai, geminiModel } from '@/ai/genkit';
 import { z } from 'genkit';
 import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
 import { fetchNewsTool } from '@/ai/tools/fetch-news-tool';
@@ -54,6 +54,7 @@ export async function generateUnifiedStrategy(input: UnifiedStrategyInput): Prom
 
 const prompt = ai.definePrompt({
   name: 'generateUnifiedStrategyPrompt',
+  model: geminiModel,
   tools: [fetchHistoricalDataTool, fetchNewsTool, fetchCoinGeckoDataTool, fetchCoinMarketCapDataTool, fetchEtherscanDataTool], 
   input: { schema: UnifiedStrategyInputSchema },
   output: { schema: UnifiedStrategyOutputSchema },
