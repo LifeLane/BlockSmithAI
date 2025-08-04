@@ -47,13 +47,9 @@ export interface LeaderboardUser {
     rank?: number;
 }
 export interface AirdropFormData {
-    wallet_address: string;
-    wallet_type?: string;
+    username: string;
     email?: string;
     phone?: string;
-    x_handle?: string;
-    telegram_handle?: string;
-    youtube_handle?: string;
 }
 export interface LiveMarketData {
     symbol: string;
@@ -147,16 +143,11 @@ export async function handleAirdropSignupAction(formData: AirdropFormData, userI
         if (isGuest) {
             const newUser = await prisma.user.create({
                 data: {
-                    username: `Analyst-${randomUUID().substring(0, 6)}`,
+                    username: formData.username,
                     shadowId: `SHDW-${randomUUID().toUpperCase()}`,
                     status: "Registered",
-                    wallet_address: formData.wallet_address,
-                    wallet_type: formData.wallet_type,
                     email: formData.email,
                     phone: formData.phone,
-                    x_handle: formData.x_handle,
-                    telegram_handle: formData.telegram_handle,
-                    youtube_handle: formData.youtube_handle,
                 },
                 include: { badges: true },
             });
@@ -165,14 +156,10 @@ export async function handleAirdropSignupAction(formData: AirdropFormData, userI
             const updatedUser = await prisma.user.update({
                 where: { id: userId },
                 data: {
+                    username: formData.username,
                     status: "Registered",
-                    wallet_address: formData.wallet_address,
-                    wallet_type: formData.wallet_type,
                     email: formData.email,
                     phone: formData.phone,
-                    x_handle: formData.x_handle,
-                    telegram_handle: formData.telegram_handle,
-                    youtube_handle: formData.youtube_handle,
                 },
                 include: { badges: true },
             });
@@ -182,7 +169,17 @@ export async function handleAirdropSignupAction(formData: AirdropFormData, userI
         console.error("Error in handleAirdropSignupAction:", e);
         if (e instanceof Prisma.PrismaClientKnownRequestError) {
             if (e.code === 'P2002') {
-                return { error: 'This wallet address or email is already registered.' };
+                 // Check which field caused the error
+                if (e.meta?.target?.includes('username')) {
+                    return { error: 'This username is already taken. Please choose another one.' };
+                }
+                if (e.meta?.target?.includes('email')) {
+                    return { error: 'This email is already registered.' };
+                }
+                 if (e.meta?.target?.includes('phone')) {
+                    return { error: 'This phone number is already registered.' };
+                }
+                return { error: 'A user with these details already exists.' };
             }
         }
         return { error: 'An unexpected error occurred during signup.' };
