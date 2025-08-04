@@ -5,13 +5,16 @@ import { useMemo, useState, useEffect } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Zap, Star, Rocket, Wallet, Shield } from 'lucide-react';
+import { CheckCircle, Zap, Star, Rocket, Wallet, Shield, Telescope, LineChart } from 'lucide-react';
 import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import SubscriptionCard from '@/components/blocksmith-ai/SubscriptionCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import TokenInfo from '@/components/blocksmith-ai/TokenInfo';
+import LivePriceTicker from '@/components/blocksmith-ai/LivePriceTicker';
+import { explorerLinks, tradingLinks } from '@/lib/external-links';
+
 
 const tiers = [
     {
@@ -117,7 +120,7 @@ export default function PremiumPage() {
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground">Connected Address:</p>
-                        <p className="text-lg font-mono break-all">{walletAddress}</p>
+                        <p className="text-lg font-mono break-all truncate">{walletAddress}</p>
                     </CardContent>
                 </Card>
                 
@@ -134,7 +137,7 @@ export default function PremiumPage() {
     <>
       <AppHeader />
       <div className="container mx-auto px-4 py-8 pb-24">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
             <h1 className="text-4xl sm:text-5xl font-bold font-headline text-primary animate-shadow-pulse-primary">
                 Become a SHADOW Protocol Insider
             </h1>
@@ -143,7 +146,19 @@ export default function PremiumPage() {
             </p>
         </div>
         
-        <TokenInfo />
+        <div className="space-y-4">
+            <div className='space-y-1'>
+                <h3 className="font-bold text-sm tracking-widest text-primary opacity-70 flex items-center gap-2"><Telescope size={16}/> EXPLORER</h3>
+                <LivePriceTicker items={explorerLinks} direction="normal" />
+            </div>
+            <div className='space-y-1'>
+                <h3 className="font-bold text-sm tracking-widest text-accent opacity-70 flex items-center gap-2"><LineChart size={16}/> TRADING & VERIFICATION</h3>
+                <LivePriceTicker items={tradingLinks} direction="reverse" />
+            </div>
+
+            <TokenInfo />
+        </div>
+
 
         <div className="mt-12">
             {renderContent()}
@@ -152,3 +167,4 @@ export default function PremiumPage() {
     </>
   );
 }
+

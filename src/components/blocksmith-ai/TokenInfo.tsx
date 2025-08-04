@@ -1,12 +1,12 @@
+
 'use client';
 
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
-    Copy, Check, FileText, AreaChart, CircleHelp, Wallet, Bot, BookOpen, LineChart, CandlestickChart, Telescope, Network
+    Copy, Check, FileText
 } from 'lucide-react';
-import LivePriceTicker from './LivePriceTicker';
 
 const contractDetails = {
     name: 'SHADOW (SHADOW)',
@@ -15,23 +15,6 @@ const contractDetails = {
     decimals: 6,
     firstMint: 'July 15, 2025 15:12:33 +UTC'
 };
-
-const explorerLinks = [
-    { name: 'Token Explorer', url: 'https://solscan.io/token/B6XHf6ouZAy5Enq4kR3Po4CD5axn1EWc7aZKR9gmr2QR', icon: <Telescope className="h-4 w-4" /> },
-    { name: 'Transactions', url: 'https://solscan.io/token/B6XHf6ouZAy5Enq4kR3Po4CD5axn1EWc7aZKR9gmr2QR#transactions', icon: <BookOpen className="h-4 w-4" /> },
-    { name: 'Holders', url: 'https://solscan.io/token/B6XHf6ouZAy5Enq4kR3Po4CD5axn1EWc7aZKR9gmr2QR#holders', icon: <Network className="h-4 w-4" /> },
-    { name: 'Analytics', url: 'https://solscan.io/token/B6XHf6ouZAy5Enq4kR3Po4CD5axn1EWc7aZKR9gmr2QR#analytics', icon: <LineChart className="h-4 w-4" /> },
-];
-
-const tradingLinks = [
-    { name: 'BirdEye', url: 'https://birdeye.so/token/B6XHf6ouZAy5Enq4kR3Po4CD5axn1EWc7aZKR9gmr2QR?chain=solana' },
-    { name: 'GeckoTerminal', url: 'https://www.geckoterminal.com/solana/tokens/B6XHf6ouZAy5Enq4kR3Po4CD5axn1EWc7aZKR9gmr2QR' },
-    { name: 'GMGN', url: 'https://gmgn.ai/sol/token/solscan_B6XHf6ouZAy5Enq4kR3Po4CD5axn1EWc7aZKR9gmr2QR' },
-    { name: 'DexScreener', url: 'https://dexscreener.com/solana/B6XHf6ouZAy5Enq4kR3Po4CD5axn1EWc7aZKR9gmr2QR' },
-    { name: 'DexTools', url: 'https://www.dextools.io/app/en/solana/pair-explorer/B6XHf6ouZAy5Enq4kR3Po4CD5axn1EWc7aZKR9gmr2QR' },
-    { name: 'Photon', url: 'https://photon-sol.tinyastro.io/en/r/solscanofficial/B6XHf6ouZAy5Enq4kR3Po4CD5axn1EWc7aZKR9gmr2QR' },
-    { name: 'RugCheck', url: 'https://rugcheck.xyz/tokens/B6XHf6ouZAy5Enq4kR3Po4CD5axn1EWc7aZKR9gmr2QR' },
-];
 
 const CopyButton = ({ textToCopy }: { textToCopy: string }) => {
     const [hasCopied, setHasCopied] = useState(false);
@@ -52,18 +35,7 @@ const CopyButton = ({ textToCopy }: { textToCopy: string }) => {
 
 export default function TokenInfo() {
   return (
-    <div className="space-y-4">
-        <LivePriceTicker 
-            items={explorerLinks} 
-            direction="normal"
-            title="EXPLORER"
-        />
-        <LivePriceTicker 
-            items={tradingLinks.map(l => ({...l, icon: <CandlestickChart className="h-4 w-4"/>}))} 
-            direction="reverse"
-            title="TRADING"
-        />
-
+    <div className="space-y-4 pt-4">
         <Card className="interactive-card border-accent/30 bg-card/80 backdrop-blur-sm">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-accent font-headline"><FileText /> Contract Details</CardTitle>

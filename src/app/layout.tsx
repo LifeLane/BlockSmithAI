@@ -36,7 +36,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <div className="relative z-10 text-foreground min-h-screen flex flex-col">
-                <main className="flex-grow flex flex-col">
+                <main className="flex-grow flex flex-col pb-16">
                   {children}
                 </main>
                 <Footer />
