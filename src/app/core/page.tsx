@@ -244,7 +244,7 @@ export default function CoreConsolePage() {
   const showResults = aiStrategy || isLoading || strategyError;
 
   const getLimitMessage = () => {
-    if (!user || isUserLoading) return null;
+    if (!user || isUserLoading || !connected) return null;
     
     if (user.status !== 'Premium') {
         const isLimitReached = analysisCount >= DAILY_ANALYSIS_LIMIT;
@@ -265,6 +265,47 @@ export default function CoreConsolePage() {
     }
 
     return null;
+  }
+
+  const renderActionButtons = () => {
+    if (!connected) {
+      return (
+        <div className="md:col-span-2">
+            <Button onClick={() => walletButtonRef.current?.click()} className="w-full font-semibold py-3 text-lg shadow-lg glow-button h-auto">
+                <div className="flex flex-col items-center">
+                    <div className="flex items-center">
+                        <Wallet className="mr-2 h-5 w-5" />
+                        <GlyphScramble text="Connect Wallet to Generate Signal" />
+                    </div>
+                </div>
+            </Button>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <Button onClick={() => handleGenerateStrategy({ isCustom: false })} disabled={isButtonDisabled || !connected} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out generate-signal-button h-auto">
+            <div className="flex flex-col items-center">
+                <div className="flex items-center">
+                    {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5" />}
+                    {isLoading ? "Analyzing..." : <GlyphScramble text="Generate Instant Signal" />}
+                </div>
+                <span className="text-xs font-normal opacity-80 mt-1">AI-driven market order analysis.</span>
+            </div>
+        </Button>
+
+        <Button onClick={() => handleGenerateStrategy({ isCustom: true })} disabled={isButtonDisabled || !connected} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out shadow-choice-button h-auto">
+            <div className="flex flex-col items-center">
+                <div className="flex items-center">
+                    {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
+                    {isLoading ? "Deciding..." : <GlyphScramble text="Generate SHADOW's Signal" />}
+                </div>
+                <span className="text-xs font-normal opacity-80 mt-1">AI-chosen custom limit order.</span>
+            </div>
+        </Button>
+      </>
+    );
   }
 
   if (isUserLoading || !user) {
@@ -294,27 +335,8 @@ export default function CoreConsolePage() {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-4 pt-2">
-                    <Button onClick={() => handleGenerateStrategy({ isCustom: false })} disabled={isButtonDisabled} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out generate-signal-button h-auto">
-                         <div className="flex flex-col items-center">
-                            <div className="flex items-center">
-                                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5" />}
-                                {isLoading ? "Analyzing..." : <GlyphScramble text="Generate Instant Signal" />}
-                            </div>
-                            <span className="text-xs font-normal opacity-80 mt-1">AI-driven market order analysis.</span>
-                        </div>
-                    </Button>
-
-                    <Button onClick={() => handleGenerateStrategy({ isCustom: true })} disabled={isButtonDisabled} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out shadow-choice-button h-auto">
-                        <div className="flex flex-col items-center">
-                            <div className="flex items-center">
-                                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
-                                {isLoading ? "Deciding..." : <GlyphScramble text="Generate SHADOW's Signal" />}
-                            </div>
-                            <span className="text-xs font-normal opacity-80 mt-1">AI-chosen custom limit order.</span>
-                        </div>
-                    </Button>
-                    
-                   {getLimitMessage()}
+                    {renderActionButtons()}
+                    {getLimitMessage()}
                 </div>
             </div>
         </div>
@@ -358,3 +380,4 @@ export default function CoreConsolePage() {
     </>
   );
 }
+
