@@ -11,6 +11,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import SubscriptionCard from '@/components/blocksmith-ai/SubscriptionCard';
 import { Skeleton } from '@/components/ui/skeleton';
+import TokenInfo from '@/components/blocksmith-ai/TokenInfo';
 
 const tiers = [
     {
@@ -138,11 +139,15 @@ export default function PremiumPage() {
                 Become a SHADOW Protocol Insider
             </h1>
             <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">
-                Swap SOL for SHADOW tokens and send them to the creator address to unlock unlimited signals, airdrop multipliers, and exclusive rewards.
+                Acquire and send SHADOW tokens to the creator address to unlock unlimited signals, airdrop multipliers, and exclusive rewards.
             </p>
         </div>
         
-        {renderContent()}
+        <TokenInfo />
+
+        <div className="mt-12">
+            {renderContent()}
+        </div>
       </div>
     </>
   );
