@@ -7,7 +7,7 @@ import { randomUUID } from 'crypto';
 
 // AI Flow Imports
 import { generateUnifiedStrategy, type UnifiedStrategyInput, type UnifiedStrategyOutput } from '@/ai/flows/generate-unified-strategy';
-import { shadowChat as shadowChatFlow, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-ai-chat-flow';
+import { shadowChat as shadowChatFlow, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
 import {
     generatePerformanceReview as genPerformanceReview,
