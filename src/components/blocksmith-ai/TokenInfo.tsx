@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -7,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { 
     Copy, Check, FileText, AreaChart, CircleHelp, Wallet, Bot, BookOpen, LineChart, CandlestickChart, Telescope, Network
 } from 'lucide-react';
+import LivePriceTicker from './LivePriceTicker';
 
 const contractDetails = {
     name: 'SHADOW (SHADOW)',
@@ -43,7 +43,7 @@ const CopyButton = ({ textToCopy }: { textToCopy: string }) => {
     };
 
     return (
-        <Button variant="ghost" size="icon" onClick={handleCopy} className="h-7 w-7">
+        <Button variant="ghost" size="icon" onClick={handleCopy} className="h-7 w-7 shrink-0">
             {hasCopied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
         </Button>
     );
@@ -52,64 +52,45 @@ const CopyButton = ({ textToCopy }: { textToCopy: string }) => {
 
 export default function TokenInfo() {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="interactive-card border-accent/30">
+    <div className="space-y-4">
+        <LivePriceTicker 
+            items={explorerLinks} 
+            direction="normal"
+            title="EXPLORER"
+        />
+        <LivePriceTicker 
+            items={tradingLinks.map(l => ({...l, icon: <CandlestickChart className="h-4 w-4"/>}))} 
+            direction="reverse"
+            title="TRADING"
+        />
+
+        <Card className="interactive-card border-accent/30 bg-card/80 backdrop-blur-sm">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-accent font-headline"><FileText /> Contract Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
                 <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Token Name:</span>
-                    <span className="font-bold text-foreground">{contractDetails.name}</span>
+                    <span className="text-muted-foreground shrink-0 pr-4">Token Name:</span>
+                    <span className="font-bold text-foreground text-right">{contractDetails.name}</span>
                 </div>
                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Decimals:</span>
+                    <span className="text-muted-foreground shrink-0 pr-4">Decimals:</span>
                     <span className="font-mono text-foreground">{contractDetails.decimals}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Token Address:</span>
-                    <div className="flex items-center gap-2">
+                <div className="flex justify-between items-center gap-2">
+                    <span className="text-muted-foreground shrink-0">Token Address:</span>
+                    <div className="flex items-center gap-2 min-w-0">
                         <span className="font-mono text-primary truncate">{contractDetails.address}</span>
                         <CopyButton textToCopy={contractDetails.address} />
                     </div>
                 </div>
-                 <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Creator Address:</span>
-                    <div className="flex items-center gap-2">
+                 <div className="flex justify-between items-center gap-2">
+                    <span className="text-muted-foreground shrink-0">Creator Address:</span>
+                     <div className="flex items-center gap-2 min-w-0">
                         <span className="font-mono text-primary truncate">{contractDetails.creator}</span>
                         <CopyButton textToCopy={contractDetails.creator} />
                     </div>
                 </div>
-            </CardContent>
-        </Card>
-
-        <Card className="interactive-card border-tertiary/30">
-             <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-tertiary font-headline"><CandlestickChart /> Trading & Verification</CardTitle>
-            </CardHeader>
-             <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {tradingLinks.map(link => (
-                     <Button key={link.name} asChild variant="outline" className="justify-start text-sm">
-                        <a href={link.url} target="_blank" rel="noopener noreferrer">
-                            <AreaChart className="h-4 w-4 mr-2" /> {link.name}
-                        </a>
-                    </Button>
-                ))}
-            </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-2 interactive-card border-primary/30">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-primary font-headline"><Bot /> Explorer & Analytics</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                 {explorerLinks.map(link => (
-                    <Button key={link.name} asChild variant="secondary" className="justify-center text-base py-6">
-                        <a href={link.url} target="_blank" rel="noopener noreferrer" className="flex flex-col sm:flex-row items-center gap-2">
-                           {link.icon} {link.name}
-                        </a>
-                    </Button>
-                ))}
             </CardContent>
         </Card>
     </div>

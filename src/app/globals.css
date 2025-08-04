@@ -244,6 +244,16 @@
   }
 }
 
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-33.33%); }
+}
+
+@keyframes marquee-reverse {
+  0% { transform: translateX(-33.33%); }
+  100% { transform: translateX(0%); }
+}
+
 @keyframes border-glow {
     0% {
         box-shadow: 0 0 10px -1px hsl(var(--primary)/0.8), inset 0 0 8px -1px hsl(var(--primary)/0.8);

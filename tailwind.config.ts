@@ -93,6 +93,14 @@ export default {
             height: '0',
           },
         },
+        marquee: {
+            '0%': { transform: 'translateX(0%)' },
+            '100%': { transform: 'translateX(-33.33%)' },
+        },
+        'marquee-reverse': {
+            '0%': { transform: 'translateX(-33.33%)' },
+            '100%': { transform: 'translateX(0%)' },
+        },
         'icon-pulse-glow': {
           '0%, 100%': {
             filter: 'drop-shadow(0 0 2px hsl(var(--primary)/0.6))',
@@ -108,6 +116,8 @@ export default {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'icon-pulse-glow': 'icon-pulse-glow 3s ease-in-out infinite',
+        marquee: 'marquee 60s linear infinite',
+        'marquee-reverse': 'marquee-reverse 60s linear infinite',
       },
     },
   },

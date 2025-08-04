@@ -103,7 +103,7 @@ export default function PremiumPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <WalletMultiButton className="glow-button" />
+                       {isClient && <WalletMultiButton className="glow-button" />}
                     </CardContent>
                 </Card>
             );

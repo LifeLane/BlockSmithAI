@@ -1,105 +1,44 @@
 'use client';
 
 import type { FunctionComponent} from 'react';
-import { useState, useEffect } from 'react';
-import { fetchTopSymbolsForTickerAction } from '@/services/market-data-service';
-import type { TickerSymbolData } from '@/app/actions';
-import { useToast } from "@/hooks/use-toast";
-import { TrendingUp, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { CandlestickChart } from 'lucide-react';
 
 interface TickerItem {
-  symbol: string;
-  price: string;
-  change: string;
-  positive: boolean;
+  name: string;
+  url: string;
+  icon: React.ReactNode;
 }
 
-const LivePriceTicker: FunctionComponent = () => {
-  const [tickerItems, setTickerItems] = useState<TickerItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
+interface LivePriceTickerProps {
+    items: TickerItem[];
+    direction: 'normal' | 'reverse';
+    title: string;
+}
 
-  useEffect(() => {
-    const loadTickerData = async () => {
-      setIsLoading(true);
-      const result = await fetchTopSymbolsForTickerAction();
-      if ('error' in result) {
-        toast({
-          title: "Ticker Error",
-          description: result.error,
-          variant: "destructive",
-        });
-        setTickerItems([]); // Clear items on error
-      } else {
-        const formattedItems = result.map((item: TickerSymbolData) => {
-          const price = parseFloat(item.lastPrice);
-          const changePercent = parseFloat(item.priceChangePercent);
-          return {
-            symbol: item.symbol.replace('USDT', '/USDT'),
-            price: `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-            change: `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`,
-            positive: changePercent >= 0,
-          };
-        });
-        setTickerItems(formattedItems);
-      }
-      setIsLoading(false);
-    };
-
-    loadTickerData();
-    // Set up an interval to refresh data, e.g., every 30 seconds
-    const intervalId = setInterval(loadTickerData, 30000); 
-    return () => clearInterval(intervalId); // Cleanup interval on component unmount
-  }, [toast]);
-
-  if (isLoading && tickerItems.length === 0) {
-    return (
-      <div className="bg-card border-y border-border/80 shadow-sm h-12 flex items-center justify-center text-muted-foreground">
-        <Loader2 className="h-5 w-5 animate-spin mr-2" />
-        Loading Ticker Data...
-      </div>
-    );
-  }
-
-  if (!isLoading && tickerItems.length === 0) {
-     return (
-      <div className="bg-card border-y border-border/80 shadow-sm h-12 flex items-center justify-center text-muted-foreground">
-        <TrendingUp className="h-5 w-5 mr-2 text-primary" />
-        Ticker data currently unavailable.
-      </div>
-    );
-  }
+const LivePriceTicker: FunctionComponent<LivePriceTickerProps> = ({ items, direction, title }) => {
+  const animationClass = direction === 'reverse' ? 'animate-marquee-reverse' : 'animate-marquee';
   
-  // Duplicate items for continuous scroll effect if list is short
-  const displayItems = tickerItems.length > 0 && tickerItems.length < 10 
-    ? [...tickerItems, ...tickerItems, ...tickerItems] 
-    : tickerItems;
-
+  // Duplicate items for a seamless continuous scroll effect
+  const displayItems = [...items, ...items, ...items];
 
   return (
-    <div className="relative bg-card border-y border-border/80 shadow-sm h-12 overflow-hidden">
-      <div className="animate-marquee whitespace-nowrap flex items-center h-full">
+    <div className="relative bg-card/50 border-y border-border/80 shadow-sm h-12 overflow-hidden flex items-center group">
+        <div className="absolute left-0 top-0 bottom-0 z-10 w-24 bg-gradient-to-r from-background to-transparent"/>
+        <div className="absolute right-0 top-0 bottom-0 z-10 w-24 bg-gradient-to-l from-background to-transparent"/>
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-20">
+            <span className="font-bold text-sm tracking-widest text-primary opacity-70">{title}</span>
+        </div>
+      <div className={cn("whitespace-nowrap flex items-center h-full group-hover:[animation-play-state:paused]", animationClass)}>
         {displayItems.map((item, index) => (
-          <div key={index} className="inline-flex items-center mx-4 px-2 py-1 rounded">
-            <span className="font-semibold text-sm text-foreground mr-2">{item.symbol}:</span>
-            <span className="text-sm text-foreground mr-1">{item.price}</span>
-            <span className={`text-xs ${item.positive ? 'text-green-400' : 'text-red-400'}`}>
-              ({item.change})
-            </span>
-          </div>
+           <Button key={index} asChild variant="ghost" className="justify-start text-sm mx-2">
+                <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                    {item.icon} {item.name}
+                </a>
+            </Button>
         ))}
       </div>
-      <style jsx>{`
-        @keyframes marquee {
-          0% { transform: translateX(0%); }
-          100% { transform: translateX(-${100 / (displayItems.length / tickerItems.length > 1 ? (displayItems.length / tickerItems.length) : 1)}%); }
-        }
-        .animate-marquee {
-          animation: marquee ${displayItems.length * 2}s linear infinite;
-          will-change: transform;
-          min-width: ${displayItems.length * 150}px; /* Ensure enough width for smooth scroll */
-        }
-      `}</style>
     </div>
   );
 };
