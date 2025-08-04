@@ -24,29 +24,19 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  */
 export type Badge = $Result.DefaultSelection<Prisma.$BadgePayload>
 /**
- * Model ConsoleInsight
+ * Model GeneratedSignal
  * 
  */
-export type ConsoleInsight = $Result.DefaultSelection<Prisma.$ConsoleInsightPayload>
-/**
- * Model SignalHistoryItem
- * 
- */
-export type SignalHistoryItem = $Result.DefaultSelection<Prisma.$SignalHistoryItemPayload>
+export type GeneratedSignal = $Result.DefaultSelection<Prisma.$GeneratedSignalPayload>
 /**
  * Model Position
  * 
  */
 export type Position = $Result.DefaultSelection<Prisma.$PositionPayload>
-/**
- * Model UserAgent
- * 
- */
-export type UserAgent = $Result.DefaultSelection<Prisma.$UserAgentPayload>
 
 /**
  * ##  Prisma Client ʲˢ
- *
+ * 
  * Type-safe database client for TypeScript & Node.js
  * @example
  * ```
@@ -55,7 +45,7 @@ export type UserAgent = $Result.DefaultSelection<Prisma.$UserAgentPayload>
  * const users = await prisma.user.findMany()
  * ```
  *
- *
+ * 
  * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client).
  */
 export class PrismaClient<
@@ -67,7 +57,7 @@ export class PrismaClient<
 
     /**
    * ##  Prisma Client ʲˢ
-   *
+   * 
    * Type-safe database client for TypeScript & Node.js
    * @example
    * ```
@@ -76,12 +66,12 @@ export class PrismaClient<
    * const users = await prisma.user.findMany()
    * ```
    *
-   *
+   * 
    * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client).
    */
 
   constructor(optionsArg ?: Prisma.Subset<ClientOptions, Prisma.PrismaClientOptions>);
-  $on<V extends U>(eventType: V, callback: (event: V extends 'query' ? Prisma.QueryEvent : Prisma.LogEvent) => void): PrismaClient;
+  $on<V extends U>(eventType: V, callback: (event: V extends 'query' ? Prisma.QueryEvent : Prisma.LogEvent) => void): void;
 
   /**
    * Connect with the database
@@ -106,7 +96,7 @@ export class PrismaClient<
    * ```
    * const result = await prisma.$executeRaw`UPDATE User SET cool = ${true} WHERE email = ${'user@email.com'};`
    * ```
-   *
+   * 
    * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
    */
   $executeRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<number>;
@@ -118,7 +108,7 @@ export class PrismaClient<
    * ```
    * const result = await prisma.$executeRawUnsafe('UPDATE User SET cool = $1 WHERE email = $2 ;', true, 'user@email.com')
    * ```
-   *
+   * 
    * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
    */
   $executeRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<number>;
@@ -129,7 +119,7 @@ export class PrismaClient<
    * ```
    * const result = await prisma.$queryRaw`SELECT * FROM User WHERE id = ${1} OR email = ${'user@email.com'};`
    * ```
-   *
+   * 
    * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
    */
   $queryRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<T>;
@@ -141,7 +131,7 @@ export class PrismaClient<
    * ```
    * const result = await prisma.$queryRawUnsafe('SELECT * FROM User WHERE id = $1 OR email = $2;', 1, 'user@email.com')
    * ```
-   *
+   * 
    * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
    */
   $queryRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<T>;
@@ -165,9 +155,7 @@ export class PrismaClient<
   $transaction<R>(fn: (prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) => $Utils.JsPromise<R>, options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<R>
 
 
-  $extends: $Extensions.ExtendsHook<"extends", Prisma.TypeMapCb<ClientOptions>, ExtArgs, $Utils.Call<Prisma.TypeMapCb<ClientOptions>, {
-    extArgs: ExtArgs
-  }>>
+  $extends: $Extensions.ExtendsHook<"extends", Prisma.TypeMapCb, ExtArgs>
 
       /**
    * `prisma.user`: Exposes CRUD operations for the **User** model.
@@ -177,7 +165,7 @@ export class PrismaClient<
     * const users = await prisma.user.findMany()
     * ```
     */
-  get user(): Prisma.UserDelegate<ExtArgs, ClientOptions>;
+  get user(): Prisma.UserDelegate<ExtArgs>;
 
   /**
    * `prisma.badge`: Exposes CRUD operations for the **Badge** model.
@@ -187,27 +175,17 @@ export class PrismaClient<
     * const badges = await prisma.badge.findMany()
     * ```
     */
-  get badge(): Prisma.BadgeDelegate<ExtArgs, ClientOptions>;
+  get badge(): Prisma.BadgeDelegate<ExtArgs>;
 
   /**
-   * `prisma.consoleInsight`: Exposes CRUD operations for the **ConsoleInsight** model.
+   * `prisma.generatedSignal`: Exposes CRUD operations for the **GeneratedSignal** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more ConsoleInsights
-    * const consoleInsights = await prisma.consoleInsight.findMany()
+    * // Fetch zero or more GeneratedSignals
+    * const generatedSignals = await prisma.generatedSignal.findMany()
     * ```
     */
-  get consoleInsight(): Prisma.ConsoleInsightDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.signalHistoryItem`: Exposes CRUD operations for the **SignalHistoryItem** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more SignalHistoryItems
-    * const signalHistoryItems = await prisma.signalHistoryItem.findMany()
-    * ```
-    */
-  get signalHistoryItem(): Prisma.SignalHistoryItemDelegate<ExtArgs, ClientOptions>;
+  get generatedSignal(): Prisma.GeneratedSignalDelegate<ExtArgs>;
 
   /**
    * `prisma.position`: Exposes CRUD operations for the **Position** model.
@@ -217,17 +195,7 @@ export class PrismaClient<
     * const positions = await prisma.position.findMany()
     * ```
     */
-  get position(): Prisma.PositionDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.userAgent`: Exposes CRUD operations for the **UserAgent** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more UserAgents
-    * const userAgents = await prisma.userAgent.findMany()
-    * ```
-    */
-  get userAgent(): Prisma.UserAgentDelegate<ExtArgs, ClientOptions>;
+  get position(): Prisma.PositionDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -248,6 +216,7 @@ export namespace Prisma {
   export import PrismaClientRustPanicError = runtime.PrismaClientRustPanicError
   export import PrismaClientInitializationError = runtime.PrismaClientInitializationError
   export import PrismaClientValidationError = runtime.PrismaClientValidationError
+  export import NotFoundError = runtime.NotFoundError
 
   /**
    * Re-export of sql-template-tag
@@ -268,7 +237,7 @@ export namespace Prisma {
   export type DecimalJsLike = runtime.DecimalJsLike
 
   /**
-   * Metrics
+   * Metrics 
    */
   export type Metrics = runtime.Metrics
   export type Metric<T> = runtime.Metric<T>
@@ -286,14 +255,14 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.10.1
-   * Query Engine version: 9b628578b3b7cae625e8c927178f15a170e74a9c
+   * Prisma Client JS version: 5.22.0
+   * Query Engine version: 605197351a3c8bdd595af2d2a9bc3025bca48ea2
    */
   export type PrismaVersion = {
     client: string
   }
 
-  export const prismaVersion: PrismaVersion
+  export const prismaVersion: PrismaVersion 
 
   /**
    * Utility Types
@@ -309,15 +278,15 @@ export namespace Prisma {
 
   /**
    * Types of the values used to represent different kinds of `null` values when working with JSON fields.
-   *
+   * 
    * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
    */
   namespace NullTypes {
     /**
     * Type of `Prisma.DbNull`.
-    *
+    * 
     * You cannot use other instances of this class. Please use the `Prisma.DbNull` value.
-    *
+    * 
     * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
     */
     class DbNull {
@@ -327,9 +296,9 @@ export namespace Prisma {
 
     /**
     * Type of `Prisma.JsonNull`.
-    *
+    * 
     * You cannot use other instances of this class. Please use the `Prisma.JsonNull` value.
-    *
+    * 
     * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
     */
     class JsonNull {
@@ -339,9 +308,9 @@ export namespace Prisma {
 
     /**
     * Type of `Prisma.AnyNull`.
-    *
+    * 
     * You cannot use other instances of this class. Please use the `Prisma.AnyNull` value.
-    *
+    * 
     * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
     */
     class AnyNull {
@@ -352,21 +321,21 @@ export namespace Prisma {
 
   /**
    * Helper for filtering JSON entries that have `null` on the database (empty on the db)
-   *
+   * 
    * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
    */
   export const DbNull: NullTypes.DbNull
 
   /**
    * Helper for filtering JSON entries that have JSON `null` values (not empty on the db)
-   *
+   * 
    * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
    */
   export const JsonNull: NullTypes.JsonNull
 
   /**
    * Helper for filtering JSON entries that are `Prisma.DbNull` or `Prisma.JsonNull`
-   *
+   * 
    * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
    */
   export const AnyNull: NullTypes.AnyNull
@@ -554,7 +523,7 @@ export namespace Prisma {
   type AtLeast<O extends object, K extends string> = NoExpand<
     O extends unknown
     ? | (K extends keyof O ? { [P in K]: O[P] } & O : O)
-      | {[P in keyof O as P extends K ? P : never]-?: O[P]} & O
+      | {[P in keyof O as P extends K ? K : never]-?: O[P]} & O
     : never>;
 
   type _Strict<U, _U = U> = U extends unknown ? U & OptionalFlat<_Record<Exclude<Keys<_U>, keyof U>, never>> : never;
@@ -670,10 +639,8 @@ export namespace Prisma {
   export const ModelName: {
     User: 'User',
     Badge: 'Badge',
-    ConsoleInsight: 'ConsoleInsight',
-    SignalHistoryItem: 'SignalHistoryItem',
-    Position: 'Position',
-    UserAgent: 'UserAgent'
+    GeneratedSignal: 'GeneratedSignal',
+    Position: 'Position'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -683,16 +650,13 @@ export namespace Prisma {
     db?: Datasource
   }
 
-  interface TypeMapCb<ClientOptions = {}> extends $Utils.Fn<{extArgs: $Extensions.InternalArgs }, $Utils.Record<string, any>> {
-    returns: Prisma.TypeMap<this['params']['extArgs'], ClientOptions extends { omit: infer OmitOptions } ? OmitOptions : {}>
+  interface TypeMapCb extends $Utils.Fn<{extArgs: $Extensions.InternalArgs, clientOptions: PrismaClientOptions }, $Utils.Record<string, any>> {
+    returns: Prisma.TypeMap<this['params']['extArgs'], this['params']['clientOptions']>
   }
 
-  export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> = {
-    globalOmitOptions: {
-      omit: GlobalOmitOptions
-    }
+  export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "badge" | "consoleInsight" | "signalHistoryItem" | "position" | "userAgent"
+      modelProps: "user" | "badge" | "generatedSignal" | "position"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -747,10 +711,6 @@ export namespace Prisma {
           updateMany: {
             args: Prisma.UserUpdateManyArgs<ExtArgs>
             result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.UserUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UserPayload>[]
           }
           upsert: {
             args: Prisma.UserUpsertArgs<ExtArgs>
@@ -822,10 +782,6 @@ export namespace Prisma {
             args: Prisma.BadgeUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          updateManyAndReturn: {
-            args: Prisma.BadgeUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$BadgePayload>[]
-          }
           upsert: {
             args: Prisma.BadgeUpsertArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$BadgePayload>
@@ -844,151 +800,73 @@ export namespace Prisma {
           }
         }
       }
-      ConsoleInsight: {
-        payload: Prisma.$ConsoleInsightPayload<ExtArgs>
-        fields: Prisma.ConsoleInsightFieldRefs
+      GeneratedSignal: {
+        payload: Prisma.$GeneratedSignalPayload<ExtArgs>
+        fields: Prisma.GeneratedSignalFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.ConsoleInsightFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ConsoleInsightPayload> | null
+            args: Prisma.GeneratedSignalFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeneratedSignalPayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.ConsoleInsightFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ConsoleInsightPayload>
+            args: Prisma.GeneratedSignalFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeneratedSignalPayload>
           }
           findFirst: {
-            args: Prisma.ConsoleInsightFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ConsoleInsightPayload> | null
+            args: Prisma.GeneratedSignalFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeneratedSignalPayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.ConsoleInsightFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ConsoleInsightPayload>
+            args: Prisma.GeneratedSignalFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeneratedSignalPayload>
           }
           findMany: {
-            args: Prisma.ConsoleInsightFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ConsoleInsightPayload>[]
+            args: Prisma.GeneratedSignalFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeneratedSignalPayload>[]
           }
           create: {
-            args: Prisma.ConsoleInsightCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ConsoleInsightPayload>
+            args: Prisma.GeneratedSignalCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeneratedSignalPayload>
           }
           createMany: {
-            args: Prisma.ConsoleInsightCreateManyArgs<ExtArgs>
+            args: Prisma.GeneratedSignalCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           createManyAndReturn: {
-            args: Prisma.ConsoleInsightCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ConsoleInsightPayload>[]
+            args: Prisma.GeneratedSignalCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeneratedSignalPayload>[]
           }
           delete: {
-            args: Prisma.ConsoleInsightDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ConsoleInsightPayload>
+            args: Prisma.GeneratedSignalDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeneratedSignalPayload>
           }
           update: {
-            args: Prisma.ConsoleInsightUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ConsoleInsightPayload>
+            args: Prisma.GeneratedSignalUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeneratedSignalPayload>
           }
           deleteMany: {
-            args: Prisma.ConsoleInsightDeleteManyArgs<ExtArgs>
+            args: Prisma.GeneratedSignalDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.ConsoleInsightUpdateManyArgs<ExtArgs>
+            args: Prisma.GeneratedSignalUpdateManyArgs<ExtArgs>
             result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.ConsoleInsightUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ConsoleInsightPayload>[]
           }
           upsert: {
-            args: Prisma.ConsoleInsightUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ConsoleInsightPayload>
+            args: Prisma.GeneratedSignalUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeneratedSignalPayload>
           }
           aggregate: {
-            args: Prisma.ConsoleInsightAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateConsoleInsight>
+            args: Prisma.GeneratedSignalAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGeneratedSignal>
           }
           groupBy: {
-            args: Prisma.ConsoleInsightGroupByArgs<ExtArgs>
-            result: $Utils.Optional<ConsoleInsightGroupByOutputType>[]
+            args: Prisma.GeneratedSignalGroupByArgs<ExtArgs>
+            result: $Utils.Optional<GeneratedSignalGroupByOutputType>[]
           }
           count: {
-            args: Prisma.ConsoleInsightCountArgs<ExtArgs>
-            result: $Utils.Optional<ConsoleInsightCountAggregateOutputType> | number
-          }
-        }
-      }
-      SignalHistoryItem: {
-        payload: Prisma.$SignalHistoryItemPayload<ExtArgs>
-        fields: Prisma.SignalHistoryItemFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.SignalHistoryItemFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SignalHistoryItemPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.SignalHistoryItemFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SignalHistoryItemPayload>
-          }
-          findFirst: {
-            args: Prisma.SignalHistoryItemFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SignalHistoryItemPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.SignalHistoryItemFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SignalHistoryItemPayload>
-          }
-          findMany: {
-            args: Prisma.SignalHistoryItemFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SignalHistoryItemPayload>[]
-          }
-          create: {
-            args: Prisma.SignalHistoryItemCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SignalHistoryItemPayload>
-          }
-          createMany: {
-            args: Prisma.SignalHistoryItemCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.SignalHistoryItemCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SignalHistoryItemPayload>[]
-          }
-          delete: {
-            args: Prisma.SignalHistoryItemDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SignalHistoryItemPayload>
-          }
-          update: {
-            args: Prisma.SignalHistoryItemUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SignalHistoryItemPayload>
-          }
-          deleteMany: {
-            args: Prisma.SignalHistoryItemDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.SignalHistoryItemUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.SignalHistoryItemUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SignalHistoryItemPayload>[]
-          }
-          upsert: {
-            args: Prisma.SignalHistoryItemUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SignalHistoryItemPayload>
-          }
-          aggregate: {
-            args: Prisma.SignalHistoryItemAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateSignalHistoryItem>
-          }
-          groupBy: {
-            args: Prisma.SignalHistoryItemGroupByArgs<ExtArgs>
-            result: $Utils.Optional<SignalHistoryItemGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.SignalHistoryItemCountArgs<ExtArgs>
-            result: $Utils.Optional<SignalHistoryItemCountAggregateOutputType> | number
+            args: Prisma.GeneratedSignalCountArgs<ExtArgs>
+            result: $Utils.Optional<GeneratedSignalCountAggregateOutputType> | number
           }
         }
       }
@@ -1044,10 +922,6 @@ export namespace Prisma {
             args: Prisma.PositionUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          updateManyAndReturn: {
-            args: Prisma.PositionUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PositionPayload>[]
-          }
           upsert: {
             args: Prisma.PositionUpsertArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$PositionPayload>
@@ -1063,80 +937,6 @@ export namespace Prisma {
           count: {
             args: Prisma.PositionCountArgs<ExtArgs>
             result: $Utils.Optional<PositionCountAggregateOutputType> | number
-          }
-        }
-      }
-      UserAgent: {
-        payload: Prisma.$UserAgentPayload<ExtArgs>
-        fields: Prisma.UserAgentFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.UserAgentFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UserAgentPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.UserAgentFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UserAgentPayload>
-          }
-          findFirst: {
-            args: Prisma.UserAgentFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UserAgentPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.UserAgentFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UserAgentPayload>
-          }
-          findMany: {
-            args: Prisma.UserAgentFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UserAgentPayload>[]
-          }
-          create: {
-            args: Prisma.UserAgentCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UserAgentPayload>
-          }
-          createMany: {
-            args: Prisma.UserAgentCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.UserAgentCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UserAgentPayload>[]
-          }
-          delete: {
-            args: Prisma.UserAgentDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UserAgentPayload>
-          }
-          update: {
-            args: Prisma.UserAgentUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UserAgentPayload>
-          }
-          deleteMany: {
-            args: Prisma.UserAgentDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.UserAgentUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.UserAgentUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UserAgentPayload>[]
-          }
-          upsert: {
-            args: Prisma.UserAgentUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UserAgentPayload>
-          }
-          aggregate: {
-            args: Prisma.UserAgentAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateUserAgent>
-          }
-          groupBy: {
-            args: Prisma.UserAgentGroupByArgs<ExtArgs>
-            result: $Utils.Optional<UserAgentGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.UserAgentCountArgs<ExtArgs>
-            result: $Utils.Optional<UserAgentCountAggregateOutputType> | number
           }
         }
       }
@@ -1207,30 +1007,8 @@ export namespace Prisma {
       timeout?: number
       isolationLevel?: Prisma.TransactionIsolationLevel
     }
-    /**
-     * Global configuration for omitting model fields by default.
-     * 
-     * @example
-     * ```
-     * const prisma = new PrismaClient({
-     *   omit: {
-     *     user: {
-     *       password: true
-     *     }
-     *   }
-     * })
-     * ```
-     */
-    omit?: Prisma.GlobalOmitConfig
   }
-  export type GlobalOmitConfig = {
-    user?: UserOmit
-    badge?: BadgeOmit
-    consoleInsight?: ConsoleInsightOmit
-    signalHistoryItem?: SignalHistoryItemOmit
-    position?: PositionOmit
-    userAgent?: UserAgentOmit
-  }
+
 
   /* Types for Logging */
   export type LogLevel = 'info' | 'query' | 'warn' | 'error'
@@ -1271,7 +1049,6 @@ export namespace Prisma {
     | 'createManyAndReturn'
     | 'update'
     | 'updateMany'
-    | 'updateManyAndReturn'
     | 'upsert'
     | 'delete'
     | 'deleteMany'
@@ -1325,18 +1102,14 @@ export namespace Prisma {
 
   export type UserCountOutputType = {
     badges: number
-    consoleInsights: number
-    signals: number
+    generatedSignals: number
     positions: number
-    userAgents: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     badges?: boolean | UserCountOutputTypeCountBadgesArgs
-    consoleInsights?: boolean | UserCountOutputTypeCountConsoleInsightsArgs
-    signals?: boolean | UserCountOutputTypeCountSignalsArgs
+    generatedSignals?: boolean | UserCountOutputTypeCountGeneratedSignalsArgs
     positions?: boolean | UserCountOutputTypeCountPositionsArgs
-    userAgents?: boolean | UserCountOutputTypeCountUserAgentsArgs
   }
 
   // Custom InputTypes
@@ -1360,15 +1133,8 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountConsoleInsightsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ConsoleInsightWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountSignalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SignalHistoryItemWhereInput
+  export type UserCountOutputTypeCountGeneratedSignalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GeneratedSignalWhereInput
   }
 
   /**
@@ -1376,44 +1142,6 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountPositionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PositionWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountUserAgentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: UserAgentWhereInput
-  }
-
-
-  /**
-   * Count Type BadgeCountOutputType
-   */
-
-  export type BadgeCountOutputType = {
-    users: number
-  }
-
-  export type BadgeCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    users?: boolean | BadgeCountOutputTypeCountUsersArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * BadgeCountOutputType without action
-   */
-  export type BadgeCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the BadgeCountOutputType
-     */
-    select?: BadgeCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * BadgeCountOutputType without action
-   */
-  export type BadgeCountOutputTypeCountUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: UserWhereInput
   }
 
 
@@ -1446,49 +1174,58 @@ export namespace Prisma {
   export type UserMinAggregateOutputType = {
     id: string | null
     username: string | null
-    status: string | null
     shadowId: string | null
     weeklyPoints: number | null
     airdropPoints: number | null
+    status: string | null
+    claimedMissions: string | null
+    email: string | null
     wallet_address: string | null
     wallet_type: string | null
-    email: string | null
     phone: string | null
     x_handle: string | null
     telegram_handle: string | null
     youtube_handle: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type UserMaxAggregateOutputType = {
     id: string | null
     username: string | null
-    status: string | null
     shadowId: string | null
     weeklyPoints: number | null
     airdropPoints: number | null
+    status: string | null
+    claimedMissions: string | null
+    email: string | null
     wallet_address: string | null
     wallet_type: string | null
-    email: string | null
     phone: string | null
     x_handle: string | null
     telegram_handle: string | null
     youtube_handle: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type UserCountAggregateOutputType = {
     id: number
     username: number
-    status: number
     shadowId: number
     weeklyPoints: number
     airdropPoints: number
+    status: number
+    claimedMissions: number
+    email: number
     wallet_address: number
     wallet_type: number
-    email: number
     phone: number
     x_handle: number
     telegram_handle: number
     youtube_handle: number
+    createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -1506,49 +1243,58 @@ export namespace Prisma {
   export type UserMinAggregateInputType = {
     id?: true
     username?: true
-    status?: true
     shadowId?: true
     weeklyPoints?: true
     airdropPoints?: true
+    status?: true
+    claimedMissions?: true
+    email?: true
     wallet_address?: true
     wallet_type?: true
-    email?: true
     phone?: true
     x_handle?: true
     telegram_handle?: true
     youtube_handle?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type UserMaxAggregateInputType = {
     id?: true
     username?: true
-    status?: true
     shadowId?: true
     weeklyPoints?: true
     airdropPoints?: true
+    status?: true
+    claimedMissions?: true
+    email?: true
     wallet_address?: true
     wallet_type?: true
-    email?: true
     phone?: true
     x_handle?: true
     telegram_handle?: true
     youtube_handle?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type UserCountAggregateInputType = {
     id?: true
     username?: true
-    status?: true
     shadowId?: true
     weeklyPoints?: true
     airdropPoints?: true
+    status?: true
+    claimedMissions?: true
+    email?: true
     wallet_address?: true
     wallet_type?: true
-    email?: true
     phone?: true
     x_handle?: true
     telegram_handle?: true
     youtube_handle?: true
+    createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -1641,17 +1387,20 @@ export namespace Prisma {
   export type UserGroupByOutputType = {
     id: string
     username: string
-    status: string | null
-    shadowId: string | null
+    shadowId: string
     weeklyPoints: number
     airdropPoints: number
+    status: string
+    claimedMissions: string
+    email: string | null
     wallet_address: string | null
     wallet_type: string | null
-    email: string | null
     phone: string | null
     x_handle: string | null
     telegram_handle: string | null
     youtube_handle: string | null
+    createdAt: Date
+    updatedAt: Date
     _count: UserCountAggregateOutputType | null
     _avg: UserAvgAggregateOutputType | null
     _sum: UserSumAggregateOutputType | null
@@ -1676,120 +1425,108 @@ export namespace Prisma {
   export type UserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     username?: boolean
-    status?: boolean
     shadowId?: boolean
     weeklyPoints?: boolean
     airdropPoints?: boolean
+    status?: boolean
+    claimedMissions?: boolean
+    email?: boolean
     wallet_address?: boolean
     wallet_type?: boolean
-    email?: boolean
     phone?: boolean
     x_handle?: boolean
     telegram_handle?: boolean
     youtube_handle?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
     badges?: boolean | User$badgesArgs<ExtArgs>
-    consoleInsights?: boolean | User$consoleInsightsArgs<ExtArgs>
-    signals?: boolean | User$signalsArgs<ExtArgs>
+    generatedSignals?: boolean | User$generatedSignalsArgs<ExtArgs>
     positions?: boolean | User$positionsArgs<ExtArgs>
-    userAgents?: boolean | User$userAgentsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     username?: boolean
-    status?: boolean
     shadowId?: boolean
     weeklyPoints?: boolean
     airdropPoints?: boolean
+    status?: boolean
+    claimedMissions?: boolean
+    email?: boolean
     wallet_address?: boolean
     wallet_type?: boolean
-    email?: boolean
     phone?: boolean
     x_handle?: boolean
     telegram_handle?: boolean
     youtube_handle?: boolean
-  }, ExtArgs["result"]["user"]>
-
-  export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    username?: boolean
-    status?: boolean
-    shadowId?: boolean
-    weeklyPoints?: boolean
-    airdropPoints?: boolean
-    wallet_address?: boolean
-    wallet_type?: boolean
-    email?: boolean
-    phone?: boolean
-    x_handle?: boolean
-    telegram_handle?: boolean
-    youtube_handle?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
     id?: boolean
     username?: boolean
-    status?: boolean
     shadowId?: boolean
     weeklyPoints?: boolean
     airdropPoints?: boolean
+    status?: boolean
+    claimedMissions?: boolean
+    email?: boolean
     wallet_address?: boolean
     wallet_type?: boolean
-    email?: boolean
     phone?: boolean
     x_handle?: boolean
     telegram_handle?: boolean
     youtube_handle?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "status" | "shadowId" | "weeklyPoints" | "airdropPoints" | "wallet_address" | "wallet_type" | "email" | "phone" | "x_handle" | "telegram_handle" | "youtube_handle", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     badges?: boolean | User$badgesArgs<ExtArgs>
-    consoleInsights?: boolean | User$consoleInsightsArgs<ExtArgs>
-    signals?: boolean | User$signalsArgs<ExtArgs>
+    generatedSignals?: boolean | User$generatedSignalsArgs<ExtArgs>
     positions?: boolean | User$positionsArgs<ExtArgs>
-    userAgents?: boolean | User$userAgentsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type UserIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
 
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
     objects: {
       badges: Prisma.$BadgePayload<ExtArgs>[]
-      consoleInsights: Prisma.$ConsoleInsightPayload<ExtArgs>[]
-      signals: Prisma.$SignalHistoryItemPayload<ExtArgs>[]
+      generatedSignals: Prisma.$GeneratedSignalPayload<ExtArgs>[]
       positions: Prisma.$PositionPayload<ExtArgs>[]
-      userAgents: Prisma.$UserAgentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       username: string
-      status: string | null
-      shadowId: string | null
+      shadowId: string
       weeklyPoints: number
       airdropPoints: number
+      status: string
+      claimedMissions: string
+      email: string | null
       wallet_address: string | null
       wallet_type: string | null
-      email: string | null
       phone: string | null
       x_handle: string | null
       telegram_handle: string | null
       youtube_handle: string | null
+      createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
 
   type UserGetPayload<S extends boolean | null | undefined | UserDefaultArgs> = $Result.GetResult<Prisma.$UserPayload, S>
 
-  type UserCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<UserFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+  type UserCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<UserFindManyArgs, 'select' | 'include' | 'distinct'> & {
       select?: UserCountAggregateInputType | true
     }
 
-  export interface UserDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+  export interface UserDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
     [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['User'], meta: { name: 'User' } }
     /**
      * Find zero or one User that matches the filter.
@@ -1802,10 +1539,10 @@ export namespace Prisma {
      *   }
      * })
      */
-    findUnique<T extends UserFindUniqueArgs>(args: SelectSubset<T, UserFindUniqueArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends UserFindUniqueArgs>(args: SelectSubset<T, UserFindUniqueArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
 
     /**
-     * Find one User that matches the filter or throw an error with `error.code='P2025'`
+     * Find one User that matches the filter or throw an error with `error.code='P2025'` 
      * if no matches were found.
      * @param {UserFindUniqueOrThrowArgs} args - Arguments to find a User
      * @example
@@ -1816,7 +1553,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findUniqueOrThrow<T extends UserFindUniqueOrThrowArgs>(args: SelectSubset<T, UserFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends UserFindUniqueOrThrowArgs>(args: SelectSubset<T, UserFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
 
     /**
      * Find the first User that matches the filter.
@@ -1831,7 +1568,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findFirst<T extends UserFindFirstArgs>(args?: SelectSubset<T, UserFindFirstArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends UserFindFirstArgs>(args?: SelectSubset<T, UserFindFirstArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
 
     /**
      * Find the first User that matches the filter or
@@ -1847,7 +1584,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findFirstOrThrow<T extends UserFindFirstOrThrowArgs>(args?: SelectSubset<T, UserFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends UserFindFirstOrThrowArgs>(args?: SelectSubset<T, UserFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
 
     /**
      * Find zero or more Users that matches the filter.
@@ -1865,7 +1602,7 @@ export namespace Prisma {
      * const userWithIdOnly = await prisma.user.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends UserFindManyArgs>(args?: SelectSubset<T, UserFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends UserFindManyArgs>(args?: SelectSubset<T, UserFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany">>
 
     /**
      * Create a User.
@@ -1879,7 +1616,7 @@ export namespace Prisma {
      * })
      * 
      */
-    create<T extends UserCreateArgs>(args: SelectSubset<T, UserCreateArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends UserCreateArgs>(args: SelectSubset<T, UserCreateArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "create">, never, ExtArgs>
 
     /**
      * Create many Users.
@@ -1907,7 +1644,7 @@ export namespace Prisma {
      * })
      * 
      * // Create many Users and only return the `id`
-     * const userWithIdOnly = await prisma.user.createManyAndReturn({
+     * const userWithIdOnly = await prisma.user.createManyAndReturn({ 
      *   select: { id: true },
      *   data: [
      *     // ... provide data here
@@ -1917,7 +1654,7 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    createManyAndReturn<T extends UserCreateManyAndReturnArgs>(args?: SelectSubset<T, UserCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+    createManyAndReturn<T extends UserCreateManyAndReturnArgs>(args?: SelectSubset<T, UserCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "createManyAndReturn">>
 
     /**
      * Delete a User.
@@ -1931,7 +1668,7 @@ export namespace Prisma {
      * })
      * 
      */
-    delete<T extends UserDeleteArgs>(args: SelectSubset<T, UserDeleteArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends UserDeleteArgs>(args: SelectSubset<T, UserDeleteArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "delete">, never, ExtArgs>
 
     /**
      * Update one User.
@@ -1948,7 +1685,7 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends UserUpdateArgs>(args: SelectSubset<T, UserUpdateArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends UserUpdateArgs>(args: SelectSubset<T, UserUpdateArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "update">, never, ExtArgs>
 
     /**
      * Delete zero or more Users.
@@ -1984,36 +1721,6 @@ export namespace Prisma {
     updateMany<T extends UserUpdateManyArgs>(args: SelectSubset<T, UserUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Users and returns the data updated in the database.
-     * @param {UserUpdateManyAndReturnArgs} args - Arguments to update many Users.
-     * @example
-     * // Update many Users
-     * const user = await prisma.user.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more Users and only return the `id`
-     * const userWithIdOnly = await prisma.user.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends UserUpdateManyAndReturnArgs>(args: SelectSubset<T, UserUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Create or update one User.
      * @param {UserUpsertArgs} args - Arguments to update or create a User.
      * @example
@@ -2030,7 +1737,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    upsert<T extends UserUpsertArgs>(args: SelectSubset<T, UserUpsertArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends UserUpsertArgs>(args: SelectSubset<T, UserUpsertArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
 
 
     /**
@@ -2170,13 +1877,11 @@ export namespace Prisma {
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    badges<T extends User$badgesArgs<ExtArgs> = {}>(args?: Subset<T, User$badgesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    consoleInsights<T extends User$consoleInsightsArgs<ExtArgs> = {}>(args?: Subset<T, User$consoleInsightsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConsoleInsightPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    signals<T extends User$signalsArgs<ExtArgs> = {}>(args?: Subset<T, User$signalsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SignalHistoryItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    positions<T extends User$positionsArgs<ExtArgs> = {}>(args?: Subset<T, User$positionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    userAgents<T extends User$userAgentsArgs<ExtArgs> = {}>(args?: Subset<T, User$userAgentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserAgentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    badges<T extends User$badgesArgs<ExtArgs> = {}>(args?: Subset<T, User$badgesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "findMany"> | Null>
+    generatedSignals<T extends User$generatedSignalsArgs<ExtArgs> = {}>(args?: Subset<T, User$generatedSignalsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GeneratedSignalPayload<ExtArgs>, T, "findMany"> | Null>
+    positions<T extends User$positionsArgs<ExtArgs> = {}>(args?: Subset<T, User$positionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2204,21 +1909,24 @@ export namespace Prisma {
 
   /**
    * Fields of the User model
-   */
+   */ 
   interface UserFieldRefs {
     readonly id: FieldRef<"User", 'String'>
     readonly username: FieldRef<"User", 'String'>
-    readonly status: FieldRef<"User", 'String'>
     readonly shadowId: FieldRef<"User", 'String'>
     readonly weeklyPoints: FieldRef<"User", 'Int'>
     readonly airdropPoints: FieldRef<"User", 'Int'>
+    readonly status: FieldRef<"User", 'String'>
+    readonly claimedMissions: FieldRef<"User", 'String'>
+    readonly email: FieldRef<"User", 'String'>
     readonly wallet_address: FieldRef<"User", 'String'>
     readonly wallet_type: FieldRef<"User", 'String'>
-    readonly email: FieldRef<"User", 'String'>
     readonly phone: FieldRef<"User", 'String'>
     readonly x_handle: FieldRef<"User", 'String'>
     readonly telegram_handle: FieldRef<"User", 'String'>
     readonly youtube_handle: FieldRef<"User", 'String'>
+    readonly createdAt: FieldRef<"User", 'DateTime'>
+    readonly updatedAt: FieldRef<"User", 'DateTime'>
   }
     
 
@@ -2231,10 +1939,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the User
      */
     select?: UserSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -2254,10 +1958,6 @@ export namespace Prisma {
      */
     select?: UserSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: UserInclude<ExtArgs> | null
@@ -2275,10 +1975,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the User
      */
     select?: UserSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -2328,10 +2024,6 @@ export namespace Prisma {
      */
     select?: UserSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: UserInclude<ExtArgs> | null
@@ -2380,10 +2072,6 @@ export namespace Prisma {
      */
     select?: UserSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: UserInclude<ExtArgs> | null
@@ -2427,10 +2115,6 @@ export namespace Prisma {
      */
     select?: UserSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: UserInclude<ExtArgs> | null
@@ -2460,10 +2144,6 @@ export namespace Prisma {
      */
     select?: UserSelectCreateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
-    /**
      * The data used to create many Users.
      */
     data: UserCreateManyInput | UserCreateManyInput[]
@@ -2478,10 +2158,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the User
      */
     select?: UserSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -2508,36 +2184,6 @@ export namespace Prisma {
      * Filter which Users to update
      */
     where?: UserWhereInput
-    /**
-     * Limit how many Users to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * User updateManyAndReturn
-   */
-  export type UserUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the User
-     */
-    select?: UserSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
-    /**
-     * The data used to update Users.
-     */
-    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyInput>
-    /**
-     * Filter which Users to update
-     */
-    where?: UserWhereInput
-    /**
-     * Limit how many Users to update.
-     */
-    limit?: number
   }
 
   /**
@@ -2548,10 +2194,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the User
      */
     select?: UserSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -2579,10 +2221,6 @@ export namespace Prisma {
      */
     select?: UserSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: UserInclude<ExtArgs> | null
@@ -2600,10 +2238,6 @@ export namespace Prisma {
      * Filter which Users to delete
      */
     where?: UserWhereInput
-    /**
-     * Limit how many Users to delete.
-     */
-    limit?: number
   }
 
   /**
@@ -2614,10 +2248,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the Badge
      */
     select?: BadgeSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Badge
-     */
-    omit?: BadgeOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -2631,51 +2261,23 @@ export namespace Prisma {
   }
 
   /**
-   * User.consoleInsights
+   * User.generatedSignals
    */
-  export type User$consoleInsightsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$generatedSignalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ConsoleInsight
+     * Select specific fields to fetch from the GeneratedSignal
      */
-    select?: ConsoleInsightSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ConsoleInsight
-     */
-    omit?: ConsoleInsightOmit<ExtArgs> | null
+    select?: GeneratedSignalSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ConsoleInsightInclude<ExtArgs> | null
-    where?: ConsoleInsightWhereInput
-    orderBy?: ConsoleInsightOrderByWithRelationInput | ConsoleInsightOrderByWithRelationInput[]
-    cursor?: ConsoleInsightWhereUniqueInput
+    include?: GeneratedSignalInclude<ExtArgs> | null
+    where?: GeneratedSignalWhereInput
+    orderBy?: GeneratedSignalOrderByWithRelationInput | GeneratedSignalOrderByWithRelationInput[]
+    cursor?: GeneratedSignalWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: ConsoleInsightScalarFieldEnum | ConsoleInsightScalarFieldEnum[]
-  }
-
-  /**
-   * User.signals
-   */
-  export type User$signalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SignalHistoryItem
-     */
-    select?: SignalHistoryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SignalHistoryItem
-     */
-    omit?: SignalHistoryItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SignalHistoryItemInclude<ExtArgs> | null
-    where?: SignalHistoryItemWhereInput
-    orderBy?: SignalHistoryItemOrderByWithRelationInput | SignalHistoryItemOrderByWithRelationInput[]
-    cursor?: SignalHistoryItemWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SignalHistoryItemScalarFieldEnum | SignalHistoryItemScalarFieldEnum[]
+    distinct?: GeneratedSignalScalarFieldEnum | GeneratedSignalScalarFieldEnum[]
   }
 
   /**
@@ -2686,10 +2288,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the Position
      */
     select?: PositionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Position
-     */
-    omit?: PositionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -2703,30 +2301,6 @@ export namespace Prisma {
   }
 
   /**
-   * User.userAgents
-   */
-  export type User$userAgentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserAgent
-     */
-    select?: UserAgentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserAgent
-     */
-    omit?: UserAgentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserAgentInclude<ExtArgs> | null
-    where?: UserAgentWhereInput
-    orderBy?: UserAgentOrderByWithRelationInput | UserAgentOrderByWithRelationInput[]
-    cursor?: UserAgentWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: UserAgentScalarFieldEnum | UserAgentScalarFieldEnum[]
-  }
-
-  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2734,10 +2308,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the User
      */
     select?: UserSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -2758,16 +2328,25 @@ export namespace Prisma {
   export type BadgeMinAggregateOutputType = {
     id: string | null
     name: string | null
+    description: string | null
+    icon: string | null
+    userId: string | null
   }
 
   export type BadgeMaxAggregateOutputType = {
     id: string | null
     name: string | null
+    description: string | null
+    icon: string | null
+    userId: string | null
   }
 
   export type BadgeCountAggregateOutputType = {
     id: number
     name: number
+    description: number
+    icon: number
+    userId: number
     _all: number
   }
 
@@ -2775,16 +2354,25 @@ export namespace Prisma {
   export type BadgeMinAggregateInputType = {
     id?: true
     name?: true
+    description?: true
+    icon?: true
+    userId?: true
   }
 
   export type BadgeMaxAggregateInputType = {
     id?: true
     name?: true
+    description?: true
+    icon?: true
+    userId?: true
   }
 
   export type BadgeCountAggregateInputType = {
     id?: true
     name?: true
+    description?: true
+    icon?: true
+    userId?: true
     _all?: true
   }
 
@@ -2863,6 +2451,9 @@ export namespace Prisma {
   export type BadgeGroupByOutputType = {
     id: string
     name: string
+    description: string
+    icon: string
+    userId: string
     _count: BadgeCountAggregateOutputType | null
     _min: BadgeMinAggregateOutputType | null
     _max: BadgeMaxAggregateOutputType | null
@@ -2885,53 +2476,59 @@ export namespace Prisma {
   export type BadgeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    users?: boolean | Badge$usersArgs<ExtArgs>
-    _count?: boolean | BadgeCountOutputTypeDefaultArgs<ExtArgs>
+    description?: boolean
+    icon?: boolean
+    userId?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["badge"]>
 
   export type BadgeSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-  }, ExtArgs["result"]["badge"]>
-
-  export type BadgeSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    name?: boolean
+    description?: boolean
+    icon?: boolean
+    userId?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["badge"]>
 
   export type BadgeSelectScalar = {
     id?: boolean
     name?: boolean
+    description?: boolean
+    icon?: boolean
+    userId?: boolean
   }
 
-  export type BadgeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name", ExtArgs["result"]["badge"]>
   export type BadgeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    users?: boolean | Badge$usersArgs<ExtArgs>
-    _count?: boolean | BadgeCountOutputTypeDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }
-  export type BadgeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type BadgeIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type BadgeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
 
   export type $BadgePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Badge"
     objects: {
-      users: Prisma.$UserPayload<ExtArgs>[]
+      user: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
+      description: string
+      icon: string
+      userId: string
     }, ExtArgs["result"]["badge"]>
     composites: {}
   }
 
   type BadgeGetPayload<S extends boolean | null | undefined | BadgeDefaultArgs> = $Result.GetResult<Prisma.$BadgePayload, S>
 
-  type BadgeCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<BadgeFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+  type BadgeCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<BadgeFindManyArgs, 'select' | 'include' | 'distinct'> & {
       select?: BadgeCountAggregateInputType | true
     }
 
-  export interface BadgeDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+  export interface BadgeDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
     [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Badge'], meta: { name: 'Badge' } }
     /**
      * Find zero or one Badge that matches the filter.
@@ -2944,10 +2541,10 @@ export namespace Prisma {
      *   }
      * })
      */
-    findUnique<T extends BadgeFindUniqueArgs>(args: SelectSubset<T, BadgeFindUniqueArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends BadgeFindUniqueArgs>(args: SelectSubset<T, BadgeFindUniqueArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
 
     /**
-     * Find one Badge that matches the filter or throw an error with `error.code='P2025'`
+     * Find one Badge that matches the filter or throw an error with `error.code='P2025'` 
      * if no matches were found.
      * @param {BadgeFindUniqueOrThrowArgs} args - Arguments to find a Badge
      * @example
@@ -2958,7 +2555,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findUniqueOrThrow<T extends BadgeFindUniqueOrThrowArgs>(args: SelectSubset<T, BadgeFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends BadgeFindUniqueOrThrowArgs>(args: SelectSubset<T, BadgeFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
 
     /**
      * Find the first Badge that matches the filter.
@@ -2973,7 +2570,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findFirst<T extends BadgeFindFirstArgs>(args?: SelectSubset<T, BadgeFindFirstArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends BadgeFindFirstArgs>(args?: SelectSubset<T, BadgeFindFirstArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
 
     /**
      * Find the first Badge that matches the filter or
@@ -2989,7 +2586,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findFirstOrThrow<T extends BadgeFindFirstOrThrowArgs>(args?: SelectSubset<T, BadgeFindFirstOrThrowArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends BadgeFindFirstOrThrowArgs>(args?: SelectSubset<T, BadgeFindFirstOrThrowArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
 
     /**
      * Find zero or more Badges that matches the filter.
@@ -3007,7 +2604,7 @@ export namespace Prisma {
      * const badgeWithIdOnly = await prisma.badge.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends BadgeFindManyArgs>(args?: SelectSubset<T, BadgeFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends BadgeFindManyArgs>(args?: SelectSubset<T, BadgeFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "findMany">>
 
     /**
      * Create a Badge.
@@ -3021,7 +2618,7 @@ export namespace Prisma {
      * })
      * 
      */
-    create<T extends BadgeCreateArgs>(args: SelectSubset<T, BadgeCreateArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends BadgeCreateArgs>(args: SelectSubset<T, BadgeCreateArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "create">, never, ExtArgs>
 
     /**
      * Create many Badges.
@@ -3049,7 +2646,7 @@ export namespace Prisma {
      * })
      * 
      * // Create many Badges and only return the `id`
-     * const badgeWithIdOnly = await prisma.badge.createManyAndReturn({
+     * const badgeWithIdOnly = await prisma.badge.createManyAndReturn({ 
      *   select: { id: true },
      *   data: [
      *     // ... provide data here
@@ -3059,7 +2656,7 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    createManyAndReturn<T extends BadgeCreateManyAndReturnArgs>(args?: SelectSubset<T, BadgeCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+    createManyAndReturn<T extends BadgeCreateManyAndReturnArgs>(args?: SelectSubset<T, BadgeCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "createManyAndReturn">>
 
     /**
      * Delete a Badge.
@@ -3073,7 +2670,7 @@ export namespace Prisma {
      * })
      * 
      */
-    delete<T extends BadgeDeleteArgs>(args: SelectSubset<T, BadgeDeleteArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends BadgeDeleteArgs>(args: SelectSubset<T, BadgeDeleteArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "delete">, never, ExtArgs>
 
     /**
      * Update one Badge.
@@ -3090,7 +2687,7 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends BadgeUpdateArgs>(args: SelectSubset<T, BadgeUpdateArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends BadgeUpdateArgs>(args: SelectSubset<T, BadgeUpdateArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "update">, never, ExtArgs>
 
     /**
      * Delete zero or more Badges.
@@ -3126,36 +2723,6 @@ export namespace Prisma {
     updateMany<T extends BadgeUpdateManyArgs>(args: SelectSubset<T, BadgeUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Badges and returns the data updated in the database.
-     * @param {BadgeUpdateManyAndReturnArgs} args - Arguments to update many Badges.
-     * @example
-     * // Update many Badges
-     * const badge = await prisma.badge.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more Badges and only return the `id`
-     * const badgeWithIdOnly = await prisma.badge.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends BadgeUpdateManyAndReturnArgs>(args: SelectSubset<T, BadgeUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Create or update one Badge.
      * @param {BadgeUpsertArgs} args - Arguments to update or create a Badge.
      * @example
@@ -3172,7 +2739,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    upsert<T extends BadgeUpsertArgs>(args: SelectSubset<T, BadgeUpsertArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends BadgeUpsertArgs>(args: SelectSubset<T, BadgeUpsertArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
 
 
     /**
@@ -3312,9 +2879,9 @@ export namespace Prisma {
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__BadgeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__BadgeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    users<T extends Badge$usersArgs<ExtArgs> = {}>(args?: Subset<T, Badge$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3342,10 +2909,13 @@ export namespace Prisma {
 
   /**
    * Fields of the Badge model
-   */
+   */ 
   interface BadgeFieldRefs {
     readonly id: FieldRef<"Badge", 'String'>
     readonly name: FieldRef<"Badge", 'String'>
+    readonly description: FieldRef<"Badge", 'String'>
+    readonly icon: FieldRef<"Badge", 'String'>
+    readonly userId: FieldRef<"Badge", 'String'>
   }
     
 
@@ -3358,10 +2928,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the Badge
      */
     select?: BadgeSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Badge
-     */
-    omit?: BadgeOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -3381,10 +2947,6 @@ export namespace Prisma {
      */
     select?: BadgeSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Badge
-     */
-    omit?: BadgeOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: BadgeInclude<ExtArgs> | null
@@ -3402,10 +2964,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the Badge
      */
     select?: BadgeSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Badge
-     */
-    omit?: BadgeOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -3455,10 +3013,6 @@ export namespace Prisma {
      */
     select?: BadgeSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Badge
-     */
-    omit?: BadgeOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: BadgeInclude<ExtArgs> | null
@@ -3507,10 +3061,6 @@ export namespace Prisma {
      */
     select?: BadgeSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Badge
-     */
-    omit?: BadgeOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: BadgeInclude<ExtArgs> | null
@@ -3554,10 +3104,6 @@ export namespace Prisma {
      */
     select?: BadgeSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Badge
-     */
-    omit?: BadgeOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: BadgeInclude<ExtArgs> | null
@@ -3587,14 +3133,14 @@ export namespace Prisma {
      */
     select?: BadgeSelectCreateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the Badge
-     */
-    omit?: BadgeOmit<ExtArgs> | null
-    /**
      * The data used to create many Badges.
      */
     data: BadgeCreateManyInput | BadgeCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BadgeIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -3605,10 +3151,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the Badge
      */
     select?: BadgeSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Badge
-     */
-    omit?: BadgeOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -3635,36 +3177,6 @@ export namespace Prisma {
      * Filter which Badges to update
      */
     where?: BadgeWhereInput
-    /**
-     * Limit how many Badges to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * Badge updateManyAndReturn
-   */
-  export type BadgeUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Badge
-     */
-    select?: BadgeSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Badge
-     */
-    omit?: BadgeOmit<ExtArgs> | null
-    /**
-     * The data used to update Badges.
-     */
-    data: XOR<BadgeUpdateManyMutationInput, BadgeUncheckedUpdateManyInput>
-    /**
-     * Filter which Badges to update
-     */
-    where?: BadgeWhereInput
-    /**
-     * Limit how many Badges to update.
-     */
-    limit?: number
   }
 
   /**
@@ -3675,10 +3187,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the Badge
      */
     select?: BadgeSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Badge
-     */
-    omit?: BadgeOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -3706,10 +3214,6 @@ export namespace Prisma {
      */
     select?: BadgeSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Badge
-     */
-    omit?: BadgeOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: BadgeInclude<ExtArgs> | null
@@ -3727,34 +3231,6 @@ export namespace Prisma {
      * Filter which Badges to delete
      */
     where?: BadgeWhereInput
-    /**
-     * Limit how many Badges to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * Badge.users
-   */
-  export type Badge$usersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the User
-     */
-    select?: UserSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserInclude<ExtArgs> | null
-    where?: UserWhereInput
-    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
-    cursor?: UserWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
   }
 
   /**
@@ -3766,10 +3242,6 @@ export namespace Prisma {
      */
     select?: BadgeSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Badge
-     */
-    omit?: BadgeOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: BadgeInclude<ExtArgs> | null
@@ -3777,1441 +3249,505 @@ export namespace Prisma {
 
 
   /**
-   * Model ConsoleInsight
+   * Model GeneratedSignal
    */
 
-  export type AggregateConsoleInsight = {
-    _count: ConsoleInsightCountAggregateOutputType | null
-    _min: ConsoleInsightMinAggregateOutputType | null
-    _max: ConsoleInsightMaxAggregateOutputType | null
+  export type AggregateGeneratedSignal = {
+    _count: GeneratedSignalCountAggregateOutputType | null
+    _min: GeneratedSignalMinAggregateOutputType | null
+    _max: GeneratedSignalMaxAggregateOutputType | null
   }
 
-  export type ConsoleInsightMinAggregateOutputType = {
+  export type GeneratedSignalMinAggregateOutputType = {
     id: string | null
     userId: string | null
-    content: string | null
-    timestamp: Date | null
+    symbol: string | null
+    signal: string | null
+    status: string | null
+    entry_zone: string | null
+    stop_loss: string | null
+    take_profit: string | null
+    confidence: string | null
+    risk_rating: string | null
+    gpt_confidence_score: string | null
+    sentiment: string | null
+    currentThought: string | null
+    shortTermPrediction: string | null
+    chosenTradingMode: string | null
+    chosenRiskProfile: string | null
+    strategyReasoning: string | null
+    analysisSummary: string | null
+    newsAnalysis: string | null
+    createdAt: Date | null
   }
 
-  export type ConsoleInsightMaxAggregateOutputType = {
+  export type GeneratedSignalMaxAggregateOutputType = {
     id: string | null
     userId: string | null
-    content: string | null
-    timestamp: Date | null
+    symbol: string | null
+    signal: string | null
+    status: string | null
+    entry_zone: string | null
+    stop_loss: string | null
+    take_profit: string | null
+    confidence: string | null
+    risk_rating: string | null
+    gpt_confidence_score: string | null
+    sentiment: string | null
+    currentThought: string | null
+    shortTermPrediction: string | null
+    chosenTradingMode: string | null
+    chosenRiskProfile: string | null
+    strategyReasoning: string | null
+    analysisSummary: string | null
+    newsAnalysis: string | null
+    createdAt: Date | null
   }
 
-  export type ConsoleInsightCountAggregateOutputType = {
+  export type GeneratedSignalCountAggregateOutputType = {
     id: number
     userId: number
-    content: number
-    timestamp: number
-    _all: number
-  }
-
-
-  export type ConsoleInsightMinAggregateInputType = {
-    id?: true
-    userId?: true
-    content?: true
-    timestamp?: true
-  }
-
-  export type ConsoleInsightMaxAggregateInputType = {
-    id?: true
-    userId?: true
-    content?: true
-    timestamp?: true
-  }
-
-  export type ConsoleInsightCountAggregateInputType = {
-    id?: true
-    userId?: true
-    content?: true
-    timestamp?: true
-    _all?: true
-  }
-
-  export type ConsoleInsightAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which ConsoleInsight to aggregate.
-     */
-    where?: ConsoleInsightWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ConsoleInsights to fetch.
-     */
-    orderBy?: ConsoleInsightOrderByWithRelationInput | ConsoleInsightOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: ConsoleInsightWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ConsoleInsights from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ConsoleInsights.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned ConsoleInsights
-    **/
-    _count?: true | ConsoleInsightCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: ConsoleInsightMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: ConsoleInsightMaxAggregateInputType
-  }
-
-  export type GetConsoleInsightAggregateType<T extends ConsoleInsightAggregateArgs> = {
-        [P in keyof T & keyof AggregateConsoleInsight]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateConsoleInsight[P]>
-      : GetScalarType<T[P], AggregateConsoleInsight[P]>
-  }
-
-
-
-
-  export type ConsoleInsightGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ConsoleInsightWhereInput
-    orderBy?: ConsoleInsightOrderByWithAggregationInput | ConsoleInsightOrderByWithAggregationInput[]
-    by: ConsoleInsightScalarFieldEnum[] | ConsoleInsightScalarFieldEnum
-    having?: ConsoleInsightScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: ConsoleInsightCountAggregateInputType | true
-    _min?: ConsoleInsightMinAggregateInputType
-    _max?: ConsoleInsightMaxAggregateInputType
-  }
-
-  export type ConsoleInsightGroupByOutputType = {
-    id: string
-    userId: string
-    content: string
-    timestamp: Date
-    _count: ConsoleInsightCountAggregateOutputType | null
-    _min: ConsoleInsightMinAggregateOutputType | null
-    _max: ConsoleInsightMaxAggregateOutputType | null
-  }
-
-  type GetConsoleInsightGroupByPayload<T extends ConsoleInsightGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<ConsoleInsightGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof ConsoleInsightGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], ConsoleInsightGroupByOutputType[P]>
-            : GetScalarType<T[P], ConsoleInsightGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type ConsoleInsightSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    content?: boolean
-    timestamp?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["consoleInsight"]>
-
-  export type ConsoleInsightSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    content?: boolean
-    timestamp?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["consoleInsight"]>
-
-  export type ConsoleInsightSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    content?: boolean
-    timestamp?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["consoleInsight"]>
-
-  export type ConsoleInsightSelectScalar = {
-    id?: boolean
-    userId?: boolean
-    content?: boolean
-    timestamp?: boolean
-  }
-
-  export type ConsoleInsightOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "content" | "timestamp", ExtArgs["result"]["consoleInsight"]>
-  export type ConsoleInsightInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type ConsoleInsightIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type ConsoleInsightIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }
-
-  export type $ConsoleInsightPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "ConsoleInsight"
-    objects: {
-      user: Prisma.$UserPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      userId: string
-      content: string
-      timestamp: Date
-    }, ExtArgs["result"]["consoleInsight"]>
-    composites: {}
-  }
-
-  type ConsoleInsightGetPayload<S extends boolean | null | undefined | ConsoleInsightDefaultArgs> = $Result.GetResult<Prisma.$ConsoleInsightPayload, S>
-
-  type ConsoleInsightCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<ConsoleInsightFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: ConsoleInsightCountAggregateInputType | true
-    }
-
-  export interface ConsoleInsightDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ConsoleInsight'], meta: { name: 'ConsoleInsight' } }
-    /**
-     * Find zero or one ConsoleInsight that matches the filter.
-     * @param {ConsoleInsightFindUniqueArgs} args - Arguments to find a ConsoleInsight
-     * @example
-     * // Get one ConsoleInsight
-     * const consoleInsight = await prisma.consoleInsight.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends ConsoleInsightFindUniqueArgs>(args: SelectSubset<T, ConsoleInsightFindUniqueArgs<ExtArgs>>): Prisma__ConsoleInsightClient<$Result.GetResult<Prisma.$ConsoleInsightPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one ConsoleInsight that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {ConsoleInsightFindUniqueOrThrowArgs} args - Arguments to find a ConsoleInsight
-     * @example
-     * // Get one ConsoleInsight
-     * const consoleInsight = await prisma.consoleInsight.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends ConsoleInsightFindUniqueOrThrowArgs>(args: SelectSubset<T, ConsoleInsightFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ConsoleInsightClient<$Result.GetResult<Prisma.$ConsoleInsightPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first ConsoleInsight that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ConsoleInsightFindFirstArgs} args - Arguments to find a ConsoleInsight
-     * @example
-     * // Get one ConsoleInsight
-     * const consoleInsight = await prisma.consoleInsight.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends ConsoleInsightFindFirstArgs>(args?: SelectSubset<T, ConsoleInsightFindFirstArgs<ExtArgs>>): Prisma__ConsoleInsightClient<$Result.GetResult<Prisma.$ConsoleInsightPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first ConsoleInsight that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ConsoleInsightFindFirstOrThrowArgs} args - Arguments to find a ConsoleInsight
-     * @example
-     * // Get one ConsoleInsight
-     * const consoleInsight = await prisma.consoleInsight.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends ConsoleInsightFindFirstOrThrowArgs>(args?: SelectSubset<T, ConsoleInsightFindFirstOrThrowArgs<ExtArgs>>): Prisma__ConsoleInsightClient<$Result.GetResult<Prisma.$ConsoleInsightPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more ConsoleInsights that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ConsoleInsightFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all ConsoleInsights
-     * const consoleInsights = await prisma.consoleInsight.findMany()
-     * 
-     * // Get first 10 ConsoleInsights
-     * const consoleInsights = await prisma.consoleInsight.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const consoleInsightWithIdOnly = await prisma.consoleInsight.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends ConsoleInsightFindManyArgs>(args?: SelectSubset<T, ConsoleInsightFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConsoleInsightPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a ConsoleInsight.
-     * @param {ConsoleInsightCreateArgs} args - Arguments to create a ConsoleInsight.
-     * @example
-     * // Create one ConsoleInsight
-     * const ConsoleInsight = await prisma.consoleInsight.create({
-     *   data: {
-     *     // ... data to create a ConsoleInsight
-     *   }
-     * })
-     * 
-     */
-    create<T extends ConsoleInsightCreateArgs>(args: SelectSubset<T, ConsoleInsightCreateArgs<ExtArgs>>): Prisma__ConsoleInsightClient<$Result.GetResult<Prisma.$ConsoleInsightPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many ConsoleInsights.
-     * @param {ConsoleInsightCreateManyArgs} args - Arguments to create many ConsoleInsights.
-     * @example
-     * // Create many ConsoleInsights
-     * const consoleInsight = await prisma.consoleInsight.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends ConsoleInsightCreateManyArgs>(args?: SelectSubset<T, ConsoleInsightCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many ConsoleInsights and returns the data saved in the database.
-     * @param {ConsoleInsightCreateManyAndReturnArgs} args - Arguments to create many ConsoleInsights.
-     * @example
-     * // Create many ConsoleInsights
-     * const consoleInsight = await prisma.consoleInsight.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many ConsoleInsights and only return the `id`
-     * const consoleInsightWithIdOnly = await prisma.consoleInsight.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends ConsoleInsightCreateManyAndReturnArgs>(args?: SelectSubset<T, ConsoleInsightCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConsoleInsightPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a ConsoleInsight.
-     * @param {ConsoleInsightDeleteArgs} args - Arguments to delete one ConsoleInsight.
-     * @example
-     * // Delete one ConsoleInsight
-     * const ConsoleInsight = await prisma.consoleInsight.delete({
-     *   where: {
-     *     // ... filter to delete one ConsoleInsight
-     *   }
-     * })
-     * 
-     */
-    delete<T extends ConsoleInsightDeleteArgs>(args: SelectSubset<T, ConsoleInsightDeleteArgs<ExtArgs>>): Prisma__ConsoleInsightClient<$Result.GetResult<Prisma.$ConsoleInsightPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one ConsoleInsight.
-     * @param {ConsoleInsightUpdateArgs} args - Arguments to update one ConsoleInsight.
-     * @example
-     * // Update one ConsoleInsight
-     * const consoleInsight = await prisma.consoleInsight.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends ConsoleInsightUpdateArgs>(args: SelectSubset<T, ConsoleInsightUpdateArgs<ExtArgs>>): Prisma__ConsoleInsightClient<$Result.GetResult<Prisma.$ConsoleInsightPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more ConsoleInsights.
-     * @param {ConsoleInsightDeleteManyArgs} args - Arguments to filter ConsoleInsights to delete.
-     * @example
-     * // Delete a few ConsoleInsights
-     * const { count } = await prisma.consoleInsight.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends ConsoleInsightDeleteManyArgs>(args?: SelectSubset<T, ConsoleInsightDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more ConsoleInsights.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ConsoleInsightUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many ConsoleInsights
-     * const consoleInsight = await prisma.consoleInsight.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends ConsoleInsightUpdateManyArgs>(args: SelectSubset<T, ConsoleInsightUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more ConsoleInsights and returns the data updated in the database.
-     * @param {ConsoleInsightUpdateManyAndReturnArgs} args - Arguments to update many ConsoleInsights.
-     * @example
-     * // Update many ConsoleInsights
-     * const consoleInsight = await prisma.consoleInsight.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more ConsoleInsights and only return the `id`
-     * const consoleInsightWithIdOnly = await prisma.consoleInsight.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends ConsoleInsightUpdateManyAndReturnArgs>(args: SelectSubset<T, ConsoleInsightUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConsoleInsightPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one ConsoleInsight.
-     * @param {ConsoleInsightUpsertArgs} args - Arguments to update or create a ConsoleInsight.
-     * @example
-     * // Update or create a ConsoleInsight
-     * const consoleInsight = await prisma.consoleInsight.upsert({
-     *   create: {
-     *     // ... data to create a ConsoleInsight
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the ConsoleInsight we want to update
-     *   }
-     * })
-     */
-    upsert<T extends ConsoleInsightUpsertArgs>(args: SelectSubset<T, ConsoleInsightUpsertArgs<ExtArgs>>): Prisma__ConsoleInsightClient<$Result.GetResult<Prisma.$ConsoleInsightPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of ConsoleInsights.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ConsoleInsightCountArgs} args - Arguments to filter ConsoleInsights to count.
-     * @example
-     * // Count the number of ConsoleInsights
-     * const count = await prisma.consoleInsight.count({
-     *   where: {
-     *     // ... the filter for the ConsoleInsights we want to count
-     *   }
-     * })
-    **/
-    count<T extends ConsoleInsightCountArgs>(
-      args?: Subset<T, ConsoleInsightCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], ConsoleInsightCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a ConsoleInsight.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ConsoleInsightAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends ConsoleInsightAggregateArgs>(args: Subset<T, ConsoleInsightAggregateArgs>): Prisma.PrismaPromise<GetConsoleInsightAggregateType<T>>
-
-    /**
-     * Group by ConsoleInsight.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ConsoleInsightGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends ConsoleInsightGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: ConsoleInsightGroupByArgs['orderBy'] }
-        : { orderBy?: ConsoleInsightGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, ConsoleInsightGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetConsoleInsightGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the ConsoleInsight model
-   */
-  readonly fields: ConsoleInsightFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for ConsoleInsight.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__ConsoleInsightClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the ConsoleInsight model
-   */
-  interface ConsoleInsightFieldRefs {
-    readonly id: FieldRef<"ConsoleInsight", 'String'>
-    readonly userId: FieldRef<"ConsoleInsight", 'String'>
-    readonly content: FieldRef<"ConsoleInsight", 'String'>
-    readonly timestamp: FieldRef<"ConsoleInsight", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * ConsoleInsight findUnique
-   */
-  export type ConsoleInsightFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ConsoleInsight
-     */
-    select?: ConsoleInsightSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ConsoleInsight
-     */
-    omit?: ConsoleInsightOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConsoleInsightInclude<ExtArgs> | null
-    /**
-     * Filter, which ConsoleInsight to fetch.
-     */
-    where: ConsoleInsightWhereUniqueInput
-  }
-
-  /**
-   * ConsoleInsight findUniqueOrThrow
-   */
-  export type ConsoleInsightFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ConsoleInsight
-     */
-    select?: ConsoleInsightSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ConsoleInsight
-     */
-    omit?: ConsoleInsightOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConsoleInsightInclude<ExtArgs> | null
-    /**
-     * Filter, which ConsoleInsight to fetch.
-     */
-    where: ConsoleInsightWhereUniqueInput
-  }
-
-  /**
-   * ConsoleInsight findFirst
-   */
-  export type ConsoleInsightFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ConsoleInsight
-     */
-    select?: ConsoleInsightSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ConsoleInsight
-     */
-    omit?: ConsoleInsightOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConsoleInsightInclude<ExtArgs> | null
-    /**
-     * Filter, which ConsoleInsight to fetch.
-     */
-    where?: ConsoleInsightWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ConsoleInsights to fetch.
-     */
-    orderBy?: ConsoleInsightOrderByWithRelationInput | ConsoleInsightOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for ConsoleInsights.
-     */
-    cursor?: ConsoleInsightWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ConsoleInsights from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ConsoleInsights.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of ConsoleInsights.
-     */
-    distinct?: ConsoleInsightScalarFieldEnum | ConsoleInsightScalarFieldEnum[]
-  }
-
-  /**
-   * ConsoleInsight findFirstOrThrow
-   */
-  export type ConsoleInsightFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ConsoleInsight
-     */
-    select?: ConsoleInsightSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ConsoleInsight
-     */
-    omit?: ConsoleInsightOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConsoleInsightInclude<ExtArgs> | null
-    /**
-     * Filter, which ConsoleInsight to fetch.
-     */
-    where?: ConsoleInsightWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ConsoleInsights to fetch.
-     */
-    orderBy?: ConsoleInsightOrderByWithRelationInput | ConsoleInsightOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for ConsoleInsights.
-     */
-    cursor?: ConsoleInsightWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ConsoleInsights from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ConsoleInsights.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of ConsoleInsights.
-     */
-    distinct?: ConsoleInsightScalarFieldEnum | ConsoleInsightScalarFieldEnum[]
-  }
-
-  /**
-   * ConsoleInsight findMany
-   */
-  export type ConsoleInsightFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ConsoleInsight
-     */
-    select?: ConsoleInsightSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ConsoleInsight
-     */
-    omit?: ConsoleInsightOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConsoleInsightInclude<ExtArgs> | null
-    /**
-     * Filter, which ConsoleInsights to fetch.
-     */
-    where?: ConsoleInsightWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ConsoleInsights to fetch.
-     */
-    orderBy?: ConsoleInsightOrderByWithRelationInput | ConsoleInsightOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing ConsoleInsights.
-     */
-    cursor?: ConsoleInsightWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ConsoleInsights from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ConsoleInsights.
-     */
-    skip?: number
-    distinct?: ConsoleInsightScalarFieldEnum | ConsoleInsightScalarFieldEnum[]
-  }
-
-  /**
-   * ConsoleInsight create
-   */
-  export type ConsoleInsightCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ConsoleInsight
-     */
-    select?: ConsoleInsightSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ConsoleInsight
-     */
-    omit?: ConsoleInsightOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConsoleInsightInclude<ExtArgs> | null
-    /**
-     * The data needed to create a ConsoleInsight.
-     */
-    data: XOR<ConsoleInsightCreateInput, ConsoleInsightUncheckedCreateInput>
-  }
-
-  /**
-   * ConsoleInsight createMany
-   */
-  export type ConsoleInsightCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many ConsoleInsights.
-     */
-    data: ConsoleInsightCreateManyInput | ConsoleInsightCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * ConsoleInsight createManyAndReturn
-   */
-  export type ConsoleInsightCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ConsoleInsight
-     */
-    select?: ConsoleInsightSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the ConsoleInsight
-     */
-    omit?: ConsoleInsightOmit<ExtArgs> | null
-    /**
-     * The data used to create many ConsoleInsights.
-     */
-    data: ConsoleInsightCreateManyInput | ConsoleInsightCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConsoleInsightIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * ConsoleInsight update
-   */
-  export type ConsoleInsightUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ConsoleInsight
-     */
-    select?: ConsoleInsightSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ConsoleInsight
-     */
-    omit?: ConsoleInsightOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConsoleInsightInclude<ExtArgs> | null
-    /**
-     * The data needed to update a ConsoleInsight.
-     */
-    data: XOR<ConsoleInsightUpdateInput, ConsoleInsightUncheckedUpdateInput>
-    /**
-     * Choose, which ConsoleInsight to update.
-     */
-    where: ConsoleInsightWhereUniqueInput
-  }
-
-  /**
-   * ConsoleInsight updateMany
-   */
-  export type ConsoleInsightUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update ConsoleInsights.
-     */
-    data: XOR<ConsoleInsightUpdateManyMutationInput, ConsoleInsightUncheckedUpdateManyInput>
-    /**
-     * Filter which ConsoleInsights to update
-     */
-    where?: ConsoleInsightWhereInput
-    /**
-     * Limit how many ConsoleInsights to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * ConsoleInsight updateManyAndReturn
-   */
-  export type ConsoleInsightUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ConsoleInsight
-     */
-    select?: ConsoleInsightSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the ConsoleInsight
-     */
-    omit?: ConsoleInsightOmit<ExtArgs> | null
-    /**
-     * The data used to update ConsoleInsights.
-     */
-    data: XOR<ConsoleInsightUpdateManyMutationInput, ConsoleInsightUncheckedUpdateManyInput>
-    /**
-     * Filter which ConsoleInsights to update
-     */
-    where?: ConsoleInsightWhereInput
-    /**
-     * Limit how many ConsoleInsights to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConsoleInsightIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * ConsoleInsight upsert
-   */
-  export type ConsoleInsightUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ConsoleInsight
-     */
-    select?: ConsoleInsightSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ConsoleInsight
-     */
-    omit?: ConsoleInsightOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConsoleInsightInclude<ExtArgs> | null
-    /**
-     * The filter to search for the ConsoleInsight to update in case it exists.
-     */
-    where: ConsoleInsightWhereUniqueInput
-    /**
-     * In case the ConsoleInsight found by the `where` argument doesn't exist, create a new ConsoleInsight with this data.
-     */
-    create: XOR<ConsoleInsightCreateInput, ConsoleInsightUncheckedCreateInput>
-    /**
-     * In case the ConsoleInsight was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<ConsoleInsightUpdateInput, ConsoleInsightUncheckedUpdateInput>
-  }
-
-  /**
-   * ConsoleInsight delete
-   */
-  export type ConsoleInsightDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ConsoleInsight
-     */
-    select?: ConsoleInsightSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ConsoleInsight
-     */
-    omit?: ConsoleInsightOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConsoleInsightInclude<ExtArgs> | null
-    /**
-     * Filter which ConsoleInsight to delete.
-     */
-    where: ConsoleInsightWhereUniqueInput
-  }
-
-  /**
-   * ConsoleInsight deleteMany
-   */
-  export type ConsoleInsightDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which ConsoleInsights to delete
-     */
-    where?: ConsoleInsightWhereInput
-    /**
-     * Limit how many ConsoleInsights to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * ConsoleInsight without action
-   */
-  export type ConsoleInsightDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ConsoleInsight
-     */
-    select?: ConsoleInsightSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ConsoleInsight
-     */
-    omit?: ConsoleInsightOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConsoleInsightInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model SignalHistoryItem
-   */
-
-  export type AggregateSignalHistoryItem = {
-    _count: SignalHistoryItemCountAggregateOutputType | null
-    _avg: SignalHistoryItemAvgAggregateOutputType | null
-    _sum: SignalHistoryItemSumAggregateOutputType | null
-    _min: SignalHistoryItemMinAggregateOutputType | null
-    _max: SignalHistoryItemMaxAggregateOutputType | null
-  }
-
-  export type SignalHistoryItemAvgAggregateOutputType = {
-    price: number | null
-  }
-
-  export type SignalHistoryItemSumAggregateOutputType = {
-    price: number | null
-  }
-
-  export type SignalHistoryItemMinAggregateOutputType = {
-    id: string | null
-    userId: string | null
-    signalType: string | null
-    symbol: string | null
-    price: number | null
-    timestamp: Date | null
-  }
-
-  export type SignalHistoryItemMaxAggregateOutputType = {
-    id: string | null
-    userId: string | null
-    signalType: string | null
-    symbol: string | null
-    price: number | null
-    timestamp: Date | null
-  }
-
-  export type SignalHistoryItemCountAggregateOutputType = {
-    id: number
-    userId: number
-    signalType: number
     symbol: number
-    price: number
-    timestamp: number
+    signal: number
+    status: number
+    entry_zone: number
+    stop_loss: number
+    take_profit: number
+    confidence: number
+    risk_rating: number
+    gpt_confidence_score: number
+    sentiment: number
+    currentThought: number
+    shortTermPrediction: number
+    chosenTradingMode: number
+    chosenRiskProfile: number
+    strategyReasoning: number
+    analysisSummary: number
+    newsAnalysis: number
+    createdAt: number
     _all: number
   }
 
 
-  export type SignalHistoryItemAvgAggregateInputType = {
-    price?: true
-  }
-
-  export type SignalHistoryItemSumAggregateInputType = {
-    price?: true
-  }
-
-  export type SignalHistoryItemMinAggregateInputType = {
+  export type GeneratedSignalMinAggregateInputType = {
     id?: true
     userId?: true
-    signalType?: true
     symbol?: true
-    price?: true
-    timestamp?: true
+    signal?: true
+    status?: true
+    entry_zone?: true
+    stop_loss?: true
+    take_profit?: true
+    confidence?: true
+    risk_rating?: true
+    gpt_confidence_score?: true
+    sentiment?: true
+    currentThought?: true
+    shortTermPrediction?: true
+    chosenTradingMode?: true
+    chosenRiskProfile?: true
+    strategyReasoning?: true
+    analysisSummary?: true
+    newsAnalysis?: true
+    createdAt?: true
   }
 
-  export type SignalHistoryItemMaxAggregateInputType = {
+  export type GeneratedSignalMaxAggregateInputType = {
     id?: true
     userId?: true
-    signalType?: true
     symbol?: true
-    price?: true
-    timestamp?: true
+    signal?: true
+    status?: true
+    entry_zone?: true
+    stop_loss?: true
+    take_profit?: true
+    confidence?: true
+    risk_rating?: true
+    gpt_confidence_score?: true
+    sentiment?: true
+    currentThought?: true
+    shortTermPrediction?: true
+    chosenTradingMode?: true
+    chosenRiskProfile?: true
+    strategyReasoning?: true
+    analysisSummary?: true
+    newsAnalysis?: true
+    createdAt?: true
   }
 
-  export type SignalHistoryItemCountAggregateInputType = {
+  export type GeneratedSignalCountAggregateInputType = {
     id?: true
     userId?: true
-    signalType?: true
     symbol?: true
-    price?: true
-    timestamp?: true
+    signal?: true
+    status?: true
+    entry_zone?: true
+    stop_loss?: true
+    take_profit?: true
+    confidence?: true
+    risk_rating?: true
+    gpt_confidence_score?: true
+    sentiment?: true
+    currentThought?: true
+    shortTermPrediction?: true
+    chosenTradingMode?: true
+    chosenRiskProfile?: true
+    strategyReasoning?: true
+    analysisSummary?: true
+    newsAnalysis?: true
+    createdAt?: true
     _all?: true
   }
 
-  export type SignalHistoryItemAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which SignalHistoryItem to aggregate.
+     * Filter which GeneratedSignal to aggregate.
      */
-    where?: SignalHistoryItemWhereInput
+    where?: GeneratedSignalWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of SignalHistoryItems to fetch.
+     * Determine the order of GeneratedSignals to fetch.
      */
-    orderBy?: SignalHistoryItemOrderByWithRelationInput | SignalHistoryItemOrderByWithRelationInput[]
+    orderBy?: GeneratedSignalOrderByWithRelationInput | GeneratedSignalOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: SignalHistoryItemWhereUniqueInput
+    cursor?: GeneratedSignalWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` SignalHistoryItems from the position of the cursor.
+     * Take `±n` GeneratedSignals from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` SignalHistoryItems.
+     * Skip the first `n` GeneratedSignals.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned SignalHistoryItems
+     * Count returned GeneratedSignals
     **/
-    _count?: true | SignalHistoryItemCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: SignalHistoryItemAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: SignalHistoryItemSumAggregateInputType
+    _count?: true | GeneratedSignalCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: SignalHistoryItemMinAggregateInputType
+    _min?: GeneratedSignalMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: SignalHistoryItemMaxAggregateInputType
+    _max?: GeneratedSignalMaxAggregateInputType
   }
 
-  export type GetSignalHistoryItemAggregateType<T extends SignalHistoryItemAggregateArgs> = {
-        [P in keyof T & keyof AggregateSignalHistoryItem]: P extends '_count' | 'count'
+  export type GetGeneratedSignalAggregateType<T extends GeneratedSignalAggregateArgs> = {
+        [P in keyof T & keyof AggregateGeneratedSignal]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateSignalHistoryItem[P]>
-      : GetScalarType<T[P], AggregateSignalHistoryItem[P]>
+        : GetScalarType<T[P], AggregateGeneratedSignal[P]>
+      : GetScalarType<T[P], AggregateGeneratedSignal[P]>
   }
 
 
 
 
-  export type SignalHistoryItemGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SignalHistoryItemWhereInput
-    orderBy?: SignalHistoryItemOrderByWithAggregationInput | SignalHistoryItemOrderByWithAggregationInput[]
-    by: SignalHistoryItemScalarFieldEnum[] | SignalHistoryItemScalarFieldEnum
-    having?: SignalHistoryItemScalarWhereWithAggregatesInput
+  export type GeneratedSignalGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GeneratedSignalWhereInput
+    orderBy?: GeneratedSignalOrderByWithAggregationInput | GeneratedSignalOrderByWithAggregationInput[]
+    by: GeneratedSignalScalarFieldEnum[] | GeneratedSignalScalarFieldEnum
+    having?: GeneratedSignalScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: SignalHistoryItemCountAggregateInputType | true
-    _avg?: SignalHistoryItemAvgAggregateInputType
-    _sum?: SignalHistoryItemSumAggregateInputType
-    _min?: SignalHistoryItemMinAggregateInputType
-    _max?: SignalHistoryItemMaxAggregateInputType
+    _count?: GeneratedSignalCountAggregateInputType | true
+    _min?: GeneratedSignalMinAggregateInputType
+    _max?: GeneratedSignalMaxAggregateInputType
   }
 
-  export type SignalHistoryItemGroupByOutputType = {
+  export type GeneratedSignalGroupByOutputType = {
     id: string
     userId: string
-    signalType: string
     symbol: string
-    price: number
-    timestamp: Date
-    _count: SignalHistoryItemCountAggregateOutputType | null
-    _avg: SignalHistoryItemAvgAggregateOutputType | null
-    _sum: SignalHistoryItemSumAggregateOutputType | null
-    _min: SignalHistoryItemMinAggregateOutputType | null
-    _max: SignalHistoryItemMaxAggregateOutputType | null
+    signal: string
+    status: string
+    entry_zone: string
+    stop_loss: string
+    take_profit: string
+    confidence: string
+    risk_rating: string
+    gpt_confidence_score: string
+    sentiment: string
+    currentThought: string
+    shortTermPrediction: string
+    chosenTradingMode: string
+    chosenRiskProfile: string
+    strategyReasoning: string
+    analysisSummary: string
+    newsAnalysis: string
+    createdAt: Date
+    _count: GeneratedSignalCountAggregateOutputType | null
+    _min: GeneratedSignalMinAggregateOutputType | null
+    _max: GeneratedSignalMaxAggregateOutputType | null
   }
 
-  type GetSignalHistoryItemGroupByPayload<T extends SignalHistoryItemGroupByArgs> = Prisma.PrismaPromise<
+  type GetGeneratedSignalGroupByPayload<T extends GeneratedSignalGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<SignalHistoryItemGroupByOutputType, T['by']> &
+      PickEnumerable<GeneratedSignalGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof SignalHistoryItemGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof GeneratedSignalGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], SignalHistoryItemGroupByOutputType[P]>
-            : GetScalarType<T[P], SignalHistoryItemGroupByOutputType[P]>
+              : GetScalarType<T[P], GeneratedSignalGroupByOutputType[P]>
+            : GetScalarType<T[P], GeneratedSignalGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type SignalHistoryItemSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type GeneratedSignalSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
-    signalType?: boolean
     symbol?: boolean
-    price?: boolean
-    timestamp?: boolean
+    signal?: boolean
+    status?: boolean
+    entry_zone?: boolean
+    stop_loss?: boolean
+    take_profit?: boolean
+    confidence?: boolean
+    risk_rating?: boolean
+    gpt_confidence_score?: boolean
+    sentiment?: boolean
+    currentThought?: boolean
+    shortTermPrediction?: boolean
+    chosenTradingMode?: boolean
+    chosenRiskProfile?: boolean
+    strategyReasoning?: boolean
+    analysisSummary?: boolean
+    newsAnalysis?: boolean
+    createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["signalHistoryItem"]>
+    position?: boolean | GeneratedSignal$positionArgs<ExtArgs>
+  }, ExtArgs["result"]["generatedSignal"]>
 
-  export type SignalHistoryItemSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type GeneratedSignalSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
-    signalType?: boolean
     symbol?: boolean
-    price?: boolean
-    timestamp?: boolean
+    signal?: boolean
+    status?: boolean
+    entry_zone?: boolean
+    stop_loss?: boolean
+    take_profit?: boolean
+    confidence?: boolean
+    risk_rating?: boolean
+    gpt_confidence_score?: boolean
+    sentiment?: boolean
+    currentThought?: boolean
+    shortTermPrediction?: boolean
+    chosenTradingMode?: boolean
+    chosenRiskProfile?: boolean
+    strategyReasoning?: boolean
+    analysisSummary?: boolean
+    newsAnalysis?: boolean
+    createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["signalHistoryItem"]>
+  }, ExtArgs["result"]["generatedSignal"]>
 
-  export type SignalHistoryItemSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type GeneratedSignalSelectScalar = {
     id?: boolean
     userId?: boolean
-    signalType?: boolean
     symbol?: boolean
-    price?: boolean
-    timestamp?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["signalHistoryItem"]>
-
-  export type SignalHistoryItemSelectScalar = {
-    id?: boolean
-    userId?: boolean
-    signalType?: boolean
-    symbol?: boolean
-    price?: boolean
-    timestamp?: boolean
+    signal?: boolean
+    status?: boolean
+    entry_zone?: boolean
+    stop_loss?: boolean
+    take_profit?: boolean
+    confidence?: boolean
+    risk_rating?: boolean
+    gpt_confidence_score?: boolean
+    sentiment?: boolean
+    currentThought?: boolean
+    shortTermPrediction?: boolean
+    chosenTradingMode?: boolean
+    chosenRiskProfile?: boolean
+    strategyReasoning?: boolean
+    analysisSummary?: boolean
+    newsAnalysis?: boolean
+    createdAt?: boolean
   }
 
-  export type SignalHistoryItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "signalType" | "symbol" | "price" | "timestamp", ExtArgs["result"]["signalHistoryItem"]>
-  export type SignalHistoryItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    position?: boolean | GeneratedSignal$positionArgs<ExtArgs>
   }
-  export type SignalHistoryItemIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type SignalHistoryItemIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
 
-  export type $SignalHistoryItemPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "SignalHistoryItem"
+  export type $GeneratedSignalPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "GeneratedSignal"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      position: Prisma.$PositionPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
-      signalType: string
       symbol: string
-      price: number
-      timestamp: Date
-    }, ExtArgs["result"]["signalHistoryItem"]>
+      signal: string
+      status: string
+      entry_zone: string
+      stop_loss: string
+      take_profit: string
+      confidence: string
+      risk_rating: string
+      gpt_confidence_score: string
+      sentiment: string
+      currentThought: string
+      shortTermPrediction: string
+      chosenTradingMode: string
+      chosenRiskProfile: string
+      strategyReasoning: string
+      analysisSummary: string
+      newsAnalysis: string
+      createdAt: Date
+    }, ExtArgs["result"]["generatedSignal"]>
     composites: {}
   }
 
-  type SignalHistoryItemGetPayload<S extends boolean | null | undefined | SignalHistoryItemDefaultArgs> = $Result.GetResult<Prisma.$SignalHistoryItemPayload, S>
+  type GeneratedSignalGetPayload<S extends boolean | null | undefined | GeneratedSignalDefaultArgs> = $Result.GetResult<Prisma.$GeneratedSignalPayload, S>
 
-  type SignalHistoryItemCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<SignalHistoryItemFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: SignalHistoryItemCountAggregateInputType | true
+  type GeneratedSignalCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<GeneratedSignalFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: GeneratedSignalCountAggregateInputType | true
     }
 
-  export interface SignalHistoryItemDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SignalHistoryItem'], meta: { name: 'SignalHistoryItem' } }
+  export interface GeneratedSignalDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['GeneratedSignal'], meta: { name: 'GeneratedSignal' } }
     /**
-     * Find zero or one SignalHistoryItem that matches the filter.
-     * @param {SignalHistoryItemFindUniqueArgs} args - Arguments to find a SignalHistoryItem
+     * Find zero or one GeneratedSignal that matches the filter.
+     * @param {GeneratedSignalFindUniqueArgs} args - Arguments to find a GeneratedSignal
      * @example
-     * // Get one SignalHistoryItem
-     * const signalHistoryItem = await prisma.signalHistoryItem.findUnique({
+     * // Get one GeneratedSignal
+     * const generatedSignal = await prisma.generatedSignal.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends SignalHistoryItemFindUniqueArgs>(args: SelectSubset<T, SignalHistoryItemFindUniqueArgs<ExtArgs>>): Prisma__SignalHistoryItemClient<$Result.GetResult<Prisma.$SignalHistoryItemPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends GeneratedSignalFindUniqueArgs>(args: SelectSubset<T, GeneratedSignalFindUniqueArgs<ExtArgs>>): Prisma__GeneratedSignalClient<$Result.GetResult<Prisma.$GeneratedSignalPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
 
     /**
-     * Find one SignalHistoryItem that matches the filter or throw an error with `error.code='P2025'`
+     * Find one GeneratedSignal that matches the filter or throw an error with `error.code='P2025'` 
      * if no matches were found.
-     * @param {SignalHistoryItemFindUniqueOrThrowArgs} args - Arguments to find a SignalHistoryItem
+     * @param {GeneratedSignalFindUniqueOrThrowArgs} args - Arguments to find a GeneratedSignal
      * @example
-     * // Get one SignalHistoryItem
-     * const signalHistoryItem = await prisma.signalHistoryItem.findUniqueOrThrow({
+     * // Get one GeneratedSignal
+     * const generatedSignal = await prisma.generatedSignal.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends SignalHistoryItemFindUniqueOrThrowArgs>(args: SelectSubset<T, SignalHistoryItemFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SignalHistoryItemClient<$Result.GetResult<Prisma.$SignalHistoryItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends GeneratedSignalFindUniqueOrThrowArgs>(args: SelectSubset<T, GeneratedSignalFindUniqueOrThrowArgs<ExtArgs>>): Prisma__GeneratedSignalClient<$Result.GetResult<Prisma.$GeneratedSignalPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
 
     /**
-     * Find the first SignalHistoryItem that matches the filter.
+     * Find the first GeneratedSignal that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {SignalHistoryItemFindFirstArgs} args - Arguments to find a SignalHistoryItem
+     * @param {GeneratedSignalFindFirstArgs} args - Arguments to find a GeneratedSignal
      * @example
-     * // Get one SignalHistoryItem
-     * const signalHistoryItem = await prisma.signalHistoryItem.findFirst({
+     * // Get one GeneratedSignal
+     * const generatedSignal = await prisma.generatedSignal.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends SignalHistoryItemFindFirstArgs>(args?: SelectSubset<T, SignalHistoryItemFindFirstArgs<ExtArgs>>): Prisma__SignalHistoryItemClient<$Result.GetResult<Prisma.$SignalHistoryItemPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends GeneratedSignalFindFirstArgs>(args?: SelectSubset<T, GeneratedSignalFindFirstArgs<ExtArgs>>): Prisma__GeneratedSignalClient<$Result.GetResult<Prisma.$GeneratedSignalPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
 
     /**
-     * Find the first SignalHistoryItem that matches the filter or
+     * Find the first GeneratedSignal that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {SignalHistoryItemFindFirstOrThrowArgs} args - Arguments to find a SignalHistoryItem
+     * @param {GeneratedSignalFindFirstOrThrowArgs} args - Arguments to find a GeneratedSignal
      * @example
-     * // Get one SignalHistoryItem
-     * const signalHistoryItem = await prisma.signalHistoryItem.findFirstOrThrow({
+     * // Get one GeneratedSignal
+     * const generatedSignal = await prisma.generatedSignal.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends SignalHistoryItemFindFirstOrThrowArgs>(args?: SelectSubset<T, SignalHistoryItemFindFirstOrThrowArgs<ExtArgs>>): Prisma__SignalHistoryItemClient<$Result.GetResult<Prisma.$SignalHistoryItemPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends GeneratedSignalFindFirstOrThrowArgs>(args?: SelectSubset<T, GeneratedSignalFindFirstOrThrowArgs<ExtArgs>>): Prisma__GeneratedSignalClient<$Result.GetResult<Prisma.$GeneratedSignalPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
 
     /**
-     * Find zero or more SignalHistoryItems that matches the filter.
+     * Find zero or more GeneratedSignals that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {SignalHistoryItemFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {GeneratedSignalFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all SignalHistoryItems
-     * const signalHistoryItems = await prisma.signalHistoryItem.findMany()
+     * // Get all GeneratedSignals
+     * const generatedSignals = await prisma.generatedSignal.findMany()
      * 
-     * // Get first 10 SignalHistoryItems
-     * const signalHistoryItems = await prisma.signalHistoryItem.findMany({ take: 10 })
+     * // Get first 10 GeneratedSignals
+     * const generatedSignals = await prisma.generatedSignal.findMany({ take: 10 })
      * 
      * // Only select the `id`
-     * const signalHistoryItemWithIdOnly = await prisma.signalHistoryItem.findMany({ select: { id: true } })
+     * const generatedSignalWithIdOnly = await prisma.generatedSignal.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends SignalHistoryItemFindManyArgs>(args?: SelectSubset<T, SignalHistoryItemFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SignalHistoryItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends GeneratedSignalFindManyArgs>(args?: SelectSubset<T, GeneratedSignalFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GeneratedSignalPayload<ExtArgs>, T, "findMany">>
 
     /**
-     * Create a SignalHistoryItem.
-     * @param {SignalHistoryItemCreateArgs} args - Arguments to create a SignalHistoryItem.
+     * Create a GeneratedSignal.
+     * @param {GeneratedSignalCreateArgs} args - Arguments to create a GeneratedSignal.
      * @example
-     * // Create one SignalHistoryItem
-     * const SignalHistoryItem = await prisma.signalHistoryItem.create({
+     * // Create one GeneratedSignal
+     * const GeneratedSignal = await prisma.generatedSignal.create({
      *   data: {
-     *     // ... data to create a SignalHistoryItem
+     *     // ... data to create a GeneratedSignal
      *   }
      * })
      * 
      */
-    create<T extends SignalHistoryItemCreateArgs>(args: SelectSubset<T, SignalHistoryItemCreateArgs<ExtArgs>>): Prisma__SignalHistoryItemClient<$Result.GetResult<Prisma.$SignalHistoryItemPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends GeneratedSignalCreateArgs>(args: SelectSubset<T, GeneratedSignalCreateArgs<ExtArgs>>): Prisma__GeneratedSignalClient<$Result.GetResult<Prisma.$GeneratedSignalPayload<ExtArgs>, T, "create">, never, ExtArgs>
 
     /**
-     * Create many SignalHistoryItems.
-     * @param {SignalHistoryItemCreateManyArgs} args - Arguments to create many SignalHistoryItems.
+     * Create many GeneratedSignals.
+     * @param {GeneratedSignalCreateManyArgs} args - Arguments to create many GeneratedSignals.
      * @example
-     * // Create many SignalHistoryItems
-     * const signalHistoryItem = await prisma.signalHistoryItem.createMany({
+     * // Create many GeneratedSignals
+     * const generatedSignal = await prisma.generatedSignal.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends SignalHistoryItemCreateManyArgs>(args?: SelectSubset<T, SignalHistoryItemCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends GeneratedSignalCreateManyArgs>(args?: SelectSubset<T, GeneratedSignalCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many SignalHistoryItems and returns the data saved in the database.
-     * @param {SignalHistoryItemCreateManyAndReturnArgs} args - Arguments to create many SignalHistoryItems.
+     * Create many GeneratedSignals and returns the data saved in the database.
+     * @param {GeneratedSignalCreateManyAndReturnArgs} args - Arguments to create many GeneratedSignals.
      * @example
-     * // Create many SignalHistoryItems
-     * const signalHistoryItem = await prisma.signalHistoryItem.createManyAndReturn({
+     * // Create many GeneratedSignals
+     * const generatedSignal = await prisma.generatedSignal.createManyAndReturn({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      * 
-     * // Create many SignalHistoryItems and only return the `id`
-     * const signalHistoryItemWithIdOnly = await prisma.signalHistoryItem.createManyAndReturn({
+     * // Create many GeneratedSignals and only return the `id`
+     * const generatedSignalWithIdOnly = await prisma.generatedSignal.createManyAndReturn({ 
      *   select: { id: true },
      *   data: [
      *     // ... provide data here
@@ -5221,28 +3757,28 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    createManyAndReturn<T extends SignalHistoryItemCreateManyAndReturnArgs>(args?: SelectSubset<T, SignalHistoryItemCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SignalHistoryItemPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+    createManyAndReturn<T extends GeneratedSignalCreateManyAndReturnArgs>(args?: SelectSubset<T, GeneratedSignalCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GeneratedSignalPayload<ExtArgs>, T, "createManyAndReturn">>
 
     /**
-     * Delete a SignalHistoryItem.
-     * @param {SignalHistoryItemDeleteArgs} args - Arguments to delete one SignalHistoryItem.
+     * Delete a GeneratedSignal.
+     * @param {GeneratedSignalDeleteArgs} args - Arguments to delete one GeneratedSignal.
      * @example
-     * // Delete one SignalHistoryItem
-     * const SignalHistoryItem = await prisma.signalHistoryItem.delete({
+     * // Delete one GeneratedSignal
+     * const GeneratedSignal = await prisma.generatedSignal.delete({
      *   where: {
-     *     // ... filter to delete one SignalHistoryItem
+     *     // ... filter to delete one GeneratedSignal
      *   }
      * })
      * 
      */
-    delete<T extends SignalHistoryItemDeleteArgs>(args: SelectSubset<T, SignalHistoryItemDeleteArgs<ExtArgs>>): Prisma__SignalHistoryItemClient<$Result.GetResult<Prisma.$SignalHistoryItemPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends GeneratedSignalDeleteArgs>(args: SelectSubset<T, GeneratedSignalDeleteArgs<ExtArgs>>): Prisma__GeneratedSignalClient<$Result.GetResult<Prisma.$GeneratedSignalPayload<ExtArgs>, T, "delete">, never, ExtArgs>
 
     /**
-     * Update one SignalHistoryItem.
-     * @param {SignalHistoryItemUpdateArgs} args - Arguments to update one SignalHistoryItem.
+     * Update one GeneratedSignal.
+     * @param {GeneratedSignalUpdateArgs} args - Arguments to update one GeneratedSignal.
      * @example
-     * // Update one SignalHistoryItem
-     * const signalHistoryItem = await prisma.signalHistoryItem.update({
+     * // Update one GeneratedSignal
+     * const generatedSignal = await prisma.generatedSignal.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -5252,30 +3788,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends SignalHistoryItemUpdateArgs>(args: SelectSubset<T, SignalHistoryItemUpdateArgs<ExtArgs>>): Prisma__SignalHistoryItemClient<$Result.GetResult<Prisma.$SignalHistoryItemPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends GeneratedSignalUpdateArgs>(args: SelectSubset<T, GeneratedSignalUpdateArgs<ExtArgs>>): Prisma__GeneratedSignalClient<$Result.GetResult<Prisma.$GeneratedSignalPayload<ExtArgs>, T, "update">, never, ExtArgs>
 
     /**
-     * Delete zero or more SignalHistoryItems.
-     * @param {SignalHistoryItemDeleteManyArgs} args - Arguments to filter SignalHistoryItems to delete.
+     * Delete zero or more GeneratedSignals.
+     * @param {GeneratedSignalDeleteManyArgs} args - Arguments to filter GeneratedSignals to delete.
      * @example
-     * // Delete a few SignalHistoryItems
-     * const { count } = await prisma.signalHistoryItem.deleteMany({
+     * // Delete a few GeneratedSignals
+     * const { count } = await prisma.generatedSignal.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends SignalHistoryItemDeleteManyArgs>(args?: SelectSubset<T, SignalHistoryItemDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends GeneratedSignalDeleteManyArgs>(args?: SelectSubset<T, GeneratedSignalDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more SignalHistoryItems.
+     * Update zero or more GeneratedSignals.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {SignalHistoryItemUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {GeneratedSignalUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many SignalHistoryItems
-     * const signalHistoryItem = await prisma.signalHistoryItem.updateMany({
+     * // Update many GeneratedSignals
+     * const generatedSignal = await prisma.generatedSignal.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -5285,86 +3821,56 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends SignalHistoryItemUpdateManyArgs>(args: SelectSubset<T, SignalHistoryItemUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends GeneratedSignalUpdateManyArgs>(args: SelectSubset<T, GeneratedSignalUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more SignalHistoryItems and returns the data updated in the database.
-     * @param {SignalHistoryItemUpdateManyAndReturnArgs} args - Arguments to update many SignalHistoryItems.
+     * Create or update one GeneratedSignal.
+     * @param {GeneratedSignalUpsertArgs} args - Arguments to update or create a GeneratedSignal.
      * @example
-     * // Update many SignalHistoryItems
-     * const signalHistoryItem = await prisma.signalHistoryItem.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more SignalHistoryItems and only return the `id`
-     * const signalHistoryItemWithIdOnly = await prisma.signalHistoryItem.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends SignalHistoryItemUpdateManyAndReturnArgs>(args: SelectSubset<T, SignalHistoryItemUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SignalHistoryItemPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one SignalHistoryItem.
-     * @param {SignalHistoryItemUpsertArgs} args - Arguments to update or create a SignalHistoryItem.
-     * @example
-     * // Update or create a SignalHistoryItem
-     * const signalHistoryItem = await prisma.signalHistoryItem.upsert({
+     * // Update or create a GeneratedSignal
+     * const generatedSignal = await prisma.generatedSignal.upsert({
      *   create: {
-     *     // ... data to create a SignalHistoryItem
+     *     // ... data to create a GeneratedSignal
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the SignalHistoryItem we want to update
+     *     // ... the filter for the GeneratedSignal we want to update
      *   }
      * })
      */
-    upsert<T extends SignalHistoryItemUpsertArgs>(args: SelectSubset<T, SignalHistoryItemUpsertArgs<ExtArgs>>): Prisma__SignalHistoryItemClient<$Result.GetResult<Prisma.$SignalHistoryItemPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends GeneratedSignalUpsertArgs>(args: SelectSubset<T, GeneratedSignalUpsertArgs<ExtArgs>>): Prisma__GeneratedSignalClient<$Result.GetResult<Prisma.$GeneratedSignalPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
 
 
     /**
-     * Count the number of SignalHistoryItems.
+     * Count the number of GeneratedSignals.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {SignalHistoryItemCountArgs} args - Arguments to filter SignalHistoryItems to count.
+     * @param {GeneratedSignalCountArgs} args - Arguments to filter GeneratedSignals to count.
      * @example
-     * // Count the number of SignalHistoryItems
-     * const count = await prisma.signalHistoryItem.count({
+     * // Count the number of GeneratedSignals
+     * const count = await prisma.generatedSignal.count({
      *   where: {
-     *     // ... the filter for the SignalHistoryItems we want to count
+     *     // ... the filter for the GeneratedSignals we want to count
      *   }
      * })
     **/
-    count<T extends SignalHistoryItemCountArgs>(
-      args?: Subset<T, SignalHistoryItemCountArgs>,
+    count<T extends GeneratedSignalCountArgs>(
+      args?: Subset<T, GeneratedSignalCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], SignalHistoryItemCountAggregateOutputType>
+          : GetScalarType<T['select'], GeneratedSignalCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a SignalHistoryItem.
+     * Allows you to perform aggregations operations on a GeneratedSignal.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {SignalHistoryItemAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {GeneratedSignalAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -5384,13 +3890,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends SignalHistoryItemAggregateArgs>(args: Subset<T, SignalHistoryItemAggregateArgs>): Prisma.PrismaPromise<GetSignalHistoryItemAggregateType<T>>
+    aggregate<T extends GeneratedSignalAggregateArgs>(args: Subset<T, GeneratedSignalAggregateArgs>): Prisma.PrismaPromise<GetGeneratedSignalAggregateType<T>>
 
     /**
-     * Group by SignalHistoryItem.
+     * Group by GeneratedSignal.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {SignalHistoryItemGroupByArgs} args - Group by arguments.
+     * @param {GeneratedSignalGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -5405,14 +3911,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends SignalHistoryItemGroupByArgs,
+      T extends GeneratedSignalGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: SignalHistoryItemGroupByArgs['orderBy'] }
-        : { orderBy?: SignalHistoryItemGroupByArgs['orderBy'] },
+        ? { orderBy: GeneratedSignalGroupByArgs['orderBy'] }
+        : { orderBy?: GeneratedSignalGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -5461,22 +3967,23 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, SignalHistoryItemGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSignalHistoryItemGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, GeneratedSignalGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGeneratedSignalGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the SignalHistoryItem model
+   * Fields of the GeneratedSignal model
    */
-  readonly fields: SignalHistoryItemFieldRefs;
+  readonly fields: GeneratedSignalFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for SignalHistoryItem.
+   * The delegate class that acts as a "Promise-like" for GeneratedSignal.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__SignalHistoryItemClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__GeneratedSignalClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    position<T extends GeneratedSignal$positionArgs<ExtArgs> = {}>(args?: Subset<T, GeneratedSignal$positionArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5503,426 +4010,373 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the SignalHistoryItem model
-   */
-  interface SignalHistoryItemFieldRefs {
-    readonly id: FieldRef<"SignalHistoryItem", 'String'>
-    readonly userId: FieldRef<"SignalHistoryItem", 'String'>
-    readonly signalType: FieldRef<"SignalHistoryItem", 'String'>
-    readonly symbol: FieldRef<"SignalHistoryItem", 'String'>
-    readonly price: FieldRef<"SignalHistoryItem", 'Float'>
-    readonly timestamp: FieldRef<"SignalHistoryItem", 'DateTime'>
+   * Fields of the GeneratedSignal model
+   */ 
+  interface GeneratedSignalFieldRefs {
+    readonly id: FieldRef<"GeneratedSignal", 'String'>
+    readonly userId: FieldRef<"GeneratedSignal", 'String'>
+    readonly symbol: FieldRef<"GeneratedSignal", 'String'>
+    readonly signal: FieldRef<"GeneratedSignal", 'String'>
+    readonly status: FieldRef<"GeneratedSignal", 'String'>
+    readonly entry_zone: FieldRef<"GeneratedSignal", 'String'>
+    readonly stop_loss: FieldRef<"GeneratedSignal", 'String'>
+    readonly take_profit: FieldRef<"GeneratedSignal", 'String'>
+    readonly confidence: FieldRef<"GeneratedSignal", 'String'>
+    readonly risk_rating: FieldRef<"GeneratedSignal", 'String'>
+    readonly gpt_confidence_score: FieldRef<"GeneratedSignal", 'String'>
+    readonly sentiment: FieldRef<"GeneratedSignal", 'String'>
+    readonly currentThought: FieldRef<"GeneratedSignal", 'String'>
+    readonly shortTermPrediction: FieldRef<"GeneratedSignal", 'String'>
+    readonly chosenTradingMode: FieldRef<"GeneratedSignal", 'String'>
+    readonly chosenRiskProfile: FieldRef<"GeneratedSignal", 'String'>
+    readonly strategyReasoning: FieldRef<"GeneratedSignal", 'String'>
+    readonly analysisSummary: FieldRef<"GeneratedSignal", 'String'>
+    readonly newsAnalysis: FieldRef<"GeneratedSignal", 'String'>
+    readonly createdAt: FieldRef<"GeneratedSignal", 'DateTime'>
   }
     
 
   // Custom InputTypes
   /**
-   * SignalHistoryItem findUnique
+   * GeneratedSignal findUnique
    */
-  export type SignalHistoryItemFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the SignalHistoryItem
+     * Select specific fields to fetch from the GeneratedSignal
      */
-    select?: SignalHistoryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SignalHistoryItem
-     */
-    omit?: SignalHistoryItemOmit<ExtArgs> | null
+    select?: GeneratedSignalSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SignalHistoryItemInclude<ExtArgs> | null
+    include?: GeneratedSignalInclude<ExtArgs> | null
     /**
-     * Filter, which SignalHistoryItem to fetch.
+     * Filter, which GeneratedSignal to fetch.
      */
-    where: SignalHistoryItemWhereUniqueInput
+    where: GeneratedSignalWhereUniqueInput
   }
 
   /**
-   * SignalHistoryItem findUniqueOrThrow
+   * GeneratedSignal findUniqueOrThrow
    */
-  export type SignalHistoryItemFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the SignalHistoryItem
+     * Select specific fields to fetch from the GeneratedSignal
      */
-    select?: SignalHistoryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SignalHistoryItem
-     */
-    omit?: SignalHistoryItemOmit<ExtArgs> | null
+    select?: GeneratedSignalSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SignalHistoryItemInclude<ExtArgs> | null
+    include?: GeneratedSignalInclude<ExtArgs> | null
     /**
-     * Filter, which SignalHistoryItem to fetch.
+     * Filter, which GeneratedSignal to fetch.
      */
-    where: SignalHistoryItemWhereUniqueInput
+    where: GeneratedSignalWhereUniqueInput
   }
 
   /**
-   * SignalHistoryItem findFirst
+   * GeneratedSignal findFirst
    */
-  export type SignalHistoryItemFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the SignalHistoryItem
+     * Select specific fields to fetch from the GeneratedSignal
      */
-    select?: SignalHistoryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SignalHistoryItem
-     */
-    omit?: SignalHistoryItemOmit<ExtArgs> | null
+    select?: GeneratedSignalSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SignalHistoryItemInclude<ExtArgs> | null
+    include?: GeneratedSignalInclude<ExtArgs> | null
     /**
-     * Filter, which SignalHistoryItem to fetch.
+     * Filter, which GeneratedSignal to fetch.
      */
-    where?: SignalHistoryItemWhereInput
+    where?: GeneratedSignalWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of SignalHistoryItems to fetch.
+     * Determine the order of GeneratedSignals to fetch.
      */
-    orderBy?: SignalHistoryItemOrderByWithRelationInput | SignalHistoryItemOrderByWithRelationInput[]
+    orderBy?: GeneratedSignalOrderByWithRelationInput | GeneratedSignalOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for SignalHistoryItems.
+     * Sets the position for searching for GeneratedSignals.
      */
-    cursor?: SignalHistoryItemWhereUniqueInput
+    cursor?: GeneratedSignalWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` SignalHistoryItems from the position of the cursor.
+     * Take `±n` GeneratedSignals from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` SignalHistoryItems.
+     * Skip the first `n` GeneratedSignals.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of SignalHistoryItems.
+     * Filter by unique combinations of GeneratedSignals.
      */
-    distinct?: SignalHistoryItemScalarFieldEnum | SignalHistoryItemScalarFieldEnum[]
+    distinct?: GeneratedSignalScalarFieldEnum | GeneratedSignalScalarFieldEnum[]
   }
 
   /**
-   * SignalHistoryItem findFirstOrThrow
+   * GeneratedSignal findFirstOrThrow
    */
-  export type SignalHistoryItemFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the SignalHistoryItem
+     * Select specific fields to fetch from the GeneratedSignal
      */
-    select?: SignalHistoryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SignalHistoryItem
-     */
-    omit?: SignalHistoryItemOmit<ExtArgs> | null
+    select?: GeneratedSignalSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SignalHistoryItemInclude<ExtArgs> | null
+    include?: GeneratedSignalInclude<ExtArgs> | null
     /**
-     * Filter, which SignalHistoryItem to fetch.
+     * Filter, which GeneratedSignal to fetch.
      */
-    where?: SignalHistoryItemWhereInput
+    where?: GeneratedSignalWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of SignalHistoryItems to fetch.
+     * Determine the order of GeneratedSignals to fetch.
      */
-    orderBy?: SignalHistoryItemOrderByWithRelationInput | SignalHistoryItemOrderByWithRelationInput[]
+    orderBy?: GeneratedSignalOrderByWithRelationInput | GeneratedSignalOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for SignalHistoryItems.
+     * Sets the position for searching for GeneratedSignals.
      */
-    cursor?: SignalHistoryItemWhereUniqueInput
+    cursor?: GeneratedSignalWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` SignalHistoryItems from the position of the cursor.
+     * Take `±n` GeneratedSignals from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` SignalHistoryItems.
+     * Skip the first `n` GeneratedSignals.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of SignalHistoryItems.
+     * Filter by unique combinations of GeneratedSignals.
      */
-    distinct?: SignalHistoryItemScalarFieldEnum | SignalHistoryItemScalarFieldEnum[]
+    distinct?: GeneratedSignalScalarFieldEnum | GeneratedSignalScalarFieldEnum[]
   }
 
   /**
-   * SignalHistoryItem findMany
+   * GeneratedSignal findMany
    */
-  export type SignalHistoryItemFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the SignalHistoryItem
+     * Select specific fields to fetch from the GeneratedSignal
      */
-    select?: SignalHistoryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SignalHistoryItem
-     */
-    omit?: SignalHistoryItemOmit<ExtArgs> | null
+    select?: GeneratedSignalSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SignalHistoryItemInclude<ExtArgs> | null
+    include?: GeneratedSignalInclude<ExtArgs> | null
     /**
-     * Filter, which SignalHistoryItems to fetch.
+     * Filter, which GeneratedSignals to fetch.
      */
-    where?: SignalHistoryItemWhereInput
+    where?: GeneratedSignalWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of SignalHistoryItems to fetch.
+     * Determine the order of GeneratedSignals to fetch.
      */
-    orderBy?: SignalHistoryItemOrderByWithRelationInput | SignalHistoryItemOrderByWithRelationInput[]
+    orderBy?: GeneratedSignalOrderByWithRelationInput | GeneratedSignalOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing SignalHistoryItems.
+     * Sets the position for listing GeneratedSignals.
      */
-    cursor?: SignalHistoryItemWhereUniqueInput
+    cursor?: GeneratedSignalWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` SignalHistoryItems from the position of the cursor.
+     * Take `±n` GeneratedSignals from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` SignalHistoryItems.
+     * Skip the first `n` GeneratedSignals.
      */
     skip?: number
-    distinct?: SignalHistoryItemScalarFieldEnum | SignalHistoryItemScalarFieldEnum[]
+    distinct?: GeneratedSignalScalarFieldEnum | GeneratedSignalScalarFieldEnum[]
   }
 
   /**
-   * SignalHistoryItem create
+   * GeneratedSignal create
    */
-  export type SignalHistoryItemCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the SignalHistoryItem
+     * Select specific fields to fetch from the GeneratedSignal
      */
-    select?: SignalHistoryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SignalHistoryItem
-     */
-    omit?: SignalHistoryItemOmit<ExtArgs> | null
+    select?: GeneratedSignalSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SignalHistoryItemInclude<ExtArgs> | null
+    include?: GeneratedSignalInclude<ExtArgs> | null
     /**
-     * The data needed to create a SignalHistoryItem.
+     * The data needed to create a GeneratedSignal.
      */
-    data: XOR<SignalHistoryItemCreateInput, SignalHistoryItemUncheckedCreateInput>
+    data: XOR<GeneratedSignalCreateInput, GeneratedSignalUncheckedCreateInput>
   }
 
   /**
-   * SignalHistoryItem createMany
+   * GeneratedSignal createMany
    */
-  export type SignalHistoryItemCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many SignalHistoryItems.
+     * The data used to create many GeneratedSignals.
      */
-    data: SignalHistoryItemCreateManyInput | SignalHistoryItemCreateManyInput[]
+    data: GeneratedSignalCreateManyInput | GeneratedSignalCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * SignalHistoryItem createManyAndReturn
+   * GeneratedSignal createManyAndReturn
    */
-  export type SignalHistoryItemCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the SignalHistoryItem
+     * Select specific fields to fetch from the GeneratedSignal
      */
-    select?: SignalHistoryItemSelectCreateManyAndReturn<ExtArgs> | null
+    select?: GeneratedSignalSelectCreateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the SignalHistoryItem
+     * The data used to create many GeneratedSignals.
      */
-    omit?: SignalHistoryItemOmit<ExtArgs> | null
-    /**
-     * The data used to create many SignalHistoryItems.
-     */
-    data: SignalHistoryItemCreateManyInput | SignalHistoryItemCreateManyInput[]
+    data: GeneratedSignalCreateManyInput | GeneratedSignalCreateManyInput[]
     skipDuplicates?: boolean
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SignalHistoryItemIncludeCreateManyAndReturn<ExtArgs> | null
+    include?: GeneratedSignalIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
-   * SignalHistoryItem update
+   * GeneratedSignal update
    */
-  export type SignalHistoryItemUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the SignalHistoryItem
+     * Select specific fields to fetch from the GeneratedSignal
      */
-    select?: SignalHistoryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SignalHistoryItem
-     */
-    omit?: SignalHistoryItemOmit<ExtArgs> | null
+    select?: GeneratedSignalSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SignalHistoryItemInclude<ExtArgs> | null
+    include?: GeneratedSignalInclude<ExtArgs> | null
     /**
-     * The data needed to update a SignalHistoryItem.
+     * The data needed to update a GeneratedSignal.
      */
-    data: XOR<SignalHistoryItemUpdateInput, SignalHistoryItemUncheckedUpdateInput>
+    data: XOR<GeneratedSignalUpdateInput, GeneratedSignalUncheckedUpdateInput>
     /**
-     * Choose, which SignalHistoryItem to update.
+     * Choose, which GeneratedSignal to update.
      */
-    where: SignalHistoryItemWhereUniqueInput
+    where: GeneratedSignalWhereUniqueInput
   }
 
   /**
-   * SignalHistoryItem updateMany
+   * GeneratedSignal updateMany
    */
-  export type SignalHistoryItemUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update SignalHistoryItems.
+     * The data used to update GeneratedSignals.
      */
-    data: XOR<SignalHistoryItemUpdateManyMutationInput, SignalHistoryItemUncheckedUpdateManyInput>
+    data: XOR<GeneratedSignalUpdateManyMutationInput, GeneratedSignalUncheckedUpdateManyInput>
     /**
-     * Filter which SignalHistoryItems to update
+     * Filter which GeneratedSignals to update
      */
-    where?: SignalHistoryItemWhereInput
-    /**
-     * Limit how many SignalHistoryItems to update.
-     */
-    limit?: number
+    where?: GeneratedSignalWhereInput
   }
 
   /**
-   * SignalHistoryItem updateManyAndReturn
+   * GeneratedSignal upsert
    */
-  export type SignalHistoryItemUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the SignalHistoryItem
+     * Select specific fields to fetch from the GeneratedSignal
      */
-    select?: SignalHistoryItemSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the SignalHistoryItem
-     */
-    omit?: SignalHistoryItemOmit<ExtArgs> | null
-    /**
-     * The data used to update SignalHistoryItems.
-     */
-    data: XOR<SignalHistoryItemUpdateManyMutationInput, SignalHistoryItemUncheckedUpdateManyInput>
-    /**
-     * Filter which SignalHistoryItems to update
-     */
-    where?: SignalHistoryItemWhereInput
-    /**
-     * Limit how many SignalHistoryItems to update.
-     */
-    limit?: number
+    select?: GeneratedSignalSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SignalHistoryItemIncludeUpdateManyAndReturn<ExtArgs> | null
+    include?: GeneratedSignalInclude<ExtArgs> | null
+    /**
+     * The filter to search for the GeneratedSignal to update in case it exists.
+     */
+    where: GeneratedSignalWhereUniqueInput
+    /**
+     * In case the GeneratedSignal found by the `where` argument doesn't exist, create a new GeneratedSignal with this data.
+     */
+    create: XOR<GeneratedSignalCreateInput, GeneratedSignalUncheckedCreateInput>
+    /**
+     * In case the GeneratedSignal was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GeneratedSignalUpdateInput, GeneratedSignalUncheckedUpdateInput>
   }
 
   /**
-   * SignalHistoryItem upsert
+   * GeneratedSignal delete
    */
-  export type SignalHistoryItemUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the SignalHistoryItem
+     * Select specific fields to fetch from the GeneratedSignal
      */
-    select?: SignalHistoryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SignalHistoryItem
-     */
-    omit?: SignalHistoryItemOmit<ExtArgs> | null
+    select?: GeneratedSignalSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SignalHistoryItemInclude<ExtArgs> | null
+    include?: GeneratedSignalInclude<ExtArgs> | null
     /**
-     * The filter to search for the SignalHistoryItem to update in case it exists.
+     * Filter which GeneratedSignal to delete.
      */
-    where: SignalHistoryItemWhereUniqueInput
-    /**
-     * In case the SignalHistoryItem found by the `where` argument doesn't exist, create a new SignalHistoryItem with this data.
-     */
-    create: XOR<SignalHistoryItemCreateInput, SignalHistoryItemUncheckedCreateInput>
-    /**
-     * In case the SignalHistoryItem was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<SignalHistoryItemUpdateInput, SignalHistoryItemUncheckedUpdateInput>
+    where: GeneratedSignalWhereUniqueInput
   }
 
   /**
-   * SignalHistoryItem delete
+   * GeneratedSignal deleteMany
    */
-  export type SignalHistoryItemDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the SignalHistoryItem
+     * Filter which GeneratedSignals to delete
      */
-    select?: SignalHistoryItemSelect<ExtArgs> | null
+    where?: GeneratedSignalWhereInput
+  }
+
+  /**
+   * GeneratedSignal.position
+   */
+  export type GeneratedSignal$positionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Omit specific fields from the SignalHistoryItem
+     * Select specific fields to fetch from the Position
      */
-    omit?: SignalHistoryItemOmit<ExtArgs> | null
+    select?: PositionSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SignalHistoryItemInclude<ExtArgs> | null
-    /**
-     * Filter which SignalHistoryItem to delete.
-     */
-    where: SignalHistoryItemWhereUniqueInput
+    include?: PositionInclude<ExtArgs> | null
+    where?: PositionWhereInput
   }
 
   /**
-   * SignalHistoryItem deleteMany
+   * GeneratedSignal without action
    */
-  export type SignalHistoryItemDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type GeneratedSignalDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which SignalHistoryItems to delete
+     * Select specific fields to fetch from the GeneratedSignal
      */
-    where?: SignalHistoryItemWhereInput
-    /**
-     * Limit how many SignalHistoryItems to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * SignalHistoryItem without action
-   */
-  export type SignalHistoryItemDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SignalHistoryItem
-     */
-    select?: SignalHistoryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SignalHistoryItem
-     */
-    omit?: SignalHistoryItemOmit<ExtArgs> | null
+    select?: GeneratedSignalSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SignalHistoryItemInclude<ExtArgs> | null
+    include?: GeneratedSignalInclude<ExtArgs> | null
   }
 
 
@@ -5940,20 +4394,28 @@ export namespace Prisma {
 
   export type PositionAvgAggregateOutputType = {
     entryPrice: number | null
+    stopLoss: number | null
+    takeProfit: number | null
     size: number | null
     closePrice: number | null
     pnl: number | null
-    stopLoss: number | null
-    takeProfit: number | null
+    gainedXp: number | null
+    gainedAirdropPoints: number | null
+    gasPaid: number | null
+    blocksTrained: number | null
   }
 
   export type PositionSumAggregateOutputType = {
     entryPrice: number | null
+    stopLoss: number | null
+    takeProfit: number | null
     size: number | null
     closePrice: number | null
     pnl: number | null
-    stopLoss: number | null
-    takeProfit: number | null
+    gainedXp: number | null
+    gainedAirdropPoints: number | null
+    gasPaid: number | null
+    blocksTrained: number | null
   }
 
   export type PositionMinAggregateOutputType = {
@@ -5961,15 +4423,29 @@ export namespace Prisma {
     userId: string | null
     symbol: string | null
     signalType: string | null
-    entryPrice: number | null
-    size: number | null
     status: string | null
+    type: string | null
+    entryPrice: number | null
+    stopLoss: number | null
+    takeProfit: number | null
+    size: number | null
     openTimestamp: Date | null
     closeTimestamp: Date | null
     closePrice: number | null
     pnl: number | null
-    stopLoss: number | null
-    takeProfit: number | null
+    gainedXp: number | null
+    gainedAirdropPoints: number | null
+    gasPaid: number | null
+    blocksTrained: number | null
+    tradingMode: string | null
+    riskProfile: string | null
+    sentiment: string | null
+    gpt_confidence_score: string | null
+    analysisSummary: string | null
+    newsAnalysis: string | null
+    strategyReasoning: string | null
+    createdAt: Date | null
+    strategyId: string | null
   }
 
   export type PositionMaxAggregateOutputType = {
@@ -5977,15 +4453,29 @@ export namespace Prisma {
     userId: string | null
     symbol: string | null
     signalType: string | null
-    entryPrice: number | null
-    size: number | null
     status: string | null
+    type: string | null
+    entryPrice: number | null
+    stopLoss: number | null
+    takeProfit: number | null
+    size: number | null
     openTimestamp: Date | null
     closeTimestamp: Date | null
     closePrice: number | null
     pnl: number | null
-    stopLoss: number | null
-    takeProfit: number | null
+    gainedXp: number | null
+    gainedAirdropPoints: number | null
+    gasPaid: number | null
+    blocksTrained: number | null
+    tradingMode: string | null
+    riskProfile: string | null
+    sentiment: string | null
+    gpt_confidence_score: string | null
+    analysisSummary: string | null
+    newsAnalysis: string | null
+    strategyReasoning: string | null
+    createdAt: Date | null
+    strategyId: string | null
   }
 
   export type PositionCountAggregateOutputType = {
@@ -5993,35 +4483,57 @@ export namespace Prisma {
     userId: number
     symbol: number
     signalType: number
-    entryPrice: number
-    size: number
     status: number
+    type: number
+    entryPrice: number
+    stopLoss: number
+    takeProfit: number
+    size: number
     openTimestamp: number
     closeTimestamp: number
     closePrice: number
     pnl: number
-    stopLoss: number
-    takeProfit: number
+    gainedXp: number
+    gainedAirdropPoints: number
+    gasPaid: number
+    blocksTrained: number
+    tradingMode: number
+    riskProfile: number
+    sentiment: number
+    gpt_confidence_score: number
+    analysisSummary: number
+    newsAnalysis: number
+    strategyReasoning: number
+    createdAt: number
+    strategyId: number
     _all: number
   }
 
 
   export type PositionAvgAggregateInputType = {
     entryPrice?: true
+    stopLoss?: true
+    takeProfit?: true
     size?: true
     closePrice?: true
     pnl?: true
-    stopLoss?: true
-    takeProfit?: true
+    gainedXp?: true
+    gainedAirdropPoints?: true
+    gasPaid?: true
+    blocksTrained?: true
   }
 
   export type PositionSumAggregateInputType = {
     entryPrice?: true
+    stopLoss?: true
+    takeProfit?: true
     size?: true
     closePrice?: true
     pnl?: true
-    stopLoss?: true
-    takeProfit?: true
+    gainedXp?: true
+    gainedAirdropPoints?: true
+    gasPaid?: true
+    blocksTrained?: true
   }
 
   export type PositionMinAggregateInputType = {
@@ -6029,15 +4541,29 @@ export namespace Prisma {
     userId?: true
     symbol?: true
     signalType?: true
-    entryPrice?: true
-    size?: true
     status?: true
+    type?: true
+    entryPrice?: true
+    stopLoss?: true
+    takeProfit?: true
+    size?: true
     openTimestamp?: true
     closeTimestamp?: true
     closePrice?: true
     pnl?: true
-    stopLoss?: true
-    takeProfit?: true
+    gainedXp?: true
+    gainedAirdropPoints?: true
+    gasPaid?: true
+    blocksTrained?: true
+    tradingMode?: true
+    riskProfile?: true
+    sentiment?: true
+    gpt_confidence_score?: true
+    analysisSummary?: true
+    newsAnalysis?: true
+    strategyReasoning?: true
+    createdAt?: true
+    strategyId?: true
   }
 
   export type PositionMaxAggregateInputType = {
@@ -6045,15 +4571,29 @@ export namespace Prisma {
     userId?: true
     symbol?: true
     signalType?: true
-    entryPrice?: true
-    size?: true
     status?: true
+    type?: true
+    entryPrice?: true
+    stopLoss?: true
+    takeProfit?: true
+    size?: true
     openTimestamp?: true
     closeTimestamp?: true
     closePrice?: true
     pnl?: true
-    stopLoss?: true
-    takeProfit?: true
+    gainedXp?: true
+    gainedAirdropPoints?: true
+    gasPaid?: true
+    blocksTrained?: true
+    tradingMode?: true
+    riskProfile?: true
+    sentiment?: true
+    gpt_confidence_score?: true
+    analysisSummary?: true
+    newsAnalysis?: true
+    strategyReasoning?: true
+    createdAt?: true
+    strategyId?: true
   }
 
   export type PositionCountAggregateInputType = {
@@ -6061,15 +4601,29 @@ export namespace Prisma {
     userId?: true
     symbol?: true
     signalType?: true
-    entryPrice?: true
-    size?: true
     status?: true
+    type?: true
+    entryPrice?: true
+    stopLoss?: true
+    takeProfit?: true
+    size?: true
     openTimestamp?: true
     closeTimestamp?: true
     closePrice?: true
     pnl?: true
-    stopLoss?: true
-    takeProfit?: true
+    gainedXp?: true
+    gainedAirdropPoints?: true
+    gasPaid?: true
+    blocksTrained?: true
+    tradingMode?: true
+    riskProfile?: true
+    sentiment?: true
+    gpt_confidence_score?: true
+    analysisSummary?: true
+    newsAnalysis?: true
+    strategyReasoning?: true
+    createdAt?: true
+    strategyId?: true
     _all?: true
   }
 
@@ -6164,15 +4718,29 @@ export namespace Prisma {
     userId: string
     symbol: string
     signalType: string
-    entryPrice: number
-    size: number
     status: string
-    openTimestamp: Date
+    type: string
+    entryPrice: number
+    stopLoss: number
+    takeProfit: number
+    size: number
+    openTimestamp: Date | null
     closeTimestamp: Date | null
     closePrice: number | null
     pnl: number | null
-    stopLoss: number | null
-    takeProfit: number | null
+    gainedXp: number | null
+    gainedAirdropPoints: number | null
+    gasPaid: number | null
+    blocksTrained: number | null
+    tradingMode: string
+    riskProfile: string
+    sentiment: string
+    gpt_confidence_score: string
+    analysisSummary: string
+    newsAnalysis: string
+    strategyReasoning: string
+    createdAt: Date
+    strategyId: string | null
     _count: PositionCountAggregateOutputType | null
     _avg: PositionAvgAggregateOutputType | null
     _sum: PositionSumAggregateOutputType | null
@@ -6199,16 +4767,31 @@ export namespace Prisma {
     userId?: boolean
     symbol?: boolean
     signalType?: boolean
-    entryPrice?: boolean
-    size?: boolean
     status?: boolean
+    type?: boolean
+    entryPrice?: boolean
+    stopLoss?: boolean
+    takeProfit?: boolean
+    size?: boolean
     openTimestamp?: boolean
     closeTimestamp?: boolean
     closePrice?: boolean
     pnl?: boolean
-    stopLoss?: boolean
-    takeProfit?: boolean
+    gainedXp?: boolean
+    gainedAirdropPoints?: boolean
+    gasPaid?: boolean
+    blocksTrained?: boolean
+    tradingMode?: boolean
+    riskProfile?: boolean
+    sentiment?: boolean
+    gpt_confidence_score?: boolean
+    analysisSummary?: boolean
+    newsAnalysis?: boolean
+    strategyReasoning?: boolean
+    createdAt?: boolean
+    strategyId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    generatedSignal?: boolean | Position$generatedSignalArgs<ExtArgs>
   }, ExtArgs["result"]["position"]>
 
   export type PositionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -6216,33 +4799,31 @@ export namespace Prisma {
     userId?: boolean
     symbol?: boolean
     signalType?: boolean
-    entryPrice?: boolean
-    size?: boolean
     status?: boolean
+    type?: boolean
+    entryPrice?: boolean
+    stopLoss?: boolean
+    takeProfit?: boolean
+    size?: boolean
     openTimestamp?: boolean
     closeTimestamp?: boolean
     closePrice?: boolean
     pnl?: boolean
-    stopLoss?: boolean
-    takeProfit?: boolean
+    gainedXp?: boolean
+    gainedAirdropPoints?: boolean
+    gasPaid?: boolean
+    blocksTrained?: boolean
+    tradingMode?: boolean
+    riskProfile?: boolean
+    sentiment?: boolean
+    gpt_confidence_score?: boolean
+    analysisSummary?: boolean
+    newsAnalysis?: boolean
+    strategyReasoning?: boolean
+    createdAt?: boolean
+    strategyId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["position"]>
-
-  export type PositionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    symbol?: boolean
-    signalType?: boolean
-    entryPrice?: boolean
-    size?: boolean
-    status?: boolean
-    openTimestamp?: boolean
-    closeTimestamp?: boolean
-    closePrice?: boolean
-    pnl?: boolean
-    stopLoss?: boolean
-    takeProfit?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    generatedSignal?: boolean | Position$generatedSignalArgs<ExtArgs>
   }, ExtArgs["result"]["position"]>
 
   export type PositionSelectScalar = {
@@ -6250,59 +4831,86 @@ export namespace Prisma {
     userId?: boolean
     symbol?: boolean
     signalType?: boolean
-    entryPrice?: boolean
-    size?: boolean
     status?: boolean
+    type?: boolean
+    entryPrice?: boolean
+    stopLoss?: boolean
+    takeProfit?: boolean
+    size?: boolean
     openTimestamp?: boolean
     closeTimestamp?: boolean
     closePrice?: boolean
     pnl?: boolean
-    stopLoss?: boolean
-    takeProfit?: boolean
+    gainedXp?: boolean
+    gainedAirdropPoints?: boolean
+    gasPaid?: boolean
+    blocksTrained?: boolean
+    tradingMode?: boolean
+    riskProfile?: boolean
+    sentiment?: boolean
+    gpt_confidence_score?: boolean
+    analysisSummary?: boolean
+    newsAnalysis?: boolean
+    strategyReasoning?: boolean
+    createdAt?: boolean
+    strategyId?: boolean
   }
 
-  export type PositionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "symbol" | "signalType" | "entryPrice" | "size" | "status" | "openTimestamp" | "closeTimestamp" | "closePrice" | "pnl" | "stopLoss" | "takeProfit", ExtArgs["result"]["position"]>
   export type PositionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    generatedSignal?: boolean | Position$generatedSignalArgs<ExtArgs>
   }
   export type PositionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type PositionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    generatedSignal?: boolean | Position$generatedSignalArgs<ExtArgs>
   }
 
   export type $PositionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Position"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      generatedSignal: Prisma.$GeneratedSignalPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
       symbol: string
       signalType: string
-      entryPrice: number
-      size: number
       status: string
-      openTimestamp: Date
+      type: string
+      entryPrice: number
+      stopLoss: number
+      takeProfit: number
+      size: number
+      openTimestamp: Date | null
       closeTimestamp: Date | null
       closePrice: number | null
       pnl: number | null
-      stopLoss: number | null
-      takeProfit: number | null
+      gainedXp: number | null
+      gainedAirdropPoints: number | null
+      gasPaid: number | null
+      blocksTrained: number | null
+      tradingMode: string
+      riskProfile: string
+      sentiment: string
+      gpt_confidence_score: string
+      analysisSummary: string
+      newsAnalysis: string
+      strategyReasoning: string
+      createdAt: Date
+      strategyId: string | null
     }, ExtArgs["result"]["position"]>
     composites: {}
   }
 
   type PositionGetPayload<S extends boolean | null | undefined | PositionDefaultArgs> = $Result.GetResult<Prisma.$PositionPayload, S>
 
-  type PositionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<PositionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+  type PositionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<PositionFindManyArgs, 'select' | 'include' | 'distinct'> & {
       select?: PositionCountAggregateInputType | true
     }
 
-  export interface PositionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+  export interface PositionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
     [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Position'], meta: { name: 'Position' } }
     /**
      * Find zero or one Position that matches the filter.
@@ -6315,10 +4923,10 @@ export namespace Prisma {
      *   }
      * })
      */
-    findUnique<T extends PositionFindUniqueArgs>(args: SelectSubset<T, PositionFindUniqueArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends PositionFindUniqueArgs>(args: SelectSubset<T, PositionFindUniqueArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
 
     /**
-     * Find one Position that matches the filter or throw an error with `error.code='P2025'`
+     * Find one Position that matches the filter or throw an error with `error.code='P2025'` 
      * if no matches were found.
      * @param {PositionFindUniqueOrThrowArgs} args - Arguments to find a Position
      * @example
@@ -6329,7 +4937,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findUniqueOrThrow<T extends PositionFindUniqueOrThrowArgs>(args: SelectSubset<T, PositionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends PositionFindUniqueOrThrowArgs>(args: SelectSubset<T, PositionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
 
     /**
      * Find the first Position that matches the filter.
@@ -6344,7 +4952,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findFirst<T extends PositionFindFirstArgs>(args?: SelectSubset<T, PositionFindFirstArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends PositionFindFirstArgs>(args?: SelectSubset<T, PositionFindFirstArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
 
     /**
      * Find the first Position that matches the filter or
@@ -6360,7 +4968,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findFirstOrThrow<T extends PositionFindFirstOrThrowArgs>(args?: SelectSubset<T, PositionFindFirstOrThrowArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends PositionFindFirstOrThrowArgs>(args?: SelectSubset<T, PositionFindFirstOrThrowArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
 
     /**
      * Find zero or more Positions that matches the filter.
@@ -6378,7 +4986,7 @@ export namespace Prisma {
      * const positionWithIdOnly = await prisma.position.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends PositionFindManyArgs>(args?: SelectSubset<T, PositionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends PositionFindManyArgs>(args?: SelectSubset<T, PositionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "findMany">>
 
     /**
      * Create a Position.
@@ -6392,7 +5000,7 @@ export namespace Prisma {
      * })
      * 
      */
-    create<T extends PositionCreateArgs>(args: SelectSubset<T, PositionCreateArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends PositionCreateArgs>(args: SelectSubset<T, PositionCreateArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "create">, never, ExtArgs>
 
     /**
      * Create many Positions.
@@ -6420,7 +5028,7 @@ export namespace Prisma {
      * })
      * 
      * // Create many Positions and only return the `id`
-     * const positionWithIdOnly = await prisma.position.createManyAndReturn({
+     * const positionWithIdOnly = await prisma.position.createManyAndReturn({ 
      *   select: { id: true },
      *   data: [
      *     // ... provide data here
@@ -6430,7 +5038,7 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    createManyAndReturn<T extends PositionCreateManyAndReturnArgs>(args?: SelectSubset<T, PositionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+    createManyAndReturn<T extends PositionCreateManyAndReturnArgs>(args?: SelectSubset<T, PositionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "createManyAndReturn">>
 
     /**
      * Delete a Position.
@@ -6444,7 +5052,7 @@ export namespace Prisma {
      * })
      * 
      */
-    delete<T extends PositionDeleteArgs>(args: SelectSubset<T, PositionDeleteArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends PositionDeleteArgs>(args: SelectSubset<T, PositionDeleteArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "delete">, never, ExtArgs>
 
     /**
      * Update one Position.
@@ -6461,7 +5069,7 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends PositionUpdateArgs>(args: SelectSubset<T, PositionUpdateArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends PositionUpdateArgs>(args: SelectSubset<T, PositionUpdateArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "update">, never, ExtArgs>
 
     /**
      * Delete zero or more Positions.
@@ -6497,36 +5105,6 @@ export namespace Prisma {
     updateMany<T extends PositionUpdateManyArgs>(args: SelectSubset<T, PositionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Positions and returns the data updated in the database.
-     * @param {PositionUpdateManyAndReturnArgs} args - Arguments to update many Positions.
-     * @example
-     * // Update many Positions
-     * const position = await prisma.position.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more Positions and only return the `id`
-     * const positionWithIdOnly = await prisma.position.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends PositionUpdateManyAndReturnArgs>(args: SelectSubset<T, PositionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Create or update one Position.
      * @param {PositionUpsertArgs} args - Arguments to update or create a Position.
      * @example
@@ -6543,7 +5121,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    upsert<T extends PositionUpsertArgs>(args: SelectSubset<T, PositionUpsertArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends PositionUpsertArgs>(args: SelectSubset<T, PositionUpsertArgs<ExtArgs>>): Prisma__PositionClient<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
 
 
     /**
@@ -6683,9 +5261,10 @@ export namespace Prisma {
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__PositionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__PositionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    generatedSignal<T extends Position$generatedSignalArgs<ExtArgs> = {}>(args?: Subset<T, Position$generatedSignalArgs<ExtArgs>>): Prisma__GeneratedSignalClient<$Result.GetResult<Prisma.$GeneratedSignalPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6713,21 +5292,35 @@ export namespace Prisma {
 
   /**
    * Fields of the Position model
-   */
+   */ 
   interface PositionFieldRefs {
     readonly id: FieldRef<"Position", 'String'>
     readonly userId: FieldRef<"Position", 'String'>
     readonly symbol: FieldRef<"Position", 'String'>
     readonly signalType: FieldRef<"Position", 'String'>
-    readonly entryPrice: FieldRef<"Position", 'Float'>
-    readonly size: FieldRef<"Position", 'Float'>
     readonly status: FieldRef<"Position", 'String'>
+    readonly type: FieldRef<"Position", 'String'>
+    readonly entryPrice: FieldRef<"Position", 'Float'>
+    readonly stopLoss: FieldRef<"Position", 'Float'>
+    readonly takeProfit: FieldRef<"Position", 'Float'>
+    readonly size: FieldRef<"Position", 'Float'>
     readonly openTimestamp: FieldRef<"Position", 'DateTime'>
     readonly closeTimestamp: FieldRef<"Position", 'DateTime'>
     readonly closePrice: FieldRef<"Position", 'Float'>
     readonly pnl: FieldRef<"Position", 'Float'>
-    readonly stopLoss: FieldRef<"Position", 'Float'>
-    readonly takeProfit: FieldRef<"Position", 'Float'>
+    readonly gainedXp: FieldRef<"Position", 'Int'>
+    readonly gainedAirdropPoints: FieldRef<"Position", 'Int'>
+    readonly gasPaid: FieldRef<"Position", 'Float'>
+    readonly blocksTrained: FieldRef<"Position", 'Int'>
+    readonly tradingMode: FieldRef<"Position", 'String'>
+    readonly riskProfile: FieldRef<"Position", 'String'>
+    readonly sentiment: FieldRef<"Position", 'String'>
+    readonly gpt_confidence_score: FieldRef<"Position", 'String'>
+    readonly analysisSummary: FieldRef<"Position", 'String'>
+    readonly newsAnalysis: FieldRef<"Position", 'String'>
+    readonly strategyReasoning: FieldRef<"Position", 'String'>
+    readonly createdAt: FieldRef<"Position", 'DateTime'>
+    readonly strategyId: FieldRef<"Position", 'String'>
   }
     
 
@@ -6740,10 +5333,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the Position
      */
     select?: PositionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Position
-     */
-    omit?: PositionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -6763,10 +5352,6 @@ export namespace Prisma {
      */
     select?: PositionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Position
-     */
-    omit?: PositionOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: PositionInclude<ExtArgs> | null
@@ -6784,10 +5369,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the Position
      */
     select?: PositionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Position
-     */
-    omit?: PositionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -6837,10 +5418,6 @@ export namespace Prisma {
      */
     select?: PositionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Position
-     */
-    omit?: PositionOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: PositionInclude<ExtArgs> | null
@@ -6889,10 +5466,6 @@ export namespace Prisma {
      */
     select?: PositionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Position
-     */
-    omit?: PositionOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: PositionInclude<ExtArgs> | null
@@ -6936,10 +5509,6 @@ export namespace Prisma {
      */
     select?: PositionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Position
-     */
-    omit?: PositionOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: PositionInclude<ExtArgs> | null
@@ -6969,10 +5538,6 @@ export namespace Prisma {
      */
     select?: PositionSelectCreateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the Position
-     */
-    omit?: PositionOmit<ExtArgs> | null
-    /**
      * The data used to create many Positions.
      */
     data: PositionCreateManyInput | PositionCreateManyInput[]
@@ -6991,10 +5556,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the Position
      */
     select?: PositionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Position
-     */
-    omit?: PositionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -7021,40 +5582,6 @@ export namespace Prisma {
      * Filter which Positions to update
      */
     where?: PositionWhereInput
-    /**
-     * Limit how many Positions to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * Position updateManyAndReturn
-   */
-  export type PositionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Position
-     */
-    select?: PositionSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Position
-     */
-    omit?: PositionOmit<ExtArgs> | null
-    /**
-     * The data used to update Positions.
-     */
-    data: XOR<PositionUpdateManyMutationInput, PositionUncheckedUpdateManyInput>
-    /**
-     * Filter which Positions to update
-     */
-    where?: PositionWhereInput
-    /**
-     * Limit how many Positions to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PositionIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -7065,10 +5592,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the Position
      */
     select?: PositionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Position
-     */
-    omit?: PositionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -7096,10 +5619,6 @@ export namespace Prisma {
      */
     select?: PositionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Position
-     */
-    omit?: PositionOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: PositionInclude<ExtArgs> | null
@@ -7117,10 +5636,21 @@ export namespace Prisma {
      * Filter which Positions to delete
      */
     where?: PositionWhereInput
+  }
+
+  /**
+   * Position.generatedSignal
+   */
+  export type Position$generatedSignalArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Limit how many Positions to delete.
+     * Select specific fields to fetch from the GeneratedSignal
      */
-    limit?: number
+    select?: GeneratedSignalSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GeneratedSignalInclude<ExtArgs> | null
+    where?: GeneratedSignalWhereInput
   }
 
   /**
@@ -7132,1118 +5662,9 @@ export namespace Prisma {
      */
     select?: PositionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Position
-     */
-    omit?: PositionOmit<ExtArgs> | null
-    /**
      * Choose, which related nodes to fetch as well
      */
     include?: PositionInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model UserAgent
-   */
-
-  export type AggregateUserAgent = {
-    _count: UserAgentCountAggregateOutputType | null
-    _avg: UserAgentAvgAggregateOutputType | null
-    _sum: UserAgentSumAggregateOutputType | null
-    _min: UserAgentMinAggregateOutputType | null
-    _max: UserAgentMaxAggregateOutputType | null
-  }
-
-  export type UserAgentAvgAggregateOutputType = {
-    level: number | null
-  }
-
-  export type UserAgentSumAggregateOutputType = {
-    level: number | null
-  }
-
-  export type UserAgentMinAggregateOutputType = {
-    id: string | null
-    userId: string | null
-    agentId: string | null
-    level: number | null
-    status: string | null
-    deploymentEndTime: Date | null
-  }
-
-  export type UserAgentMaxAggregateOutputType = {
-    id: string | null
-    userId: string | null
-    agentId: string | null
-    level: number | null
-    status: string | null
-    deploymentEndTime: Date | null
-  }
-
-  export type UserAgentCountAggregateOutputType = {
-    id: number
-    userId: number
-    agentId: number
-    level: number
-    status: number
-    deploymentEndTime: number
-    _all: number
-  }
-
-
-  export type UserAgentAvgAggregateInputType = {
-    level?: true
-  }
-
-  export type UserAgentSumAggregateInputType = {
-    level?: true
-  }
-
-  export type UserAgentMinAggregateInputType = {
-    id?: true
-    userId?: true
-    agentId?: true
-    level?: true
-    status?: true
-    deploymentEndTime?: true
-  }
-
-  export type UserAgentMaxAggregateInputType = {
-    id?: true
-    userId?: true
-    agentId?: true
-    level?: true
-    status?: true
-    deploymentEndTime?: true
-  }
-
-  export type UserAgentCountAggregateInputType = {
-    id?: true
-    userId?: true
-    agentId?: true
-    level?: true
-    status?: true
-    deploymentEndTime?: true
-    _all?: true
-  }
-
-  export type UserAgentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which UserAgent to aggregate.
-     */
-    where?: UserAgentWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of UserAgents to fetch.
-     */
-    orderBy?: UserAgentOrderByWithRelationInput | UserAgentOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: UserAgentWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` UserAgents from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` UserAgents.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned UserAgents
-    **/
-    _count?: true | UserAgentCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: UserAgentAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: UserAgentSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: UserAgentMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: UserAgentMaxAggregateInputType
-  }
-
-  export type GetUserAgentAggregateType<T extends UserAgentAggregateArgs> = {
-        [P in keyof T & keyof AggregateUserAgent]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateUserAgent[P]>
-      : GetScalarType<T[P], AggregateUserAgent[P]>
-  }
-
-
-
-
-  export type UserAgentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: UserAgentWhereInput
-    orderBy?: UserAgentOrderByWithAggregationInput | UserAgentOrderByWithAggregationInput[]
-    by: UserAgentScalarFieldEnum[] | UserAgentScalarFieldEnum
-    having?: UserAgentScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: UserAgentCountAggregateInputType | true
-    _avg?: UserAgentAvgAggregateInputType
-    _sum?: UserAgentSumAggregateInputType
-    _min?: UserAgentMinAggregateInputType
-    _max?: UserAgentMaxAggregateInputType
-  }
-
-  export type UserAgentGroupByOutputType = {
-    id: string
-    userId: string
-    agentId: string
-    level: number
-    status: string
-    deploymentEndTime: Date | null
-    _count: UserAgentCountAggregateOutputType | null
-    _avg: UserAgentAvgAggregateOutputType | null
-    _sum: UserAgentSumAggregateOutputType | null
-    _min: UserAgentMinAggregateOutputType | null
-    _max: UserAgentMaxAggregateOutputType | null
-  }
-
-  type GetUserAgentGroupByPayload<T extends UserAgentGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<UserAgentGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof UserAgentGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], UserAgentGroupByOutputType[P]>
-            : GetScalarType<T[P], UserAgentGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type UserAgentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    agentId?: boolean
-    level?: boolean
-    status?: boolean
-    deploymentEndTime?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["userAgent"]>
-
-  export type UserAgentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    agentId?: boolean
-    level?: boolean
-    status?: boolean
-    deploymentEndTime?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["userAgent"]>
-
-  export type UserAgentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    agentId?: boolean
-    level?: boolean
-    status?: boolean
-    deploymentEndTime?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["userAgent"]>
-
-  export type UserAgentSelectScalar = {
-    id?: boolean
-    userId?: boolean
-    agentId?: boolean
-    level?: boolean
-    status?: boolean
-    deploymentEndTime?: boolean
-  }
-
-  export type UserAgentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "agentId" | "level" | "status" | "deploymentEndTime", ExtArgs["result"]["userAgent"]>
-  export type UserAgentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type UserAgentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type UserAgentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }
-
-  export type $UserAgentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "UserAgent"
-    objects: {
-      user: Prisma.$UserPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      userId: string
-      agentId: string
-      level: number
-      status: string
-      deploymentEndTime: Date | null
-    }, ExtArgs["result"]["userAgent"]>
-    composites: {}
-  }
-
-  type UserAgentGetPayload<S extends boolean | null | undefined | UserAgentDefaultArgs> = $Result.GetResult<Prisma.$UserAgentPayload, S>
-
-  type UserAgentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<UserAgentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: UserAgentCountAggregateInputType | true
-    }
-
-  export interface UserAgentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UserAgent'], meta: { name: 'UserAgent' } }
-    /**
-     * Find zero or one UserAgent that matches the filter.
-     * @param {UserAgentFindUniqueArgs} args - Arguments to find a UserAgent
-     * @example
-     * // Get one UserAgent
-     * const userAgent = await prisma.userAgent.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends UserAgentFindUniqueArgs>(args: SelectSubset<T, UserAgentFindUniqueArgs<ExtArgs>>): Prisma__UserAgentClient<$Result.GetResult<Prisma.$UserAgentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one UserAgent that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {UserAgentFindUniqueOrThrowArgs} args - Arguments to find a UserAgent
-     * @example
-     * // Get one UserAgent
-     * const userAgent = await prisma.userAgent.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends UserAgentFindUniqueOrThrowArgs>(args: SelectSubset<T, UserAgentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserAgentClient<$Result.GetResult<Prisma.$UserAgentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first UserAgent that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {UserAgentFindFirstArgs} args - Arguments to find a UserAgent
-     * @example
-     * // Get one UserAgent
-     * const userAgent = await prisma.userAgent.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends UserAgentFindFirstArgs>(args?: SelectSubset<T, UserAgentFindFirstArgs<ExtArgs>>): Prisma__UserAgentClient<$Result.GetResult<Prisma.$UserAgentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first UserAgent that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {UserAgentFindFirstOrThrowArgs} args - Arguments to find a UserAgent
-     * @example
-     * // Get one UserAgent
-     * const userAgent = await prisma.userAgent.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends UserAgentFindFirstOrThrowArgs>(args?: SelectSubset<T, UserAgentFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserAgentClient<$Result.GetResult<Prisma.$UserAgentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more UserAgents that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {UserAgentFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all UserAgents
-     * const userAgents = await prisma.userAgent.findMany()
-     * 
-     * // Get first 10 UserAgents
-     * const userAgents = await prisma.userAgent.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const userAgentWithIdOnly = await prisma.userAgent.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends UserAgentFindManyArgs>(args?: SelectSubset<T, UserAgentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserAgentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a UserAgent.
-     * @param {UserAgentCreateArgs} args - Arguments to create a UserAgent.
-     * @example
-     * // Create one UserAgent
-     * const UserAgent = await prisma.userAgent.create({
-     *   data: {
-     *     // ... data to create a UserAgent
-     *   }
-     * })
-     * 
-     */
-    create<T extends UserAgentCreateArgs>(args: SelectSubset<T, UserAgentCreateArgs<ExtArgs>>): Prisma__UserAgentClient<$Result.GetResult<Prisma.$UserAgentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many UserAgents.
-     * @param {UserAgentCreateManyArgs} args - Arguments to create many UserAgents.
-     * @example
-     * // Create many UserAgents
-     * const userAgent = await prisma.userAgent.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends UserAgentCreateManyArgs>(args?: SelectSubset<T, UserAgentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many UserAgents and returns the data saved in the database.
-     * @param {UserAgentCreateManyAndReturnArgs} args - Arguments to create many UserAgents.
-     * @example
-     * // Create many UserAgents
-     * const userAgent = await prisma.userAgent.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many UserAgents and only return the `id`
-     * const userAgentWithIdOnly = await prisma.userAgent.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends UserAgentCreateManyAndReturnArgs>(args?: SelectSubset<T, UserAgentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserAgentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a UserAgent.
-     * @param {UserAgentDeleteArgs} args - Arguments to delete one UserAgent.
-     * @example
-     * // Delete one UserAgent
-     * const UserAgent = await prisma.userAgent.delete({
-     *   where: {
-     *     // ... filter to delete one UserAgent
-     *   }
-     * })
-     * 
-     */
-    delete<T extends UserAgentDeleteArgs>(args: SelectSubset<T, UserAgentDeleteArgs<ExtArgs>>): Prisma__UserAgentClient<$Result.GetResult<Prisma.$UserAgentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one UserAgent.
-     * @param {UserAgentUpdateArgs} args - Arguments to update one UserAgent.
-     * @example
-     * // Update one UserAgent
-     * const userAgent = await prisma.userAgent.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends UserAgentUpdateArgs>(args: SelectSubset<T, UserAgentUpdateArgs<ExtArgs>>): Prisma__UserAgentClient<$Result.GetResult<Prisma.$UserAgentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more UserAgents.
-     * @param {UserAgentDeleteManyArgs} args - Arguments to filter UserAgents to delete.
-     * @example
-     * // Delete a few UserAgents
-     * const { count } = await prisma.userAgent.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends UserAgentDeleteManyArgs>(args?: SelectSubset<T, UserAgentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more UserAgents.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {UserAgentUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many UserAgents
-     * const userAgent = await prisma.userAgent.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends UserAgentUpdateManyArgs>(args: SelectSubset<T, UserAgentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more UserAgents and returns the data updated in the database.
-     * @param {UserAgentUpdateManyAndReturnArgs} args - Arguments to update many UserAgents.
-     * @example
-     * // Update many UserAgents
-     * const userAgent = await prisma.userAgent.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more UserAgents and only return the `id`
-     * const userAgentWithIdOnly = await prisma.userAgent.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends UserAgentUpdateManyAndReturnArgs>(args: SelectSubset<T, UserAgentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserAgentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one UserAgent.
-     * @param {UserAgentUpsertArgs} args - Arguments to update or create a UserAgent.
-     * @example
-     * // Update or create a UserAgent
-     * const userAgent = await prisma.userAgent.upsert({
-     *   create: {
-     *     // ... data to create a UserAgent
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the UserAgent we want to update
-     *   }
-     * })
-     */
-    upsert<T extends UserAgentUpsertArgs>(args: SelectSubset<T, UserAgentUpsertArgs<ExtArgs>>): Prisma__UserAgentClient<$Result.GetResult<Prisma.$UserAgentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of UserAgents.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {UserAgentCountArgs} args - Arguments to filter UserAgents to count.
-     * @example
-     * // Count the number of UserAgents
-     * const count = await prisma.userAgent.count({
-     *   where: {
-     *     // ... the filter for the UserAgents we want to count
-     *   }
-     * })
-    **/
-    count<T extends UserAgentCountArgs>(
-      args?: Subset<T, UserAgentCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], UserAgentCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a UserAgent.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {UserAgentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends UserAgentAggregateArgs>(args: Subset<T, UserAgentAggregateArgs>): Prisma.PrismaPromise<GetUserAgentAggregateType<T>>
-
-    /**
-     * Group by UserAgent.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {UserAgentGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends UserAgentGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: UserAgentGroupByArgs['orderBy'] }
-        : { orderBy?: UserAgentGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, UserAgentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserAgentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the UserAgent model
-   */
-  readonly fields: UserAgentFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for UserAgent.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__UserAgentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the UserAgent model
-   */
-  interface UserAgentFieldRefs {
-    readonly id: FieldRef<"UserAgent", 'String'>
-    readonly userId: FieldRef<"UserAgent", 'String'>
-    readonly agentId: FieldRef<"UserAgent", 'String'>
-    readonly level: FieldRef<"UserAgent", 'Int'>
-    readonly status: FieldRef<"UserAgent", 'String'>
-    readonly deploymentEndTime: FieldRef<"UserAgent", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * UserAgent findUnique
-   */
-  export type UserAgentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserAgent
-     */
-    select?: UserAgentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserAgent
-     */
-    omit?: UserAgentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserAgentInclude<ExtArgs> | null
-    /**
-     * Filter, which UserAgent to fetch.
-     */
-    where: UserAgentWhereUniqueInput
-  }
-
-  /**
-   * UserAgent findUniqueOrThrow
-   */
-  export type UserAgentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserAgent
-     */
-    select?: UserAgentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserAgent
-     */
-    omit?: UserAgentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserAgentInclude<ExtArgs> | null
-    /**
-     * Filter, which UserAgent to fetch.
-     */
-    where: UserAgentWhereUniqueInput
-  }
-
-  /**
-   * UserAgent findFirst
-   */
-  export type UserAgentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserAgent
-     */
-    select?: UserAgentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserAgent
-     */
-    omit?: UserAgentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserAgentInclude<ExtArgs> | null
-    /**
-     * Filter, which UserAgent to fetch.
-     */
-    where?: UserAgentWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of UserAgents to fetch.
-     */
-    orderBy?: UserAgentOrderByWithRelationInput | UserAgentOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for UserAgents.
-     */
-    cursor?: UserAgentWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` UserAgents from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` UserAgents.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of UserAgents.
-     */
-    distinct?: UserAgentScalarFieldEnum | UserAgentScalarFieldEnum[]
-  }
-
-  /**
-   * UserAgent findFirstOrThrow
-   */
-  export type UserAgentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserAgent
-     */
-    select?: UserAgentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserAgent
-     */
-    omit?: UserAgentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserAgentInclude<ExtArgs> | null
-    /**
-     * Filter, which UserAgent to fetch.
-     */
-    where?: UserAgentWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of UserAgents to fetch.
-     */
-    orderBy?: UserAgentOrderByWithRelationInput | UserAgentOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for UserAgents.
-     */
-    cursor?: UserAgentWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` UserAgents from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` UserAgents.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of UserAgents.
-     */
-    distinct?: UserAgentScalarFieldEnum | UserAgentScalarFieldEnum[]
-  }
-
-  /**
-   * UserAgent findMany
-   */
-  export type UserAgentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserAgent
-     */
-    select?: UserAgentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserAgent
-     */
-    omit?: UserAgentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserAgentInclude<ExtArgs> | null
-    /**
-     * Filter, which UserAgents to fetch.
-     */
-    where?: UserAgentWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of UserAgents to fetch.
-     */
-    orderBy?: UserAgentOrderByWithRelationInput | UserAgentOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing UserAgents.
-     */
-    cursor?: UserAgentWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` UserAgents from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` UserAgents.
-     */
-    skip?: number
-    distinct?: UserAgentScalarFieldEnum | UserAgentScalarFieldEnum[]
-  }
-
-  /**
-   * UserAgent create
-   */
-  export type UserAgentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserAgent
-     */
-    select?: UserAgentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserAgent
-     */
-    omit?: UserAgentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserAgentInclude<ExtArgs> | null
-    /**
-     * The data needed to create a UserAgent.
-     */
-    data: XOR<UserAgentCreateInput, UserAgentUncheckedCreateInput>
-  }
-
-  /**
-   * UserAgent createMany
-   */
-  export type UserAgentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many UserAgents.
-     */
-    data: UserAgentCreateManyInput | UserAgentCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * UserAgent createManyAndReturn
-   */
-  export type UserAgentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserAgent
-     */
-    select?: UserAgentSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserAgent
-     */
-    omit?: UserAgentOmit<ExtArgs> | null
-    /**
-     * The data used to create many UserAgents.
-     */
-    data: UserAgentCreateManyInput | UserAgentCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserAgentIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * UserAgent update
-   */
-  export type UserAgentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserAgent
-     */
-    select?: UserAgentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserAgent
-     */
-    omit?: UserAgentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserAgentInclude<ExtArgs> | null
-    /**
-     * The data needed to update a UserAgent.
-     */
-    data: XOR<UserAgentUpdateInput, UserAgentUncheckedUpdateInput>
-    /**
-     * Choose, which UserAgent to update.
-     */
-    where: UserAgentWhereUniqueInput
-  }
-
-  /**
-   * UserAgent updateMany
-   */
-  export type UserAgentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update UserAgents.
-     */
-    data: XOR<UserAgentUpdateManyMutationInput, UserAgentUncheckedUpdateManyInput>
-    /**
-     * Filter which UserAgents to update
-     */
-    where?: UserAgentWhereInput
-    /**
-     * Limit how many UserAgents to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * UserAgent updateManyAndReturn
-   */
-  export type UserAgentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserAgent
-     */
-    select?: UserAgentSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserAgent
-     */
-    omit?: UserAgentOmit<ExtArgs> | null
-    /**
-     * The data used to update UserAgents.
-     */
-    data: XOR<UserAgentUpdateManyMutationInput, UserAgentUncheckedUpdateManyInput>
-    /**
-     * Filter which UserAgents to update
-     */
-    where?: UserAgentWhereInput
-    /**
-     * Limit how many UserAgents to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserAgentIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * UserAgent upsert
-   */
-  export type UserAgentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserAgent
-     */
-    select?: UserAgentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserAgent
-     */
-    omit?: UserAgentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserAgentInclude<ExtArgs> | null
-    /**
-     * The filter to search for the UserAgent to update in case it exists.
-     */
-    where: UserAgentWhereUniqueInput
-    /**
-     * In case the UserAgent found by the `where` argument doesn't exist, create a new UserAgent with this data.
-     */
-    create: XOR<UserAgentCreateInput, UserAgentUncheckedCreateInput>
-    /**
-     * In case the UserAgent was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<UserAgentUpdateInput, UserAgentUncheckedUpdateInput>
-  }
-
-  /**
-   * UserAgent delete
-   */
-  export type UserAgentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserAgent
-     */
-    select?: UserAgentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserAgent
-     */
-    omit?: UserAgentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserAgentInclude<ExtArgs> | null
-    /**
-     * Filter which UserAgent to delete.
-     */
-    where: UserAgentWhereUniqueInput
-  }
-
-  /**
-   * UserAgent deleteMany
-   */
-  export type UserAgentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which UserAgents to delete
-     */
-    where?: UserAgentWhereInput
-    /**
-     * Limit how many UserAgents to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * UserAgent without action
-   */
-  export type UserAgentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserAgent
-     */
-    select?: UserAgentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserAgent
-     */
-    omit?: UserAgentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserAgentInclude<ExtArgs> | null
   }
 
 
@@ -8264,17 +5685,20 @@ export namespace Prisma {
   export const UserScalarFieldEnum: {
     id: 'id',
     username: 'username',
-    status: 'status',
     shadowId: 'shadowId',
     weeklyPoints: 'weeklyPoints',
     airdropPoints: 'airdropPoints',
+    status: 'status',
+    claimedMissions: 'claimedMissions',
+    email: 'email',
     wallet_address: 'wallet_address',
     wallet_type: 'wallet_type',
-    email: 'email',
     phone: 'phone',
     x_handle: 'x_handle',
     telegram_handle: 'telegram_handle',
-    youtube_handle: 'youtube_handle'
+    youtube_handle: 'youtube_handle',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -8282,32 +5706,39 @@ export namespace Prisma {
 
   export const BadgeScalarFieldEnum: {
     id: 'id',
-    name: 'name'
+    name: 'name',
+    description: 'description',
+    icon: 'icon',
+    userId: 'userId'
   };
 
   export type BadgeScalarFieldEnum = (typeof BadgeScalarFieldEnum)[keyof typeof BadgeScalarFieldEnum]
 
 
-  export const ConsoleInsightScalarFieldEnum: {
+  export const GeneratedSignalScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
-    content: 'content',
-    timestamp: 'timestamp'
-  };
-
-  export type ConsoleInsightScalarFieldEnum = (typeof ConsoleInsightScalarFieldEnum)[keyof typeof ConsoleInsightScalarFieldEnum]
-
-
-  export const SignalHistoryItemScalarFieldEnum: {
-    id: 'id',
-    userId: 'userId',
-    signalType: 'signalType',
     symbol: 'symbol',
-    price: 'price',
-    timestamp: 'timestamp'
+    signal: 'signal',
+    status: 'status',
+    entry_zone: 'entry_zone',
+    stop_loss: 'stop_loss',
+    take_profit: 'take_profit',
+    confidence: 'confidence',
+    risk_rating: 'risk_rating',
+    gpt_confidence_score: 'gpt_confidence_score',
+    sentiment: 'sentiment',
+    currentThought: 'currentThought',
+    shortTermPrediction: 'shortTermPrediction',
+    chosenTradingMode: 'chosenTradingMode',
+    chosenRiskProfile: 'chosenRiskProfile',
+    strategyReasoning: 'strategyReasoning',
+    analysisSummary: 'analysisSummary',
+    newsAnalysis: 'newsAnalysis',
+    createdAt: 'createdAt'
   };
 
-  export type SignalHistoryItemScalarFieldEnum = (typeof SignalHistoryItemScalarFieldEnum)[keyof typeof SignalHistoryItemScalarFieldEnum]
+  export type GeneratedSignalScalarFieldEnum = (typeof GeneratedSignalScalarFieldEnum)[keyof typeof GeneratedSignalScalarFieldEnum]
 
 
   export const PositionScalarFieldEnum: {
@@ -8315,30 +5746,32 @@ export namespace Prisma {
     userId: 'userId',
     symbol: 'symbol',
     signalType: 'signalType',
-    entryPrice: 'entryPrice',
-    size: 'size',
     status: 'status',
+    type: 'type',
+    entryPrice: 'entryPrice',
+    stopLoss: 'stopLoss',
+    takeProfit: 'takeProfit',
+    size: 'size',
     openTimestamp: 'openTimestamp',
     closeTimestamp: 'closeTimestamp',
     closePrice: 'closePrice',
     pnl: 'pnl',
-    stopLoss: 'stopLoss',
-    takeProfit: 'takeProfit'
+    gainedXp: 'gainedXp',
+    gainedAirdropPoints: 'gainedAirdropPoints',
+    gasPaid: 'gasPaid',
+    blocksTrained: 'blocksTrained',
+    tradingMode: 'tradingMode',
+    riskProfile: 'riskProfile',
+    sentiment: 'sentiment',
+    gpt_confidence_score: 'gpt_confidence_score',
+    analysisSummary: 'analysisSummary',
+    newsAnalysis: 'newsAnalysis',
+    strategyReasoning: 'strategyReasoning',
+    createdAt: 'createdAt',
+    strategyId: 'strategyId'
   };
 
   export type PositionScalarFieldEnum = (typeof PositionScalarFieldEnum)[keyof typeof PositionScalarFieldEnum]
-
-
-  export const UserAgentScalarFieldEnum: {
-    id: 'id',
-    userId: 'userId',
-    agentId: 'agentId',
-    level: 'level',
-    status: 'status',
-    deploymentEndTime: 'deploymentEndTime'
-  };
-
-  export type UserAgentScalarFieldEnum = (typeof UserAgentScalarFieldEnum)[keyof typeof UserAgentScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -8366,7 +5799,7 @@ export namespace Prisma {
 
 
   /**
-   * Field references
+   * Field references 
    */
 
 
@@ -8435,83 +5868,89 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     id?: UuidFilter<"User"> | string
     username?: StringFilter<"User"> | string
-    status?: StringNullableFilter<"User"> | string | null
-    shadowId?: StringNullableFilter<"User"> | string | null
+    shadowId?: StringFilter<"User"> | string
     weeklyPoints?: IntFilter<"User"> | number
     airdropPoints?: IntFilter<"User"> | number
+    status?: StringFilter<"User"> | string
+    claimedMissions?: StringFilter<"User"> | string
+    email?: StringNullableFilter<"User"> | string | null
     wallet_address?: StringNullableFilter<"User"> | string | null
     wallet_type?: StringNullableFilter<"User"> | string | null
-    email?: StringNullableFilter<"User"> | string | null
     phone?: StringNullableFilter<"User"> | string | null
     x_handle?: StringNullableFilter<"User"> | string | null
     telegram_handle?: StringNullableFilter<"User"> | string | null
     youtube_handle?: StringNullableFilter<"User"> | string | null
+    createdAt?: DateTimeFilter<"User"> | Date | string
+    updatedAt?: DateTimeFilter<"User"> | Date | string
     badges?: BadgeListRelationFilter
-    consoleInsights?: ConsoleInsightListRelationFilter
-    signals?: SignalHistoryItemListRelationFilter
+    generatedSignals?: GeneratedSignalListRelationFilter
     positions?: PositionListRelationFilter
-    userAgents?: UserAgentListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
     id?: SortOrder
     username?: SortOrder
-    status?: SortOrderInput | SortOrder
-    shadowId?: SortOrderInput | SortOrder
+    shadowId?: SortOrder
     weeklyPoints?: SortOrder
     airdropPoints?: SortOrder
+    status?: SortOrder
+    claimedMissions?: SortOrder
+    email?: SortOrderInput | SortOrder
     wallet_address?: SortOrderInput | SortOrder
     wallet_type?: SortOrderInput | SortOrder
-    email?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
     x_handle?: SortOrderInput | SortOrder
     telegram_handle?: SortOrderInput | SortOrder
     youtube_handle?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     badges?: BadgeOrderByRelationAggregateInput
-    consoleInsights?: ConsoleInsightOrderByRelationAggregateInput
-    signals?: SignalHistoryItemOrderByRelationAggregateInput
+    generatedSignals?: GeneratedSignalOrderByRelationAggregateInput
     positions?: PositionOrderByRelationAggregateInput
-    userAgents?: UserAgentOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     username?: string
     shadowId?: string
+    email?: string
+    wallet_address?: string
+    phone?: string
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
-    status?: StringNullableFilter<"User"> | string | null
     weeklyPoints?: IntFilter<"User"> | number
     airdropPoints?: IntFilter<"User"> | number
-    wallet_address?: StringNullableFilter<"User"> | string | null
+    status?: StringFilter<"User"> | string
+    claimedMissions?: StringFilter<"User"> | string
     wallet_type?: StringNullableFilter<"User"> | string | null
-    email?: StringNullableFilter<"User"> | string | null
-    phone?: StringNullableFilter<"User"> | string | null
     x_handle?: StringNullableFilter<"User"> | string | null
     telegram_handle?: StringNullableFilter<"User"> | string | null
     youtube_handle?: StringNullableFilter<"User"> | string | null
+    createdAt?: DateTimeFilter<"User"> | Date | string
+    updatedAt?: DateTimeFilter<"User"> | Date | string
     badges?: BadgeListRelationFilter
-    consoleInsights?: ConsoleInsightListRelationFilter
-    signals?: SignalHistoryItemListRelationFilter
+    generatedSignals?: GeneratedSignalListRelationFilter
     positions?: PositionListRelationFilter
-    userAgents?: UserAgentListRelationFilter
-  }, "id" | "username" | "shadowId">
+  }, "id" | "username" | "shadowId" | "email" | "wallet_address" | "phone">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
     username?: SortOrder
-    status?: SortOrderInput | SortOrder
-    shadowId?: SortOrderInput | SortOrder
+    shadowId?: SortOrder
     weeklyPoints?: SortOrder
     airdropPoints?: SortOrder
+    status?: SortOrder
+    claimedMissions?: SortOrder
+    email?: SortOrderInput | SortOrder
     wallet_address?: SortOrderInput | SortOrder
     wallet_type?: SortOrderInput | SortOrder
-    email?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
     x_handle?: SortOrderInput | SortOrder
     telegram_handle?: SortOrderInput | SortOrder
     youtube_handle?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -8525,17 +5964,20 @@ export namespace Prisma {
     NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"User"> | string
     username?: StringWithAggregatesFilter<"User"> | string
-    status?: StringNullableWithAggregatesFilter<"User"> | string | null
-    shadowId?: StringNullableWithAggregatesFilter<"User"> | string | null
+    shadowId?: StringWithAggregatesFilter<"User"> | string
     weeklyPoints?: IntWithAggregatesFilter<"User"> | number
     airdropPoints?: IntWithAggregatesFilter<"User"> | number
+    status?: StringWithAggregatesFilter<"User"> | string
+    claimedMissions?: StringWithAggregatesFilter<"User"> | string
+    email?: StringNullableWithAggregatesFilter<"User"> | string | null
     wallet_address?: StringNullableWithAggregatesFilter<"User"> | string | null
     wallet_type?: StringNullableWithAggregatesFilter<"User"> | string | null
-    email?: StringNullableWithAggregatesFilter<"User"> | string | null
     phone?: StringNullableWithAggregatesFilter<"User"> | string | null
     x_handle?: StringNullableWithAggregatesFilter<"User"> | string | null
     telegram_handle?: StringNullableWithAggregatesFilter<"User"> | string | null
     youtube_handle?: StringNullableWithAggregatesFilter<"User"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
 
   export type BadgeWhereInput = {
@@ -8544,27 +5986,39 @@ export namespace Prisma {
     NOT?: BadgeWhereInput | BadgeWhereInput[]
     id?: UuidFilter<"Badge"> | string
     name?: StringFilter<"Badge"> | string
-    users?: UserListRelationFilter
+    description?: StringFilter<"Badge"> | string
+    icon?: StringFilter<"Badge"> | string
+    userId?: UuidFilter<"Badge"> | string
+    user?: XOR<UserRelationFilter, UserWhereInput>
   }
 
   export type BadgeOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
-    users?: UserOrderByRelationAggregateInput
+    description?: SortOrder
+    icon?: SortOrder
+    userId?: SortOrder
+    user?: UserOrderByWithRelationInput
   }
 
   export type BadgeWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    name?: string
     AND?: BadgeWhereInput | BadgeWhereInput[]
     OR?: BadgeWhereInput[]
     NOT?: BadgeWhereInput | BadgeWhereInput[]
-    users?: UserListRelationFilter
-  }, "id" | "name">
+    name?: StringFilter<"Badge"> | string
+    description?: StringFilter<"Badge"> | string
+    icon?: StringFilter<"Badge"> | string
+    userId?: UuidFilter<"Badge"> | string
+    user?: XOR<UserRelationFilter, UserWhereInput>
+  }, "id">
 
   export type BadgeOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
+    description?: SortOrder
+    icon?: SortOrder
+    userId?: SortOrder
     _count?: BadgeCountOrderByAggregateInput
     _max?: BadgeMaxOrderByAggregateInput
     _min?: BadgeMinOrderByAggregateInput
@@ -8576,138 +6030,177 @@ export namespace Prisma {
     NOT?: BadgeScalarWhereWithAggregatesInput | BadgeScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"Badge"> | string
     name?: StringWithAggregatesFilter<"Badge"> | string
+    description?: StringWithAggregatesFilter<"Badge"> | string
+    icon?: StringWithAggregatesFilter<"Badge"> | string
+    userId?: UuidWithAggregatesFilter<"Badge"> | string
   }
 
-  export type ConsoleInsightWhereInput = {
-    AND?: ConsoleInsightWhereInput | ConsoleInsightWhereInput[]
-    OR?: ConsoleInsightWhereInput[]
-    NOT?: ConsoleInsightWhereInput | ConsoleInsightWhereInput[]
-    id?: UuidFilter<"ConsoleInsight"> | string
-    userId?: UuidFilter<"ConsoleInsight"> | string
-    content?: StringFilter<"ConsoleInsight"> | string
-    timestamp?: DateTimeFilter<"ConsoleInsight"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  export type GeneratedSignalWhereInput = {
+    AND?: GeneratedSignalWhereInput | GeneratedSignalWhereInput[]
+    OR?: GeneratedSignalWhereInput[]
+    NOT?: GeneratedSignalWhereInput | GeneratedSignalWhereInput[]
+    id?: StringFilter<"GeneratedSignal"> | string
+    userId?: UuidFilter<"GeneratedSignal"> | string
+    symbol?: StringFilter<"GeneratedSignal"> | string
+    signal?: StringFilter<"GeneratedSignal"> | string
+    status?: StringFilter<"GeneratedSignal"> | string
+    entry_zone?: StringFilter<"GeneratedSignal"> | string
+    stop_loss?: StringFilter<"GeneratedSignal"> | string
+    take_profit?: StringFilter<"GeneratedSignal"> | string
+    confidence?: StringFilter<"GeneratedSignal"> | string
+    risk_rating?: StringFilter<"GeneratedSignal"> | string
+    gpt_confidence_score?: StringFilter<"GeneratedSignal"> | string
+    sentiment?: StringFilter<"GeneratedSignal"> | string
+    currentThought?: StringFilter<"GeneratedSignal"> | string
+    shortTermPrediction?: StringFilter<"GeneratedSignal"> | string
+    chosenTradingMode?: StringFilter<"GeneratedSignal"> | string
+    chosenRiskProfile?: StringFilter<"GeneratedSignal"> | string
+    strategyReasoning?: StringFilter<"GeneratedSignal"> | string
+    analysisSummary?: StringFilter<"GeneratedSignal"> | string
+    newsAnalysis?: StringFilter<"GeneratedSignal"> | string
+    createdAt?: DateTimeFilter<"GeneratedSignal"> | Date | string
+    user?: XOR<UserRelationFilter, UserWhereInput>
+    position?: XOR<PositionNullableRelationFilter, PositionWhereInput> | null
   }
 
-  export type ConsoleInsightOrderByWithRelationInput = {
+  export type GeneratedSignalOrderByWithRelationInput = {
     id?: SortOrder
     userId?: SortOrder
-    content?: SortOrder
-    timestamp?: SortOrder
+    symbol?: SortOrder
+    signal?: SortOrder
+    status?: SortOrder
+    entry_zone?: SortOrder
+    stop_loss?: SortOrder
+    take_profit?: SortOrder
+    confidence?: SortOrder
+    risk_rating?: SortOrder
+    gpt_confidence_score?: SortOrder
+    sentiment?: SortOrder
+    currentThought?: SortOrder
+    shortTermPrediction?: SortOrder
+    chosenTradingMode?: SortOrder
+    chosenRiskProfile?: SortOrder
+    strategyReasoning?: SortOrder
+    analysisSummary?: SortOrder
+    newsAnalysis?: SortOrder
+    createdAt?: SortOrder
     user?: UserOrderByWithRelationInput
+    position?: PositionOrderByWithRelationInput
   }
 
-  export type ConsoleInsightWhereUniqueInput = Prisma.AtLeast<{
+  export type GeneratedSignalWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    AND?: ConsoleInsightWhereInput | ConsoleInsightWhereInput[]
-    OR?: ConsoleInsightWhereInput[]
-    NOT?: ConsoleInsightWhereInput | ConsoleInsightWhereInput[]
-    userId?: UuidFilter<"ConsoleInsight"> | string
-    content?: StringFilter<"ConsoleInsight"> | string
-    timestamp?: DateTimeFilter<"ConsoleInsight"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    AND?: GeneratedSignalWhereInput | GeneratedSignalWhereInput[]
+    OR?: GeneratedSignalWhereInput[]
+    NOT?: GeneratedSignalWhereInput | GeneratedSignalWhereInput[]
+    userId?: UuidFilter<"GeneratedSignal"> | string
+    symbol?: StringFilter<"GeneratedSignal"> | string
+    signal?: StringFilter<"GeneratedSignal"> | string
+    status?: StringFilter<"GeneratedSignal"> | string
+    entry_zone?: StringFilter<"GeneratedSignal"> | string
+    stop_loss?: StringFilter<"GeneratedSignal"> | string
+    take_profit?: StringFilter<"GeneratedSignal"> | string
+    confidence?: StringFilter<"GeneratedSignal"> | string
+    risk_rating?: StringFilter<"GeneratedSignal"> | string
+    gpt_confidence_score?: StringFilter<"GeneratedSignal"> | string
+    sentiment?: StringFilter<"GeneratedSignal"> | string
+    currentThought?: StringFilter<"GeneratedSignal"> | string
+    shortTermPrediction?: StringFilter<"GeneratedSignal"> | string
+    chosenTradingMode?: StringFilter<"GeneratedSignal"> | string
+    chosenRiskProfile?: StringFilter<"GeneratedSignal"> | string
+    strategyReasoning?: StringFilter<"GeneratedSignal"> | string
+    analysisSummary?: StringFilter<"GeneratedSignal"> | string
+    newsAnalysis?: StringFilter<"GeneratedSignal"> | string
+    createdAt?: DateTimeFilter<"GeneratedSignal"> | Date | string
+    user?: XOR<UserRelationFilter, UserWhereInput>
+    position?: XOR<PositionNullableRelationFilter, PositionWhereInput> | null
   }, "id">
 
-  export type ConsoleInsightOrderByWithAggregationInput = {
+  export type GeneratedSignalOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
-    content?: SortOrder
-    timestamp?: SortOrder
-    _count?: ConsoleInsightCountOrderByAggregateInput
-    _max?: ConsoleInsightMaxOrderByAggregateInput
-    _min?: ConsoleInsightMinOrderByAggregateInput
-  }
-
-  export type ConsoleInsightScalarWhereWithAggregatesInput = {
-    AND?: ConsoleInsightScalarWhereWithAggregatesInput | ConsoleInsightScalarWhereWithAggregatesInput[]
-    OR?: ConsoleInsightScalarWhereWithAggregatesInput[]
-    NOT?: ConsoleInsightScalarWhereWithAggregatesInput | ConsoleInsightScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"ConsoleInsight"> | string
-    userId?: UuidWithAggregatesFilter<"ConsoleInsight"> | string
-    content?: StringWithAggregatesFilter<"ConsoleInsight"> | string
-    timestamp?: DateTimeWithAggregatesFilter<"ConsoleInsight"> | Date | string
-  }
-
-  export type SignalHistoryItemWhereInput = {
-    AND?: SignalHistoryItemWhereInput | SignalHistoryItemWhereInput[]
-    OR?: SignalHistoryItemWhereInput[]
-    NOT?: SignalHistoryItemWhereInput | SignalHistoryItemWhereInput[]
-    id?: UuidFilter<"SignalHistoryItem"> | string
-    userId?: UuidFilter<"SignalHistoryItem"> | string
-    signalType?: StringFilter<"SignalHistoryItem"> | string
-    symbol?: StringFilter<"SignalHistoryItem"> | string
-    price?: FloatFilter<"SignalHistoryItem"> | number
-    timestamp?: DateTimeFilter<"SignalHistoryItem"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }
-
-  export type SignalHistoryItemOrderByWithRelationInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    signalType?: SortOrder
     symbol?: SortOrder
-    price?: SortOrder
-    timestamp?: SortOrder
-    user?: UserOrderByWithRelationInput
+    signal?: SortOrder
+    status?: SortOrder
+    entry_zone?: SortOrder
+    stop_loss?: SortOrder
+    take_profit?: SortOrder
+    confidence?: SortOrder
+    risk_rating?: SortOrder
+    gpt_confidence_score?: SortOrder
+    sentiment?: SortOrder
+    currentThought?: SortOrder
+    shortTermPrediction?: SortOrder
+    chosenTradingMode?: SortOrder
+    chosenRiskProfile?: SortOrder
+    strategyReasoning?: SortOrder
+    analysisSummary?: SortOrder
+    newsAnalysis?: SortOrder
+    createdAt?: SortOrder
+    _count?: GeneratedSignalCountOrderByAggregateInput
+    _max?: GeneratedSignalMaxOrderByAggregateInput
+    _min?: GeneratedSignalMinOrderByAggregateInput
   }
 
-  export type SignalHistoryItemWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: SignalHistoryItemWhereInput | SignalHistoryItemWhereInput[]
-    OR?: SignalHistoryItemWhereInput[]
-    NOT?: SignalHistoryItemWhereInput | SignalHistoryItemWhereInput[]
-    userId?: UuidFilter<"SignalHistoryItem"> | string
-    signalType?: StringFilter<"SignalHistoryItem"> | string
-    symbol?: StringFilter<"SignalHistoryItem"> | string
-    price?: FloatFilter<"SignalHistoryItem"> | number
-    timestamp?: DateTimeFilter<"SignalHistoryItem"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id">
-
-  export type SignalHistoryItemOrderByWithAggregationInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    signalType?: SortOrder
-    symbol?: SortOrder
-    price?: SortOrder
-    timestamp?: SortOrder
-    _count?: SignalHistoryItemCountOrderByAggregateInput
-    _avg?: SignalHistoryItemAvgOrderByAggregateInput
-    _max?: SignalHistoryItemMaxOrderByAggregateInput
-    _min?: SignalHistoryItemMinOrderByAggregateInput
-    _sum?: SignalHistoryItemSumOrderByAggregateInput
-  }
-
-  export type SignalHistoryItemScalarWhereWithAggregatesInput = {
-    AND?: SignalHistoryItemScalarWhereWithAggregatesInput | SignalHistoryItemScalarWhereWithAggregatesInput[]
-    OR?: SignalHistoryItemScalarWhereWithAggregatesInput[]
-    NOT?: SignalHistoryItemScalarWhereWithAggregatesInput | SignalHistoryItemScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"SignalHistoryItem"> | string
-    userId?: UuidWithAggregatesFilter<"SignalHistoryItem"> | string
-    signalType?: StringWithAggregatesFilter<"SignalHistoryItem"> | string
-    symbol?: StringWithAggregatesFilter<"SignalHistoryItem"> | string
-    price?: FloatWithAggregatesFilter<"SignalHistoryItem"> | number
-    timestamp?: DateTimeWithAggregatesFilter<"SignalHistoryItem"> | Date | string
+  export type GeneratedSignalScalarWhereWithAggregatesInput = {
+    AND?: GeneratedSignalScalarWhereWithAggregatesInput | GeneratedSignalScalarWhereWithAggregatesInput[]
+    OR?: GeneratedSignalScalarWhereWithAggregatesInput[]
+    NOT?: GeneratedSignalScalarWhereWithAggregatesInput | GeneratedSignalScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    userId?: UuidWithAggregatesFilter<"GeneratedSignal"> | string
+    symbol?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    signal?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    status?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    entry_zone?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    stop_loss?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    take_profit?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    confidence?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    risk_rating?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    gpt_confidence_score?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    sentiment?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    currentThought?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    shortTermPrediction?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    chosenTradingMode?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    chosenRiskProfile?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    strategyReasoning?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    analysisSummary?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    newsAnalysis?: StringWithAggregatesFilter<"GeneratedSignal"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"GeneratedSignal"> | Date | string
   }
 
   export type PositionWhereInput = {
     AND?: PositionWhereInput | PositionWhereInput[]
     OR?: PositionWhereInput[]
     NOT?: PositionWhereInput | PositionWhereInput[]
-    id?: UuidFilter<"Position"> | string
+    id?: StringFilter<"Position"> | string
     userId?: UuidFilter<"Position"> | string
     symbol?: StringFilter<"Position"> | string
     signalType?: StringFilter<"Position"> | string
-    entryPrice?: FloatFilter<"Position"> | number
-    size?: FloatFilter<"Position"> | number
     status?: StringFilter<"Position"> | string
-    openTimestamp?: DateTimeFilter<"Position"> | Date | string
+    type?: StringFilter<"Position"> | string
+    entryPrice?: FloatFilter<"Position"> | number
+    stopLoss?: FloatFilter<"Position"> | number
+    takeProfit?: FloatFilter<"Position"> | number
+    size?: FloatFilter<"Position"> | number
+    openTimestamp?: DateTimeNullableFilter<"Position"> | Date | string | null
     closeTimestamp?: DateTimeNullableFilter<"Position"> | Date | string | null
     closePrice?: FloatNullableFilter<"Position"> | number | null
     pnl?: FloatNullableFilter<"Position"> | number | null
-    stopLoss?: FloatNullableFilter<"Position"> | number | null
-    takeProfit?: FloatNullableFilter<"Position"> | number | null
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    gainedXp?: IntNullableFilter<"Position"> | number | null
+    gainedAirdropPoints?: IntNullableFilter<"Position"> | number | null
+    gasPaid?: FloatNullableFilter<"Position"> | number | null
+    blocksTrained?: IntNullableFilter<"Position"> | number | null
+    tradingMode?: StringFilter<"Position"> | string
+    riskProfile?: StringFilter<"Position"> | string
+    sentiment?: StringFilter<"Position"> | string
+    gpt_confidence_score?: StringFilter<"Position"> | string
+    analysisSummary?: StringFilter<"Position"> | string
+    newsAnalysis?: StringFilter<"Position"> | string
+    strategyReasoning?: StringFilter<"Position"> | string
+    createdAt?: DateTimeFilter<"Position"> | Date | string
+    strategyId?: UuidNullableFilter<"Position"> | string | null
+    user?: XOR<UserRelationFilter, UserWhereInput>
+    generatedSignal?: XOR<GeneratedSignalNullableRelationFilter, GeneratedSignalWhereInput> | null
   }
 
   export type PositionOrderByWithRelationInput = {
@@ -8715,52 +6208,96 @@ export namespace Prisma {
     userId?: SortOrder
     symbol?: SortOrder
     signalType?: SortOrder
-    entryPrice?: SortOrder
-    size?: SortOrder
     status?: SortOrder
-    openTimestamp?: SortOrder
+    type?: SortOrder
+    entryPrice?: SortOrder
+    stopLoss?: SortOrder
+    takeProfit?: SortOrder
+    size?: SortOrder
+    openTimestamp?: SortOrderInput | SortOrder
     closeTimestamp?: SortOrderInput | SortOrder
     closePrice?: SortOrderInput | SortOrder
     pnl?: SortOrderInput | SortOrder
-    stopLoss?: SortOrderInput | SortOrder
-    takeProfit?: SortOrderInput | SortOrder
+    gainedXp?: SortOrderInput | SortOrder
+    gainedAirdropPoints?: SortOrderInput | SortOrder
+    gasPaid?: SortOrderInput | SortOrder
+    blocksTrained?: SortOrderInput | SortOrder
+    tradingMode?: SortOrder
+    riskProfile?: SortOrder
+    sentiment?: SortOrder
+    gpt_confidence_score?: SortOrder
+    analysisSummary?: SortOrder
+    newsAnalysis?: SortOrder
+    strategyReasoning?: SortOrder
+    createdAt?: SortOrder
+    strategyId?: SortOrderInput | SortOrder
     user?: UserOrderByWithRelationInput
+    generatedSignal?: GeneratedSignalOrderByWithRelationInput
   }
 
   export type PositionWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    strategyId?: string
     AND?: PositionWhereInput | PositionWhereInput[]
     OR?: PositionWhereInput[]
     NOT?: PositionWhereInput | PositionWhereInput[]
     userId?: UuidFilter<"Position"> | string
     symbol?: StringFilter<"Position"> | string
     signalType?: StringFilter<"Position"> | string
-    entryPrice?: FloatFilter<"Position"> | number
-    size?: FloatFilter<"Position"> | number
     status?: StringFilter<"Position"> | string
-    openTimestamp?: DateTimeFilter<"Position"> | Date | string
+    type?: StringFilter<"Position"> | string
+    entryPrice?: FloatFilter<"Position"> | number
+    stopLoss?: FloatFilter<"Position"> | number
+    takeProfit?: FloatFilter<"Position"> | number
+    size?: FloatFilter<"Position"> | number
+    openTimestamp?: DateTimeNullableFilter<"Position"> | Date | string | null
     closeTimestamp?: DateTimeNullableFilter<"Position"> | Date | string | null
     closePrice?: FloatNullableFilter<"Position"> | number | null
     pnl?: FloatNullableFilter<"Position"> | number | null
-    stopLoss?: FloatNullableFilter<"Position"> | number | null
-    takeProfit?: FloatNullableFilter<"Position"> | number | null
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id">
+    gainedXp?: IntNullableFilter<"Position"> | number | null
+    gainedAirdropPoints?: IntNullableFilter<"Position"> | number | null
+    gasPaid?: FloatNullableFilter<"Position"> | number | null
+    blocksTrained?: IntNullableFilter<"Position"> | number | null
+    tradingMode?: StringFilter<"Position"> | string
+    riskProfile?: StringFilter<"Position"> | string
+    sentiment?: StringFilter<"Position"> | string
+    gpt_confidence_score?: StringFilter<"Position"> | string
+    analysisSummary?: StringFilter<"Position"> | string
+    newsAnalysis?: StringFilter<"Position"> | string
+    strategyReasoning?: StringFilter<"Position"> | string
+    createdAt?: DateTimeFilter<"Position"> | Date | string
+    user?: XOR<UserRelationFilter, UserWhereInput>
+    generatedSignal?: XOR<GeneratedSignalNullableRelationFilter, GeneratedSignalWhereInput> | null
+  }, "id" | "strategyId">
 
   export type PositionOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
     symbol?: SortOrder
     signalType?: SortOrder
-    entryPrice?: SortOrder
-    size?: SortOrder
     status?: SortOrder
-    openTimestamp?: SortOrder
+    type?: SortOrder
+    entryPrice?: SortOrder
+    stopLoss?: SortOrder
+    takeProfit?: SortOrder
+    size?: SortOrder
+    openTimestamp?: SortOrderInput | SortOrder
     closeTimestamp?: SortOrderInput | SortOrder
     closePrice?: SortOrderInput | SortOrder
     pnl?: SortOrderInput | SortOrder
-    stopLoss?: SortOrderInput | SortOrder
-    takeProfit?: SortOrderInput | SortOrder
+    gainedXp?: SortOrderInput | SortOrder
+    gainedAirdropPoints?: SortOrderInput | SortOrder
+    gasPaid?: SortOrderInput | SortOrder
+    blocksTrained?: SortOrderInput | SortOrder
+    tradingMode?: SortOrder
+    riskProfile?: SortOrder
+    sentiment?: SortOrder
+    gpt_confidence_score?: SortOrder
+    analysisSummary?: SortOrder
+    newsAnalysis?: SortOrder
+    strategyReasoning?: SortOrder
+    createdAt?: SortOrder
+    strategyId?: SortOrderInput | SortOrder
     _count?: PositionCountOrderByAggregateInput
     _avg?: PositionAvgOrderByAggregateInput
     _max?: PositionMaxOrderByAggregateInput
@@ -8772,378 +6309,427 @@ export namespace Prisma {
     AND?: PositionScalarWhereWithAggregatesInput | PositionScalarWhereWithAggregatesInput[]
     OR?: PositionScalarWhereWithAggregatesInput[]
     NOT?: PositionScalarWhereWithAggregatesInput | PositionScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"Position"> | string
+    id?: StringWithAggregatesFilter<"Position"> | string
     userId?: UuidWithAggregatesFilter<"Position"> | string
     symbol?: StringWithAggregatesFilter<"Position"> | string
     signalType?: StringWithAggregatesFilter<"Position"> | string
-    entryPrice?: FloatWithAggregatesFilter<"Position"> | number
-    size?: FloatWithAggregatesFilter<"Position"> | number
     status?: StringWithAggregatesFilter<"Position"> | string
-    openTimestamp?: DateTimeWithAggregatesFilter<"Position"> | Date | string
+    type?: StringWithAggregatesFilter<"Position"> | string
+    entryPrice?: FloatWithAggregatesFilter<"Position"> | number
+    stopLoss?: FloatWithAggregatesFilter<"Position"> | number
+    takeProfit?: FloatWithAggregatesFilter<"Position"> | number
+    size?: FloatWithAggregatesFilter<"Position"> | number
+    openTimestamp?: DateTimeNullableWithAggregatesFilter<"Position"> | Date | string | null
     closeTimestamp?: DateTimeNullableWithAggregatesFilter<"Position"> | Date | string | null
     closePrice?: FloatNullableWithAggregatesFilter<"Position"> | number | null
     pnl?: FloatNullableWithAggregatesFilter<"Position"> | number | null
-    stopLoss?: FloatNullableWithAggregatesFilter<"Position"> | number | null
-    takeProfit?: FloatNullableWithAggregatesFilter<"Position"> | number | null
-  }
-
-  export type UserAgentWhereInput = {
-    AND?: UserAgentWhereInput | UserAgentWhereInput[]
-    OR?: UserAgentWhereInput[]
-    NOT?: UserAgentWhereInput | UserAgentWhereInput[]
-    id?: UuidFilter<"UserAgent"> | string
-    userId?: UuidFilter<"UserAgent"> | string
-    agentId?: StringFilter<"UserAgent"> | string
-    level?: IntFilter<"UserAgent"> | number
-    status?: StringFilter<"UserAgent"> | string
-    deploymentEndTime?: DateTimeNullableFilter<"UserAgent"> | Date | string | null
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }
-
-  export type UserAgentOrderByWithRelationInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    agentId?: SortOrder
-    level?: SortOrder
-    status?: SortOrder
-    deploymentEndTime?: SortOrderInput | SortOrder
-    user?: UserOrderByWithRelationInput
-  }
-
-  export type UserAgentWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: UserAgentWhereInput | UserAgentWhereInput[]
-    OR?: UserAgentWhereInput[]
-    NOT?: UserAgentWhereInput | UserAgentWhereInput[]
-    userId?: UuidFilter<"UserAgent"> | string
-    agentId?: StringFilter<"UserAgent"> | string
-    level?: IntFilter<"UserAgent"> | number
-    status?: StringFilter<"UserAgent"> | string
-    deploymentEndTime?: DateTimeNullableFilter<"UserAgent"> | Date | string | null
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id">
-
-  export type UserAgentOrderByWithAggregationInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    agentId?: SortOrder
-    level?: SortOrder
-    status?: SortOrder
-    deploymentEndTime?: SortOrderInput | SortOrder
-    _count?: UserAgentCountOrderByAggregateInput
-    _avg?: UserAgentAvgOrderByAggregateInput
-    _max?: UserAgentMaxOrderByAggregateInput
-    _min?: UserAgentMinOrderByAggregateInput
-    _sum?: UserAgentSumOrderByAggregateInput
-  }
-
-  export type UserAgentScalarWhereWithAggregatesInput = {
-    AND?: UserAgentScalarWhereWithAggregatesInput | UserAgentScalarWhereWithAggregatesInput[]
-    OR?: UserAgentScalarWhereWithAggregatesInput[]
-    NOT?: UserAgentScalarWhereWithAggregatesInput | UserAgentScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"UserAgent"> | string
-    userId?: UuidWithAggregatesFilter<"UserAgent"> | string
-    agentId?: StringWithAggregatesFilter<"UserAgent"> | string
-    level?: IntWithAggregatesFilter<"UserAgent"> | number
-    status?: StringWithAggregatesFilter<"UserAgent"> | string
-    deploymentEndTime?: DateTimeNullableWithAggregatesFilter<"UserAgent"> | Date | string | null
+    gainedXp?: IntNullableWithAggregatesFilter<"Position"> | number | null
+    gainedAirdropPoints?: IntNullableWithAggregatesFilter<"Position"> | number | null
+    gasPaid?: FloatNullableWithAggregatesFilter<"Position"> | number | null
+    blocksTrained?: IntNullableWithAggregatesFilter<"Position"> | number | null
+    tradingMode?: StringWithAggregatesFilter<"Position"> | string
+    riskProfile?: StringWithAggregatesFilter<"Position"> | string
+    sentiment?: StringWithAggregatesFilter<"Position"> | string
+    gpt_confidence_score?: StringWithAggregatesFilter<"Position"> | string
+    analysisSummary?: StringWithAggregatesFilter<"Position"> | string
+    newsAnalysis?: StringWithAggregatesFilter<"Position"> | string
+    strategyReasoning?: StringWithAggregatesFilter<"Position"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Position"> | Date | string
+    strategyId?: UuidNullableWithAggregatesFilter<"Position"> | string | null
   }
 
   export type UserCreateInput = {
     id?: string
     username: string
-    status?: string | null
-    shadowId?: string | null
+    shadowId?: string
     weeklyPoints?: number
     airdropPoints?: number
+    status?: string
+    claimedMissions?: string
+    email?: string | null
     wallet_address?: string | null
     wallet_type?: string | null
-    email?: string | null
     phone?: string | null
     x_handle?: string | null
     telegram_handle?: string | null
     youtube_handle?: string | null
-    badges?: BadgeCreateNestedManyWithoutUsersInput
-    consoleInsights?: ConsoleInsightCreateNestedManyWithoutUserInput
-    signals?: SignalHistoryItemCreateNestedManyWithoutUserInput
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    badges?: BadgeCreateNestedManyWithoutUserInput
+    generatedSignals?: GeneratedSignalCreateNestedManyWithoutUserInput
     positions?: PositionCreateNestedManyWithoutUserInput
-    userAgents?: UserAgentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
     id?: string
     username: string
-    status?: string | null
-    shadowId?: string | null
+    shadowId?: string
     weeklyPoints?: number
     airdropPoints?: number
+    status?: string
+    claimedMissions?: string
+    email?: string | null
     wallet_address?: string | null
     wallet_type?: string | null
-    email?: string | null
     phone?: string | null
     x_handle?: string | null
     telegram_handle?: string | null
     youtube_handle?: string | null
-    badges?: BadgeUncheckedCreateNestedManyWithoutUsersInput
-    consoleInsights?: ConsoleInsightUncheckedCreateNestedManyWithoutUserInput
-    signals?: SignalHistoryItemUncheckedCreateNestedManyWithoutUserInput
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    badges?: BadgeUncheckedCreateNestedManyWithoutUserInput
+    generatedSignals?: GeneratedSignalUncheckedCreateNestedManyWithoutUserInput
     positions?: PositionUncheckedCreateNestedManyWithoutUserInput
-    userAgents?: UserAgentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    shadowId?: NullableStringFieldUpdateOperationsInput | string | null
+    shadowId?: StringFieldUpdateOperationsInput | string
     weeklyPoints?: IntFieldUpdateOperationsInput | number
     airdropPoints?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    claimedMissions?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     x_handle?: NullableStringFieldUpdateOperationsInput | string | null
     telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    badges?: BadgeUpdateManyWithoutUsersNestedInput
-    consoleInsights?: ConsoleInsightUpdateManyWithoutUserNestedInput
-    signals?: SignalHistoryItemUpdateManyWithoutUserNestedInput
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    badges?: BadgeUpdateManyWithoutUserNestedInput
+    generatedSignals?: GeneratedSignalUpdateManyWithoutUserNestedInput
     positions?: PositionUpdateManyWithoutUserNestedInput
-    userAgents?: UserAgentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    shadowId?: NullableStringFieldUpdateOperationsInput | string | null
+    shadowId?: StringFieldUpdateOperationsInput | string
     weeklyPoints?: IntFieldUpdateOperationsInput | number
     airdropPoints?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    claimedMissions?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     x_handle?: NullableStringFieldUpdateOperationsInput | string | null
     telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    badges?: BadgeUncheckedUpdateManyWithoutUsersNestedInput
-    consoleInsights?: ConsoleInsightUncheckedUpdateManyWithoutUserNestedInput
-    signals?: SignalHistoryItemUncheckedUpdateManyWithoutUserNestedInput
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    badges?: BadgeUncheckedUpdateManyWithoutUserNestedInput
+    generatedSignals?: GeneratedSignalUncheckedUpdateManyWithoutUserNestedInput
     positions?: PositionUncheckedUpdateManyWithoutUserNestedInput
-    userAgents?: UserAgentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
     id?: string
     username: string
-    status?: string | null
-    shadowId?: string | null
+    shadowId?: string
     weeklyPoints?: number
     airdropPoints?: number
+    status?: string
+    claimedMissions?: string
+    email?: string | null
     wallet_address?: string | null
     wallet_type?: string | null
-    email?: string | null
     phone?: string | null
     x_handle?: string | null
     telegram_handle?: string | null
     youtube_handle?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type UserUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    shadowId?: NullableStringFieldUpdateOperationsInput | string | null
+    shadowId?: StringFieldUpdateOperationsInput | string
     weeklyPoints?: IntFieldUpdateOperationsInput | number
     airdropPoints?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    claimedMissions?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     x_handle?: NullableStringFieldUpdateOperationsInput | string | null
     telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    shadowId?: NullableStringFieldUpdateOperationsInput | string | null
+    shadowId?: StringFieldUpdateOperationsInput | string
     weeklyPoints?: IntFieldUpdateOperationsInput | number
     airdropPoints?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    claimedMissions?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     x_handle?: NullableStringFieldUpdateOperationsInput | string | null
     telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type BadgeCreateInput = {
     id?: string
     name: string
-    users?: UserCreateNestedManyWithoutBadgesInput
+    description: string
+    icon: string
+    user: UserCreateNestedOneWithoutBadgesInput
   }
 
   export type BadgeUncheckedCreateInput = {
     id?: string
     name: string
-    users?: UserUncheckedCreateNestedManyWithoutBadgesInput
+    description: string
+    icon: string
+    userId: string
   }
 
   export type BadgeUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    users?: UserUpdateManyWithoutBadgesNestedInput
+    description?: StringFieldUpdateOperationsInput | string
+    icon?: StringFieldUpdateOperationsInput | string
+    user?: UserUpdateOneRequiredWithoutBadgesNestedInput
   }
 
   export type BadgeUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    users?: UserUncheckedUpdateManyWithoutBadgesNestedInput
+    description?: StringFieldUpdateOperationsInput | string
+    icon?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
   }
 
   export type BadgeCreateManyInput = {
     id?: string
     name: string
+    description: string
+    icon: string
+    userId: string
   }
 
   export type BadgeUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    icon?: StringFieldUpdateOperationsInput | string
   }
 
   export type BadgeUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-  }
-
-  export type ConsoleInsightCreateInput = {
-    id?: string
-    content: string
-    timestamp?: Date | string
-    user: UserCreateNestedOneWithoutConsoleInsightsInput
-  }
-
-  export type ConsoleInsightUncheckedCreateInput = {
-    id?: string
-    userId: string
-    content: string
-    timestamp?: Date | string
-  }
-
-  export type ConsoleInsightUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutConsoleInsightsNestedInput
-  }
-
-  export type ConsoleInsightUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    icon?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type ConsoleInsightCreateManyInput = {
+  export type GeneratedSignalCreateInput = {
     id?: string
-    userId: string
-    content: string
-    timestamp?: Date | string
-  }
-
-  export type ConsoleInsightUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ConsoleInsightUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SignalHistoryItemCreateInput = {
-    id?: string
-    signalType: string
     symbol: string
-    price: number
-    timestamp?: Date | string
-    user: UserCreateNestedOneWithoutSignalsInput
+    signal: string
+    status: string
+    entry_zone: string
+    stop_loss: string
+    take_profit: string
+    confidence: string
+    risk_rating: string
+    gpt_confidence_score: string
+    sentiment: string
+    currentThought: string
+    shortTermPrediction: string
+    chosenTradingMode: string
+    chosenRiskProfile: string
+    strategyReasoning: string
+    analysisSummary: string
+    newsAnalysis: string
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutGeneratedSignalsInput
+    position?: PositionCreateNestedOneWithoutGeneratedSignalInput
   }
 
-  export type SignalHistoryItemUncheckedCreateInput = {
+  export type GeneratedSignalUncheckedCreateInput = {
     id?: string
     userId: string
-    signalType: string
     symbol: string
-    price: number
-    timestamp?: Date | string
+    signal: string
+    status: string
+    entry_zone: string
+    stop_loss: string
+    take_profit: string
+    confidence: string
+    risk_rating: string
+    gpt_confidence_score: string
+    sentiment: string
+    currentThought: string
+    shortTermPrediction: string
+    chosenTradingMode: string
+    chosenRiskProfile: string
+    strategyReasoning: string
+    analysisSummary: string
+    newsAnalysis: string
+    createdAt?: Date | string
+    position?: PositionUncheckedCreateNestedOneWithoutGeneratedSignalInput
   }
 
-  export type SignalHistoryItemUpdateInput = {
+  export type GeneratedSignalUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    signalType?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
-    price?: FloatFieldUpdateOperationsInput | number
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutSignalsNestedInput
+    signal?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    entry_zone?: StringFieldUpdateOperationsInput | string
+    stop_loss?: StringFieldUpdateOperationsInput | string
+    take_profit?: StringFieldUpdateOperationsInput | string
+    confidence?: StringFieldUpdateOperationsInput | string
+    risk_rating?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    currentThought?: StringFieldUpdateOperationsInput | string
+    shortTermPrediction?: StringFieldUpdateOperationsInput | string
+    chosenTradingMode?: StringFieldUpdateOperationsInput | string
+    chosenRiskProfile?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutGeneratedSignalsNestedInput
+    position?: PositionUpdateOneWithoutGeneratedSignalNestedInput
   }
 
-  export type SignalHistoryItemUncheckedUpdateInput = {
+  export type GeneratedSignalUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    signalType?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
-    price?: FloatFieldUpdateOperationsInput | number
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    signal?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    entry_zone?: StringFieldUpdateOperationsInput | string
+    stop_loss?: StringFieldUpdateOperationsInput | string
+    take_profit?: StringFieldUpdateOperationsInput | string
+    confidence?: StringFieldUpdateOperationsInput | string
+    risk_rating?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    currentThought?: StringFieldUpdateOperationsInput | string
+    shortTermPrediction?: StringFieldUpdateOperationsInput | string
+    chosenTradingMode?: StringFieldUpdateOperationsInput | string
+    chosenRiskProfile?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    position?: PositionUncheckedUpdateOneWithoutGeneratedSignalNestedInput
   }
 
-  export type SignalHistoryItemCreateManyInput = {
+  export type GeneratedSignalCreateManyInput = {
     id?: string
     userId: string
-    signalType: string
     symbol: string
-    price: number
-    timestamp?: Date | string
+    signal: string
+    status: string
+    entry_zone: string
+    stop_loss: string
+    take_profit: string
+    confidence: string
+    risk_rating: string
+    gpt_confidence_score: string
+    sentiment: string
+    currentThought: string
+    shortTermPrediction: string
+    chosenTradingMode: string
+    chosenRiskProfile: string
+    strategyReasoning: string
+    analysisSummary: string
+    newsAnalysis: string
+    createdAt?: Date | string
   }
 
-  export type SignalHistoryItemUpdateManyMutationInput = {
+  export type GeneratedSignalUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    signalType?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
-    price?: FloatFieldUpdateOperationsInput | number
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    signal?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    entry_zone?: StringFieldUpdateOperationsInput | string
+    stop_loss?: StringFieldUpdateOperationsInput | string
+    take_profit?: StringFieldUpdateOperationsInput | string
+    confidence?: StringFieldUpdateOperationsInput | string
+    risk_rating?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    currentThought?: StringFieldUpdateOperationsInput | string
+    shortTermPrediction?: StringFieldUpdateOperationsInput | string
+    chosenTradingMode?: StringFieldUpdateOperationsInput | string
+    chosenRiskProfile?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type SignalHistoryItemUncheckedUpdateManyInput = {
+  export type GeneratedSignalUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    signalType?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
-    price?: FloatFieldUpdateOperationsInput | number
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    signal?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    entry_zone?: StringFieldUpdateOperationsInput | string
+    stop_loss?: StringFieldUpdateOperationsInput | string
+    take_profit?: StringFieldUpdateOperationsInput | string
+    confidence?: StringFieldUpdateOperationsInput | string
+    risk_rating?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    currentThought?: StringFieldUpdateOperationsInput | string
+    shortTermPrediction?: StringFieldUpdateOperationsInput | string
+    chosenTradingMode?: StringFieldUpdateOperationsInput | string
+    chosenRiskProfile?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PositionCreateInput = {
     id?: string
     symbol: string
     signalType: string
-    entryPrice: number
-    size: number
     status: string
-    openTimestamp?: Date | string
+    type: string
+    entryPrice: number
+    stopLoss: number
+    takeProfit: number
+    size: number
+    openTimestamp?: Date | string | null
     closeTimestamp?: Date | string | null
     closePrice?: number | null
     pnl?: number | null
-    stopLoss?: number | null
-    takeProfit?: number | null
+    gainedXp?: number | null
+    gainedAirdropPoints?: number | null
+    gasPaid?: number | null
+    blocksTrained?: number | null
+    tradingMode: string
+    riskProfile: string
+    sentiment: string
+    gpt_confidence_score: string
+    analysisSummary: string
+    newsAnalysis: string
+    strategyReasoning: string
+    createdAt?: Date | string
     user: UserCreateNestedOneWithoutPositionsInput
+    generatedSignal?: GeneratedSignalCreateNestedOneWithoutPositionInput
   }
 
   export type PositionUncheckedCreateInput = {
@@ -9151,31 +6737,59 @@ export namespace Prisma {
     userId: string
     symbol: string
     signalType: string
-    entryPrice: number
-    size: number
     status: string
-    openTimestamp?: Date | string
+    type: string
+    entryPrice: number
+    stopLoss: number
+    takeProfit: number
+    size: number
+    openTimestamp?: Date | string | null
     closeTimestamp?: Date | string | null
     closePrice?: number | null
     pnl?: number | null
-    stopLoss?: number | null
-    takeProfit?: number | null
+    gainedXp?: number | null
+    gainedAirdropPoints?: number | null
+    gasPaid?: number | null
+    blocksTrained?: number | null
+    tradingMode: string
+    riskProfile: string
+    sentiment: string
+    gpt_confidence_score: string
+    analysisSummary: string
+    newsAnalysis: string
+    strategyReasoning: string
+    createdAt?: Date | string
+    strategyId?: string | null
   }
 
   export type PositionUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
     signalType?: StringFieldUpdateOperationsInput | string
-    entryPrice?: FloatFieldUpdateOperationsInput | number
-    size?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
-    openTimestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: StringFieldUpdateOperationsInput | string
+    entryPrice?: FloatFieldUpdateOperationsInput | number
+    stopLoss?: FloatFieldUpdateOperationsInput | number
+    takeProfit?: FloatFieldUpdateOperationsInput | number
+    size?: FloatFieldUpdateOperationsInput | number
+    openTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     closeTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     closePrice?: NullableFloatFieldUpdateOperationsInput | number | null
     pnl?: NullableFloatFieldUpdateOperationsInput | number | null
-    stopLoss?: NullableFloatFieldUpdateOperationsInput | number | null
-    takeProfit?: NullableFloatFieldUpdateOperationsInput | number | null
+    gainedXp?: NullableIntFieldUpdateOperationsInput | number | null
+    gainedAirdropPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    gasPaid?: NullableFloatFieldUpdateOperationsInput | number | null
+    blocksTrained?: NullableIntFieldUpdateOperationsInput | number | null
+    tradingMode?: StringFieldUpdateOperationsInput | string
+    riskProfile?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutPositionsNestedInput
+    generatedSignal?: GeneratedSignalUpdateOneWithoutPositionNestedInput
   }
 
   export type PositionUncheckedUpdateInput = {
@@ -9183,15 +6797,29 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
     signalType?: StringFieldUpdateOperationsInput | string
-    entryPrice?: FloatFieldUpdateOperationsInput | number
-    size?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
-    openTimestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: StringFieldUpdateOperationsInput | string
+    entryPrice?: FloatFieldUpdateOperationsInput | number
+    stopLoss?: FloatFieldUpdateOperationsInput | number
+    takeProfit?: FloatFieldUpdateOperationsInput | number
+    size?: FloatFieldUpdateOperationsInput | number
+    openTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     closeTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     closePrice?: NullableFloatFieldUpdateOperationsInput | number | null
     pnl?: NullableFloatFieldUpdateOperationsInput | number | null
-    stopLoss?: NullableFloatFieldUpdateOperationsInput | number | null
-    takeProfit?: NullableFloatFieldUpdateOperationsInput | number | null
+    gainedXp?: NullableIntFieldUpdateOperationsInput | number | null
+    gainedAirdropPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    gasPaid?: NullableFloatFieldUpdateOperationsInput | number | null
+    blocksTrained?: NullableIntFieldUpdateOperationsInput | number | null
+    tradingMode?: StringFieldUpdateOperationsInput | string
+    riskProfile?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    strategyId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type PositionCreateManyInput = {
@@ -9199,30 +6827,57 @@ export namespace Prisma {
     userId: string
     symbol: string
     signalType: string
-    entryPrice: number
-    size: number
     status: string
-    openTimestamp?: Date | string
+    type: string
+    entryPrice: number
+    stopLoss: number
+    takeProfit: number
+    size: number
+    openTimestamp?: Date | string | null
     closeTimestamp?: Date | string | null
     closePrice?: number | null
     pnl?: number | null
-    stopLoss?: number | null
-    takeProfit?: number | null
+    gainedXp?: number | null
+    gainedAirdropPoints?: number | null
+    gasPaid?: number | null
+    blocksTrained?: number | null
+    tradingMode: string
+    riskProfile: string
+    sentiment: string
+    gpt_confidence_score: string
+    analysisSummary: string
+    newsAnalysis: string
+    strategyReasoning: string
+    createdAt?: Date | string
+    strategyId?: string | null
   }
 
   export type PositionUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
     signalType?: StringFieldUpdateOperationsInput | string
-    entryPrice?: FloatFieldUpdateOperationsInput | number
-    size?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
-    openTimestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: StringFieldUpdateOperationsInput | string
+    entryPrice?: FloatFieldUpdateOperationsInput | number
+    stopLoss?: FloatFieldUpdateOperationsInput | number
+    takeProfit?: FloatFieldUpdateOperationsInput | number
+    size?: FloatFieldUpdateOperationsInput | number
+    openTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     closeTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     closePrice?: NullableFloatFieldUpdateOperationsInput | number | null
     pnl?: NullableFloatFieldUpdateOperationsInput | number | null
-    stopLoss?: NullableFloatFieldUpdateOperationsInput | number | null
-    takeProfit?: NullableFloatFieldUpdateOperationsInput | number | null
+    gainedXp?: NullableIntFieldUpdateOperationsInput | number | null
+    gainedAirdropPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    gasPaid?: NullableFloatFieldUpdateOperationsInput | number | null
+    blocksTrained?: NullableIntFieldUpdateOperationsInput | number | null
+    tradingMode?: StringFieldUpdateOperationsInput | string
+    riskProfile?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PositionUncheckedUpdateManyInput = {
@@ -9230,77 +6885,29 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
     signalType?: StringFieldUpdateOperationsInput | string
-    entryPrice?: FloatFieldUpdateOperationsInput | number
-    size?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
-    openTimestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: StringFieldUpdateOperationsInput | string
+    entryPrice?: FloatFieldUpdateOperationsInput | number
+    stopLoss?: FloatFieldUpdateOperationsInput | number
+    takeProfit?: FloatFieldUpdateOperationsInput | number
+    size?: FloatFieldUpdateOperationsInput | number
+    openTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     closeTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     closePrice?: NullableFloatFieldUpdateOperationsInput | number | null
     pnl?: NullableFloatFieldUpdateOperationsInput | number | null
-    stopLoss?: NullableFloatFieldUpdateOperationsInput | number | null
-    takeProfit?: NullableFloatFieldUpdateOperationsInput | number | null
-  }
-
-  export type UserAgentCreateInput = {
-    id?: string
-    agentId: string
-    level: number
-    status: string
-    deploymentEndTime?: Date | string | null
-    user: UserCreateNestedOneWithoutUserAgentsInput
-  }
-
-  export type UserAgentUncheckedCreateInput = {
-    id?: string
-    userId: string
-    agentId: string
-    level: number
-    status: string
-    deploymentEndTime?: Date | string | null
-  }
-
-  export type UserAgentUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    agentId?: StringFieldUpdateOperationsInput | string
-    level?: IntFieldUpdateOperationsInput | number
-    status?: StringFieldUpdateOperationsInput | string
-    deploymentEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    user?: UserUpdateOneRequiredWithoutUserAgentsNestedInput
-  }
-
-  export type UserAgentUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    agentId?: StringFieldUpdateOperationsInput | string
-    level?: IntFieldUpdateOperationsInput | number
-    status?: StringFieldUpdateOperationsInput | string
-    deploymentEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type UserAgentCreateManyInput = {
-    id?: string
-    userId: string
-    agentId: string
-    level: number
-    status: string
-    deploymentEndTime?: Date | string | null
-  }
-
-  export type UserAgentUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    agentId?: StringFieldUpdateOperationsInput | string
-    level?: IntFieldUpdateOperationsInput | number
-    status?: StringFieldUpdateOperationsInput | string
-    deploymentEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type UserAgentUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    agentId?: StringFieldUpdateOperationsInput | string
-    level?: IntFieldUpdateOperationsInput | number
-    status?: StringFieldUpdateOperationsInput | string
-    deploymentEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    gainedXp?: NullableIntFieldUpdateOperationsInput | number | null
+    gainedAirdropPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    gasPaid?: NullableFloatFieldUpdateOperationsInput | number | null
+    blocksTrained?: NullableIntFieldUpdateOperationsInput | number | null
+    tradingMode?: StringFieldUpdateOperationsInput | string
+    riskProfile?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    strategyId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UuidFilter<$PrismaModel = never> = {
@@ -9330,6 +6937,17 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
   export type StringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -9345,15 +6963,15 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
+  export type DateTimeFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
   export type BadgeListRelationFilter = {
@@ -9362,28 +6980,16 @@ export namespace Prisma {
     none?: BadgeWhereInput
   }
 
-  export type ConsoleInsightListRelationFilter = {
-    every?: ConsoleInsightWhereInput
-    some?: ConsoleInsightWhereInput
-    none?: ConsoleInsightWhereInput
-  }
-
-  export type SignalHistoryItemListRelationFilter = {
-    every?: SignalHistoryItemWhereInput
-    some?: SignalHistoryItemWhereInput
-    none?: SignalHistoryItemWhereInput
+  export type GeneratedSignalListRelationFilter = {
+    every?: GeneratedSignalWhereInput
+    some?: GeneratedSignalWhereInput
+    none?: GeneratedSignalWhereInput
   }
 
   export type PositionListRelationFilter = {
     every?: PositionWhereInput
     some?: PositionWhereInput
     none?: PositionWhereInput
-  }
-
-  export type UserAgentListRelationFilter = {
-    every?: UserAgentWhereInput
-    some?: UserAgentWhereInput
-    none?: UserAgentWhereInput
   }
 
   export type SortOrderInput = {
@@ -9395,11 +7001,7 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type ConsoleInsightOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type SignalHistoryItemOrderByRelationAggregateInput = {
+  export type GeneratedSignalOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -9407,24 +7009,23 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type UserAgentOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     username?: SortOrder
-    status?: SortOrder
     shadowId?: SortOrder
     weeklyPoints?: SortOrder
     airdropPoints?: SortOrder
+    status?: SortOrder
+    claimedMissions?: SortOrder
+    email?: SortOrder
     wallet_address?: SortOrder
     wallet_type?: SortOrder
-    email?: SortOrder
     phone?: SortOrder
     x_handle?: SortOrder
     telegram_handle?: SortOrder
     youtube_handle?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type UserAvgOrderByAggregateInput = {
@@ -9435,33 +7036,39 @@ export namespace Prisma {
   export type UserMaxOrderByAggregateInput = {
     id?: SortOrder
     username?: SortOrder
-    status?: SortOrder
     shadowId?: SortOrder
     weeklyPoints?: SortOrder
     airdropPoints?: SortOrder
+    status?: SortOrder
+    claimedMissions?: SortOrder
+    email?: SortOrder
     wallet_address?: SortOrder
     wallet_type?: SortOrder
-    email?: SortOrder
     phone?: SortOrder
     x_handle?: SortOrder
     telegram_handle?: SortOrder
     youtube_handle?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
     id?: SortOrder
     username?: SortOrder
-    status?: SortOrder
     shadowId?: SortOrder
     weeklyPoints?: SortOrder
     airdropPoints?: SortOrder
+    status?: SortOrder
+    claimedMissions?: SortOrder
+    email?: SortOrder
     wallet_address?: SortOrder
     wallet_type?: SortOrder
-    email?: SortOrder
     phone?: SortOrder
     x_handle?: SortOrder
     telegram_handle?: SortOrder
     youtube_handle?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type UserSumOrderByAggregateInput = {
@@ -9502,6 +7109,22 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -9520,84 +7143,6 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type UserListRelationFilter = {
-    every?: UserWhereInput
-    some?: UserWhereInput
-    none?: UserWhereInput
-  }
-
-  export type UserOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type BadgeCountOrderByAggregateInput = {
-    id?: SortOrder
-    name?: SortOrder
-  }
-
-  export type BadgeMaxOrderByAggregateInput = {
-    id?: SortOrder
-    name?: SortOrder
-  }
-
-  export type BadgeMinOrderByAggregateInput = {
-    id?: SortOrder
-    name?: SortOrder
-  }
-
-  export type DateTimeFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
-  }
-
-  export type UserScalarRelationFilter = {
-    is?: UserWhereInput
-    isNot?: UserWhereInput
-  }
-
-  export type ConsoleInsightCountOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    content?: SortOrder
-    timestamp?: SortOrder
-  }
-
-  export type ConsoleInsightMaxOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    content?: SortOrder
-    timestamp?: SortOrder
-  }
-
-  export type ConsoleInsightMinOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    content?: SortOrder
-    timestamp?: SortOrder
-  }
-
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -9612,6 +7157,109 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type UserRelationFilter = {
+    is?: UserWhereInput
+    isNot?: UserWhereInput
+  }
+
+  export type BadgeCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    icon?: SortOrder
+    userId?: SortOrder
+  }
+
+  export type BadgeMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    icon?: SortOrder
+    userId?: SortOrder
+  }
+
+  export type BadgeMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    icon?: SortOrder
+    userId?: SortOrder
+  }
+
+  export type PositionNullableRelationFilter = {
+    is?: PositionWhereInput | null
+    isNot?: PositionWhereInput | null
+  }
+
+  export type GeneratedSignalCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    symbol?: SortOrder
+    signal?: SortOrder
+    status?: SortOrder
+    entry_zone?: SortOrder
+    stop_loss?: SortOrder
+    take_profit?: SortOrder
+    confidence?: SortOrder
+    risk_rating?: SortOrder
+    gpt_confidence_score?: SortOrder
+    sentiment?: SortOrder
+    currentThought?: SortOrder
+    shortTermPrediction?: SortOrder
+    chosenTradingMode?: SortOrder
+    chosenRiskProfile?: SortOrder
+    strategyReasoning?: SortOrder
+    analysisSummary?: SortOrder
+    newsAnalysis?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type GeneratedSignalMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    symbol?: SortOrder
+    signal?: SortOrder
+    status?: SortOrder
+    entry_zone?: SortOrder
+    stop_loss?: SortOrder
+    take_profit?: SortOrder
+    confidence?: SortOrder
+    risk_rating?: SortOrder
+    gpt_confidence_score?: SortOrder
+    sentiment?: SortOrder
+    currentThought?: SortOrder
+    shortTermPrediction?: SortOrder
+    chosenTradingMode?: SortOrder
+    chosenRiskProfile?: SortOrder
+    strategyReasoning?: SortOrder
+    analysisSummary?: SortOrder
+    newsAnalysis?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type GeneratedSignalMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    symbol?: SortOrder
+    signal?: SortOrder
+    status?: SortOrder
+    entry_zone?: SortOrder
+    stop_loss?: SortOrder
+    take_profit?: SortOrder
+    confidence?: SortOrder
+    risk_rating?: SortOrder
+    gpt_confidence_score?: SortOrder
+    sentiment?: SortOrder
+    currentThought?: SortOrder
+    shortTermPrediction?: SortOrder
+    chosenTradingMode?: SortOrder
+    chosenRiskProfile?: SortOrder
+    strategyReasoning?: SortOrder
+    analysisSummary?: SortOrder
+    newsAnalysis?: SortOrder
+    createdAt?: SortOrder
+  }
+
   export type FloatFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>
     in?: number[] | ListFloatFieldRefInput<$PrismaModel>
@@ -9621,57 +7269,6 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
-  export type SignalHistoryItemCountOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    signalType?: SortOrder
-    symbol?: SortOrder
-    price?: SortOrder
-    timestamp?: SortOrder
-  }
-
-  export type SignalHistoryItemAvgOrderByAggregateInput = {
-    price?: SortOrder
-  }
-
-  export type SignalHistoryItemMaxOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    signalType?: SortOrder
-    symbol?: SortOrder
-    price?: SortOrder
-    timestamp?: SortOrder
-  }
-
-  export type SignalHistoryItemMinOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    signalType?: SortOrder
-    symbol?: SortOrder
-    price?: SortOrder
-    timestamp?: SortOrder
-  }
-
-  export type SignalHistoryItemSumOrderByAggregateInput = {
-    price?: SortOrder
-  }
-
-  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedFloatFilter<$PrismaModel>
-    _min?: NestedFloatFilter<$PrismaModel>
-    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type DateTimeNullableFilter<$PrismaModel = never> = {
@@ -9696,29 +7293,75 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type UuidNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedUuidNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type GeneratedSignalNullableRelationFilter = {
+    is?: GeneratedSignalWhereInput | null
+    isNot?: GeneratedSignalWhereInput | null
+  }
+
   export type PositionCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
     symbol?: SortOrder
     signalType?: SortOrder
-    entryPrice?: SortOrder
-    size?: SortOrder
     status?: SortOrder
+    type?: SortOrder
+    entryPrice?: SortOrder
+    stopLoss?: SortOrder
+    takeProfit?: SortOrder
+    size?: SortOrder
     openTimestamp?: SortOrder
     closeTimestamp?: SortOrder
     closePrice?: SortOrder
     pnl?: SortOrder
-    stopLoss?: SortOrder
-    takeProfit?: SortOrder
+    gainedXp?: SortOrder
+    gainedAirdropPoints?: SortOrder
+    gasPaid?: SortOrder
+    blocksTrained?: SortOrder
+    tradingMode?: SortOrder
+    riskProfile?: SortOrder
+    sentiment?: SortOrder
+    gpt_confidence_score?: SortOrder
+    analysisSummary?: SortOrder
+    newsAnalysis?: SortOrder
+    strategyReasoning?: SortOrder
+    createdAt?: SortOrder
+    strategyId?: SortOrder
   }
 
   export type PositionAvgOrderByAggregateInput = {
     entryPrice?: SortOrder
+    stopLoss?: SortOrder
+    takeProfit?: SortOrder
     size?: SortOrder
     closePrice?: SortOrder
     pnl?: SortOrder
-    stopLoss?: SortOrder
-    takeProfit?: SortOrder
+    gainedXp?: SortOrder
+    gainedAirdropPoints?: SortOrder
+    gasPaid?: SortOrder
+    blocksTrained?: SortOrder
   }
 
   export type PositionMaxOrderByAggregateInput = {
@@ -9726,15 +7369,29 @@ export namespace Prisma {
     userId?: SortOrder
     symbol?: SortOrder
     signalType?: SortOrder
-    entryPrice?: SortOrder
-    size?: SortOrder
     status?: SortOrder
+    type?: SortOrder
+    entryPrice?: SortOrder
+    stopLoss?: SortOrder
+    takeProfit?: SortOrder
+    size?: SortOrder
     openTimestamp?: SortOrder
     closeTimestamp?: SortOrder
     closePrice?: SortOrder
     pnl?: SortOrder
-    stopLoss?: SortOrder
-    takeProfit?: SortOrder
+    gainedXp?: SortOrder
+    gainedAirdropPoints?: SortOrder
+    gasPaid?: SortOrder
+    blocksTrained?: SortOrder
+    tradingMode?: SortOrder
+    riskProfile?: SortOrder
+    sentiment?: SortOrder
+    gpt_confidence_score?: SortOrder
+    analysisSummary?: SortOrder
+    newsAnalysis?: SortOrder
+    strategyReasoning?: SortOrder
+    createdAt?: SortOrder
+    strategyId?: SortOrder
   }
 
   export type PositionMinOrderByAggregateInput = {
@@ -9742,24 +7399,58 @@ export namespace Prisma {
     userId?: SortOrder
     symbol?: SortOrder
     signalType?: SortOrder
-    entryPrice?: SortOrder
-    size?: SortOrder
     status?: SortOrder
+    type?: SortOrder
+    entryPrice?: SortOrder
+    stopLoss?: SortOrder
+    takeProfit?: SortOrder
+    size?: SortOrder
     openTimestamp?: SortOrder
     closeTimestamp?: SortOrder
     closePrice?: SortOrder
     pnl?: SortOrder
-    stopLoss?: SortOrder
-    takeProfit?: SortOrder
+    gainedXp?: SortOrder
+    gainedAirdropPoints?: SortOrder
+    gasPaid?: SortOrder
+    blocksTrained?: SortOrder
+    tradingMode?: SortOrder
+    riskProfile?: SortOrder
+    sentiment?: SortOrder
+    gpt_confidence_score?: SortOrder
+    analysisSummary?: SortOrder
+    newsAnalysis?: SortOrder
+    strategyReasoning?: SortOrder
+    createdAt?: SortOrder
+    strategyId?: SortOrder
   }
 
   export type PositionSumOrderByAggregateInput = {
     entryPrice?: SortOrder
+    stopLoss?: SortOrder
+    takeProfit?: SortOrder
     size?: SortOrder
     closePrice?: SortOrder
     pnl?: SortOrder
-    stopLoss?: SortOrder
-    takeProfit?: SortOrder
+    gainedXp?: SortOrder
+    gainedAirdropPoints?: SortOrder
+    gasPaid?: SortOrder
+    blocksTrained?: SortOrder
+  }
+
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -9792,59 +7483,49 @@ export namespace Prisma {
     _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
-  export type UserAgentCountOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    agentId?: SortOrder
-    level?: SortOrder
-    status?: SortOrder
-    deploymentEndTime?: SortOrder
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
-  export type UserAgentAvgOrderByAggregateInput = {
-    level?: SortOrder
+  export type UuidNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedUuidNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type UserAgentMaxOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    agentId?: SortOrder
-    level?: SortOrder
-    status?: SortOrder
-    deploymentEndTime?: SortOrder
-  }
-
-  export type UserAgentMinOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    agentId?: SortOrder
-    level?: SortOrder
-    status?: SortOrder
-    deploymentEndTime?: SortOrder
-  }
-
-  export type UserAgentSumOrderByAggregateInput = {
-    level?: SortOrder
-  }
-
-  export type BadgeCreateNestedManyWithoutUsersInput = {
-    create?: XOR<BadgeCreateWithoutUsersInput, BadgeUncheckedCreateWithoutUsersInput> | BadgeCreateWithoutUsersInput[] | BadgeUncheckedCreateWithoutUsersInput[]
-    connectOrCreate?: BadgeCreateOrConnectWithoutUsersInput | BadgeCreateOrConnectWithoutUsersInput[]
+  export type BadgeCreateNestedManyWithoutUserInput = {
+    create?: XOR<BadgeCreateWithoutUserInput, BadgeUncheckedCreateWithoutUserInput> | BadgeCreateWithoutUserInput[] | BadgeUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BadgeCreateOrConnectWithoutUserInput | BadgeCreateOrConnectWithoutUserInput[]
+    createMany?: BadgeCreateManyUserInputEnvelope
     connect?: BadgeWhereUniqueInput | BadgeWhereUniqueInput[]
   }
 
-  export type ConsoleInsightCreateNestedManyWithoutUserInput = {
-    create?: XOR<ConsoleInsightCreateWithoutUserInput, ConsoleInsightUncheckedCreateWithoutUserInput> | ConsoleInsightCreateWithoutUserInput[] | ConsoleInsightUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: ConsoleInsightCreateOrConnectWithoutUserInput | ConsoleInsightCreateOrConnectWithoutUserInput[]
-    createMany?: ConsoleInsightCreateManyUserInputEnvelope
-    connect?: ConsoleInsightWhereUniqueInput | ConsoleInsightWhereUniqueInput[]
-  }
-
-  export type SignalHistoryItemCreateNestedManyWithoutUserInput = {
-    create?: XOR<SignalHistoryItemCreateWithoutUserInput, SignalHistoryItemUncheckedCreateWithoutUserInput> | SignalHistoryItemCreateWithoutUserInput[] | SignalHistoryItemUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: SignalHistoryItemCreateOrConnectWithoutUserInput | SignalHistoryItemCreateOrConnectWithoutUserInput[]
-    createMany?: SignalHistoryItemCreateManyUserInputEnvelope
-    connect?: SignalHistoryItemWhereUniqueInput | SignalHistoryItemWhereUniqueInput[]
+  export type GeneratedSignalCreateNestedManyWithoutUserInput = {
+    create?: XOR<GeneratedSignalCreateWithoutUserInput, GeneratedSignalUncheckedCreateWithoutUserInput> | GeneratedSignalCreateWithoutUserInput[] | GeneratedSignalUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: GeneratedSignalCreateOrConnectWithoutUserInput | GeneratedSignalCreateOrConnectWithoutUserInput[]
+    createMany?: GeneratedSignalCreateManyUserInputEnvelope
+    connect?: GeneratedSignalWhereUniqueInput | GeneratedSignalWhereUniqueInput[]
   }
 
   export type PositionCreateNestedManyWithoutUserInput = {
@@ -9854,31 +7535,18 @@ export namespace Prisma {
     connect?: PositionWhereUniqueInput | PositionWhereUniqueInput[]
   }
 
-  export type UserAgentCreateNestedManyWithoutUserInput = {
-    create?: XOR<UserAgentCreateWithoutUserInput, UserAgentUncheckedCreateWithoutUserInput> | UserAgentCreateWithoutUserInput[] | UserAgentUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: UserAgentCreateOrConnectWithoutUserInput | UserAgentCreateOrConnectWithoutUserInput[]
-    createMany?: UserAgentCreateManyUserInputEnvelope
-    connect?: UserAgentWhereUniqueInput | UserAgentWhereUniqueInput[]
-  }
-
-  export type BadgeUncheckedCreateNestedManyWithoutUsersInput = {
-    create?: XOR<BadgeCreateWithoutUsersInput, BadgeUncheckedCreateWithoutUsersInput> | BadgeCreateWithoutUsersInput[] | BadgeUncheckedCreateWithoutUsersInput[]
-    connectOrCreate?: BadgeCreateOrConnectWithoutUsersInput | BadgeCreateOrConnectWithoutUsersInput[]
+  export type BadgeUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<BadgeCreateWithoutUserInput, BadgeUncheckedCreateWithoutUserInput> | BadgeCreateWithoutUserInput[] | BadgeUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BadgeCreateOrConnectWithoutUserInput | BadgeCreateOrConnectWithoutUserInput[]
+    createMany?: BadgeCreateManyUserInputEnvelope
     connect?: BadgeWhereUniqueInput | BadgeWhereUniqueInput[]
   }
 
-  export type ConsoleInsightUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<ConsoleInsightCreateWithoutUserInput, ConsoleInsightUncheckedCreateWithoutUserInput> | ConsoleInsightCreateWithoutUserInput[] | ConsoleInsightUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: ConsoleInsightCreateOrConnectWithoutUserInput | ConsoleInsightCreateOrConnectWithoutUserInput[]
-    createMany?: ConsoleInsightCreateManyUserInputEnvelope
-    connect?: ConsoleInsightWhereUniqueInput | ConsoleInsightWhereUniqueInput[]
-  }
-
-  export type SignalHistoryItemUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<SignalHistoryItemCreateWithoutUserInput, SignalHistoryItemUncheckedCreateWithoutUserInput> | SignalHistoryItemCreateWithoutUserInput[] | SignalHistoryItemUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: SignalHistoryItemCreateOrConnectWithoutUserInput | SignalHistoryItemCreateOrConnectWithoutUserInput[]
-    createMany?: SignalHistoryItemCreateManyUserInputEnvelope
-    connect?: SignalHistoryItemWhereUniqueInput | SignalHistoryItemWhereUniqueInput[]
+  export type GeneratedSignalUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<GeneratedSignalCreateWithoutUserInput, GeneratedSignalUncheckedCreateWithoutUserInput> | GeneratedSignalCreateWithoutUserInput[] | GeneratedSignalUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: GeneratedSignalCreateOrConnectWithoutUserInput | GeneratedSignalCreateOrConnectWithoutUserInput[]
+    createMany?: GeneratedSignalCreateManyUserInputEnvelope
+    connect?: GeneratedSignalWhereUniqueInput | GeneratedSignalWhereUniqueInput[]
   }
 
   export type PositionUncheckedCreateNestedManyWithoutUserInput = {
@@ -9888,19 +7556,8 @@ export namespace Prisma {
     connect?: PositionWhereUniqueInput | PositionWhereUniqueInput[]
   }
 
-  export type UserAgentUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<UserAgentCreateWithoutUserInput, UserAgentUncheckedCreateWithoutUserInput> | UserAgentCreateWithoutUserInput[] | UserAgentUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: UserAgentCreateOrConnectWithoutUserInput | UserAgentCreateOrConnectWithoutUserInput[]
-    createMany?: UserAgentCreateManyUserInputEnvelope
-    connect?: UserAgentWhereUniqueInput | UserAgentWhereUniqueInput[]
-  }
-
   export type StringFieldUpdateOperationsInput = {
     set?: string
-  }
-
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -9911,45 +7568,40 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type BadgeUpdateManyWithoutUsersNestedInput = {
-    create?: XOR<BadgeCreateWithoutUsersInput, BadgeUncheckedCreateWithoutUsersInput> | BadgeCreateWithoutUsersInput[] | BadgeUncheckedCreateWithoutUsersInput[]
-    connectOrCreate?: BadgeCreateOrConnectWithoutUsersInput | BadgeCreateOrConnectWithoutUsersInput[]
-    upsert?: BadgeUpsertWithWhereUniqueWithoutUsersInput | BadgeUpsertWithWhereUniqueWithoutUsersInput[]
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+  }
+
+  export type DateTimeFieldUpdateOperationsInput = {
+    set?: Date | string
+  }
+
+  export type BadgeUpdateManyWithoutUserNestedInput = {
+    create?: XOR<BadgeCreateWithoutUserInput, BadgeUncheckedCreateWithoutUserInput> | BadgeCreateWithoutUserInput[] | BadgeUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BadgeCreateOrConnectWithoutUserInput | BadgeCreateOrConnectWithoutUserInput[]
+    upsert?: BadgeUpsertWithWhereUniqueWithoutUserInput | BadgeUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: BadgeCreateManyUserInputEnvelope
     set?: BadgeWhereUniqueInput | BadgeWhereUniqueInput[]
     disconnect?: BadgeWhereUniqueInput | BadgeWhereUniqueInput[]
     delete?: BadgeWhereUniqueInput | BadgeWhereUniqueInput[]
     connect?: BadgeWhereUniqueInput | BadgeWhereUniqueInput[]
-    update?: BadgeUpdateWithWhereUniqueWithoutUsersInput | BadgeUpdateWithWhereUniqueWithoutUsersInput[]
-    updateMany?: BadgeUpdateManyWithWhereWithoutUsersInput | BadgeUpdateManyWithWhereWithoutUsersInput[]
+    update?: BadgeUpdateWithWhereUniqueWithoutUserInput | BadgeUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: BadgeUpdateManyWithWhereWithoutUserInput | BadgeUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: BadgeScalarWhereInput | BadgeScalarWhereInput[]
   }
 
-  export type ConsoleInsightUpdateManyWithoutUserNestedInput = {
-    create?: XOR<ConsoleInsightCreateWithoutUserInput, ConsoleInsightUncheckedCreateWithoutUserInput> | ConsoleInsightCreateWithoutUserInput[] | ConsoleInsightUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: ConsoleInsightCreateOrConnectWithoutUserInput | ConsoleInsightCreateOrConnectWithoutUserInput[]
-    upsert?: ConsoleInsightUpsertWithWhereUniqueWithoutUserInput | ConsoleInsightUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: ConsoleInsightCreateManyUserInputEnvelope
-    set?: ConsoleInsightWhereUniqueInput | ConsoleInsightWhereUniqueInput[]
-    disconnect?: ConsoleInsightWhereUniqueInput | ConsoleInsightWhereUniqueInput[]
-    delete?: ConsoleInsightWhereUniqueInput | ConsoleInsightWhereUniqueInput[]
-    connect?: ConsoleInsightWhereUniqueInput | ConsoleInsightWhereUniqueInput[]
-    update?: ConsoleInsightUpdateWithWhereUniqueWithoutUserInput | ConsoleInsightUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: ConsoleInsightUpdateManyWithWhereWithoutUserInput | ConsoleInsightUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: ConsoleInsightScalarWhereInput | ConsoleInsightScalarWhereInput[]
-  }
-
-  export type SignalHistoryItemUpdateManyWithoutUserNestedInput = {
-    create?: XOR<SignalHistoryItemCreateWithoutUserInput, SignalHistoryItemUncheckedCreateWithoutUserInput> | SignalHistoryItemCreateWithoutUserInput[] | SignalHistoryItemUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: SignalHistoryItemCreateOrConnectWithoutUserInput | SignalHistoryItemCreateOrConnectWithoutUserInput[]
-    upsert?: SignalHistoryItemUpsertWithWhereUniqueWithoutUserInput | SignalHistoryItemUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: SignalHistoryItemCreateManyUserInputEnvelope
-    set?: SignalHistoryItemWhereUniqueInput | SignalHistoryItemWhereUniqueInput[]
-    disconnect?: SignalHistoryItemWhereUniqueInput | SignalHistoryItemWhereUniqueInput[]
-    delete?: SignalHistoryItemWhereUniqueInput | SignalHistoryItemWhereUniqueInput[]
-    connect?: SignalHistoryItemWhereUniqueInput | SignalHistoryItemWhereUniqueInput[]
-    update?: SignalHistoryItemUpdateWithWhereUniqueWithoutUserInput | SignalHistoryItemUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: SignalHistoryItemUpdateManyWithWhereWithoutUserInput | SignalHistoryItemUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: SignalHistoryItemScalarWhereInput | SignalHistoryItemScalarWhereInput[]
+  export type GeneratedSignalUpdateManyWithoutUserNestedInput = {
+    create?: XOR<GeneratedSignalCreateWithoutUserInput, GeneratedSignalUncheckedCreateWithoutUserInput> | GeneratedSignalCreateWithoutUserInput[] | GeneratedSignalUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: GeneratedSignalCreateOrConnectWithoutUserInput | GeneratedSignalCreateOrConnectWithoutUserInput[]
+    upsert?: GeneratedSignalUpsertWithWhereUniqueWithoutUserInput | GeneratedSignalUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: GeneratedSignalCreateManyUserInputEnvelope
+    set?: GeneratedSignalWhereUniqueInput | GeneratedSignalWhereUniqueInput[]
+    disconnect?: GeneratedSignalWhereUniqueInput | GeneratedSignalWhereUniqueInput[]
+    delete?: GeneratedSignalWhereUniqueInput | GeneratedSignalWhereUniqueInput[]
+    connect?: GeneratedSignalWhereUniqueInput | GeneratedSignalWhereUniqueInput[]
+    update?: GeneratedSignalUpdateWithWhereUniqueWithoutUserInput | GeneratedSignalUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: GeneratedSignalUpdateManyWithWhereWithoutUserInput | GeneratedSignalUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: GeneratedSignalScalarWhereInput | GeneratedSignalScalarWhereInput[]
   }
 
   export type PositionUpdateManyWithoutUserNestedInput = {
@@ -9966,59 +7618,32 @@ export namespace Prisma {
     deleteMany?: PositionScalarWhereInput | PositionScalarWhereInput[]
   }
 
-  export type UserAgentUpdateManyWithoutUserNestedInput = {
-    create?: XOR<UserAgentCreateWithoutUserInput, UserAgentUncheckedCreateWithoutUserInput> | UserAgentCreateWithoutUserInput[] | UserAgentUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: UserAgentCreateOrConnectWithoutUserInput | UserAgentCreateOrConnectWithoutUserInput[]
-    upsert?: UserAgentUpsertWithWhereUniqueWithoutUserInput | UserAgentUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: UserAgentCreateManyUserInputEnvelope
-    set?: UserAgentWhereUniqueInput | UserAgentWhereUniqueInput[]
-    disconnect?: UserAgentWhereUniqueInput | UserAgentWhereUniqueInput[]
-    delete?: UserAgentWhereUniqueInput | UserAgentWhereUniqueInput[]
-    connect?: UserAgentWhereUniqueInput | UserAgentWhereUniqueInput[]
-    update?: UserAgentUpdateWithWhereUniqueWithoutUserInput | UserAgentUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: UserAgentUpdateManyWithWhereWithoutUserInput | UserAgentUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: UserAgentScalarWhereInput | UserAgentScalarWhereInput[]
-  }
-
-  export type BadgeUncheckedUpdateManyWithoutUsersNestedInput = {
-    create?: XOR<BadgeCreateWithoutUsersInput, BadgeUncheckedCreateWithoutUsersInput> | BadgeCreateWithoutUsersInput[] | BadgeUncheckedCreateWithoutUsersInput[]
-    connectOrCreate?: BadgeCreateOrConnectWithoutUsersInput | BadgeCreateOrConnectWithoutUsersInput[]
-    upsert?: BadgeUpsertWithWhereUniqueWithoutUsersInput | BadgeUpsertWithWhereUniqueWithoutUsersInput[]
+  export type BadgeUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<BadgeCreateWithoutUserInput, BadgeUncheckedCreateWithoutUserInput> | BadgeCreateWithoutUserInput[] | BadgeUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BadgeCreateOrConnectWithoutUserInput | BadgeCreateOrConnectWithoutUserInput[]
+    upsert?: BadgeUpsertWithWhereUniqueWithoutUserInput | BadgeUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: BadgeCreateManyUserInputEnvelope
     set?: BadgeWhereUniqueInput | BadgeWhereUniqueInput[]
     disconnect?: BadgeWhereUniqueInput | BadgeWhereUniqueInput[]
     delete?: BadgeWhereUniqueInput | BadgeWhereUniqueInput[]
     connect?: BadgeWhereUniqueInput | BadgeWhereUniqueInput[]
-    update?: BadgeUpdateWithWhereUniqueWithoutUsersInput | BadgeUpdateWithWhereUniqueWithoutUsersInput[]
-    updateMany?: BadgeUpdateManyWithWhereWithoutUsersInput | BadgeUpdateManyWithWhereWithoutUsersInput[]
+    update?: BadgeUpdateWithWhereUniqueWithoutUserInput | BadgeUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: BadgeUpdateManyWithWhereWithoutUserInput | BadgeUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: BadgeScalarWhereInput | BadgeScalarWhereInput[]
   }
 
-  export type ConsoleInsightUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<ConsoleInsightCreateWithoutUserInput, ConsoleInsightUncheckedCreateWithoutUserInput> | ConsoleInsightCreateWithoutUserInput[] | ConsoleInsightUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: ConsoleInsightCreateOrConnectWithoutUserInput | ConsoleInsightCreateOrConnectWithoutUserInput[]
-    upsert?: ConsoleInsightUpsertWithWhereUniqueWithoutUserInput | ConsoleInsightUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: ConsoleInsightCreateManyUserInputEnvelope
-    set?: ConsoleInsightWhereUniqueInput | ConsoleInsightWhereUniqueInput[]
-    disconnect?: ConsoleInsightWhereUniqueInput | ConsoleInsightWhereUniqueInput[]
-    delete?: ConsoleInsightWhereUniqueInput | ConsoleInsightWhereUniqueInput[]
-    connect?: ConsoleInsightWhereUniqueInput | ConsoleInsightWhereUniqueInput[]
-    update?: ConsoleInsightUpdateWithWhereUniqueWithoutUserInput | ConsoleInsightUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: ConsoleInsightUpdateManyWithWhereWithoutUserInput | ConsoleInsightUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: ConsoleInsightScalarWhereInput | ConsoleInsightScalarWhereInput[]
-  }
-
-  export type SignalHistoryItemUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<SignalHistoryItemCreateWithoutUserInput, SignalHistoryItemUncheckedCreateWithoutUserInput> | SignalHistoryItemCreateWithoutUserInput[] | SignalHistoryItemUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: SignalHistoryItemCreateOrConnectWithoutUserInput | SignalHistoryItemCreateOrConnectWithoutUserInput[]
-    upsert?: SignalHistoryItemUpsertWithWhereUniqueWithoutUserInput | SignalHistoryItemUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: SignalHistoryItemCreateManyUserInputEnvelope
-    set?: SignalHistoryItemWhereUniqueInput | SignalHistoryItemWhereUniqueInput[]
-    disconnect?: SignalHistoryItemWhereUniqueInput | SignalHistoryItemWhereUniqueInput[]
-    delete?: SignalHistoryItemWhereUniqueInput | SignalHistoryItemWhereUniqueInput[]
-    connect?: SignalHistoryItemWhereUniqueInput | SignalHistoryItemWhereUniqueInput[]
-    update?: SignalHistoryItemUpdateWithWhereUniqueWithoutUserInput | SignalHistoryItemUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: SignalHistoryItemUpdateManyWithWhereWithoutUserInput | SignalHistoryItemUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: SignalHistoryItemScalarWhereInput | SignalHistoryItemScalarWhereInput[]
+  export type GeneratedSignalUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<GeneratedSignalCreateWithoutUserInput, GeneratedSignalUncheckedCreateWithoutUserInput> | GeneratedSignalCreateWithoutUserInput[] | GeneratedSignalUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: GeneratedSignalCreateOrConnectWithoutUserInput | GeneratedSignalCreateOrConnectWithoutUserInput[]
+    upsert?: GeneratedSignalUpsertWithWhereUniqueWithoutUserInput | GeneratedSignalUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: GeneratedSignalCreateManyUserInputEnvelope
+    set?: GeneratedSignalWhereUniqueInput | GeneratedSignalWhereUniqueInput[]
+    disconnect?: GeneratedSignalWhereUniqueInput | GeneratedSignalWhereUniqueInput[]
+    delete?: GeneratedSignalWhereUniqueInput | GeneratedSignalWhereUniqueInput[]
+    connect?: GeneratedSignalWhereUniqueInput | GeneratedSignalWhereUniqueInput[]
+    update?: GeneratedSignalUpdateWithWhereUniqueWithoutUserInput | GeneratedSignalUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: GeneratedSignalUpdateManyWithWhereWithoutUserInput | GeneratedSignalUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: GeneratedSignalScalarWhereInput | GeneratedSignalScalarWhereInput[]
   }
 
   export type PositionUncheckedUpdateManyWithoutUserNestedInput = {
@@ -10035,80 +7660,76 @@ export namespace Prisma {
     deleteMany?: PositionScalarWhereInput | PositionScalarWhereInput[]
   }
 
-  export type UserAgentUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<UserAgentCreateWithoutUserInput, UserAgentUncheckedCreateWithoutUserInput> | UserAgentCreateWithoutUserInput[] | UserAgentUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: UserAgentCreateOrConnectWithoutUserInput | UserAgentCreateOrConnectWithoutUserInput[]
-    upsert?: UserAgentUpsertWithWhereUniqueWithoutUserInput | UserAgentUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: UserAgentCreateManyUserInputEnvelope
-    set?: UserAgentWhereUniqueInput | UserAgentWhereUniqueInput[]
-    disconnect?: UserAgentWhereUniqueInput | UserAgentWhereUniqueInput[]
-    delete?: UserAgentWhereUniqueInput | UserAgentWhereUniqueInput[]
-    connect?: UserAgentWhereUniqueInput | UserAgentWhereUniqueInput[]
-    update?: UserAgentUpdateWithWhereUniqueWithoutUserInput | UserAgentUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: UserAgentUpdateManyWithWhereWithoutUserInput | UserAgentUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: UserAgentScalarWhereInput | UserAgentScalarWhereInput[]
-  }
-
-  export type UserCreateNestedManyWithoutBadgesInput = {
-    create?: XOR<UserCreateWithoutBadgesInput, UserUncheckedCreateWithoutBadgesInput> | UserCreateWithoutBadgesInput[] | UserUncheckedCreateWithoutBadgesInput[]
-    connectOrCreate?: UserCreateOrConnectWithoutBadgesInput | UserCreateOrConnectWithoutBadgesInput[]
-    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
-  }
-
-  export type UserUncheckedCreateNestedManyWithoutBadgesInput = {
-    create?: XOR<UserCreateWithoutBadgesInput, UserUncheckedCreateWithoutBadgesInput> | UserCreateWithoutBadgesInput[] | UserUncheckedCreateWithoutBadgesInput[]
-    connectOrCreate?: UserCreateOrConnectWithoutBadgesInput | UserCreateOrConnectWithoutBadgesInput[]
-    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
-  }
-
-  export type UserUpdateManyWithoutBadgesNestedInput = {
-    create?: XOR<UserCreateWithoutBadgesInput, UserUncheckedCreateWithoutBadgesInput> | UserCreateWithoutBadgesInput[] | UserUncheckedCreateWithoutBadgesInput[]
-    connectOrCreate?: UserCreateOrConnectWithoutBadgesInput | UserCreateOrConnectWithoutBadgesInput[]
-    upsert?: UserUpsertWithWhereUniqueWithoutBadgesInput | UserUpsertWithWhereUniqueWithoutBadgesInput[]
-    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    update?: UserUpdateWithWhereUniqueWithoutBadgesInput | UserUpdateWithWhereUniqueWithoutBadgesInput[]
-    updateMany?: UserUpdateManyWithWhereWithoutBadgesInput | UserUpdateManyWithWhereWithoutBadgesInput[]
-    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
-  }
-
-  export type UserUncheckedUpdateManyWithoutBadgesNestedInput = {
-    create?: XOR<UserCreateWithoutBadgesInput, UserUncheckedCreateWithoutBadgesInput> | UserCreateWithoutBadgesInput[] | UserUncheckedCreateWithoutBadgesInput[]
-    connectOrCreate?: UserCreateOrConnectWithoutBadgesInput | UserCreateOrConnectWithoutBadgesInput[]
-    upsert?: UserUpsertWithWhereUniqueWithoutBadgesInput | UserUpsertWithWhereUniqueWithoutBadgesInput[]
-    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    update?: UserUpdateWithWhereUniqueWithoutBadgesInput | UserUpdateWithWhereUniqueWithoutBadgesInput[]
-    updateMany?: UserUpdateManyWithWhereWithoutBadgesInput | UserUpdateManyWithWhereWithoutBadgesInput[]
-    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
-  }
-
-  export type UserCreateNestedOneWithoutConsoleInsightsInput = {
-    create?: XOR<UserCreateWithoutConsoleInsightsInput, UserUncheckedCreateWithoutConsoleInsightsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutConsoleInsightsInput
+  export type UserCreateNestedOneWithoutBadgesInput = {
+    create?: XOR<UserCreateWithoutBadgesInput, UserUncheckedCreateWithoutBadgesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutBadgesInput
     connect?: UserWhereUniqueInput
   }
 
-  export type DateTimeFieldUpdateOperationsInput = {
-    set?: Date | string
+  export type UserUpdateOneRequiredWithoutBadgesNestedInput = {
+    create?: XOR<UserCreateWithoutBadgesInput, UserUncheckedCreateWithoutBadgesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutBadgesInput
+    upsert?: UserUpsertWithoutBadgesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutBadgesInput, UserUpdateWithoutBadgesInput>, UserUncheckedUpdateWithoutBadgesInput>
   }
 
-  export type UserUpdateOneRequiredWithoutConsoleInsightsNestedInput = {
-    create?: XOR<UserCreateWithoutConsoleInsightsInput, UserUncheckedCreateWithoutConsoleInsightsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutConsoleInsightsInput
-    upsert?: UserUpsertWithoutConsoleInsightsInput
+  export type UserCreateNestedOneWithoutGeneratedSignalsInput = {
+    create?: XOR<UserCreateWithoutGeneratedSignalsInput, UserUncheckedCreateWithoutGeneratedSignalsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGeneratedSignalsInput
     connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutConsoleInsightsInput, UserUpdateWithoutConsoleInsightsInput>, UserUncheckedUpdateWithoutConsoleInsightsInput>
   }
 
-  export type UserCreateNestedOneWithoutSignalsInput = {
-    create?: XOR<UserCreateWithoutSignalsInput, UserUncheckedCreateWithoutSignalsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutSignalsInput
+  export type PositionCreateNestedOneWithoutGeneratedSignalInput = {
+    create?: XOR<PositionCreateWithoutGeneratedSignalInput, PositionUncheckedCreateWithoutGeneratedSignalInput>
+    connectOrCreate?: PositionCreateOrConnectWithoutGeneratedSignalInput
+    connect?: PositionWhereUniqueInput
+  }
+
+  export type PositionUncheckedCreateNestedOneWithoutGeneratedSignalInput = {
+    create?: XOR<PositionCreateWithoutGeneratedSignalInput, PositionUncheckedCreateWithoutGeneratedSignalInput>
+    connectOrCreate?: PositionCreateOrConnectWithoutGeneratedSignalInput
+    connect?: PositionWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutGeneratedSignalsNestedInput = {
+    create?: XOR<UserCreateWithoutGeneratedSignalsInput, UserUncheckedCreateWithoutGeneratedSignalsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGeneratedSignalsInput
+    upsert?: UserUpsertWithoutGeneratedSignalsInput
     connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGeneratedSignalsInput, UserUpdateWithoutGeneratedSignalsInput>, UserUncheckedUpdateWithoutGeneratedSignalsInput>
+  }
+
+  export type PositionUpdateOneWithoutGeneratedSignalNestedInput = {
+    create?: XOR<PositionCreateWithoutGeneratedSignalInput, PositionUncheckedCreateWithoutGeneratedSignalInput>
+    connectOrCreate?: PositionCreateOrConnectWithoutGeneratedSignalInput
+    upsert?: PositionUpsertWithoutGeneratedSignalInput
+    disconnect?: PositionWhereInput | boolean
+    delete?: PositionWhereInput | boolean
+    connect?: PositionWhereUniqueInput
+    update?: XOR<XOR<PositionUpdateToOneWithWhereWithoutGeneratedSignalInput, PositionUpdateWithoutGeneratedSignalInput>, PositionUncheckedUpdateWithoutGeneratedSignalInput>
+  }
+
+  export type PositionUncheckedUpdateOneWithoutGeneratedSignalNestedInput = {
+    create?: XOR<PositionCreateWithoutGeneratedSignalInput, PositionUncheckedCreateWithoutGeneratedSignalInput>
+    connectOrCreate?: PositionCreateOrConnectWithoutGeneratedSignalInput
+    upsert?: PositionUpsertWithoutGeneratedSignalInput
+    disconnect?: PositionWhereInput | boolean
+    delete?: PositionWhereInput | boolean
+    connect?: PositionWhereUniqueInput
+    update?: XOR<XOR<PositionUpdateToOneWithWhereWithoutGeneratedSignalInput, PositionUpdateWithoutGeneratedSignalInput>, PositionUncheckedUpdateWithoutGeneratedSignalInput>
+  }
+
+  export type UserCreateNestedOneWithoutPositionsInput = {
+    create?: XOR<UserCreateWithoutPositionsInput, UserUncheckedCreateWithoutPositionsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPositionsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type GeneratedSignalCreateNestedOneWithoutPositionInput = {
+    create?: XOR<GeneratedSignalCreateWithoutPositionInput, GeneratedSignalUncheckedCreateWithoutPositionInput>
+    connectOrCreate?: GeneratedSignalCreateOrConnectWithoutPositionInput
+    connect?: GeneratedSignalWhereUniqueInput
   }
 
   export type FloatFieldUpdateOperationsInput = {
@@ -10119,25 +7740,19 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type UserUpdateOneRequiredWithoutSignalsNestedInput = {
-    create?: XOR<UserCreateWithoutSignalsInput, UserUncheckedCreateWithoutSignalsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutSignalsInput
-    upsert?: UserUpsertWithoutSignalsInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSignalsInput, UserUpdateWithoutSignalsInput>, UserUncheckedUpdateWithoutSignalsInput>
-  }
-
-  export type UserCreateNestedOneWithoutPositionsInput = {
-    create?: XOR<UserCreateWithoutPositionsInput, UserUncheckedCreateWithoutPositionsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutPositionsInput
-    connect?: UserWhereUniqueInput
-  }
-
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
   }
 
   export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
     set?: number | null
     increment?: number
     decrement?: number
@@ -10153,18 +7768,14 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPositionsInput, UserUpdateWithoutPositionsInput>, UserUncheckedUpdateWithoutPositionsInput>
   }
 
-  export type UserCreateNestedOneWithoutUserAgentsInput = {
-    create?: XOR<UserCreateWithoutUserAgentsInput, UserUncheckedCreateWithoutUserAgentsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutUserAgentsInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type UserUpdateOneRequiredWithoutUserAgentsNestedInput = {
-    create?: XOR<UserCreateWithoutUserAgentsInput, UserUncheckedCreateWithoutUserAgentsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutUserAgentsInput
-    upsert?: UserUpsertWithoutUserAgentsInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutUserAgentsInput, UserUpdateWithoutUserAgentsInput>, UserUncheckedUpdateWithoutUserAgentsInput>
+  export type GeneratedSignalUpdateOneWithoutPositionNestedInput = {
+    create?: XOR<GeneratedSignalCreateWithoutPositionInput, GeneratedSignalUncheckedCreateWithoutPositionInput>
+    connectOrCreate?: GeneratedSignalCreateOrConnectWithoutPositionInput
+    upsert?: GeneratedSignalUpsertWithoutPositionInput
+    disconnect?: GeneratedSignalWhereInput | boolean
+    delete?: GeneratedSignalWhereInput | boolean
+    connect?: GeneratedSignalWhereUniqueInput
+    update?: XOR<XOR<GeneratedSignalUpdateToOneWithWhereWithoutPositionInput, GeneratedSignalUpdateWithoutPositionInput>, GeneratedSignalUncheckedUpdateWithoutPositionInput>
   }
 
   export type NestedUuidFilter<$PrismaModel = never> = {
@@ -10192,6 +7803,17 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
+  export type NestedIntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
   export type NestedStringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -10206,15 +7828,15 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type NestedIntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
+  export type NestedDateTimeFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
   export type NestedUuidWithAggregatesFilter<$PrismaModel = never> = {
@@ -10248,6 +7870,33 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -10276,44 +7925,6 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
-  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type NestedFloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
-  export type NestedDateTimeFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
-  }
-
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -10326,22 +7937,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
-  }
-
-  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedFloatFilter<$PrismaModel>
-    _min?: NestedFloatFilter<$PrismaModel>
-    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
@@ -10364,6 +7959,33 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedUuidNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedUuidNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -10396,66 +8018,113 @@ export namespace Prisma {
     _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
-  export type BadgeCreateWithoutUsersInput = {
-    id?: string
-    name: string
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
-  export type BadgeUncheckedCreateWithoutUsersInput = {
-    id?: string
-    name: string
+  export type NestedUuidNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedUuidNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type BadgeCreateOrConnectWithoutUsersInput = {
+  export type BadgeCreateWithoutUserInput = {
+    id?: string
+    name: string
+    description: string
+    icon: string
+  }
+
+  export type BadgeUncheckedCreateWithoutUserInput = {
+    id?: string
+    name: string
+    description: string
+    icon: string
+  }
+
+  export type BadgeCreateOrConnectWithoutUserInput = {
     where: BadgeWhereUniqueInput
-    create: XOR<BadgeCreateWithoutUsersInput, BadgeUncheckedCreateWithoutUsersInput>
+    create: XOR<BadgeCreateWithoutUserInput, BadgeUncheckedCreateWithoutUserInput>
   }
 
-  export type ConsoleInsightCreateWithoutUserInput = {
-    id?: string
-    content: string
-    timestamp?: Date | string
-  }
-
-  export type ConsoleInsightUncheckedCreateWithoutUserInput = {
-    id?: string
-    content: string
-    timestamp?: Date | string
-  }
-
-  export type ConsoleInsightCreateOrConnectWithoutUserInput = {
-    where: ConsoleInsightWhereUniqueInput
-    create: XOR<ConsoleInsightCreateWithoutUserInput, ConsoleInsightUncheckedCreateWithoutUserInput>
-  }
-
-  export type ConsoleInsightCreateManyUserInputEnvelope = {
-    data: ConsoleInsightCreateManyUserInput | ConsoleInsightCreateManyUserInput[]
+  export type BadgeCreateManyUserInputEnvelope = {
+    data: BadgeCreateManyUserInput | BadgeCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
-  export type SignalHistoryItemCreateWithoutUserInput = {
+  export type GeneratedSignalCreateWithoutUserInput = {
     id?: string
-    signalType: string
     symbol: string
-    price: number
-    timestamp?: Date | string
+    signal: string
+    status: string
+    entry_zone: string
+    stop_loss: string
+    take_profit: string
+    confidence: string
+    risk_rating: string
+    gpt_confidence_score: string
+    sentiment: string
+    currentThought: string
+    shortTermPrediction: string
+    chosenTradingMode: string
+    chosenRiskProfile: string
+    strategyReasoning: string
+    analysisSummary: string
+    newsAnalysis: string
+    createdAt?: Date | string
+    position?: PositionCreateNestedOneWithoutGeneratedSignalInput
   }
 
-  export type SignalHistoryItemUncheckedCreateWithoutUserInput = {
+  export type GeneratedSignalUncheckedCreateWithoutUserInput = {
     id?: string
-    signalType: string
     symbol: string
-    price: number
-    timestamp?: Date | string
+    signal: string
+    status: string
+    entry_zone: string
+    stop_loss: string
+    take_profit: string
+    confidence: string
+    risk_rating: string
+    gpt_confidence_score: string
+    sentiment: string
+    currentThought: string
+    shortTermPrediction: string
+    chosenTradingMode: string
+    chosenRiskProfile: string
+    strategyReasoning: string
+    analysisSummary: string
+    newsAnalysis: string
+    createdAt?: Date | string
+    position?: PositionUncheckedCreateNestedOneWithoutGeneratedSignalInput
   }
 
-  export type SignalHistoryItemCreateOrConnectWithoutUserInput = {
-    where: SignalHistoryItemWhereUniqueInput
-    create: XOR<SignalHistoryItemCreateWithoutUserInput, SignalHistoryItemUncheckedCreateWithoutUserInput>
+  export type GeneratedSignalCreateOrConnectWithoutUserInput = {
+    where: GeneratedSignalWhereUniqueInput
+    create: XOR<GeneratedSignalCreateWithoutUserInput, GeneratedSignalUncheckedCreateWithoutUserInput>
   }
 
-  export type SignalHistoryItemCreateManyUserInputEnvelope = {
-    data: SignalHistoryItemCreateManyUserInput | SignalHistoryItemCreateManyUserInput[]
+  export type GeneratedSignalCreateManyUserInputEnvelope = {
+    data: GeneratedSignalCreateManyUserInput | GeneratedSignalCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -10463,30 +8132,58 @@ export namespace Prisma {
     id?: string
     symbol: string
     signalType: string
-    entryPrice: number
-    size: number
     status: string
-    openTimestamp?: Date | string
+    type: string
+    entryPrice: number
+    stopLoss: number
+    takeProfit: number
+    size: number
+    openTimestamp?: Date | string | null
     closeTimestamp?: Date | string | null
     closePrice?: number | null
     pnl?: number | null
-    stopLoss?: number | null
-    takeProfit?: number | null
+    gainedXp?: number | null
+    gainedAirdropPoints?: number | null
+    gasPaid?: number | null
+    blocksTrained?: number | null
+    tradingMode: string
+    riskProfile: string
+    sentiment: string
+    gpt_confidence_score: string
+    analysisSummary: string
+    newsAnalysis: string
+    strategyReasoning: string
+    createdAt?: Date | string
+    generatedSignal?: GeneratedSignalCreateNestedOneWithoutPositionInput
   }
 
   export type PositionUncheckedCreateWithoutUserInput = {
     id?: string
     symbol: string
     signalType: string
-    entryPrice: number
-    size: number
     status: string
-    openTimestamp?: Date | string
+    type: string
+    entryPrice: number
+    stopLoss: number
+    takeProfit: number
+    size: number
+    openTimestamp?: Date | string | null
     closeTimestamp?: Date | string | null
     closePrice?: number | null
     pnl?: number | null
-    stopLoss?: number | null
-    takeProfit?: number | null
+    gainedXp?: number | null
+    gainedAirdropPoints?: number | null
+    gasPaid?: number | null
+    blocksTrained?: number | null
+    tradingMode: string
+    riskProfile: string
+    sentiment: string
+    gpt_confidence_score: string
+    analysisSummary: string
+    newsAnalysis: string
+    strategyReasoning: string
+    createdAt?: Date | string
+    strategyId?: string | null
   }
 
   export type PositionCreateOrConnectWithoutUserInput = {
@@ -10499,46 +8196,20 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type UserAgentCreateWithoutUserInput = {
-    id?: string
-    agentId: string
-    level: number
-    status: string
-    deploymentEndTime?: Date | string | null
-  }
-
-  export type UserAgentUncheckedCreateWithoutUserInput = {
-    id?: string
-    agentId: string
-    level: number
-    status: string
-    deploymentEndTime?: Date | string | null
-  }
-
-  export type UserAgentCreateOrConnectWithoutUserInput = {
-    where: UserAgentWhereUniqueInput
-    create: XOR<UserAgentCreateWithoutUserInput, UserAgentUncheckedCreateWithoutUserInput>
-  }
-
-  export type UserAgentCreateManyUserInputEnvelope = {
-    data: UserAgentCreateManyUserInput | UserAgentCreateManyUserInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type BadgeUpsertWithWhereUniqueWithoutUsersInput = {
+  export type BadgeUpsertWithWhereUniqueWithoutUserInput = {
     where: BadgeWhereUniqueInput
-    update: XOR<BadgeUpdateWithoutUsersInput, BadgeUncheckedUpdateWithoutUsersInput>
-    create: XOR<BadgeCreateWithoutUsersInput, BadgeUncheckedCreateWithoutUsersInput>
+    update: XOR<BadgeUpdateWithoutUserInput, BadgeUncheckedUpdateWithoutUserInput>
+    create: XOR<BadgeCreateWithoutUserInput, BadgeUncheckedCreateWithoutUserInput>
   }
 
-  export type BadgeUpdateWithWhereUniqueWithoutUsersInput = {
+  export type BadgeUpdateWithWhereUniqueWithoutUserInput = {
     where: BadgeWhereUniqueInput
-    data: XOR<BadgeUpdateWithoutUsersInput, BadgeUncheckedUpdateWithoutUsersInput>
+    data: XOR<BadgeUpdateWithoutUserInput, BadgeUncheckedUpdateWithoutUserInput>
   }
 
-  export type BadgeUpdateManyWithWhereWithoutUsersInput = {
+  export type BadgeUpdateManyWithWhereWithoutUserInput = {
     where: BadgeScalarWhereInput
-    data: XOR<BadgeUpdateManyMutationInput, BadgeUncheckedUpdateManyWithoutUsersInput>
+    data: XOR<BadgeUpdateManyMutationInput, BadgeUncheckedUpdateManyWithoutUserInput>
   }
 
   export type BadgeScalarWhereInput = {
@@ -10547,60 +8218,51 @@ export namespace Prisma {
     NOT?: BadgeScalarWhereInput | BadgeScalarWhereInput[]
     id?: UuidFilter<"Badge"> | string
     name?: StringFilter<"Badge"> | string
+    description?: StringFilter<"Badge"> | string
+    icon?: StringFilter<"Badge"> | string
+    userId?: UuidFilter<"Badge"> | string
   }
 
-  export type ConsoleInsightUpsertWithWhereUniqueWithoutUserInput = {
-    where: ConsoleInsightWhereUniqueInput
-    update: XOR<ConsoleInsightUpdateWithoutUserInput, ConsoleInsightUncheckedUpdateWithoutUserInput>
-    create: XOR<ConsoleInsightCreateWithoutUserInput, ConsoleInsightUncheckedCreateWithoutUserInput>
+  export type GeneratedSignalUpsertWithWhereUniqueWithoutUserInput = {
+    where: GeneratedSignalWhereUniqueInput
+    update: XOR<GeneratedSignalUpdateWithoutUserInput, GeneratedSignalUncheckedUpdateWithoutUserInput>
+    create: XOR<GeneratedSignalCreateWithoutUserInput, GeneratedSignalUncheckedCreateWithoutUserInput>
   }
 
-  export type ConsoleInsightUpdateWithWhereUniqueWithoutUserInput = {
-    where: ConsoleInsightWhereUniqueInput
-    data: XOR<ConsoleInsightUpdateWithoutUserInput, ConsoleInsightUncheckedUpdateWithoutUserInput>
+  export type GeneratedSignalUpdateWithWhereUniqueWithoutUserInput = {
+    where: GeneratedSignalWhereUniqueInput
+    data: XOR<GeneratedSignalUpdateWithoutUserInput, GeneratedSignalUncheckedUpdateWithoutUserInput>
   }
 
-  export type ConsoleInsightUpdateManyWithWhereWithoutUserInput = {
-    where: ConsoleInsightScalarWhereInput
-    data: XOR<ConsoleInsightUpdateManyMutationInput, ConsoleInsightUncheckedUpdateManyWithoutUserInput>
+  export type GeneratedSignalUpdateManyWithWhereWithoutUserInput = {
+    where: GeneratedSignalScalarWhereInput
+    data: XOR<GeneratedSignalUpdateManyMutationInput, GeneratedSignalUncheckedUpdateManyWithoutUserInput>
   }
 
-  export type ConsoleInsightScalarWhereInput = {
-    AND?: ConsoleInsightScalarWhereInput | ConsoleInsightScalarWhereInput[]
-    OR?: ConsoleInsightScalarWhereInput[]
-    NOT?: ConsoleInsightScalarWhereInput | ConsoleInsightScalarWhereInput[]
-    id?: UuidFilter<"ConsoleInsight"> | string
-    userId?: UuidFilter<"ConsoleInsight"> | string
-    content?: StringFilter<"ConsoleInsight"> | string
-    timestamp?: DateTimeFilter<"ConsoleInsight"> | Date | string
-  }
-
-  export type SignalHistoryItemUpsertWithWhereUniqueWithoutUserInput = {
-    where: SignalHistoryItemWhereUniqueInput
-    update: XOR<SignalHistoryItemUpdateWithoutUserInput, SignalHistoryItemUncheckedUpdateWithoutUserInput>
-    create: XOR<SignalHistoryItemCreateWithoutUserInput, SignalHistoryItemUncheckedCreateWithoutUserInput>
-  }
-
-  export type SignalHistoryItemUpdateWithWhereUniqueWithoutUserInput = {
-    where: SignalHistoryItemWhereUniqueInput
-    data: XOR<SignalHistoryItemUpdateWithoutUserInput, SignalHistoryItemUncheckedUpdateWithoutUserInput>
-  }
-
-  export type SignalHistoryItemUpdateManyWithWhereWithoutUserInput = {
-    where: SignalHistoryItemScalarWhereInput
-    data: XOR<SignalHistoryItemUpdateManyMutationInput, SignalHistoryItemUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type SignalHistoryItemScalarWhereInput = {
-    AND?: SignalHistoryItemScalarWhereInput | SignalHistoryItemScalarWhereInput[]
-    OR?: SignalHistoryItemScalarWhereInput[]
-    NOT?: SignalHistoryItemScalarWhereInput | SignalHistoryItemScalarWhereInput[]
-    id?: UuidFilter<"SignalHistoryItem"> | string
-    userId?: UuidFilter<"SignalHistoryItem"> | string
-    signalType?: StringFilter<"SignalHistoryItem"> | string
-    symbol?: StringFilter<"SignalHistoryItem"> | string
-    price?: FloatFilter<"SignalHistoryItem"> | number
-    timestamp?: DateTimeFilter<"SignalHistoryItem"> | Date | string
+  export type GeneratedSignalScalarWhereInput = {
+    AND?: GeneratedSignalScalarWhereInput | GeneratedSignalScalarWhereInput[]
+    OR?: GeneratedSignalScalarWhereInput[]
+    NOT?: GeneratedSignalScalarWhereInput | GeneratedSignalScalarWhereInput[]
+    id?: StringFilter<"GeneratedSignal"> | string
+    userId?: UuidFilter<"GeneratedSignal"> | string
+    symbol?: StringFilter<"GeneratedSignal"> | string
+    signal?: StringFilter<"GeneratedSignal"> | string
+    status?: StringFilter<"GeneratedSignal"> | string
+    entry_zone?: StringFilter<"GeneratedSignal"> | string
+    stop_loss?: StringFilter<"GeneratedSignal"> | string
+    take_profit?: StringFilter<"GeneratedSignal"> | string
+    confidence?: StringFilter<"GeneratedSignal"> | string
+    risk_rating?: StringFilter<"GeneratedSignal"> | string
+    gpt_confidence_score?: StringFilter<"GeneratedSignal"> | string
+    sentiment?: StringFilter<"GeneratedSignal"> | string
+    currentThought?: StringFilter<"GeneratedSignal"> | string
+    shortTermPrediction?: StringFilter<"GeneratedSignal"> | string
+    chosenTradingMode?: StringFilter<"GeneratedSignal"> | string
+    chosenRiskProfile?: StringFilter<"GeneratedSignal"> | string
+    strategyReasoning?: StringFilter<"GeneratedSignal"> | string
+    analysisSummary?: StringFilter<"GeneratedSignal"> | string
+    newsAnalysis?: StringFilter<"GeneratedSignal"> | string
+    createdAt?: DateTimeFilter<"GeneratedSignal"> | Date | string
   }
 
   export type PositionUpsertWithWhereUniqueWithoutUserInput = {
@@ -10623,87 +8285,75 @@ export namespace Prisma {
     AND?: PositionScalarWhereInput | PositionScalarWhereInput[]
     OR?: PositionScalarWhereInput[]
     NOT?: PositionScalarWhereInput | PositionScalarWhereInput[]
-    id?: UuidFilter<"Position"> | string
+    id?: StringFilter<"Position"> | string
     userId?: UuidFilter<"Position"> | string
     symbol?: StringFilter<"Position"> | string
     signalType?: StringFilter<"Position"> | string
-    entryPrice?: FloatFilter<"Position"> | number
-    size?: FloatFilter<"Position"> | number
     status?: StringFilter<"Position"> | string
-    openTimestamp?: DateTimeFilter<"Position"> | Date | string
+    type?: StringFilter<"Position"> | string
+    entryPrice?: FloatFilter<"Position"> | number
+    stopLoss?: FloatFilter<"Position"> | number
+    takeProfit?: FloatFilter<"Position"> | number
+    size?: FloatFilter<"Position"> | number
+    openTimestamp?: DateTimeNullableFilter<"Position"> | Date | string | null
     closeTimestamp?: DateTimeNullableFilter<"Position"> | Date | string | null
     closePrice?: FloatNullableFilter<"Position"> | number | null
     pnl?: FloatNullableFilter<"Position"> | number | null
-    stopLoss?: FloatNullableFilter<"Position"> | number | null
-    takeProfit?: FloatNullableFilter<"Position"> | number | null
-  }
-
-  export type UserAgentUpsertWithWhereUniqueWithoutUserInput = {
-    where: UserAgentWhereUniqueInput
-    update: XOR<UserAgentUpdateWithoutUserInput, UserAgentUncheckedUpdateWithoutUserInput>
-    create: XOR<UserAgentCreateWithoutUserInput, UserAgentUncheckedCreateWithoutUserInput>
-  }
-
-  export type UserAgentUpdateWithWhereUniqueWithoutUserInput = {
-    where: UserAgentWhereUniqueInput
-    data: XOR<UserAgentUpdateWithoutUserInput, UserAgentUncheckedUpdateWithoutUserInput>
-  }
-
-  export type UserAgentUpdateManyWithWhereWithoutUserInput = {
-    where: UserAgentScalarWhereInput
-    data: XOR<UserAgentUpdateManyMutationInput, UserAgentUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type UserAgentScalarWhereInput = {
-    AND?: UserAgentScalarWhereInput | UserAgentScalarWhereInput[]
-    OR?: UserAgentScalarWhereInput[]
-    NOT?: UserAgentScalarWhereInput | UserAgentScalarWhereInput[]
-    id?: UuidFilter<"UserAgent"> | string
-    userId?: UuidFilter<"UserAgent"> | string
-    agentId?: StringFilter<"UserAgent"> | string
-    level?: IntFilter<"UserAgent"> | number
-    status?: StringFilter<"UserAgent"> | string
-    deploymentEndTime?: DateTimeNullableFilter<"UserAgent"> | Date | string | null
+    gainedXp?: IntNullableFilter<"Position"> | number | null
+    gainedAirdropPoints?: IntNullableFilter<"Position"> | number | null
+    gasPaid?: FloatNullableFilter<"Position"> | number | null
+    blocksTrained?: IntNullableFilter<"Position"> | number | null
+    tradingMode?: StringFilter<"Position"> | string
+    riskProfile?: StringFilter<"Position"> | string
+    sentiment?: StringFilter<"Position"> | string
+    gpt_confidence_score?: StringFilter<"Position"> | string
+    analysisSummary?: StringFilter<"Position"> | string
+    newsAnalysis?: StringFilter<"Position"> | string
+    strategyReasoning?: StringFilter<"Position"> | string
+    createdAt?: DateTimeFilter<"Position"> | Date | string
+    strategyId?: UuidNullableFilter<"Position"> | string | null
   }
 
   export type UserCreateWithoutBadgesInput = {
     id?: string
     username: string
-    status?: string | null
-    shadowId?: string | null
+    shadowId?: string
     weeklyPoints?: number
     airdropPoints?: number
+    status?: string
+    claimedMissions?: string
+    email?: string | null
     wallet_address?: string | null
     wallet_type?: string | null
-    email?: string | null
     phone?: string | null
     x_handle?: string | null
     telegram_handle?: string | null
     youtube_handle?: string | null
-    consoleInsights?: ConsoleInsightCreateNestedManyWithoutUserInput
-    signals?: SignalHistoryItemCreateNestedManyWithoutUserInput
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    generatedSignals?: GeneratedSignalCreateNestedManyWithoutUserInput
     positions?: PositionCreateNestedManyWithoutUserInput
-    userAgents?: UserAgentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutBadgesInput = {
     id?: string
     username: string
-    status?: string | null
-    shadowId?: string | null
+    shadowId?: string
     weeklyPoints?: number
     airdropPoints?: number
+    status?: string
+    claimedMissions?: string
+    email?: string | null
     wallet_address?: string | null
     wallet_type?: string | null
-    email?: string | null
     phone?: string | null
     x_handle?: string | null
     telegram_handle?: string | null
     youtube_handle?: string | null
-    consoleInsights?: ConsoleInsightUncheckedCreateNestedManyWithoutUserInput
-    signals?: SignalHistoryItemUncheckedCreateNestedManyWithoutUserInput
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    generatedSignals?: GeneratedSignalUncheckedCreateNestedManyWithoutUserInput
     positions?: PositionUncheckedCreateNestedManyWithoutUserInput
-    userAgents?: UserAgentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutBadgesInput = {
@@ -10711,276 +8361,387 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutBadgesInput, UserUncheckedCreateWithoutBadgesInput>
   }
 
-  export type UserUpsertWithWhereUniqueWithoutBadgesInput = {
-    where: UserWhereUniqueInput
+  export type UserUpsertWithoutBadgesInput = {
     update: XOR<UserUpdateWithoutBadgesInput, UserUncheckedUpdateWithoutBadgesInput>
     create: XOR<UserCreateWithoutBadgesInput, UserUncheckedCreateWithoutBadgesInput>
+    where?: UserWhereInput
   }
 
-  export type UserUpdateWithWhereUniqueWithoutBadgesInput = {
-    where: UserWhereUniqueInput
+  export type UserUpdateToOneWithWhereWithoutBadgesInput = {
+    where?: UserWhereInput
     data: XOR<UserUpdateWithoutBadgesInput, UserUncheckedUpdateWithoutBadgesInput>
   }
 
-  export type UserUpdateManyWithWhereWithoutBadgesInput = {
-    where: UserScalarWhereInput
-    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutBadgesInput>
-  }
-
-  export type UserScalarWhereInput = {
-    AND?: UserScalarWhereInput | UserScalarWhereInput[]
-    OR?: UserScalarWhereInput[]
-    NOT?: UserScalarWhereInput | UserScalarWhereInput[]
-    id?: UuidFilter<"User"> | string
-    username?: StringFilter<"User"> | string
-    status?: StringNullableFilter<"User"> | string | null
-    shadowId?: StringNullableFilter<"User"> | string | null
-    weeklyPoints?: IntFilter<"User"> | number
-    airdropPoints?: IntFilter<"User"> | number
-    wallet_address?: StringNullableFilter<"User"> | string | null
-    wallet_type?: StringNullableFilter<"User"> | string | null
-    email?: StringNullableFilter<"User"> | string | null
-    phone?: StringNullableFilter<"User"> | string | null
-    x_handle?: StringNullableFilter<"User"> | string | null
-    telegram_handle?: StringNullableFilter<"User"> | string | null
-    youtube_handle?: StringNullableFilter<"User"> | string | null
-  }
-
-  export type UserCreateWithoutConsoleInsightsInput = {
-    id?: string
-    username: string
-    status?: string | null
-    shadowId?: string | null
-    weeklyPoints?: number
-    airdropPoints?: number
-    wallet_address?: string | null
-    wallet_type?: string | null
-    email?: string | null
-    phone?: string | null
-    x_handle?: string | null
-    telegram_handle?: string | null
-    youtube_handle?: string | null
-    badges?: BadgeCreateNestedManyWithoutUsersInput
-    signals?: SignalHistoryItemCreateNestedManyWithoutUserInput
-    positions?: PositionCreateNestedManyWithoutUserInput
-    userAgents?: UserAgentCreateNestedManyWithoutUserInput
-  }
-
-  export type UserUncheckedCreateWithoutConsoleInsightsInput = {
-    id?: string
-    username: string
-    status?: string | null
-    shadowId?: string | null
-    weeklyPoints?: number
-    airdropPoints?: number
-    wallet_address?: string | null
-    wallet_type?: string | null
-    email?: string | null
-    phone?: string | null
-    x_handle?: string | null
-    telegram_handle?: string | null
-    youtube_handle?: string | null
-    badges?: BadgeUncheckedCreateNestedManyWithoutUsersInput
-    signals?: SignalHistoryItemUncheckedCreateNestedManyWithoutUserInput
-    positions?: PositionUncheckedCreateNestedManyWithoutUserInput
-    userAgents?: UserAgentUncheckedCreateNestedManyWithoutUserInput
-  }
-
-  export type UserCreateOrConnectWithoutConsoleInsightsInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutConsoleInsightsInput, UserUncheckedCreateWithoutConsoleInsightsInput>
-  }
-
-  export type UserUpsertWithoutConsoleInsightsInput = {
-    update: XOR<UserUpdateWithoutConsoleInsightsInput, UserUncheckedUpdateWithoutConsoleInsightsInput>
-    create: XOR<UserCreateWithoutConsoleInsightsInput, UserUncheckedCreateWithoutConsoleInsightsInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutConsoleInsightsInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutConsoleInsightsInput, UserUncheckedUpdateWithoutConsoleInsightsInput>
-  }
-
-  export type UserUpdateWithoutConsoleInsightsInput = {
+  export type UserUpdateWithoutBadgesInput = {
     id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    shadowId?: NullableStringFieldUpdateOperationsInput | string | null
+    shadowId?: StringFieldUpdateOperationsInput | string
     weeklyPoints?: IntFieldUpdateOperationsInput | number
     airdropPoints?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    claimedMissions?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     x_handle?: NullableStringFieldUpdateOperationsInput | string | null
     telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    badges?: BadgeUpdateManyWithoutUsersNestedInput
-    signals?: SignalHistoryItemUpdateManyWithoutUserNestedInput
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    generatedSignals?: GeneratedSignalUpdateManyWithoutUserNestedInput
     positions?: PositionUpdateManyWithoutUserNestedInput
-    userAgents?: UserAgentUpdateManyWithoutUserNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutConsoleInsightsInput = {
+  export type UserUncheckedUpdateWithoutBadgesInput = {
     id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    shadowId?: NullableStringFieldUpdateOperationsInput | string | null
+    shadowId?: StringFieldUpdateOperationsInput | string
     weeklyPoints?: IntFieldUpdateOperationsInput | number
     airdropPoints?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    claimedMissions?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     x_handle?: NullableStringFieldUpdateOperationsInput | string | null
     telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    badges?: BadgeUncheckedUpdateManyWithoutUsersNestedInput
-    signals?: SignalHistoryItemUncheckedUpdateManyWithoutUserNestedInput
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    generatedSignals?: GeneratedSignalUncheckedUpdateManyWithoutUserNestedInput
     positions?: PositionUncheckedUpdateManyWithoutUserNestedInput
-    userAgents?: UserAgentUncheckedUpdateManyWithoutUserNestedInput
   }
 
-  export type UserCreateWithoutSignalsInput = {
+  export type UserCreateWithoutGeneratedSignalsInput = {
     id?: string
     username: string
-    status?: string | null
-    shadowId?: string | null
+    shadowId?: string
     weeklyPoints?: number
     airdropPoints?: number
+    status?: string
+    claimedMissions?: string
+    email?: string | null
     wallet_address?: string | null
     wallet_type?: string | null
-    email?: string | null
     phone?: string | null
     x_handle?: string | null
     telegram_handle?: string | null
     youtube_handle?: string | null
-    badges?: BadgeCreateNestedManyWithoutUsersInput
-    consoleInsights?: ConsoleInsightCreateNestedManyWithoutUserInput
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    badges?: BadgeCreateNestedManyWithoutUserInput
     positions?: PositionCreateNestedManyWithoutUserInput
-    userAgents?: UserAgentCreateNestedManyWithoutUserInput
   }
 
-  export type UserUncheckedCreateWithoutSignalsInput = {
+  export type UserUncheckedCreateWithoutGeneratedSignalsInput = {
     id?: string
     username: string
-    status?: string | null
-    shadowId?: string | null
+    shadowId?: string
     weeklyPoints?: number
     airdropPoints?: number
+    status?: string
+    claimedMissions?: string
+    email?: string | null
     wallet_address?: string | null
     wallet_type?: string | null
-    email?: string | null
     phone?: string | null
     x_handle?: string | null
     telegram_handle?: string | null
     youtube_handle?: string | null
-    badges?: BadgeUncheckedCreateNestedManyWithoutUsersInput
-    consoleInsights?: ConsoleInsightUncheckedCreateNestedManyWithoutUserInput
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    badges?: BadgeUncheckedCreateNestedManyWithoutUserInput
     positions?: PositionUncheckedCreateNestedManyWithoutUserInput
-    userAgents?: UserAgentUncheckedCreateNestedManyWithoutUserInput
   }
 
-  export type UserCreateOrConnectWithoutSignalsInput = {
+  export type UserCreateOrConnectWithoutGeneratedSignalsInput = {
     where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutSignalsInput, UserUncheckedCreateWithoutSignalsInput>
+    create: XOR<UserCreateWithoutGeneratedSignalsInput, UserUncheckedCreateWithoutGeneratedSignalsInput>
   }
 
-  export type UserUpsertWithoutSignalsInput = {
-    update: XOR<UserUpdateWithoutSignalsInput, UserUncheckedUpdateWithoutSignalsInput>
-    create: XOR<UserCreateWithoutSignalsInput, UserUncheckedCreateWithoutSignalsInput>
+  export type PositionCreateWithoutGeneratedSignalInput = {
+    id?: string
+    symbol: string
+    signalType: string
+    status: string
+    type: string
+    entryPrice: number
+    stopLoss: number
+    takeProfit: number
+    size: number
+    openTimestamp?: Date | string | null
+    closeTimestamp?: Date | string | null
+    closePrice?: number | null
+    pnl?: number | null
+    gainedXp?: number | null
+    gainedAirdropPoints?: number | null
+    gasPaid?: number | null
+    blocksTrained?: number | null
+    tradingMode: string
+    riskProfile: string
+    sentiment: string
+    gpt_confidence_score: string
+    analysisSummary: string
+    newsAnalysis: string
+    strategyReasoning: string
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutPositionsInput
+  }
+
+  export type PositionUncheckedCreateWithoutGeneratedSignalInput = {
+    id?: string
+    userId: string
+    symbol: string
+    signalType: string
+    status: string
+    type: string
+    entryPrice: number
+    stopLoss: number
+    takeProfit: number
+    size: number
+    openTimestamp?: Date | string | null
+    closeTimestamp?: Date | string | null
+    closePrice?: number | null
+    pnl?: number | null
+    gainedXp?: number | null
+    gainedAirdropPoints?: number | null
+    gasPaid?: number | null
+    blocksTrained?: number | null
+    tradingMode: string
+    riskProfile: string
+    sentiment: string
+    gpt_confidence_score: string
+    analysisSummary: string
+    newsAnalysis: string
+    strategyReasoning: string
+    createdAt?: Date | string
+  }
+
+  export type PositionCreateOrConnectWithoutGeneratedSignalInput = {
+    where: PositionWhereUniqueInput
+    create: XOR<PositionCreateWithoutGeneratedSignalInput, PositionUncheckedCreateWithoutGeneratedSignalInput>
+  }
+
+  export type UserUpsertWithoutGeneratedSignalsInput = {
+    update: XOR<UserUpdateWithoutGeneratedSignalsInput, UserUncheckedUpdateWithoutGeneratedSignalsInput>
+    create: XOR<UserCreateWithoutGeneratedSignalsInput, UserUncheckedCreateWithoutGeneratedSignalsInput>
     where?: UserWhereInput
   }
 
-  export type UserUpdateToOneWithWhereWithoutSignalsInput = {
+  export type UserUpdateToOneWithWhereWithoutGeneratedSignalsInput = {
     where?: UserWhereInput
-    data: XOR<UserUpdateWithoutSignalsInput, UserUncheckedUpdateWithoutSignalsInput>
+    data: XOR<UserUpdateWithoutGeneratedSignalsInput, UserUncheckedUpdateWithoutGeneratedSignalsInput>
   }
 
-  export type UserUpdateWithoutSignalsInput = {
+  export type UserUpdateWithoutGeneratedSignalsInput = {
     id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    shadowId?: NullableStringFieldUpdateOperationsInput | string | null
+    shadowId?: StringFieldUpdateOperationsInput | string
     weeklyPoints?: IntFieldUpdateOperationsInput | number
     airdropPoints?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    claimedMissions?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     x_handle?: NullableStringFieldUpdateOperationsInput | string | null
     telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    badges?: BadgeUpdateManyWithoutUsersNestedInput
-    consoleInsights?: ConsoleInsightUpdateManyWithoutUserNestedInput
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    badges?: BadgeUpdateManyWithoutUserNestedInput
     positions?: PositionUpdateManyWithoutUserNestedInput
-    userAgents?: UserAgentUpdateManyWithoutUserNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutSignalsInput = {
+  export type UserUncheckedUpdateWithoutGeneratedSignalsInput = {
     id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    shadowId?: NullableStringFieldUpdateOperationsInput | string | null
+    shadowId?: StringFieldUpdateOperationsInput | string
     weeklyPoints?: IntFieldUpdateOperationsInput | number
     airdropPoints?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    claimedMissions?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     x_handle?: NullableStringFieldUpdateOperationsInput | string | null
     telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    badges?: BadgeUncheckedUpdateManyWithoutUsersNestedInput
-    consoleInsights?: ConsoleInsightUncheckedUpdateManyWithoutUserNestedInput
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    badges?: BadgeUncheckedUpdateManyWithoutUserNestedInput
     positions?: PositionUncheckedUpdateManyWithoutUserNestedInput
-    userAgents?: UserAgentUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type PositionUpsertWithoutGeneratedSignalInput = {
+    update: XOR<PositionUpdateWithoutGeneratedSignalInput, PositionUncheckedUpdateWithoutGeneratedSignalInput>
+    create: XOR<PositionCreateWithoutGeneratedSignalInput, PositionUncheckedCreateWithoutGeneratedSignalInput>
+    where?: PositionWhereInput
+  }
+
+  export type PositionUpdateToOneWithWhereWithoutGeneratedSignalInput = {
+    where?: PositionWhereInput
+    data: XOR<PositionUpdateWithoutGeneratedSignalInput, PositionUncheckedUpdateWithoutGeneratedSignalInput>
+  }
+
+  export type PositionUpdateWithoutGeneratedSignalInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    symbol?: StringFieldUpdateOperationsInput | string
+    signalType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    entryPrice?: FloatFieldUpdateOperationsInput | number
+    stopLoss?: FloatFieldUpdateOperationsInput | number
+    takeProfit?: FloatFieldUpdateOperationsInput | number
+    size?: FloatFieldUpdateOperationsInput | number
+    openTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closeTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closePrice?: NullableFloatFieldUpdateOperationsInput | number | null
+    pnl?: NullableFloatFieldUpdateOperationsInput | number | null
+    gainedXp?: NullableIntFieldUpdateOperationsInput | number | null
+    gainedAirdropPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    gasPaid?: NullableFloatFieldUpdateOperationsInput | number | null
+    blocksTrained?: NullableIntFieldUpdateOperationsInput | number | null
+    tradingMode?: StringFieldUpdateOperationsInput | string
+    riskProfile?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPositionsNestedInput
+  }
+
+  export type PositionUncheckedUpdateWithoutGeneratedSignalInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    symbol?: StringFieldUpdateOperationsInput | string
+    signalType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    entryPrice?: FloatFieldUpdateOperationsInput | number
+    stopLoss?: FloatFieldUpdateOperationsInput | number
+    takeProfit?: FloatFieldUpdateOperationsInput | number
+    size?: FloatFieldUpdateOperationsInput | number
+    openTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closeTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closePrice?: NullableFloatFieldUpdateOperationsInput | number | null
+    pnl?: NullableFloatFieldUpdateOperationsInput | number | null
+    gainedXp?: NullableIntFieldUpdateOperationsInput | number | null
+    gainedAirdropPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    gasPaid?: NullableFloatFieldUpdateOperationsInput | number | null
+    blocksTrained?: NullableIntFieldUpdateOperationsInput | number | null
+    tradingMode?: StringFieldUpdateOperationsInput | string
+    riskProfile?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserCreateWithoutPositionsInput = {
     id?: string
     username: string
-    status?: string | null
-    shadowId?: string | null
+    shadowId?: string
     weeklyPoints?: number
     airdropPoints?: number
+    status?: string
+    claimedMissions?: string
+    email?: string | null
     wallet_address?: string | null
     wallet_type?: string | null
-    email?: string | null
     phone?: string | null
     x_handle?: string | null
     telegram_handle?: string | null
     youtube_handle?: string | null
-    badges?: BadgeCreateNestedManyWithoutUsersInput
-    consoleInsights?: ConsoleInsightCreateNestedManyWithoutUserInput
-    signals?: SignalHistoryItemCreateNestedManyWithoutUserInput
-    userAgents?: UserAgentCreateNestedManyWithoutUserInput
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    badges?: BadgeCreateNestedManyWithoutUserInput
+    generatedSignals?: GeneratedSignalCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPositionsInput = {
     id?: string
     username: string
-    status?: string | null
-    shadowId?: string | null
+    shadowId?: string
     weeklyPoints?: number
     airdropPoints?: number
+    status?: string
+    claimedMissions?: string
+    email?: string | null
     wallet_address?: string | null
     wallet_type?: string | null
-    email?: string | null
     phone?: string | null
     x_handle?: string | null
     telegram_handle?: string | null
     youtube_handle?: string | null
-    badges?: BadgeUncheckedCreateNestedManyWithoutUsersInput
-    consoleInsights?: ConsoleInsightUncheckedCreateNestedManyWithoutUserInput
-    signals?: SignalHistoryItemUncheckedCreateNestedManyWithoutUserInput
-    userAgents?: UserAgentUncheckedCreateNestedManyWithoutUserInput
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    badges?: BadgeUncheckedCreateNestedManyWithoutUserInput
+    generatedSignals?: GeneratedSignalUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPositionsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutPositionsInput, UserUncheckedCreateWithoutPositionsInput>
+  }
+
+  export type GeneratedSignalCreateWithoutPositionInput = {
+    id?: string
+    symbol: string
+    signal: string
+    status: string
+    entry_zone: string
+    stop_loss: string
+    take_profit: string
+    confidence: string
+    risk_rating: string
+    gpt_confidence_score: string
+    sentiment: string
+    currentThought: string
+    shortTermPrediction: string
+    chosenTradingMode: string
+    chosenRiskProfile: string
+    strategyReasoning: string
+    analysisSummary: string
+    newsAnalysis: string
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutGeneratedSignalsInput
+  }
+
+  export type GeneratedSignalUncheckedCreateWithoutPositionInput = {
+    id?: string
+    userId: string
+    symbol: string
+    signal: string
+    status: string
+    entry_zone: string
+    stop_loss: string
+    take_profit: string
+    confidence: string
+    risk_rating: string
+    gpt_confidence_score: string
+    sentiment: string
+    currentThought: string
+    shortTermPrediction: string
+    chosenTradingMode: string
+    chosenRiskProfile: string
+    strategyReasoning: string
+    analysisSummary: string
+    newsAnalysis: string
+    createdAt?: Date | string
+  }
+
+  export type GeneratedSignalCreateOrConnectWithoutPositionInput = {
+    where: GeneratedSignalWhereUniqueInput
+    create: XOR<GeneratedSignalCreateWithoutPositionInput, GeneratedSignalUncheckedCreateWithoutPositionInput>
   }
 
   export type UserUpsertWithoutPositionsInput = {
@@ -10997,359 +8758,361 @@ export namespace Prisma {
   export type UserUpdateWithoutPositionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    shadowId?: NullableStringFieldUpdateOperationsInput | string | null
+    shadowId?: StringFieldUpdateOperationsInput | string
     weeklyPoints?: IntFieldUpdateOperationsInput | number
     airdropPoints?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    claimedMissions?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     x_handle?: NullableStringFieldUpdateOperationsInput | string | null
     telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    badges?: BadgeUpdateManyWithoutUsersNestedInput
-    consoleInsights?: ConsoleInsightUpdateManyWithoutUserNestedInput
-    signals?: SignalHistoryItemUpdateManyWithoutUserNestedInput
-    userAgents?: UserAgentUpdateManyWithoutUserNestedInput
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    badges?: BadgeUpdateManyWithoutUserNestedInput
+    generatedSignals?: GeneratedSignalUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPositionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    shadowId?: NullableStringFieldUpdateOperationsInput | string | null
+    shadowId?: StringFieldUpdateOperationsInput | string
     weeklyPoints?: IntFieldUpdateOperationsInput | number
     airdropPoints?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    claimedMissions?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     x_handle?: NullableStringFieldUpdateOperationsInput | string | null
     telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    badges?: BadgeUncheckedUpdateManyWithoutUsersNestedInput
-    consoleInsights?: ConsoleInsightUncheckedUpdateManyWithoutUserNestedInput
-    signals?: SignalHistoryItemUncheckedUpdateManyWithoutUserNestedInput
-    userAgents?: UserAgentUncheckedUpdateManyWithoutUserNestedInput
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    badges?: BadgeUncheckedUpdateManyWithoutUserNestedInput
+    generatedSignals?: GeneratedSignalUncheckedUpdateManyWithoutUserNestedInput
   }
 
-  export type UserCreateWithoutUserAgentsInput = {
-    id?: string
-    username: string
-    status?: string | null
-    shadowId?: string | null
-    weeklyPoints?: number
-    airdropPoints?: number
-    wallet_address?: string | null
-    wallet_type?: string | null
-    email?: string | null
-    phone?: string | null
-    x_handle?: string | null
-    telegram_handle?: string | null
-    youtube_handle?: string | null
-    badges?: BadgeCreateNestedManyWithoutUsersInput
-    consoleInsights?: ConsoleInsightCreateNestedManyWithoutUserInput
-    signals?: SignalHistoryItemCreateNestedManyWithoutUserInput
-    positions?: PositionCreateNestedManyWithoutUserInput
+  export type GeneratedSignalUpsertWithoutPositionInput = {
+    update: XOR<GeneratedSignalUpdateWithoutPositionInput, GeneratedSignalUncheckedUpdateWithoutPositionInput>
+    create: XOR<GeneratedSignalCreateWithoutPositionInput, GeneratedSignalUncheckedCreateWithoutPositionInput>
+    where?: GeneratedSignalWhereInput
   }
 
-  export type UserUncheckedCreateWithoutUserAgentsInput = {
-    id?: string
-    username: string
-    status?: string | null
-    shadowId?: string | null
-    weeklyPoints?: number
-    airdropPoints?: number
-    wallet_address?: string | null
-    wallet_type?: string | null
-    email?: string | null
-    phone?: string | null
-    x_handle?: string | null
-    telegram_handle?: string | null
-    youtube_handle?: string | null
-    badges?: BadgeUncheckedCreateNestedManyWithoutUsersInput
-    consoleInsights?: ConsoleInsightUncheckedCreateNestedManyWithoutUserInput
-    signals?: SignalHistoryItemUncheckedCreateNestedManyWithoutUserInput
-    positions?: PositionUncheckedCreateNestedManyWithoutUserInput
+  export type GeneratedSignalUpdateToOneWithWhereWithoutPositionInput = {
+    where?: GeneratedSignalWhereInput
+    data: XOR<GeneratedSignalUpdateWithoutPositionInput, GeneratedSignalUncheckedUpdateWithoutPositionInput>
   }
 
-  export type UserCreateOrConnectWithoutUserAgentsInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutUserAgentsInput, UserUncheckedCreateWithoutUserAgentsInput>
-  }
-
-  export type UserUpsertWithoutUserAgentsInput = {
-    update: XOR<UserUpdateWithoutUserAgentsInput, UserUncheckedUpdateWithoutUserAgentsInput>
-    create: XOR<UserCreateWithoutUserAgentsInput, UserUncheckedCreateWithoutUserAgentsInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutUserAgentsInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutUserAgentsInput, UserUncheckedUpdateWithoutUserAgentsInput>
-  }
-
-  export type UserUpdateWithoutUserAgentsInput = {
+  export type GeneratedSignalUpdateWithoutPositionInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    shadowId?: NullableStringFieldUpdateOperationsInput | string | null
-    weeklyPoints?: IntFieldUpdateOperationsInput | number
-    airdropPoints?: IntFieldUpdateOperationsInput | number
-    wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
-    wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    x_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    badges?: BadgeUpdateManyWithoutUsersNestedInput
-    consoleInsights?: ConsoleInsightUpdateManyWithoutUserNestedInput
-    signals?: SignalHistoryItemUpdateManyWithoutUserNestedInput
-    positions?: PositionUpdateManyWithoutUserNestedInput
+    symbol?: StringFieldUpdateOperationsInput | string
+    signal?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    entry_zone?: StringFieldUpdateOperationsInput | string
+    stop_loss?: StringFieldUpdateOperationsInput | string
+    take_profit?: StringFieldUpdateOperationsInput | string
+    confidence?: StringFieldUpdateOperationsInput | string
+    risk_rating?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    currentThought?: StringFieldUpdateOperationsInput | string
+    shortTermPrediction?: StringFieldUpdateOperationsInput | string
+    chosenTradingMode?: StringFieldUpdateOperationsInput | string
+    chosenRiskProfile?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutGeneratedSignalsNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutUserAgentsInput = {
+  export type GeneratedSignalUncheckedUpdateWithoutPositionInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    shadowId?: NullableStringFieldUpdateOperationsInput | string | null
-    weeklyPoints?: IntFieldUpdateOperationsInput | number
-    airdropPoints?: IntFieldUpdateOperationsInput | number
-    wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
-    wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    x_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    badges?: BadgeUncheckedUpdateManyWithoutUsersNestedInput
-    consoleInsights?: ConsoleInsightUncheckedUpdateManyWithoutUserNestedInput
-    signals?: SignalHistoryItemUncheckedUpdateManyWithoutUserNestedInput
-    positions?: PositionUncheckedUpdateManyWithoutUserNestedInput
+    userId?: StringFieldUpdateOperationsInput | string
+    symbol?: StringFieldUpdateOperationsInput | string
+    signal?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    entry_zone?: StringFieldUpdateOperationsInput | string
+    stop_loss?: StringFieldUpdateOperationsInput | string
+    take_profit?: StringFieldUpdateOperationsInput | string
+    confidence?: StringFieldUpdateOperationsInput | string
+    risk_rating?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    currentThought?: StringFieldUpdateOperationsInput | string
+    shortTermPrediction?: StringFieldUpdateOperationsInput | string
+    chosenTradingMode?: StringFieldUpdateOperationsInput | string
+    chosenRiskProfile?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type ConsoleInsightCreateManyUserInput = {
+  export type BadgeCreateManyUserInput = {
     id?: string
-    content: string
-    timestamp?: Date | string
+    name: string
+    description: string
+    icon: string
   }
 
-  export type SignalHistoryItemCreateManyUserInput = {
+  export type GeneratedSignalCreateManyUserInput = {
     id?: string
-    signalType: string
     symbol: string
-    price: number
-    timestamp?: Date | string
+    signal: string
+    status: string
+    entry_zone: string
+    stop_loss: string
+    take_profit: string
+    confidence: string
+    risk_rating: string
+    gpt_confidence_score: string
+    sentiment: string
+    currentThought: string
+    shortTermPrediction: string
+    chosenTradingMode: string
+    chosenRiskProfile: string
+    strategyReasoning: string
+    analysisSummary: string
+    newsAnalysis: string
+    createdAt?: Date | string
   }
 
   export type PositionCreateManyUserInput = {
     id?: string
     symbol: string
     signalType: string
-    entryPrice: number
-    size: number
     status: string
-    openTimestamp?: Date | string
+    type: string
+    entryPrice: number
+    stopLoss: number
+    takeProfit: number
+    size: number
+    openTimestamp?: Date | string | null
     closeTimestamp?: Date | string | null
     closePrice?: number | null
     pnl?: number | null
-    stopLoss?: number | null
-    takeProfit?: number | null
+    gainedXp?: number | null
+    gainedAirdropPoints?: number | null
+    gasPaid?: number | null
+    blocksTrained?: number | null
+    tradingMode: string
+    riskProfile: string
+    sentiment: string
+    gpt_confidence_score: string
+    analysisSummary: string
+    newsAnalysis: string
+    strategyReasoning: string
+    createdAt?: Date | string
+    strategyId?: string | null
   }
 
-  export type UserAgentCreateManyUserInput = {
-    id?: string
-    agentId: string
-    level: number
-    status: string
-    deploymentEndTime?: Date | string | null
-  }
-
-  export type BadgeUpdateWithoutUsersInput = {
+  export type BadgeUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    icon?: StringFieldUpdateOperationsInput | string
   }
 
-  export type BadgeUncheckedUpdateWithoutUsersInput = {
+  export type BadgeUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    icon?: StringFieldUpdateOperationsInput | string
   }
 
-  export type BadgeUncheckedUpdateManyWithoutUsersInput = {
+  export type BadgeUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    icon?: StringFieldUpdateOperationsInput | string
   }
 
-  export type ConsoleInsightUpdateWithoutUserInput = {
+  export type GeneratedSignalUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ConsoleInsightUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ConsoleInsightUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SignalHistoryItemUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    signalType?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
-    price?: FloatFieldUpdateOperationsInput | number
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    signal?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    entry_zone?: StringFieldUpdateOperationsInput | string
+    stop_loss?: StringFieldUpdateOperationsInput | string
+    take_profit?: StringFieldUpdateOperationsInput | string
+    confidence?: StringFieldUpdateOperationsInput | string
+    risk_rating?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    currentThought?: StringFieldUpdateOperationsInput | string
+    shortTermPrediction?: StringFieldUpdateOperationsInput | string
+    chosenTradingMode?: StringFieldUpdateOperationsInput | string
+    chosenRiskProfile?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    position?: PositionUpdateOneWithoutGeneratedSignalNestedInput
   }
 
-  export type SignalHistoryItemUncheckedUpdateWithoutUserInput = {
+  export type GeneratedSignalUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    signalType?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
-    price?: FloatFieldUpdateOperationsInput | number
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    signal?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    entry_zone?: StringFieldUpdateOperationsInput | string
+    stop_loss?: StringFieldUpdateOperationsInput | string
+    take_profit?: StringFieldUpdateOperationsInput | string
+    confidence?: StringFieldUpdateOperationsInput | string
+    risk_rating?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    currentThought?: StringFieldUpdateOperationsInput | string
+    shortTermPrediction?: StringFieldUpdateOperationsInput | string
+    chosenTradingMode?: StringFieldUpdateOperationsInput | string
+    chosenRiskProfile?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    position?: PositionUncheckedUpdateOneWithoutGeneratedSignalNestedInput
   }
 
-  export type SignalHistoryItemUncheckedUpdateManyWithoutUserInput = {
+  export type GeneratedSignalUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    signalType?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
-    price?: FloatFieldUpdateOperationsInput | number
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    signal?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    entry_zone?: StringFieldUpdateOperationsInput | string
+    stop_loss?: StringFieldUpdateOperationsInput | string
+    take_profit?: StringFieldUpdateOperationsInput | string
+    confidence?: StringFieldUpdateOperationsInput | string
+    risk_rating?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    currentThought?: StringFieldUpdateOperationsInput | string
+    shortTermPrediction?: StringFieldUpdateOperationsInput | string
+    chosenTradingMode?: StringFieldUpdateOperationsInput | string
+    chosenRiskProfile?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PositionUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
     signalType?: StringFieldUpdateOperationsInput | string
-    entryPrice?: FloatFieldUpdateOperationsInput | number
-    size?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
-    openTimestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: StringFieldUpdateOperationsInput | string
+    entryPrice?: FloatFieldUpdateOperationsInput | number
+    stopLoss?: FloatFieldUpdateOperationsInput | number
+    takeProfit?: FloatFieldUpdateOperationsInput | number
+    size?: FloatFieldUpdateOperationsInput | number
+    openTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     closeTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     closePrice?: NullableFloatFieldUpdateOperationsInput | number | null
     pnl?: NullableFloatFieldUpdateOperationsInput | number | null
-    stopLoss?: NullableFloatFieldUpdateOperationsInput | number | null
-    takeProfit?: NullableFloatFieldUpdateOperationsInput | number | null
+    gainedXp?: NullableIntFieldUpdateOperationsInput | number | null
+    gainedAirdropPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    gasPaid?: NullableFloatFieldUpdateOperationsInput | number | null
+    blocksTrained?: NullableIntFieldUpdateOperationsInput | number | null
+    tradingMode?: StringFieldUpdateOperationsInput | string
+    riskProfile?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    generatedSignal?: GeneratedSignalUpdateOneWithoutPositionNestedInput
   }
 
   export type PositionUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
     signalType?: StringFieldUpdateOperationsInput | string
-    entryPrice?: FloatFieldUpdateOperationsInput | number
-    size?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
-    openTimestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: StringFieldUpdateOperationsInput | string
+    entryPrice?: FloatFieldUpdateOperationsInput | number
+    stopLoss?: FloatFieldUpdateOperationsInput | number
+    takeProfit?: FloatFieldUpdateOperationsInput | number
+    size?: FloatFieldUpdateOperationsInput | number
+    openTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     closeTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     closePrice?: NullableFloatFieldUpdateOperationsInput | number | null
     pnl?: NullableFloatFieldUpdateOperationsInput | number | null
-    stopLoss?: NullableFloatFieldUpdateOperationsInput | number | null
-    takeProfit?: NullableFloatFieldUpdateOperationsInput | number | null
+    gainedXp?: NullableIntFieldUpdateOperationsInput | number | null
+    gainedAirdropPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    gasPaid?: NullableFloatFieldUpdateOperationsInput | number | null
+    blocksTrained?: NullableIntFieldUpdateOperationsInput | number | null
+    tradingMode?: StringFieldUpdateOperationsInput | string
+    riskProfile?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    strategyId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type PositionUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
     signalType?: StringFieldUpdateOperationsInput | string
-    entryPrice?: FloatFieldUpdateOperationsInput | number
-    size?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
-    openTimestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: StringFieldUpdateOperationsInput | string
+    entryPrice?: FloatFieldUpdateOperationsInput | number
+    stopLoss?: FloatFieldUpdateOperationsInput | number
+    takeProfit?: FloatFieldUpdateOperationsInput | number
+    size?: FloatFieldUpdateOperationsInput | number
+    openTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     closeTimestamp?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     closePrice?: NullableFloatFieldUpdateOperationsInput | number | null
     pnl?: NullableFloatFieldUpdateOperationsInput | number | null
-    stopLoss?: NullableFloatFieldUpdateOperationsInput | number | null
-    takeProfit?: NullableFloatFieldUpdateOperationsInput | number | null
-  }
-
-  export type UserAgentUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    agentId?: StringFieldUpdateOperationsInput | string
-    level?: IntFieldUpdateOperationsInput | number
-    status?: StringFieldUpdateOperationsInput | string
-    deploymentEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type UserAgentUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    agentId?: StringFieldUpdateOperationsInput | string
-    level?: IntFieldUpdateOperationsInput | number
-    status?: StringFieldUpdateOperationsInput | string
-    deploymentEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type UserAgentUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    agentId?: StringFieldUpdateOperationsInput | string
-    level?: IntFieldUpdateOperationsInput | number
-    status?: StringFieldUpdateOperationsInput | string
-    deploymentEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type UserUpdateWithoutBadgesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    shadowId?: NullableStringFieldUpdateOperationsInput | string | null
-    weeklyPoints?: IntFieldUpdateOperationsInput | number
-    airdropPoints?: IntFieldUpdateOperationsInput | number
-    wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
-    wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    x_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    consoleInsights?: ConsoleInsightUpdateManyWithoutUserNestedInput
-    signals?: SignalHistoryItemUpdateManyWithoutUserNestedInput
-    positions?: PositionUpdateManyWithoutUserNestedInput
-    userAgents?: UserAgentUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutBadgesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    shadowId?: NullableStringFieldUpdateOperationsInput | string | null
-    weeklyPoints?: IntFieldUpdateOperationsInput | number
-    airdropPoints?: IntFieldUpdateOperationsInput | number
-    wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
-    wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    x_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    consoleInsights?: ConsoleInsightUncheckedUpdateManyWithoutUserNestedInput
-    signals?: SignalHistoryItemUncheckedUpdateManyWithoutUserNestedInput
-    positions?: PositionUncheckedUpdateManyWithoutUserNestedInput
-    userAgents?: UserAgentUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUncheckedUpdateManyWithoutBadgesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    shadowId?: NullableStringFieldUpdateOperationsInput | string | null
-    weeklyPoints?: IntFieldUpdateOperationsInput | number
-    airdropPoints?: IntFieldUpdateOperationsInput | number
-    wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
-    wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    x_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
+    gainedXp?: NullableIntFieldUpdateOperationsInput | number | null
+    gainedAirdropPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    gasPaid?: NullableFloatFieldUpdateOperationsInput | number | null
+    blocksTrained?: NullableIntFieldUpdateOperationsInput | number | null
+    tradingMode?: StringFieldUpdateOperationsInput | string
+    riskProfile?: StringFieldUpdateOperationsInput | string
+    sentiment?: StringFieldUpdateOperationsInput | string
+    gpt_confidence_score?: StringFieldUpdateOperationsInput | string
+    analysisSummary?: StringFieldUpdateOperationsInput | string
+    newsAnalysis?: StringFieldUpdateOperationsInput | string
+    strategyReasoning?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    strategyId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
 
+
+  /**
+   * Aliases for legacy arg types
+   */
+    /**
+     * @deprecated Use UserCountOutputTypeDefaultArgs instead
+     */
+    export type UserCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = UserCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use UserDefaultArgs instead
+     */
+    export type UserArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = UserDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use BadgeDefaultArgs instead
+     */
+    export type BadgeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = BadgeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use GeneratedSignalDefaultArgs instead
+     */
+    export type GeneratedSignalArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = GeneratedSignalDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use PositionDefaultArgs instead
+     */
+    export type PositionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PositionDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

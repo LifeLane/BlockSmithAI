@@ -15,75 +15,91 @@ datasource db {
 }
 
 model User {
-  id              String              @id @default(uuid()) @db.Uuid
-  username        String              @unique
-  status          String?
-  shadowId        String?             @unique
-  weeklyPoints    Int                 @default(0)
-  airdropPoints   Int                 @default(0)
-  wallet_address  String?
+  id              String   @id @default(uuid()) @db.Uuid
+  username        String   @unique
+  shadowId        String   @unique @default(cuid())
+  weeklyPoints    Int      @default(0)
+  airdropPoints   Int      @default(0)
+  status          String   @default("Guest")
+  claimedMissions String   @default("[]")
+  email           String?  @unique
+  wallet_address  String?  @unique
   wallet_type     String?
-  email           String?
-  phone           String?
+  phone           String?  @unique
   x_handle        String?
   telegram_handle String?
   youtube_handle  String?
-  badges          Badge[]             @relation("UserBadges")
-  consoleInsights ConsoleInsight[]
-  signals         SignalHistoryItem[]
-  positions       Position[]
-  userAgents      UserAgent[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  badges           Badge[]
+  generatedSignals GeneratedSignal[]
+  positions        Position[]
 }
 
 model Badge {
-  id    String @id @default(uuid()) @db.Uuid
-  name  String @unique
-  users User[] @relation("UserBadges")
+  id          String @id @default(uuid()) @db.Uuid
+  name        String
+  description String
+  icon        String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String @db.Uuid
 }
 
-model ConsoleInsight {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @db.Uuid
-  content   String
-  timestamp DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-}
-
-model SignalHistoryItem {
-  id         String   @id @default(uuid()) @db.Uuid
-  userId     String   @db.Uuid
-  signalType String
-  symbol     String
-  price      Float
-  timestamp  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id])
+model GeneratedSignal {
+  id                   String    @id @default(cuid())
+  userId               String    @db.Uuid
+  symbol               String
+  signal               String
+  status               String
+  entry_zone           String
+  stop_loss            String
+  take_profit          String
+  confidence           String
+  risk_rating          String
+  gpt_confidence_score String
+  sentiment            String
+  currentThought       String
+  shortTermPrediction  String
+  chosenTradingMode    String
+  chosenRiskProfile    String
+  strategyReasoning    String    @db.Text
+  analysisSummary      String    @db.Text
+  newsAnalysis         String    @db.Text
+  createdAt            DateTime  @default(now())
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  position             Position?
 }
 
 model Position {
-  id             String    @id @default(uuid()) @db.Uuid
-  userId         String    @db.Uuid
-  symbol         String
-  signalType     String // 'BUY' | 'SELL'
-  entryPrice     Float
-  size           Float
-  status         String // 'OPEN' | 'CLOSED'
-  openTimestamp  DateTime  @default(now())
-  closeTimestamp DateTime?
-  closePrice     Float?
-  pnl            Float?
-  stopLoss       Float?
-  takeProfit     Float?
-  user           User      @relation(fields: [userId], references: [id])
-}
+  id                   String    @id @default(cuid())
+  userId               String    @db.Uuid
+  symbol               String
+  signalType           String
+  status               String
+  type                 String
+  entryPrice           Float
+  stopLoss             Float
+  takeProfit           Float
+  size                 Float
+  openTimestamp        DateTime?
+  closeTimestamp       DateTime?
+  closePrice           Float?
+  pnl                  Float?
+  gainedXp             Int?
+  gainedAirdropPoints  Int?
+  gasPaid              Float?
+  blocksTrained        Int?
+  tradingMode          String
+  riskProfile          String
+  sentiment            String
+  gpt_confidence_score String
+  analysisSummary      String    @db.Text
+  newsAnalysis         String    @db.Text
+  strategyReasoning    String    @db.Text
+  createdAt            DateTime  @default(now())
 
-// Agent model will be static/predefined in the application logic, not in DB
-// UserAgent will link users to agents and their level/status
-model UserAgent {
-  id                String    @id @default(uuid()) @db.Uuid
-  userId            String    @db.Uuid
-  agentId           String // ID linking to the static Agent definition
-  level             Int
-  status            String // 'IDLE' | 'DEPLOYED'
-  deploymentEndTime DateTime?
-  user              User      @relation(fields: [userId], references: [id])
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategyId      String?          @unique @db.Uuid
+  generatedSignal GeneratedSignal? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
 }

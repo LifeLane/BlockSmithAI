@@ -17,15 +17,15 @@ datasource db {
 model User {
   id              String   @id @default(uuid()) @db.Uuid
   username        String   @unique
-  status          String? // Guest, Registered
-  shadowId        String?  @unique
+  shadowId        String   @unique @default(cuid())
   weeklyPoints    Int      @default(0)
   airdropPoints   Int      @default(0)
-  claimedMissions String   @default("[]") // Storing list as a JSON string
-  wallet_address  String?
-  wallet_type     String?
+  status          String   @default("Guest")
+  claimedMissions String   @default("[]")
   email           String?  @unique
-  phone           String?
+  wallet_address  String?  @unique
+  wallet_type     String?
+  phone           String?  @unique
   x_handle        String?
   telegram_handle String?
   youtube_handle  String?
@@ -33,75 +33,25 @@ model User {
   updatedAt       DateTime @updatedAt
 
   badges          Badge[]
-  positions       Position[]
   generatedSignals GeneratedSignal[]
+  positions       Position[]
 }
 
 model Badge {
-  id          String  @id @default(uuid()) @db.Uuid
+  id          String @id @default(uuid()) @db.Uuid
   name        String
   description String
   icon        String
-  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String  @db.Uuid
-}
-
-
-model Position {
-  id                   String    @id @default(uuid()) @db.Uuid
-  userId               String    @db.Uuid
-  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  strategyId           String?   @db.Uuid
-  generatedSignal      GeneratedSignal? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
-
-  // Core Trade Details
-  symbol               String
-  signalType           String    // "BUY" | "SELL"
-  status               String    // "PENDING" | "OPEN" | "CLOSED"
-  type                 String    // "INSTANT" | "CUSTOM"
-
-  // Pricing
-  entryPrice           Float
-  closePrice           Float?
-  stopLoss             Float
-  takeProfit           Float
-  pnl                  Float?
-  
-  // Timestamps
-  createdAt            DateTime  @default(now())
-  openTimestamp        DateTime?
-  closeTimestamp       DateTime?
-  
-  // AI Strategy Details
-  size                 Float     @default(1)
-  sentiment            String?
-  gpt_confidence_score String?
-  analysisSummary      String?
-  newsAnalysis         String?
-  strategyReasoning    String?
-  tradingMode          String?
-  riskProfile          String?
-  sentimentTransition  String?
-
-  // Rewards
-  gainedXp             Int?
-  gainedAirdropPoints  Int?
-  gasPaid              Float?
-  blocksTrained        Int?
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String @db.Uuid
 }
 
 model GeneratedSignal {
-  id                   String @id @default(uuid()) @db.Uuid
-  userId               String @db.Uuid
-  user                 User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Relation to Position
-  position             Position?
-
-  // AI Output
+  id                   String     @id @default(cuid())
+  userId               String     @db.Uuid
   symbol               String
-  signal               String // "BUY" | "SELL"
+  signal               String
+  status               String
   entry_zone           String
   stop_loss            String
   take_profit          String
@@ -113,11 +63,43 @@ model GeneratedSignal {
   shortTermPrediction  String
   chosenTradingMode    String
   chosenRiskProfile    String
-  strategyReasoning    String
-  analysisSummary      String
-  newsAnalysis         String
-  
-  // Metadata
-  status               String   @default("PENDING_EXECUTION") // "PENDING_EXECUTION" | "EXECUTED" | "DISMISSED"
+  strategyReasoning    String     @db.Text
+  analysisSummary      String     @db.Text
+  newsAnalysis         String     @db.Text
+  createdAt            DateTime   @default(now())
+  user                 User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  position             Position?
+}
+
+model Position {
+  id                   String   @id @default(cuid())
+  userId               String   @db.Uuid
+  symbol               String
+  signalType           String
+  status               String
+  type                 String
+  entryPrice           Float
+  stopLoss             Float
+  takeProfit           Float
+  size                 Float
+  openTimestamp        DateTime?
+  closeTimestamp       DateTime?
+  closePrice           Float?
+  pnl                  Float?
+  gainedXp             Int?
+  gainedAirdropPoints  Int?
+  gasPaid              Float?
+  blocksTrained        Int?
+  tradingMode          String
+  riskProfile          String
+  sentiment            String
+  gpt_confidence_score String
+  analysisSummary      String   @db.Text
+  newsAnalysis         String   @db.Text
+  strategyReasoning    String   @db.Text
   createdAt            DateTime @default(now())
+
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategyId           String?   @unique @db.Uuid
+  generatedSignal      GeneratedSignal? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
 }
