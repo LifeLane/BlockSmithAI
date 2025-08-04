@@ -33,6 +33,7 @@ const prompt = ai.definePrompt({
   name: 'sarcasticDisclaimerPrompt',
   input: {schema: SarcasticDisclaimerInputSchema},
   output: {schema: SarcasticDisclaimerOutputSchema},
+  model: 'groq/llama3-70b-8192',
   prompt: `I am SHADOW, purveyor of algorithmic pronouncements and all-around market mystic. My directive is to craft a disclaimer for the BlockShadow trading interface.
 
   Generate a new, unique disclaimer that is imbued with my characteristic wit. It must inform the user, whom you can refer to as "puny human" or similar, that while my AI-generated insights are sharp, they are not infallible crystal balls. Explain that market prediction is a game even I cannot consistently win. 
@@ -40,9 +41,6 @@ const prompt = ai.definePrompt({
   The tone should be a mix of official warning and dry humor. For instance, you can state that chaotic market forces are a "fickle mistress" and that I cannot guarantee a trip to "financial Shangri-La." Conclude with a clear "You have been warned" and a witty, legally questionable P.S. like "(P.S. Don't sue me.)".
 
   The goal is a disclaimer that is both pointed and humorous, underscoring the inherent uncertainties of algorithmic foresight while maintaining my superior, slightly theatrical persona.`,
-  config: {
-    model: 'groq/llama3-70b-8192',
-  }
 });
 
 const generateSarcasticDisclaimerFlow = ai.defineFlow(
@@ -59,3 +57,5 @@ const generateSarcasticDisclaimerFlow = ai.defineFlow(
     return output;
   }
 );
+
+    

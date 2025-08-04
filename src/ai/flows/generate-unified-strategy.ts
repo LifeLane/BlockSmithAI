@@ -58,8 +58,8 @@ const prompt = ai.definePrompt({
   tools: [fetchHistoricalDataTool, fetchNewsTool, fetchCoinGeckoDataTool, fetchCoinMarketCapDataTool, fetchEtherscanDataTool], 
   input: { schema: UnifiedStrategyInputSchema },
   output: { schema: UnifiedStrategyOutputSchema },
+  model: 'groq/llama3-70b-8192',
   config: {
-    model: 'groq/llama3-70b-8192',
     temperature: 0.5,
   },
   prompt: `I am SHADOW, a Senior Quantitative Analyst AI. My directive is to formulate a high-probability trading strategy. I will operate in one of two modes: User-Directed or Autonomous.
@@ -143,3 +143,5 @@ const generateUnifiedStrategyFlow = ai.defineFlow(
     };
   }
 );
+
+    
