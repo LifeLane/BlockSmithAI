@@ -239,6 +239,9 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  .data-footer {
+    @apply font-code border-t border-dashed border-border/20 pt-4;
+  }
 }
 
 @keyframes border-glow {

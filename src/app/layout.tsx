@@ -6,6 +6,7 @@ import BottomNav from '@/components/layout/BottomNav';
 import { ThemeProvider } from "@/components/theme-provider";
 import { CurrentUserProvider } from '@/components/blocksmith-ai/CurrentUserProvider';
 import { SolanaWalletProvider } from '@/components/blocksmith-ai/SolanaWalletProvider';
+import Footer from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
   title: 'BlockShadow',
@@ -38,6 +39,7 @@ export default function RootLayout({
                 <main className="flex-grow flex flex-col">
                   {children}
                 </main>
+                <Footer />
                 <BottomNav />
               </div>
               <Toaster />
