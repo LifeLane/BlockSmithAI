@@ -13,7 +13,7 @@ import SubscriptionCard from '@/components/blocksmith-ai/SubscriptionCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import TokenInfo from '@/components/blocksmith-ai/TokenInfo';
 import LivePriceTicker from '@/components/blocksmith-ai/LivePriceTicker';
-import { explorerLinks, tradingLinks } from '@/lib/external-links';
+import { explorerLinks, tradingLinks } from '@/lib/external-links.tsx';
 
 
 const tiers = [

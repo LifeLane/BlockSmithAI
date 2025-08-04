@@ -18,3 +18,4 @@ export const tradingLinks: TickerItem[] = [
     { name: 'Photon', url: 'https://photon-sol.tinyastro.io/en/r/solscanofficial/B6XHf6ouZAy5Enq4kR3Po4CD5axn1EWc7aZKR9gmr2QR', icon: <CandlestickChart className="h-4 w-4"/> },
     { name: 'RugCheck', url: 'https://rugcheck.xyz/tokens/B6XHf6ouZAy5Enq4kR3Po4CD5axn1EWc7aZKR9gmr2QR', icon: <CandlestickChart className="h-4 w-4"/> },
 ];
+
