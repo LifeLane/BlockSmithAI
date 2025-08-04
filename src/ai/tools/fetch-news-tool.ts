@@ -2,7 +2,7 @@
  * @fileOverview A Genkit tool to fetch recent news for a given cryptocurrency.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai, geminiModel } from '@/ai/genkit';
 import { z } from 'genkit';
 import { fetchRecentNews, type NewsArticle } from '@/services/news-service';
 
@@ -30,7 +30,6 @@ export const fetchNewsTool = ai.defineTool(
     outputSchema: FetchNewsOutputSchema,
   },
   async (input) => {
-    // Check for API key at the tool level before calling the service
     const apiKey = process.env.NEWS_API_KEY;
     if (!apiKey || apiKey.includes("YOUR_")) {
         return { error: 'News API key is not configured. News service is unavailable.' };
@@ -46,19 +45,23 @@ export const fetchNewsTool = ai.defineTool(
       return { summary: 'No significant news found in the last 7 days.' };
     }
 
-    // Create a simplified list for the AI to summarize
     const articlesForSummary = result.articles.map(a => ({
         source: a.source,
         title: a.title,
         description: a.description
     }));
 
-    // Create a text summary for the AI to easily parse
-    const summaryText = result.articles
-      .slice(0, 5) // Use top 5 for the summary text
-      .map(a => `Title: ${a.title}\nSource: ${a.source.name}\nDescription: ${a.description || 'N/A'}`)
-      .join('\n\n---\n\n');
-      
-    return { articles: articlesForSummary, summary: summaryText };
+    const articlesText = articlesForSummary.map(a => `Title: ${a.title}\nDescription: ${a.description}`).join('\n\n---\n\n');
+
+    const { text } = await ai.generate({
+        model: geminiModel,
+        prompt: `Based on the following news articles, provide a one-sentence summary of the overall market sentiment for ${input.query}.
+        
+        Articles:
+        ${articlesText}`,
+        config: { temperature: 0.3 }
+    });
+
+    return { articles: articlesForSummary, summary: text };
   }
 );
