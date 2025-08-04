@@ -3,8 +3,7 @@
 
 import { useMemo, useState, useEffect, lazy, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { CheckCircle, Zap, Star, Rocket, Wallet, Shield, Telescope, LineChart } from 'lucide-react';
+import { Wallet, Shield, Telescope, LineChart } from 'lucide-react';
 import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
@@ -14,6 +13,7 @@ import TokenInfo from '@/components/blocksmith-ai/TokenInfo';
 import { explorerLinks, tradingLinks } from '@/lib/external-links.tsx';
 
 const LivePriceTicker = lazy(() => import('@/components/blocksmith-ai/LivePriceTicker'));
+
 
 const tiers = [
     {
@@ -36,7 +36,7 @@ const tiers = [
             'Standard Airdrop Points',
             '1.2x SHADOW Back Reward'
         ],
-        icon: <Zap className="h-8 w-8 text-primary" />,
+        icon: <Telescope className="h-8 w-8 text-primary" />,
     },
     {
         name: 'Analyst Yearly',
@@ -48,7 +48,7 @@ const tiers = [
             '1.5x SHADOW Back Reward',
             'Exclusive Community Access'
         ],
-        icon: <Star className="h-8 w-8 text-accent" />,
+        icon: <LineChart className="h-8 w-8 text-accent" />,
         isPopular: true
     },
     {
@@ -61,7 +61,7 @@ const tiers = [
             '2x SHADOW Back Reward',
             'Direct Line to SHADOW Core Devs'
         ],
-        icon: <Rocket className="h-8 w-8 text-tertiary" />,
+        icon: <Shield className="h-8 w-8 text-tertiary" />,
     }
 ];
 
@@ -150,19 +150,18 @@ export default function PremiumPageClient() {
         </div>
         
         <div className="space-y-4">
-            <div className='space-y-1'>
-                <h3 className="font-bold text-sm tracking-widest text-primary opacity-70 flex items-center gap-2"><Telescope size={16}/> EXPLORER</h3>
-                <Suspense fallback={<PriceTickerSkeleton />}>
-                    <LivePriceTicker items={explorerLinks} direction="normal" />
-                </Suspense>
+            <div>
+                <h3 className="font-bold text-sm tracking-widest text-primary opacity-70 flex items-center gap-2 mb-1"><Telescope size={16}/> EXPLORER</h3>
+                 <Suspense fallback={<PriceTickerSkeleton />}>
+                    {isClient && <LivePriceTicker items={explorerLinks} direction="normal" />}
+                 </Suspense>
             </div>
-            <div className='space-y-1'>
-                <h3 className="font-bold text-sm tracking-widest text-accent opacity-70 flex items-center gap-2"><LineChart size={16}/> TRADING & VERIFICATION</h3>
-                <Suspense fallback={<PriceTickerSkeleton />}>
-                    <LivePriceTicker items={tradingLinks} direction="reverse" />
-                </Suspense>
+            <div>
+                <h3 className="font-bold text-sm tracking-widest text-accent opacity-70 flex items-center gap-2 mb-1"><LineChart size={16}/> TRADING & VERIFICATION</h3>
+                 <Suspense fallback={<PriceTickerSkeleton />}>
+                    {isClient && <LivePriceTicker items={tradingLinks} direction="reverse" />}
+                 </Suspense>
             </div>
-
             <TokenInfo />
         </div>
 

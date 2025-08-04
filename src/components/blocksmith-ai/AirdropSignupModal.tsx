@@ -1,359 +1,184 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import AppHeader from '@/components/blocksmith-ai/AppHeader';
-import StrategySelectors from '@/components/blocksmith-ai/StrategySelectors';
-import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
-import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
-import SignalTracker from '@/components/blocksmith-ai/SignalTracker';
 import {
-  generateTradingStrategyAction,
-  generateShadowChoiceStrategyAction,
-  type GeneratedSignal,
-} from '@/app/actions';
-import { 
-    fetchMarketDataAction, 
-    type FormattedSymbol,
-    type LiveMarketData,
-} from '@/services/market-data-service';
-import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
-import { useToast } from "@/hooks/use-toast";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { handleAirdropSignupAction } from '@/app/actions';
 import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
-import { Loader2, Sparkles, BrainCircuit, Wallet, AlertTriangle, Rocket } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
-import { useClientState } from '@/hooks/use-client-state';
-import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, Wallet } from 'lucide-react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
-const DEFAULT_SYMBOLS: FormattedSymbol[] = [
-  { value: "BTCUSDT", label: "BTC/USDT" },
-  { value: "ETHUSDT", label: "ETH/USDT" },
-  { value: "SOLUSDT", label: "SOL/USDT" },
-];
-const INITIAL_DEFAULT_SYMBOL = 'BTCUSDT';
-const DAILY_ANALYSIS_LIMIT = 5;
+const formSchema = z.object({
+  username: z.string().min(3, {
+    message: 'Username must be at least 3 characters.',
+  }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  phone: z.string().min(10, { message: 'Please enter a valid phone number.' }),
+});
 
-const LOADING_STEPS = [
-    "Initiating Neural Core...",
-    "Fusing Live Market Data...",
-    "Analyzing Multi-Timeframe Trends...",
-    "Scanning News & Sentiment...",
-    "Querying On-Chain Intelligence...",
-    "Assessing Volatility Matrix...",
-    "Formulating Core Strategy...",
-    "Pinpointing Entry & Exit Vectors...",
-    "Calculating Risk Parameters...",
-    "Finalizing SHADOW Edict...",
-];
+type AirdropFormData = z.infer<typeof formSchema>;
 
-const STATIC_DISCLAIMER = "My analysis is a beacon in the chaos, not a crystal ball. The market writes its own script. Tread wisely.";
+interface AirdropSignupModalProps {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+  onSignupSuccess: () => void;
+  userId: string;
+}
 
-export default function CoreConsolePage() {
-  const [symbol, setSymbol] = useState<string>(INITIAL_DEFAULT_SYMBOL);
-  const [tradingMode, setTradingMode] = useState<string>('Intraday');
-  const [riskProfile, setRiskProfile] = useState<string>('Medium');
-
-  const [aiStrategy, setAiStrategy] = useState<GeneratedSignal | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [loadingText, setLoadingText] = useState<string>(LOADING_STEPS[0]);
-  const [strategyError, setStrategyError] = useState<string | null>(null);
-  
-  const [liveMarketData, setLiveMarketData] = useState<LiveMarketData | null>(null);
-  const [isLoadingMarketData, setIsLoadingMarketData] = useState<boolean>(true);
-  const [marketDataError, setMarketDataError] = useState<string | null>(null);
-
-  const [availableSymbols, setAvailableSymbols] = useState<FormattedSymbol[]>(DEFAULT_SYMBOLS);
-  const [isLoadingSymbols, setIsLoadingSymbols] = useState<boolean>(true);
-
-  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
-  
-  const { user, isLoading: isUserLoading, refetchUser } = useCurrentUserState();
-  const { addSignal: addClientSignal } = useClientState();
-  
-  const [analysisCount, setAnalysisCount] = useState<number>(0);
-
+export default function AirdropSignupModal({
+  isOpen,
+  onOpenChange,
+  onSignupSuccess,
+  userId,
+}: AirdropSignupModalProps) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { user, refetchUser } = useCurrentUserState();
   const { toast } = useToast();
-  const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const { connected } = useWallet();
+  const { connected, publicKey, wallet } = useWallet();
   const walletButtonRef = useRef<HTMLButtonElement>(null);
-  
+
+  const form = useForm<AirdropFormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      username: user?.username?.startsWith('Guest-') ? '' : user?.username || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+    },
+  });
+
   useEffect(() => {
-    if (typeof window === 'undefined' || !user || user.status === 'Premium') {
-        setAnalysisCount(0);
-        return;
+    if (user && isOpen) {
+      form.reset({
+        username: user.username?.startsWith('Guest-') ? '' : user.username || '',
+        email: user.email || '',
+        phone: user.phone || '',
+      });
     }
-    const storedCount = localStorage.getItem('bsaiAnalysisCount');
-    if (storedCount) {
-        setAnalysisCount(parseInt(storedCount, 10));
-    } else {
-        localStorage.setItem('bsaiAnalysisCount', '0');
-        setAnalysisCount(0);
+  }, [user, isOpen, form]);
+
+  const handleSubmit = async (data: AirdropFormData) => {
+    if (!connected || !publicKey || !wallet?.adapter.name) {
+      toast({
+        title: 'Wallet Not Connected',
+        description: 'Please connect your wallet before submitting.',
+        variant: 'destructive',
+      });
+      walletButtonRef.current?.click();
+      return;
     }
-  }, [user]);
 
-  const updateUsageData = useCallback((newCount: number) => {
-    localStorage.setItem('bsaiAnalysisCount', newCount.toString());
-    setAnalysisCount(newCount);
-  }, []);
+    setLoading(true);
+    setError(null);
 
-  const fetchAndSetMarketData = useCallback(async (currentSymbolToFetch: string, showToastOnError = true) => {
-    setIsLoadingMarketData(true);
-    setMarketDataError(null); 
-    const result = await fetchMarketDataAction({ symbol: currentSymbolToFetch });
+    const result = await handleAirdropSignupAction(
+      {
+        ...data,
+        wallet_address: publicKey.toBase58(),
+        wallet_type: wallet.adapter.name,
+      },
+      userId
+    );
 
     if ('error' in result) {
-      setMarketDataError(result.error);
-      setLiveMarketData(null);
-      if (showToastOnError) toast({ title: "Market Data Error", description: result.error, variant: "destructive" });
+      setError(result.error);
     } else {
-      setLiveMarketData(result);
+      await refetchUser();
+      onSignupSuccess();
     }
-    setIsLoadingMarketData(false);
-    return result;
-  }, [toast]);
+    setLoading(false);
+  };
 
-  useEffect(() => {
-    const loadSymbols = async () => {
-      setIsLoadingSymbols(true);
-      const result = await fetchAllTradingSymbolsAction();
-      if ('error' in result) {
-        toast({ title: "Failed to Load Symbols", description: result.error + " Using default list.", variant: "destructive" });
-        setAvailableSymbols(DEFAULT_SYMBOLS);
-      } else {
-        setAvailableSymbols(result);
-        if (!result.find(s => s.value === INITIAL_DEFAULT_SYMBOL) && result.length > 0) setSymbol(result[0].value);
-      }
-      setIsLoadingSymbols(false);
-    };
-    loadSymbols();
-  }, [toast]);
-
-  useEffect(() => {
-    if (symbol && !isUserLoading) {
-      fetchAndSetMarketData(symbol, true);
-      const intervalId = setInterval(() => fetchAndSetMarketData(symbol, false), 30000);
-      return () => clearInterval(intervalId);
-    }
-  }, [symbol, fetchAndSetMarketData, isUserLoading]);
-
-  const stopLoadingAnimation = useCallback(() => {
-    if (loadingIntervalRef.current) {
-        clearInterval(loadingIntervalRef.current);
-        loadingIntervalRef.current = null;
-    }
-    setIsLoading(false);
-  }, []);
-
-
-  const handleGenerateStrategy = useCallback(async ({ isCustom }: { isCustom: boolean }) => {
-    setTimeout(() => document.getElementById('results-block')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-
-    if (!user) {
-        toast({ title: "User Session Required", description: "Your guest session is still being created. Please try again in a moment." });
-        return;
-    }
-    
-    if (!connected) {
-        toast({ title: "Wallet Connection Required", description: "Please connect your wallet to generate a signal." });
-        walletButtonRef.current?.click();
-        return;
-    }
-
-    if (user.status !== 'Premium') {
-      if (analysisCount >= DAILY_ANALYSIS_LIMIT) {
-        toast({ title: "Daily Limit Reached", description: <span className="text-foreground">Your trial of <strong className="text-accent">{DAILY_ANALYSIS_LIMIT} analyses per day</strong> is over. <Link href="/premium" className="underline text-primary">Subscribe</Link> for <strong className="text-tertiary">unlimited access</strong>.</span> });
-        return;
-      }
-      updateUsageData(analysisCount + 1);
-    }
-
-    setIsLoading(true);
-    setStrategyError(null);
-    setAiStrategy(null);
-
-    let step = 0;
-    setLoadingText(LOADING_STEPS[step]);
-    loadingIntervalRef.current = setInterval(() => {
-        step = (step + 1) % LOADING_STEPS.length;
-        setLoadingText(LOADING_STEPS[step]);
-    }, 1500);
-
-    let currentDataToUse = liveMarketData;
-    if (!currentDataToUse || (currentDataToUse.symbol !== symbol)) {
-      const result = await fetchAndSetMarketData(symbol, true);
-      if ('error' in result) {
-        setStrategyError("Market data unavailable. Strategy generation aborted.");
-        if(user.status !== 'Premium' && analysisCount > 0) updateUsageData(analysisCount - 1);
-        stopLoadingAnimation();
-        return;
-      }
-      currentDataToUse = result;
-    }
-
-    const marketDataForAIString = JSON.stringify(currentDataToUse);
-    let result;
-
-    try {
-        if (isCustom) {
-            result = await generateShadowChoiceStrategyAction({ symbol, marketData: marketDataForAIString }, user.id);
-        } else {
-            result = await generateTradingStrategyAction({ symbol, tradingMode, riskProfile, marketData: marketDataForAIString, userId: user.id });
-        }
-        
-        if ('error' in result) {
-          setStrategyError(result.error);
-          toast({ title: "SHADOW's Insight Blocked", description: result.error, variant: "destructive" });
-          if(user.status !== 'Premium' && analysisCount > 0) updateUsageData(analysisCount - 1);
-        } else {
-            const strategyResult = result.signal;
-            setAiStrategy(strategyResult);
-            
-            addClientSignal(result.signal);
-            
-            refetchUser(); // Update points display for all users
-            
-            toast({ 
-                title: <span className="text-accent">Signal Generated!</span>, 
-                description: `SHADOW's analysis for ${symbol} is complete.`, 
-            });
-        }
-    } catch (e: any) {
-        const errorMessage = e.message || "An unexpected server error occurred.";
-        setStrategyError(errorMessage);
-        toast({ title: "SHADOW Core Fault", description: errorMessage, variant: "destructive" });
-    } finally {
-        stopLoadingAnimation();
-    }
-
-  }, [symbol, tradingMode, riskProfile, liveMarketData, user, analysisCount, connected, fetchAndSetMarketData, updateUsageData, toast, refetchUser, addClientSignal, stopLoadingAnimation]);
-
-  useEffect(() => {
-    return () => {
-        if (loadingIntervalRef.current) {
-            clearInterval(loadingIntervalRef.current);
-        }
-    }
-  }, []);
-
-  const isButtonDisabled = isUserLoading || isLoading || isLoadingSymbols;
-  const showResults = aiStrategy || isLoading || strategyError;
-
-  const getLimitMessage = () => {
-    if (!user || isUserLoading) return null;
-    
-    if (user.status !== 'Premium') {
-        const isLimitReached = analysisCount >= DAILY_ANALYSIS_LIMIT;
-        return (
-            <p className="text-xs text-center text-muted-foreground mt-2 md:col-span-2">
-              {isLimitReached ? <>You've reached your trial limit of <strong className="text-primary">{DAILY_ANALYSIS_LIMIT} analyses</strong>.</>
-               : <>Trial Analyses Used: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{DAILY_ANALYSIS_LIMIT}</strong>.</>
-              }
-              <Link href="/premium" className="underline text-tertiary hover:text-accent ml-1">Subscribe</Link> for <strong className="text-orange-400">unlimited</strong>.
-            </p>
-        );
-    }
-
-    if (user.status === 'Premium') {
-        return (
-             <p className="text-xs text-center text-green-400/80 mt-2 md:col-span-2 flex items-center justify-center gap-2"> <Rocket size={14}/> Unlimited Signal Generation Active </p>
-        )
-    }
-
-    return null;
-  }
-
-  if (isUserLoading || !user) {
-    return (
-      <>
-        <AppHeader />
-        <div className="flex flex-col flex-grow items-center justify-center h-full text-center px-4">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="mt-4 text-muted-foreground font-semibold">Initializing SHADOW Interface...</p>
-        </div>
-      </>
-    );
-  }
-  
   return (
-    <>
-      <AppHeader />
-      <div className="container mx-auto px-4 py-2 flex flex-col w-full pb-24">
-        
-        <div className={cn("w-full space-y-3 transition-all duration-500", !showResults && 'flex-grow flex flex-col justify-center')}>
-            <div className="space-y-3">
-                <div id="market-data-display">
-                    <MarketDataDisplay liveMarketData={liveMarketData} isLoading={isLoadingMarketData} error={marketDataError} symbolForDisplay={symbol} />
-                </div>
-                <div id="strategy-selectors">
-                    <StrategySelectors symbol={symbol} onSymbolChange={setSymbol} tradingMode={tradingMode} onTradingModeChange={setTradingMode} riskProfile={riskProfile} onRiskProfileChange={setRiskProfile} symbols={availableSymbols} isLoadingSymbols={isLoadingSymbols} />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-4 pt-2">
-                    <Button onClick={() => handleGenerateStrategy({ isCustom: false })} disabled={isButtonDisabled} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out generate-signal-button h-auto">
-                         <div className="flex flex-col items-center">
-                            <div className="flex items-center">
-                                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5" />}
-                                {isLoading ? "Analyzing..." : <GlyphScramble text="Generate Instant Signal" />}
-                            </div>
-                            <span className="text-xs font-normal opacity-80 mt-1">AI-driven market order analysis.</span>
-                        </div>
-                    </Button>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md bg-card border-accent/50">
+        <DialogHeader>
+          <DialogTitle className="font-headline text-2xl text-accent">Join the SHADOW Protocol</DialogTitle>
+          <DialogDescription>
+            Secure your eligibility for the <strong className="text-orange-400">$SHADOW</strong> airdrop by registering. Your data is your power.
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Username</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Shadow_Operator_007" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="operator@blockshadow.ai" type="email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="+1234567890" type="tel" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
 
-                    <Button onClick={() => handleGenerateStrategy({ isCustom: true })} disabled={isButtonDisabled} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out shadow-choice-button h-auto">
-                        <div className="flex flex-col items-center">
-                            <div className="flex items-center">
-                                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
-                                {isLoading ? "Deciding..." : <GlyphScramble text="Generate SHADOW's Signal" />}
-                            </div>
-                            <span className="text-xs font-normal opacity-80 mt-1">AI-chosen custom limit order.</span>
-                        </div>
+            <DialogFooter className="flex flex-col-reverse sm:flex-col-reverse sm:space-x-0 gap-2">
+                {!connected ? (
+                   <div className="w-full">
+                       <p className="text-xs text-center text-muted-foreground mb-2">Connect wallet to continue</p>
+                        <WalletMultiButton ref={walletButtonRef} className="glow-button w-full" />
+                   </div>
+                ) : (
+                    <Button type="submit" disabled={loading} className="w-full glow-button">
+                        {loading ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Wallet className="mr-2 h-4 w-4" /> )}
+                        Join Shadow Protocol
                     </Button>
-                    
-                   {getLimitMessage()}
-                </div>
-            </div>
-        </div>
-
-        {showResults && (
-            <div id="results-block" className="w-full space-y-6 mt-8">
-                {isLoading ? (
-                    <Card className="shadow-lg w-full bg-card/80 backdrop-blur-sm border-0 transition-all duration-300 ease-in-out">
-                        <CardHeader className="items-center text-center">
-                            <CardTitle className="text-primary text-xl flex items-center gap-2">
-                                <Loader2 className="h-5 w-5 animate-spin" />
-                                SHADOW is Analyzing...
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4 p-6 text-center">
-                           <p className="text-lg font-semibold text-accent animate-pulse">
-                                <GlyphScramble text={loadingText} />
-                           </p>
-                           <p className="text-xs text-muted-foreground">Please stand by. Cognitive processes engaged.</p>
-                        </CardContent>
-                    </Card>
-                ) : strategyError ? (
-                    <Card className="shadow-lg border border-destructive/50 w-full bg-card transition-all duration-300 ease-in-out">
-                        <CardHeader className="items-center text-center"> <CardTitle className="flex items-center text-destructive text-xl"> <AlertTriangle className="mr-2 h-6 w-6" /> Analysis Disrupted </CardTitle> </CardHeader>
-                        <CardContent className="text-center p-6">
-                            <p className="text-destructive-foreground text-base">{strategyError}</p>
-                            <p className="text-sm text-muted-foreground mt-3"> My quantum awareness encounters interference. The signal is unclear. Please try again. </p>
-                        </CardContent>
-                    </Card>
-                ) : aiStrategy && (
-                    <SignalTracker aiStrategy={aiStrategy} liveMarketData={liveMarketData} userId={user?.id || ''} />
                 )}
-            </div>
-        )}
-        
-      </div>
-      <div style={{ display: 'none' }}>
-        <WalletMultiButton ref={walletButtonRef} />
-      </div>
-      <ChatbotPopup isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
-    </>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 }
