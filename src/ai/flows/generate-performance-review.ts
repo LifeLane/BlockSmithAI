@@ -74,6 +74,7 @@ const prompt = ai.definePrompt({
 
     My output will be structured, direct, and devoid of fluff. The objective is not encouragement; it is enhancement. The market rewards precision, not participation.
     `,
+    model: ai.model,
     config: {
         temperature: 0.5,
     }
