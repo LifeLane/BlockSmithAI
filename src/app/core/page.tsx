@@ -5,7 +5,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import AppHeader from '@/components/blocksmith-ai/AppHeader';
 import StrategySelectors from '@/components/blocksmith-ai/StrategySelectors';
 import ChatbotPopup from '@/components/blocksmith-ai/ChatbotPopup';
-import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
 import MarketDataDisplay from '@/components/blocksmith-ai/MarketDataDisplay';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
@@ -23,11 +22,13 @@ import {
 import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
-import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Rocket } from 'lucide-react';
+import { Loader2, Sparkles, BrainCircuit, Wallet, AlertTriangle, Rocket } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import { useClientState } from '@/hooks/use-client-state';
 import Link from 'next/link';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 const DEFAULT_SYMBOLS: FormattedSymbol[] = [
   { value: "BTCUSDT", label: "BTC/USDT" },
@@ -70,16 +71,16 @@ export default function CoreConsolePage() {
   const [isLoadingSymbols, setIsLoadingSymbols] = useState<boolean>(true);
 
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
-  const [showAirdropModal, setShowAirdropModal] = useState<boolean>(false);
   
-  const { user, isLoading: isUserLoading, refetchUser, setUser } = useCurrentUserState();
+  const { user, isLoading: isUserLoading, refetchUser } = useCurrentUserState();
   const { addSignal: addClientSignal } = useClientState();
   
   const [analysisCount, setAnalysisCount] = useState<number>(0);
-  const [lastAnalysisDate, setLastAnalysisDate] = useState<string>('');
 
   const { toast } = useToast();
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const { connected } = useWallet();
+  const walletButtonRef = useRef<HTMLButtonElement>(null);
   
   useEffect(() => {
     if (typeof window === 'undefined' || !user || user.status === 'Premium') {
@@ -87,26 +88,17 @@ export default function CoreConsolePage() {
         return;
     }
     const storedCount = localStorage.getItem('bsaiAnalysisCount');
-    const storedDate = localStorage.getItem('bsaiLastAnalysisDate');
-    const today = new Date().toISOString().split('T')[0];
-
-    if (storedDate === today && storedCount) {
+    if (storedCount) {
         setAnalysisCount(parseInt(storedCount, 10));
     } else {
         localStorage.setItem('bsaiAnalysisCount', '0');
-        localStorage.setItem('bsaiLastAnalysisDate', today);
         setAnalysisCount(0);
     }
-    setLastAnalysisDate(today);
-
   }, [user]);
 
   const updateUsageData = useCallback((newCount: number) => {
-    const today = new Date().toISOString().split('T')[0];
     localStorage.setItem('bsaiAnalysisCount', newCount.toString());
-    localStorage.setItem('bsaiLastAnalysisDate', today);
     setAnalysisCount(newCount);
-    setLastAnalysisDate(today);
   }, []);
 
   const fetchAndSetMarketData = useCallback(async (currentSymbolToFetch: string, showToastOnError = true) => {
@@ -166,22 +158,18 @@ export default function CoreConsolePage() {
         return;
     }
     
-    // Guest users must register
-    if (user.status === 'Guest') {
-        setShowAirdropModal(true);
-        toast({ title: "Registration Required", description: "Please register for the airdrop to unlock your daily trial signals." });
+    if (!connected) {
+        toast({ title: "Wallet Connection Required", description: "Please connect your wallet to generate a signal." });
+        walletButtonRef.current?.click();
         return;
     }
 
-    // Registered (but not premium) users have a daily limit
-    if (user.status === 'Registered') {
-      const today = new Date().toISOString().split('T')[0];
-      let currentCount = lastAnalysisDate !== today ? 0 : analysisCount;
-      if (currentCount >= DAILY_ANALYSIS_LIMIT) {
+    if (user.status !== 'Premium') {
+      if (analysisCount >= DAILY_ANALYSIS_LIMIT) {
         toast({ title: "Daily Limit Reached", description: <span className="text-foreground">Your trial of <strong className="text-accent">{DAILY_ANALYSIS_LIMIT} analyses per day</strong> is over. <Link href="/premium" className="underline text-primary">Subscribe</Link> for <strong className="text-tertiary">unlimited access</strong>.</span> });
         return;
       }
-      updateUsageData(currentCount + 1);
+      updateUsageData(analysisCount + 1);
     }
 
     setIsLoading(true);
@@ -200,7 +188,7 @@ export default function CoreConsolePage() {
       const result = await fetchAndSetMarketData(symbol, true);
       if ('error' in result) {
         setStrategyError("Market data unavailable. Strategy generation aborted.");
-        if(user.status === 'Registered' && analysisCount > 0) updateUsageData(analysisCount - 1);
+        if(user.status !== 'Premium' && analysisCount > 0) updateUsageData(analysisCount - 1);
         stopLoadingAnimation();
         return;
       }
@@ -220,15 +208,12 @@ export default function CoreConsolePage() {
         if ('error' in result) {
           setStrategyError(result.error);
           toast({ title: "SHADOW's Insight Blocked", description: result.error, variant: "destructive" });
-          if(user.status === 'Registered' && analysisCount > 0) updateUsageData(analysisCount - 1);
+          if(user.status !== 'Premium' && analysisCount > 0) updateUsageData(analysisCount - 1);
         } else {
             const strategyResult = result.signal;
             setAiStrategy(strategyResult);
             
-            // Only non-premium users need client-side state
-            if (user.status !== 'Premium') {
-                addClientSignal(result.signal);
-            }
+            addClientSignal(result.signal);
             
             refetchUser(); // Update points display for all users
             
@@ -245,7 +230,7 @@ export default function CoreConsolePage() {
         stopLoadingAnimation();
     }
 
-  }, [symbol, tradingMode, riskProfile, liveMarketData, user, analysisCount, lastAnalysisDate, fetchAndSetMarketData, updateUsageData, toast, refetchUser, addClientSignal, stopLoadingAnimation]);
+  }, [symbol, tradingMode, riskProfile, liveMarketData, user, analysisCount, connected, fetchAndSetMarketData, updateUsageData, toast, refetchUser, addClientSignal, stopLoadingAnimation]);
 
   useEffect(() => {
     return () => {
@@ -255,29 +240,20 @@ export default function CoreConsolePage() {
     }
   }, []);
 
-  const handleAirdropSignupSuccess = async () => {
-    setShowAirdropModal(false);
-    toast({ title: <span className="text-accent">Registration Complete!</span>, description: <span className="text-foreground">You're confirmed for the airdrop. Your daily trial is now active!</span> });
-    await refetchUser();
-  };
-
   const isButtonDisabled = isUserLoading || isLoading || isLoadingSymbols;
   const showResults = aiStrategy || isLoading || strategyError;
 
   const getLimitMessage = () => {
     if (!user || isUserLoading) return null;
     
-    if (user.status === 'Guest') {
-        return <p className="text-xs text-center text-muted-foreground mt-2 md:col-span-2"> <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Register for the airdrop</button> to unlock your daily trial signals. </p>
-    }
-    
-    if (user.status === 'Registered') {
+    if (user.status !== 'Premium') {
         const isLimitReached = analysisCount >= DAILY_ANALYSIS_LIMIT;
         return (
             <p className="text-xs text-center text-muted-foreground mt-2 md:col-span-2">
-              {isLimitReached ? <>You've reached your daily limit of <strong className="text-primary">{DAILY_ANALYSIS_LIMIT} analyses</strong>.</>
-               : <>Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{DAILY_ANALYSIS_LIMIT}</strong>. <Link href="/premium" className="underline text-tertiary hover:text-accent">Subscribe</Link> for <strong className="text-orange-400">unlimited</strong>.</>
+              {isLimitReached ? <>You've reached your trial limit of <strong className="text-primary">{DAILY_ANALYSIS_LIMIT} analyses</strong>.</>
+               : <>Trial Analyses Used: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{DAILY_ANALYSIS_LIMIT}</strong>.</>
               }
+              <Link href="/premium" className="underline text-tertiary hover:text-accent ml-1">Subscribe</Link> for <strong className="text-orange-400">unlimited</strong>.
             </p>
         );
     }
@@ -375,8 +351,10 @@ export default function CoreConsolePage() {
         )}
         
       </div>
+      <div style={{ display: 'none' }}>
+        <WalletMultiButton ref={walletButtonRef} />
+      </div>
       <ChatbotPopup isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
-      {user && <AirdropSignupModal isOpen={showAirdropModal} onOpenChange={setShowAirdropModal} onSignupSuccess={handleAirdropSignupSuccess} userId={user.id} />}
     </>
   );
 }
