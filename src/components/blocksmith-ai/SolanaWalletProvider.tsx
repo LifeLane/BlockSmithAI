@@ -9,8 +9,7 @@ import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { clusterApiUrl } from '@solana/web3.js';
 
-// Default styles that can be overridden by your app
-require('@solana/wallet-adapter-react-ui/styles.css');
+// Default styles are imported in globals.css
 
 export const SolanaWalletProvider: FC<{ children: React.ReactNode }> = ({ children }) => {
     // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
