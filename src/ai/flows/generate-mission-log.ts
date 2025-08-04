@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview Generates a narrative mission log for a completed agent deployment.

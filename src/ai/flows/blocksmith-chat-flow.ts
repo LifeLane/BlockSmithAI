@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A Genkit flow for SHADOW, the core AI of the BlockShadow ecosystem.
@@ -64,7 +63,6 @@ const chatPrompt = ai.definePrompt({
   tools: [fetchLiveMarketDataTool],
   input: { schema: ShadowChatInputSchema },
   output: { schema: ShadowChatOutputSchema },
-  prompt: systemPrompt,
   model: 'llama3-70b-8192',
   config: {
     temperature: 0.6,

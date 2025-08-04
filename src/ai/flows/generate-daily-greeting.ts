@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview Generates a dynamic and potent daily greeting from SHADOW.
