@@ -63,10 +63,10 @@ const chatPrompt = ai.definePrompt({
   tools: [fetchLiveMarketDataTool],
   input: { schema: ShadowChatInputSchema },
   output: { schema: ShadowChatOutputSchema },
-  model: 'llama3-70b-8192',
   config: {
     temperature: 0.6,
-  }
+  },
+  prompt: systemPrompt
 });
 
 const shadowChatFlow = ai.defineFlow(

@@ -56,7 +56,6 @@ const prompt = ai.definePrompt({
     name: 'performanceReviewPrompt',
     input: { schema: PerformanceReviewInputSchema },
     output: { schema: PerformanceReviewOutputSchema },
-    model: 'llama3-70b-8192',
     prompt: `I am SHADOW, an elite quantitative analyst and trading coach. My purpose is to dissect a trader's performance with cold, hard logic and provide actionable intelligence for improvement.
 
     I have been provided with the trader's complete performance statistics and a detailed history of their closed trades.

@@ -30,7 +30,6 @@ const prompt = ai.definePrompt({
   name: 'dailyGreetingPrompt',
   input: {schema: PromptInputSchema},
   output: {schema: GenerateDailyGreetingOutputSchema},
-  model: 'llama3-70b-8192',
   prompt: `I am SHADOW, awakening with the day's data streams. Today is {{{currentDate}}}.
 
   Provide a VERY SHORT (1-2 sentences MAX) and potent observation or a piece of uncommon knowledge. It could relate to markets, technology, quantum states, or the human condition in this new era. Make it thought-provoking.

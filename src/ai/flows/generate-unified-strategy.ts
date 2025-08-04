@@ -57,7 +57,6 @@ const prompt = ai.definePrompt({
   tools: [fetchHistoricalDataTool, fetchNewsTool, fetchCoinGeckoDataTool, fetchCoinMarketCapDataTool, fetchEtherscanDataTool], 
   input: { schema: UnifiedStrategyInputSchema },
   output: { schema: UnifiedStrategyOutputSchema },
-  model: 'llama3-70b-8192',
   config: {
     temperature: 0.5,
   },
