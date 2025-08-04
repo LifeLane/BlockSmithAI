@@ -101,9 +101,6 @@ export async function getOrCreateUserAction(userId: string | null): Promise<User
             badges: [],
             email: null,
             phone: null,
-            x_handle: null,
-            telegram_handle: null,
-            youtube_handle: null,
             wallet_address: null,
             wallet_type: null,
             createdAt: new Date(),
@@ -657,3 +654,5 @@ export async function generatePerformanceReviewAction(userId: string, input: Per
     }
     return result;
 }
+
+    

@@ -10,10 +10,9 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import AirdropSignupModal from '@/components/blocksmith-ai/AirdropSignupModal';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Wallet } from 'lucide-react';
 import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
 import { 
   fetchLeaderboardDataJson, 
@@ -21,6 +20,8 @@ import {
   claimMissionRewardAction,
   type LeaderboardUser,
 } from '../actions';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 // ---- Mission and Rank Data ----
 const missionsList = [
@@ -116,9 +117,10 @@ export default function ProfilePage() {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(true);
-  const [showAirdropModal, setShowAirdropModal] = useState(false);
   const { user: currentUser, isLoading: isUserLoading, refetchUser } = useCurrentUserState();
   const { toast } = useToast();
+  const { connected } = useWallet();
+  const walletButtonRef = useRef<HTMLButtonElement>(null);
   
   const loadPageData = useCallback(async () => {
     setLoading(true);
@@ -170,15 +172,6 @@ export default function ProfilePage() {
       }
   };
 
-  const handleAirdropSignupSuccess = useCallback(async () => {
-      setShowAirdropModal(false);
-      toast({
-        title: <span className="text-accent">BlockShadow Registration Complete!</span>,
-        description: <span className="text-foreground">Your eligibility is confirmed. Welcome to the Initiative.</span>,
-      });
-      await refetchUser();
-  }, [refetchUser, toast]);
-
 
   const handleSaveSettings = async () => {
     if (currentUser && username && username !== currentUser.username) {
@@ -228,7 +221,7 @@ export default function ProfilePage() {
                     {currentUser.airdropPoints?.toLocaleString() || 0}
                 </p>
                  <p className="text-xs text-muted-foreground mt-1">
-                    Points are updated from portfolio P&L, agent & mission rewards.
+                    Points are updated from portfolio P&amp;L, agent &amp; mission rewards.
                 </p>
             </CardContent>
         </Card>
@@ -364,10 +357,15 @@ export default function ProfilePage() {
                             Complete missions to secure your <strong className="text-orange-400">$SHADOW</strong> allocation.
                         </CardDescription>
                     </CardHeader>
-                    <CardFooter>
-                        <Button className="w-full glow-button" onClick={() => setShowAirdropModal(true)}>
-                            {currentUser.status !== 'Guest' ? 'Update Registration' : 'Register for Airdrop'}
-                        </Button>
+                     <CardFooter>
+                       {currentUser.status === 'Guest' ? (
+                            <WalletMultiButton ref={walletButtonRef} className="w-full glow-button" />
+                        ) : (
+                             <Button className="w-full glow-button" disabled>
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                You are Registered
+                            </Button>
+                        )}
                     </CardFooter>
                 </Card>
 
@@ -441,14 +439,11 @@ export default function ProfilePage() {
         </Tabs>
 
       </div>
-      {currentUser && (
-        <AirdropSignupModal
-            isOpen={showAirdropModal}
-            onOpenChange={setShowAirdropModal}
-            onSignupSuccess={handleAirdropSignupSuccess}
-            userId={currentUser.id}
-        />
-      )}
+       <div style={{ display: 'none' }}>
+        <WalletMultiButton ref={walletButtonRef} />
+      </div>
     </>
   );
 }
+
+    
