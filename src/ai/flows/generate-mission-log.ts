@@ -46,7 +46,6 @@ Example for 'Arbitrage Bot': "Log: Monitored cross-exchange liquidity flows. Ide
 Example for 'Quantum Predictor': "Log: Quantum simulations complete. Forecasted new support/resistance vectors for high-volatility assets. Analysis archived."
 
 Generate a new, unique log for the provided agent.`,
-  model: ai.model,
   config: {
     temperature: 0.8,
   }

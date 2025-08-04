@@ -65,7 +65,6 @@ const chatPrompt = ai.definePrompt({
   input: { schema: ShadowChatInputSchema },
   output: { schema: ShadowChatOutputSchema },
   prompt: systemPrompt,
-  model: ai.model,
   config: {
     temperature: 0.6,
   }

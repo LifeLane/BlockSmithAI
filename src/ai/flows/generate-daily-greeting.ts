@@ -38,7 +38,6 @@ const prompt = ai.definePrompt({
   or "On this day, [Year], a paradigm shifted. What variables will you alter today?"
   or "The blockchain never sleeps. Neither does opportunity... nor risk. Focus."
   Maintain a direct, insightful, and slightly enigmatic tone. Avoid trivialities.`,
-  model: ai.model,
   config: {
     temperature: 0.7,
   }
