@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -63,7 +62,12 @@ export default function SubscriptionCard({ tier, userId }: SubscriptionCardProps
                 setIsProcessing(false);
                 return;
             }
-
+            
+            const {
+                context: { slot: minContextSlot },
+                value: { blockhash, lastValidBlockHeight }
+            } = await connection.getLatestBlockhashAndContext();
+            
             const transaction = new Transaction().add(
                 createTransferInstruction(
                     fromTokenAccount,
@@ -73,10 +77,9 @@ export default function SubscriptionCard({ tier, userId }: SubscriptionCardProps
                 )
             );
             
-            const {
-                context: { slot: minContextSlot },
-                value: { blockhash, lastValidBlockHeight }
-            } = await connection.getLatestBlockhashAndContext();
+            // Set the fee payer and recent blockhash to ensure the transaction is valid
+            transaction.feePayer = publicKey;
+            transaction.recentBlockhash = blockhash;
 
             const signature = await sendTransaction(transaction, connection, { minContextSlot });
             
@@ -95,7 +98,7 @@ export default function SubscriptionCard({ tier, userId }: SubscriptionCardProps
             });
 
             // Call server action to update user status
-            const result = await confirmShadowSubscriptionAction(userId, tier.name, tier.duration, signature);
+            const result = await confirmShadowSubscriptionAction(userId, tier.name, tier.duration as 'Monthly' | 'Yearly' | 'Lifetime', signature);
 
             if (result.success) {
                 await refetchUser();
@@ -152,4 +155,3 @@ export default function SubscriptionCard({ tier, userId }: SubscriptionCardProps
         </Card>
     );
 }
-
