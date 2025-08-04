@@ -150,7 +150,7 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
         <Tabs value={tradingMode} onValueChange={onTradingModeChange} className="w-full">
             <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
                 {TRADING_MODES.map((mode) => (
-                    <TabsTrigger key={mode.value} value={mode.value} className="flex flex-col sm:flex-row gap-1.5 py-2 h-auto text-xs sm:text-sm">
+                    <TabsTrigger key={mode.value} value={mode.value} className="flex flex-col sm:flex-row gap-1.5 py-2 h-auto text-xs sm:text-sm data-[state=active]:shadow-active-tab-glow">
                         {mode.icon}
                         {mode.label}
                     </TabsTrigger>
@@ -166,7 +166,7 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
          <Tabs value={riskProfile} onValueChange={onRiskProfileChange} className="w-full">
             <TabsList className="grid w-full grid-cols-3 h-12">
                 {RISK_PROFILES.map((profile) => (
-                    <TabsTrigger key={profile.value} value={profile.value} className="text-sm h-full">
+                    <TabsTrigger key={profile.value} value={profile.value} className="text-sm h-full data-[state=active]:shadow-active-tab-glow">
                         {profile.label}
                     </TabsTrigger>
                 ))}
@@ -178,3 +178,5 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
 };
 
 export default StrategySelectors;
+
+    

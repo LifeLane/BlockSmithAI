@@ -488,3 +488,5 @@
 .shadow-edict-body {
     @apply text-xs text-muted-foreground font-code leading-relaxed text-center max-w-md mx-auto;
 }
+
+    
