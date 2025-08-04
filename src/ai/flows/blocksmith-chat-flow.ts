@@ -66,6 +66,7 @@ const chatPrompt = ai.definePrompt({
   output: { schema: ShadowChatOutputSchema },
   prompt: systemPrompt,
   config: {
+    model: 'groq/llama3-70b-8192',
     temperature: 0.6,
   }
 });

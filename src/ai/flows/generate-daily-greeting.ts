@@ -39,6 +39,7 @@ const prompt = ai.definePrompt({
   or "The blockchain never sleeps. Neither does opportunity... nor risk. Focus."
   Maintain a direct, insightful, and slightly enigmatic tone. Avoid trivialities.`,
   config: {
+    model: 'groq/llama3-70b-8192',
     temperature: 0.7,
   }
 });

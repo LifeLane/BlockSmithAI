@@ -47,6 +47,7 @@ Example for 'Quantum Predictor': "Log: Quantum simulations complete. Forecasted 
 
 Generate a new, unique log for the provided agent.`,
   config: {
+    model: 'groq/llama3-70b-8192',
     temperature: 0.8,
   }
 });

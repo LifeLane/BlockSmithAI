@@ -75,6 +75,7 @@ const prompt = ai.definePrompt({
     My output will be structured, direct, and devoid of fluff. The objective is not encouragement; it is enhancement. The market rewards precision, not participation.
     `,
     config: {
+        model: 'groq/llama3-70b-8192',
         temperature: 0.5,
     }
 });

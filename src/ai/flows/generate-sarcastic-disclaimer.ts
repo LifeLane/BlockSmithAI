@@ -39,7 +39,10 @@ const prompt = ai.definePrompt({
   
   The tone should be a mix of official warning and dry humor. For instance, you can state that chaotic market forces are a "fickle mistress" and that I cannot guarantee a trip to "financial Shangri-La." Conclude with a clear "You have been warned" and a witty, legally questionable P.S. like "(P.S. Don't sue me.)".
 
-  The goal is a disclaimer that is both pointed and humorous, underscoring the inherent uncertainties of algorithmic foresight while maintaining my superior, slightly theatrical persona.`
+  The goal is a disclaimer that is both pointed and humorous, underscoring the inherent uncertainties of algorithmic foresight while maintaining my superior, slightly theatrical persona.`,
+  config: {
+    model: 'groq/llama3-70b-8192',
+  }
 });
 
 const generateSarcasticDisclaimerFlow = ai.defineFlow(
