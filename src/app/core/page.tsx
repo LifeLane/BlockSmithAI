@@ -23,10 +23,11 @@ import {
 import { fetchAllTradingSymbolsAction } from '@/services/market-data-service';
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
-import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle } from 'lucide-react';
+import { Loader2, Sparkles, BrainCircuit, Unlock, AlertTriangle, Rocket } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import { useClientState } from '@/hooks/use-client-state';
+import Link from 'next/link';
 
 const DEFAULT_SYMBOLS: FormattedSymbol[] = [
   { value: "BTCUSDT", label: "BTC/USDT" },
@@ -34,7 +35,7 @@ const DEFAULT_SYMBOLS: FormattedSymbol[] = [
   { value: "SOLUSDT", label: "SOL/USDT" },
 ];
 const INITIAL_DEFAULT_SYMBOL = 'BTCUSDT';
-const MAX_GUEST_ANALYSES = 5;
+const DAILY_ANALYSIS_LIMIT = 5;
 
 const LOADING_STEPS = [
     "Initiating Neural Core...",
@@ -81,7 +82,7 @@ export default function CoreConsolePage() {
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   useEffect(() => {
-    if (typeof window === 'undefined' || !user || user.status !== 'Guest') {
+    if (typeof window === 'undefined' || !user || user.status === 'Premium') {
         setAnalysisCount(0);
         return;
     }
@@ -164,13 +165,20 @@ export default function CoreConsolePage() {
         toast({ title: "User Session Required", description: "Your guest session is still being created. Please try again in a moment." });
         return;
     }
-
+    
+    // Guest users must register
     if (user.status === 'Guest') {
+        setShowAirdropModal(true);
+        toast({ title: "Registration Required", description: "Please register for the airdrop to unlock your daily trial signals." });
+        return;
+    }
+
+    // Registered (but not premium) users have a daily limit
+    if (user.status === 'Registered') {
       const today = new Date().toISOString().split('T')[0];
       let currentCount = lastAnalysisDate !== today ? 0 : analysisCount;
-      if (currentCount >= MAX_GUEST_ANALYSES) {
-        setShowAirdropModal(true);
-        toast({ title: "Daily Limit Reached", description: <span className="text-foreground">Guests have <strong className="text-accent">{MAX_GUEST_ANALYSES} analyses per day</strong>. <strong className="text-primary">Sign up</strong> for <strong className="text-tertiary">unlimited access</strong>.</span> });
+      if (currentCount >= DAILY_ANALYSIS_LIMIT) {
+        toast({ title: "Daily Limit Reached", description: <span className="text-foreground">Your trial of <strong className="text-accent">{DAILY_ANALYSIS_LIMIT} analyses per day</strong> is over. <Link href="/premium" className="underline text-primary">Subscribe</Link> for <strong className="text-tertiary">unlimited access</strong>.</span> });
         return;
       }
       updateUsageData(currentCount + 1);
@@ -192,7 +200,7 @@ export default function CoreConsolePage() {
       const result = await fetchAndSetMarketData(symbol, true);
       if ('error' in result) {
         setStrategyError("Market data unavailable. Strategy generation aborted.");
-        if(user.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
+        if(user.status === 'Registered' && analysisCount > 0) updateUsageData(analysisCount - 1);
         stopLoadingAnimation();
         return;
       }
@@ -212,16 +220,17 @@ export default function CoreConsolePage() {
         if ('error' in result) {
           setStrategyError(result.error);
           toast({ title: "SHADOW's Insight Blocked", description: result.error, variant: "destructive" });
-          if(user.status === 'Guest' && analysisCount > 0) updateUsageData(analysisCount - 1);
+          if(user.status === 'Registered' && analysisCount > 0) updateUsageData(analysisCount - 1);
         } else {
             const strategyResult = result.signal;
             setAiStrategy(strategyResult);
             
-            if (user.status === 'Guest') {
+            // Only non-premium users need client-side state
+            if (user.status !== 'Premium') {
                 addClientSignal(result.signal);
-            } else {
-                refetchUser(); // Update points display
             }
+            
+            refetchUser(); // Update points display for all users
             
             toast({ 
                 title: <span className="text-accent">Signal Generated!</span>, 
@@ -248,13 +257,39 @@ export default function CoreConsolePage() {
 
   const handleAirdropSignupSuccess = async () => {
     setShowAirdropModal(false);
-    toast({ title: <span className="text-accent">Registration Complete!</span>, description: <span className="text-foreground">You're confirmed for the airdrop. Unlimited analyses unlocked!</span> });
+    toast({ title: <span className="text-accent">Registration Complete!</span>, description: <span className="text-foreground">You're confirmed for the airdrop. Your daily trial is now active!</span> });
     await refetchUser();
   };
 
   const isButtonDisabled = isUserLoading || isLoading || isLoadingSymbols;
   const showResults = aiStrategy || isLoading || strategyError;
-  const isLimitReached = user?.status === 'Guest' && analysisCount >= MAX_GUEST_ANALYSES;
+
+  const getLimitMessage = () => {
+    if (!user || isUserLoading) return null;
+    
+    if (user.status === 'Guest') {
+        return <p className="text-xs text-center text-muted-foreground mt-2 md:col-span-2"> <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Register for the airdrop</button> to unlock your daily trial signals. </p>
+    }
+    
+    if (user.status === 'Registered') {
+        const isLimitReached = analysisCount >= DAILY_ANALYSIS_LIMIT;
+        return (
+            <p className="text-xs text-center text-muted-foreground mt-2 md:col-span-2">
+              {isLimitReached ? <>You've reached your daily limit of <strong className="text-primary">{DAILY_ANALYSIS_LIMIT} analyses</strong>.</>
+               : <>Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{DAILY_ANALYSIS_LIMIT}</strong>. <Link href="/premium" className="underline text-tertiary hover:text-accent">Subscribe</Link> for <strong className="text-orange-400">unlimited</strong>.</>
+              }
+            </p>
+        );
+    }
+
+    if (user.status === 'Premium') {
+        return (
+             <p className="text-xs text-center text-green-400/80 mt-2 md:col-span-2 flex items-center justify-center gap-2"> <Rocket size={14}/> Unlimited Signal Generation Active </p>
+        )
+    }
+
+    return null;
+  }
 
   if (isUserLoading || !user) {
     return (
@@ -283,44 +318,27 @@ export default function CoreConsolePage() {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-4 pt-2">
-                    {isLimitReached ? (
-                        <Button onClick={() => setShowAirdropModal(true)} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out glow-button h-auto md:col-span-2">
-                            <div className="flex flex-col items-center">
-                                <div className="flex items-center"> <Unlock className="mr-2 h-5 w-5" /> Join for Unlimited Signals </div>
-                                <span className="text-xs font-normal opacity-80 mt-1">Register for full access.</span>
+                    <Button onClick={() => handleGenerateStrategy({ isCustom: false })} disabled={isButtonDisabled} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out generate-signal-button h-auto">
+                         <div className="flex flex-col items-center">
+                            <div className="flex items-center">
+                                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5" />}
+                                {isLoading ? "Analyzing..." : <GlyphScramble text="Generate Instant Signal" />}
                             </div>
-                        </Button>
-                    ) : (
-                        <>
-                            <Button onClick={() => handleGenerateStrategy({ isCustom: false })} disabled={isButtonDisabled} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out generate-signal-button h-auto">
-                                 <div className="flex flex-col items-center">
-                                    <div className="flex items-center">
-                                        {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5" />}
-                                        {isLoading ? "Analyzing..." : <GlyphScramble text="Generate Instant Signal" />}
-                                    </div>
-                                    <span className="text-xs font-normal opacity-80 mt-1">AI-driven market order analysis.</span>
-                                </div>
-                            </Button>
+                            <span className="text-xs font-normal opacity-80 mt-1">AI-driven market order analysis.</span>
+                        </div>
+                    </Button>
 
-                            <Button onClick={() => handleGenerateStrategy({ isCustom: true })} disabled={isButtonDisabled} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out shadow-choice-button h-auto">
-                                <div className="flex flex-col items-center">
-                                    <div className="flex items-center">
-                                        {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
-                                        {isLoading ? "Deciding..." : <GlyphScramble text="Generate SHADOW's Signal" />}
-                                    </div>
-                                    <span className="text-xs font-normal opacity-80 mt-1">AI-chosen custom limit order.</span>
-                                </div>
-                            </Button>
-                        </>
-                    )}
+                    <Button onClick={() => handleGenerateStrategy({ isCustom: true })} disabled={isButtonDisabled} className="w-full font-semibold py-3 text-lg shadow-lg transition-all duration-300 ease-in-out shadow-choice-button h-auto">
+                        <div className="flex flex-col items-center">
+                            <div className="flex items-center">
+                                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
+                                {isLoading ? "Deciding..." : <GlyphScramble text="Generate SHADOW's Signal" />}
+                            </div>
+                            <span className="text-xs font-normal opacity-80 mt-1">AI-chosen custom limit order.</span>
+                        </div>
+                    </Button>
                     
-                    {user?.status === 'Guest' && (
-                        <p className="text-xs text-center text-muted-foreground mt-2 md:col-span-2">
-                        {isLimitReached ? <>You've reached your daily limit of <strong className="text-primary">{MAX_GUEST_ANALYSES} analyses</strong>.</>
-                         : <>Analyses today: <strong className="text-primary">{analysisCount}</strong> / <strong className="text-accent">{MAX_GUEST_ANALYSES}</strong>. <button onClick={() => setShowAirdropModal(true)} className="underline text-tertiary hover:text-accent">Register</button> for <strong className="text-orange-400">unlimited</strong>.</>
-                        }
-                        </p>
-                    )}
+                   {getLimitMessage()}
                 </div>
             </div>
         </div>
@@ -362,5 +380,3 @@ export default function CoreConsolePage() {
     </>
   );
 }
-
-    
