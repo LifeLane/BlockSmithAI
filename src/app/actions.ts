@@ -48,8 +48,10 @@ export interface LeaderboardUser {
 }
 export interface AirdropFormData {
     username: string;
-    email?: string;
-    phone?: string;
+    email: string;
+    phone: string;
+    wallet_address: string;
+    wallet_type: string;
 }
 export interface LiveMarketData {
     symbol: string;
@@ -136,6 +138,7 @@ export async function updateUserSettingsJson(userId: string, data: { username?: 
 
 export async function handleAirdropSignupAction(formData: AirdropFormData, userId: string): Promise<UserProfile | { error: string; }> {
     if (!userId) return { error: "User not found." };
+    if (!formData.wallet_address) return { error: "Wallet address is required for registration." };
 
     const isGuest = userId.startsWith('guest_');
 
@@ -148,6 +151,8 @@ export async function handleAirdropSignupAction(formData: AirdropFormData, userI
                     status: "Registered",
                     email: formData.email,
                     phone: formData.phone,
+                    wallet_address: formData.wallet_address,
+                    wallet_type: formData.wallet_type,
                 },
                 include: { badges: true },
             });
@@ -160,6 +165,8 @@ export async function handleAirdropSignupAction(formData: AirdropFormData, userI
                     status: "Registered",
                     email: formData.email,
                     phone: formData.phone,
+                    wallet_address: formData.wallet_address,
+                    wallet_type: formData.wallet_type,
                 },
                 include: { badges: true },
             });
@@ -169,15 +176,18 @@ export async function handleAirdropSignupAction(formData: AirdropFormData, userI
         console.error("Error in handleAirdropSignupAction:", e);
         if (e instanceof Prisma.PrismaClientKnownRequestError) {
             if (e.code === 'P2002') {
-                 // Check which field caused the error
-                if (e.meta?.target?.includes('username')) {
+                const target = e.meta?.target as string[];
+                 if (target?.includes('username')) {
                     return { error: 'This username is already taken. Please choose another one.' };
                 }
-                if (e.meta?.target?.includes('email')) {
+                if (target?.includes('email')) {
                     return { error: 'This email is already registered.' };
                 }
-                 if (e.meta?.target?.includes('phone')) {
+                 if (target?.includes('phone')) {
                     return { error: 'This phone number is already registered.' };
+                }
+                 if (target?.includes('wallet_address')) {
+                    return { error: 'This wallet address is already registered.' };
                 }
                 return { error: 'A user with these details already exists.' };
             }

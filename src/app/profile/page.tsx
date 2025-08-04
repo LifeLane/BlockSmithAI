@@ -76,8 +76,7 @@ const MissionCard = ({ mission, onClaim, isClaimed, isLocked }: { mission: typeo
                 <div className={`p-2 bg-background rounded-lg ${mission.type === 'social' ? 'border border-primary/50' : ''}`}>{mission.icon}</div>
                 <div>
                     <CardTitle className="flex items-center text-base">
-                        {mission.title} 
-                        {mission.type === 'social' && <Badge variant="outline" className="ml-2 border-primary text-primary text-xs">Mandatory</Badge>}
+                        {mission.title}
                     </CardTitle>
                     <CardDescription className="text-sm">{mission.description}</CardDescription>
                 </div>
@@ -100,20 +99,13 @@ const MissionCard = ({ mission, onClaim, isClaimed, isLocked }: { mission: typeo
                     </Button>
                 ) : (
                     <Button onClick={() => onClaim(mission.id)} className="w-full shadow-choice-button">
-                        {mission.type === 'social' ? 'Verify & Claim' : 'Claim Reward'}
+                        Claim Reward
                     </Button>
                 )}
             </CardFooter>
         </Card>
     );
 
-    if (mission.type === 'social' && !isClaimed) {
-        return (
-            <a href={mission.url} target="_blank" rel="noopener noreferrer" className="h-full">
-                {cardContent}
-            </a>
-        );
-    }
     return cardContent;
 };
 
@@ -228,7 +220,7 @@ export default function ProfilePage() {
                     Eligible Airdrop Balance
                 </CardTitle>
                 <CardDescription>
-                    Your accumulated <strong className="text-orange-400">$BSAI</strong> points from all activities.
+                    Your accumulated <strong className="text-orange-400">$SHADOW</strong> points from all activities.
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -369,7 +361,7 @@ export default function ProfilePage() {
                             Airdrop Initiative Dashboard
                         </CardTitle>
                         <CardDescription>
-                            Complete missions to secure your <strong className="text-orange-400">$BSAI</strong> allocation.
+                            Complete missions to secure your <strong className="text-orange-400">$SHADOW</strong> allocation.
                         </CardDescription>
                     </CardHeader>
                     <CardFooter>
@@ -438,7 +430,7 @@ export default function ProfilePage() {
                                     </div>
                                     <div className="text-right ml-2">
                                         <p className="font-mono text-sm text-tertiary whitespace-nowrap">{user.weeklyPoints?.toLocaleString() || 0} XP</p>
-                                        <p className="font-mono text-xs text-orange-400 whitespace-nowrap">{user.airdropPoints?.toLocaleString() || 0} $BSAI</p>
+                                        <p className="font-mono text-xs text-orange-400 whitespace-nowrap">{user.airdropPoints?.toLocaleString() || 0} $SHADOW</p>
                                     </div>
                                 </Card>
                             ))}
