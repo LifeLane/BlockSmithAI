@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Activity, Bot, Trophy, Vault, Terminal } from 'lucide-react';
+import { Activity, Bot, Trophy, Terminal, Rocket } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 
@@ -11,7 +11,7 @@ const navItems = [
   { href: '/pulse', icon: Activity, label: 'Portfolio' },
   { href: '/signals', icon: Terminal, label: 'Signals' },
   { href: '/core', icon: Bot, label: 'Core' },
-  { href: '/vault', icon: Vault, label: 'Vault' },
+  { href: '/premium', icon: Rocket, label: 'Premium' },
   { href: '/profile', icon: Trophy, label: 'Profile' },
 ];
 

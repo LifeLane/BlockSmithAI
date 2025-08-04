@@ -20,7 +20,7 @@ model User {
   shadowId        String   @unique @default(cuid())
   weeklyPoints    Int      @default(0)
   airdropPoints   Int      @default(0)
-  status          String   @default("Guest")
+  status          String   @default("Guest") // Guest, Registered, Premium
   claimedMissions String   @default("[]")
   email           String?  @unique
   wallet_address  String?  @unique
@@ -31,10 +31,13 @@ model User {
   youtube_handle  String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  
+  subscriptionTier      String?
+  subscriptionExpiresAt DateTime?
 
-  badges          Badge[]
+  badges           Badge[]
   generatedSignals GeneratedSignal[]
-  positions       Position[]
+  positions        Position[]
 }
 
 model Badge {
@@ -47,8 +50,8 @@ model Badge {
 }
 
 model GeneratedSignal {
-  id                   String     @id @default(cuid())
-  userId               String     @db.Uuid
+  id                   String    @id @default(cuid())
+  userId               String    @db.Uuid
   symbol               String
   signal               String
   status               String
@@ -63,17 +66,17 @@ model GeneratedSignal {
   shortTermPrediction  String
   chosenTradingMode    String
   chosenRiskProfile    String
-  strategyReasoning    String     @db.Text
-  analysisSummary      String     @db.Text
-  newsAnalysis         String     @db.Text
-  createdAt            DateTime   @default(now())
-  user                 User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategyReasoning    String    @db.Text
+  analysisSummary      String    @db.Text
+  newsAnalysis         String    @db.Text
+  createdAt            DateTime  @default(now())
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   position             Position?
 }
 
 model Position {
-  id                   String   @id @default(cuid())
-  userId               String   @db.Uuid
+  id                   String    @id @default(cuid())
+  userId               String    @db.Uuid
   symbol               String
   signalType           String
   status               String
@@ -94,12 +97,12 @@ model Position {
   riskProfile          String
   sentiment            String
   gpt_confidence_score String
-  analysisSummary      String   @db.Text
-  newsAnalysis         String   @db.Text
-  strategyReasoning    String   @db.Text
-  createdAt            DateTime @default(now())
+  analysisSummary      String    @db.Text
+  newsAnalysis         String    @db.Text
+  strategyReasoning    String    @db.Text
+  createdAt            DateTime  @default(now())
 
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  strategyId           String?   @unique @db.Uuid
-  generatedSignal      GeneratedSignal? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategyId      String?          @unique
+  generatedSignal GeneratedSignal? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
 }

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster"
 import BottomNav from '@/components/layout/BottomNav';
 import { ThemeProvider } from "@/components/theme-provider";
 import { CurrentUserProvider } from '@/components/blocksmith-ai/CurrentUserProvider';
+import { SolanaWalletProvider } from '@/components/blocksmith-ai/SolanaWalletProvider';
 
 export const metadata: Metadata = {
   title: 'BlockShadow',
@@ -26,20 +27,22 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased bg-background">
         <CurrentUserProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem={false}
-            disableTransitionOnChange
-          >
-            <div className="relative z-10 text-foreground min-h-screen flex flex-col">
-              <main className="flex-grow flex flex-col">
-                {children}
-              </main>
-              <BottomNav />
-            </div>
-            <Toaster />
-          </ThemeProvider>
+          <SolanaWalletProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="dark"
+              enableSystem={false}
+              disableTransitionOnChange
+            >
+              <div className="relative z-10 text-foreground min-h-screen flex flex-col">
+                <main className="flex-grow flex flex-col">
+                  {children}
+                </main>
+                <BottomNav />
+              </div>
+              <Toaster />
+            </ThemeProvider>
+          </SolanaWalletProvider>
         </CurrentUserProvider>
       </body>
     </html>

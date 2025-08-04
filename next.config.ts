@@ -2,12 +2,12 @@
 import type {NextConfig} from 'next';
 
 const cspHeader = `
-    default-src 'self';
+    default-src 'self' https://holy-practical-sunset.solana-mainnet.quiknode.pro;
     script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     font-src 'self' https://fonts.gstatic.com;
     img-src 'self' data: https://placehold.co;
-    connect-src 'self' https://api.binance.com https://newsapi.org https://vercel.live;
+    connect-src 'self' https://api.binance.com https://newsapi.org https://vercel.live https://api.jup.ag https://quote-api.jup.ag https://holy-practical-sunset.solana-mainnet.quiknode.pro;
     frame-src 'self' https://vercel.live;
     object-src 'none';
     base-uri 'self';

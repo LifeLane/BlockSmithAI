@@ -22,7 +22,9 @@ async function main() {
       email: 'operator@blockshadow.ai',
       wallet_address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
       wallet_type: 'ETH',
-      x_handle: '@blockshadow_ai'
+      x_handle: '@blockshadow_ai',
+      subscriptionTier: null,
+      subscriptionExpiresAt: null
     },
   })
 
@@ -55,5 +57,3 @@ main()
     await prisma.$disconnect()
     process.exit(1)
   })
-
-    

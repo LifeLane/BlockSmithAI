@@ -138,7 +138,9 @@ exports.Prisma.UserScalarFieldEnum = {
   telegram_handle: 'telegram_handle',
   youtube_handle: 'youtube_handle',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  subscriptionTier: 'subscriptionTier',
+  subscriptionExpiresAt: 'subscriptionExpiresAt'
 };
 
 exports.Prisma.BadgeScalarFieldEnum = {

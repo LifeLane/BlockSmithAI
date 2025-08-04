@@ -1188,6 +1188,8 @@ export namespace Prisma {
     youtube_handle: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    subscriptionTier: string | null
+    subscriptionExpiresAt: Date | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -1207,6 +1209,8 @@ export namespace Prisma {
     youtube_handle: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    subscriptionTier: string | null
+    subscriptionExpiresAt: Date | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -1226,6 +1230,8 @@ export namespace Prisma {
     youtube_handle: number
     createdAt: number
     updatedAt: number
+    subscriptionTier: number
+    subscriptionExpiresAt: number
     _all: number
   }
 
@@ -1257,6 +1263,8 @@ export namespace Prisma {
     youtube_handle?: true
     createdAt?: true
     updatedAt?: true
+    subscriptionTier?: true
+    subscriptionExpiresAt?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -1276,6 +1284,8 @@ export namespace Prisma {
     youtube_handle?: true
     createdAt?: true
     updatedAt?: true
+    subscriptionTier?: true
+    subscriptionExpiresAt?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -1295,6 +1305,8 @@ export namespace Prisma {
     youtube_handle?: true
     createdAt?: true
     updatedAt?: true
+    subscriptionTier?: true
+    subscriptionExpiresAt?: true
     _all?: true
   }
 
@@ -1401,6 +1413,8 @@ export namespace Prisma {
     youtube_handle: string | null
     createdAt: Date
     updatedAt: Date
+    subscriptionTier: string | null
+    subscriptionExpiresAt: Date | null
     _count: UserCountAggregateOutputType | null
     _avg: UserAvgAggregateOutputType | null
     _sum: UserSumAggregateOutputType | null
@@ -1439,6 +1453,8 @@ export namespace Prisma {
     youtube_handle?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    subscriptionTier?: boolean
+    subscriptionExpiresAt?: boolean
     badges?: boolean | User$badgesArgs<ExtArgs>
     generatedSignals?: boolean | User$generatedSignalsArgs<ExtArgs>
     positions?: boolean | User$positionsArgs<ExtArgs>
@@ -1462,6 +1478,8 @@ export namespace Prisma {
     youtube_handle?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    subscriptionTier?: boolean
+    subscriptionExpiresAt?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
@@ -1481,6 +1499,8 @@ export namespace Prisma {
     youtube_handle?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    subscriptionTier?: boolean
+    subscriptionExpiresAt?: boolean
   }
 
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1515,6 +1535,8 @@ export namespace Prisma {
       youtube_handle: string | null
       createdAt: Date
       updatedAt: Date
+      subscriptionTier: string | null
+      subscriptionExpiresAt: Date | null
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -1927,6 +1949,8 @@ export namespace Prisma {
     readonly youtube_handle: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
+    readonly subscriptionTier: FieldRef<"User", 'String'>
+    readonly subscriptionExpiresAt: FieldRef<"User", 'DateTime'>
   }
     
 
@@ -5698,7 +5722,9 @@ export namespace Prisma {
     telegram_handle: 'telegram_handle',
     youtube_handle: 'youtube_handle',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    subscriptionTier: 'subscriptionTier',
+    subscriptionExpiresAt: 'subscriptionExpiresAt'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -5882,6 +5908,8 @@ export namespace Prisma {
     youtube_handle?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
+    subscriptionTier?: StringNullableFilter<"User"> | string | null
+    subscriptionExpiresAt?: DateTimeNullableFilter<"User"> | Date | string | null
     badges?: BadgeListRelationFilter
     generatedSignals?: GeneratedSignalListRelationFilter
     positions?: PositionListRelationFilter
@@ -5904,6 +5932,8 @@ export namespace Prisma {
     youtube_handle?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    subscriptionTier?: SortOrderInput | SortOrder
+    subscriptionExpiresAt?: SortOrderInput | SortOrder
     badges?: BadgeOrderByRelationAggregateInput
     generatedSignals?: GeneratedSignalOrderByRelationAggregateInput
     positions?: PositionOrderByRelationAggregateInput
@@ -5929,6 +5959,8 @@ export namespace Prisma {
     youtube_handle?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
+    subscriptionTier?: StringNullableFilter<"User"> | string | null
+    subscriptionExpiresAt?: DateTimeNullableFilter<"User"> | Date | string | null
     badges?: BadgeListRelationFilter
     generatedSignals?: GeneratedSignalListRelationFilter
     positions?: PositionListRelationFilter
@@ -5951,6 +5983,8 @@ export namespace Prisma {
     youtube_handle?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    subscriptionTier?: SortOrderInput | SortOrder
+    subscriptionExpiresAt?: SortOrderInput | SortOrder
     _count?: UserCountOrderByAggregateInput
     _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -5978,6 +6012,8 @@ export namespace Prisma {
     youtube_handle?: StringNullableWithAggregatesFilter<"User"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    subscriptionTier?: StringNullableWithAggregatesFilter<"User"> | string | null
+    subscriptionExpiresAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   }
 
   export type BadgeWhereInput = {
@@ -6198,7 +6234,7 @@ export namespace Prisma {
     newsAnalysis?: StringFilter<"Position"> | string
     strategyReasoning?: StringFilter<"Position"> | string
     createdAt?: DateTimeFilter<"Position"> | Date | string
-    strategyId?: UuidNullableFilter<"Position"> | string | null
+    strategyId?: StringNullableFilter<"Position"> | string | null
     user?: XOR<UserRelationFilter, UserWhereInput>
     generatedSignal?: XOR<GeneratedSignalNullableRelationFilter, GeneratedSignalWhereInput> | null
   }
@@ -6335,7 +6371,7 @@ export namespace Prisma {
     newsAnalysis?: StringWithAggregatesFilter<"Position"> | string
     strategyReasoning?: StringWithAggregatesFilter<"Position"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Position"> | Date | string
-    strategyId?: UuidNullableWithAggregatesFilter<"Position"> | string | null
+    strategyId?: StringNullableWithAggregatesFilter<"Position"> | string | null
   }
 
   export type UserCreateInput = {
@@ -6355,6 +6391,8 @@ export namespace Prisma {
     youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    subscriptionTier?: string | null
+    subscriptionExpiresAt?: Date | string | null
     badges?: BadgeCreateNestedManyWithoutUserInput
     generatedSignals?: GeneratedSignalCreateNestedManyWithoutUserInput
     positions?: PositionCreateNestedManyWithoutUserInput
@@ -6377,6 +6415,8 @@ export namespace Prisma {
     youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    subscriptionTier?: string | null
+    subscriptionExpiresAt?: Date | string | null
     badges?: BadgeUncheckedCreateNestedManyWithoutUserInput
     generatedSignals?: GeneratedSignalUncheckedCreateNestedManyWithoutUserInput
     positions?: PositionUncheckedCreateNestedManyWithoutUserInput
@@ -6399,6 +6439,8 @@ export namespace Prisma {
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     badges?: BadgeUpdateManyWithoutUserNestedInput
     generatedSignals?: GeneratedSignalUpdateManyWithoutUserNestedInput
     positions?: PositionUpdateManyWithoutUserNestedInput
@@ -6421,6 +6463,8 @@ export namespace Prisma {
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     badges?: BadgeUncheckedUpdateManyWithoutUserNestedInput
     generatedSignals?: GeneratedSignalUncheckedUpdateManyWithoutUserNestedInput
     positions?: PositionUncheckedUpdateManyWithoutUserNestedInput
@@ -6443,6 +6487,8 @@ export namespace Prisma {
     youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    subscriptionTier?: string | null
+    subscriptionExpiresAt?: Date | string | null
   }
 
   export type UserUpdateManyMutationInput = {
@@ -6462,6 +6508,8 @@ export namespace Prisma {
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -6481,6 +6529,8 @@ export namespace Prisma {
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type BadgeCreateInput = {
@@ -6974,6 +7024,17 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type BadgeListRelationFilter = {
     every?: BadgeWhereInput
     some?: BadgeWhereInput
@@ -7026,6 +7087,8 @@ export namespace Prisma {
     youtube_handle?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    subscriptionTier?: SortOrder
+    subscriptionExpiresAt?: SortOrder
   }
 
   export type UserAvgOrderByAggregateInput = {
@@ -7050,6 +7113,8 @@ export namespace Prisma {
     youtube_handle?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    subscriptionTier?: SortOrder
+    subscriptionExpiresAt?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -7069,6 +7134,8 @@ export namespace Prisma {
     youtube_handle?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    subscriptionTier?: SortOrder
+    subscriptionExpiresAt?: SortOrder
   }
 
   export type UserSumOrderByAggregateInput = {
@@ -7155,6 +7222,20 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type UserRelationFilter = {
@@ -7271,17 +7352,6 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
   export type FloatNullableFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel> | null
     in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
@@ -7302,18 +7372,6 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type UuidNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedUuidNullableFilter<$PrismaModel> | string | null
   }
 
   export type GeneratedSignalNullableRelationFilter = {
@@ -7453,20 +7511,6 @@ export namespace Prisma {
     _max?: NestedFloatFilter<$PrismaModel>
   }
 
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-
   export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel> | null
     in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
@@ -7497,21 +7541,6 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
-  export type UuidNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedUuidNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type BadgeCreateNestedManyWithoutUserInput = {
@@ -7574,6 +7603,10 @@ export namespace Prisma {
 
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
   }
 
   export type BadgeUpdateManyWithoutUserNestedInput = {
@@ -7740,10 +7773,6 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
-  }
-
   export type NullableFloatFieldUpdateOperationsInput = {
     set?: number | null
     increment?: number
@@ -7837,6 +7866,17 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
   export type NestedUuidWithAggregatesFilter<$PrismaModel = never> = {
@@ -7939,7 +7979,7 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
     notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -7947,7 +7987,10 @@ export namespace Prisma {
     lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type NestedFloatNullableFilter<$PrismaModel = never> = {
@@ -7959,17 +8002,6 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type NestedUuidNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedUuidNullableFilter<$PrismaModel> | string | null
   }
 
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -7986,20 +8018,6 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
-  }
-
-  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -8032,20 +8050,6 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
-  export type NestedUuidNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedUuidNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type BadgeCreateWithoutUserInput = {
@@ -8311,7 +8315,7 @@ export namespace Prisma {
     newsAnalysis?: StringFilter<"Position"> | string
     strategyReasoning?: StringFilter<"Position"> | string
     createdAt?: DateTimeFilter<"Position"> | Date | string
-    strategyId?: UuidNullableFilter<"Position"> | string | null
+    strategyId?: StringNullableFilter<"Position"> | string | null
   }
 
   export type UserCreateWithoutBadgesInput = {
@@ -8331,6 +8335,8 @@ export namespace Prisma {
     youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    subscriptionTier?: string | null
+    subscriptionExpiresAt?: Date | string | null
     generatedSignals?: GeneratedSignalCreateNestedManyWithoutUserInput
     positions?: PositionCreateNestedManyWithoutUserInput
   }
@@ -8352,6 +8358,8 @@ export namespace Prisma {
     youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    subscriptionTier?: string | null
+    subscriptionExpiresAt?: Date | string | null
     generatedSignals?: GeneratedSignalUncheckedCreateNestedManyWithoutUserInput
     positions?: PositionUncheckedCreateNestedManyWithoutUserInput
   }
@@ -8389,6 +8397,8 @@ export namespace Prisma {
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     generatedSignals?: GeneratedSignalUpdateManyWithoutUserNestedInput
     positions?: PositionUpdateManyWithoutUserNestedInput
   }
@@ -8410,6 +8420,8 @@ export namespace Prisma {
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     generatedSignals?: GeneratedSignalUncheckedUpdateManyWithoutUserNestedInput
     positions?: PositionUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -8431,6 +8443,8 @@ export namespace Prisma {
     youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    subscriptionTier?: string | null
+    subscriptionExpiresAt?: Date | string | null
     badges?: BadgeCreateNestedManyWithoutUserInput
     positions?: PositionCreateNestedManyWithoutUserInput
   }
@@ -8452,6 +8466,8 @@ export namespace Prisma {
     youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    subscriptionTier?: string | null
+    subscriptionExpiresAt?: Date | string | null
     badges?: BadgeUncheckedCreateNestedManyWithoutUserInput
     positions?: PositionUncheckedCreateNestedManyWithoutUserInput
   }
@@ -8552,6 +8568,8 @@ export namespace Prisma {
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     badges?: BadgeUpdateManyWithoutUserNestedInput
     positions?: PositionUpdateManyWithoutUserNestedInput
   }
@@ -8573,6 +8591,8 @@ export namespace Prisma {
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     badges?: BadgeUncheckedUpdateManyWithoutUserNestedInput
     positions?: PositionUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -8663,6 +8683,8 @@ export namespace Prisma {
     youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    subscriptionTier?: string | null
+    subscriptionExpiresAt?: Date | string | null
     badges?: BadgeCreateNestedManyWithoutUserInput
     generatedSignals?: GeneratedSignalCreateNestedManyWithoutUserInput
   }
@@ -8684,6 +8706,8 @@ export namespace Prisma {
     youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    subscriptionTier?: string | null
+    subscriptionExpiresAt?: Date | string | null
     badges?: BadgeUncheckedCreateNestedManyWithoutUserInput
     generatedSignals?: GeneratedSignalUncheckedCreateNestedManyWithoutUserInput
   }
@@ -8772,6 +8796,8 @@ export namespace Prisma {
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     badges?: BadgeUpdateManyWithoutUserNestedInput
     generatedSignals?: GeneratedSignalUpdateManyWithoutUserNestedInput
   }
@@ -8793,6 +8819,8 @@ export namespace Prisma {
     youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    subscriptionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     badges?: BadgeUncheckedUpdateManyWithoutUserNestedInput
     generatedSignals?: GeneratedSignalUncheckedUpdateManyWithoutUserNestedInput
   }

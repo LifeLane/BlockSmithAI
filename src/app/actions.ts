@@ -7,7 +7,7 @@ import { randomUUID } from 'crypto';
 
 // AI Flow Imports
 import { generateUnifiedStrategy, type UnifiedStrategyInput, type UnifiedStrategyOutput } from '@/ai/flows/generate-unified-strategy';
-import { shadowChat as shadowChatFlow, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-chat-flow';
+import { shadowChat as shadowChatFlow, type ShadowChatInput, type ShadowChatOutput, type ChatMessage as AIChatMessage } from '@/ai/flows/blocksmith-ai-chat-flow';
 import { generateDailyGreeting, type GenerateDailyGreetingOutput } from '@/ai/flows/generate-daily-greeting';
 import {
     generatePerformanceReview as genPerformanceReview,
@@ -91,9 +91,6 @@ export async function getOrCreateUserAction(userId: string | null): Promise<User
         if(existingUser) return existingUser;
     }
 
-    // If it's a guest or a new user, create a user object.
-    // For guests, this will not be saved but returned as a temporary profile.
-    // For new registered users, we will create it.
     if (!userId || userId.startsWith('guest_')) {
         return {
             id: `guest_${randomUUID()}`,
@@ -113,6 +110,8 @@ export async function getOrCreateUserAction(userId: string | null): Promise<User
             wallet_type: null,
             createdAt: new Date(),
             updatedAt: new Date(),
+            subscriptionTier: null,
+            subscriptionExpiresAt: null,
         };
     }
 
@@ -146,7 +145,6 @@ export async function handleAirdropSignupAction(formData: AirdropFormData, userI
 
     try {
         if (isGuest) {
-            // Create a new user if it's a guest
             const newUser = await prisma.user.create({
                 data: {
                     username: `Analyst-${randomUUID().substring(0, 6)}`,
@@ -164,11 +162,10 @@ export async function handleAirdropSignupAction(formData: AirdropFormData, userI
             });
             return newUser;
         } else {
-            // Update the existing user if they are already registered
             const updatedUser = await prisma.user.update({
                 where: { id: userId },
                 data: {
-                    status: "Registered", // Ensure status is set to Registered
+                    status: "Registered",
                     wallet_address: formData.wallet_address,
                     wallet_type: formData.wallet_type,
                     email: formData.email,
@@ -184,7 +181,7 @@ export async function handleAirdropSignupAction(formData: AirdropFormData, userI
     } catch (e: any) {
         console.error("Error in handleAirdropSignupAction:", e);
         if (e instanceof Prisma.PrismaClientKnownRequestError) {
-            if (e.code === 'P2002') { // Unique constraint violation
+            if (e.code === 'P2002') {
                 return { error: 'This wallet address or email is already registered.' };
             }
         }
@@ -208,20 +205,16 @@ export async function fetchLeaderboardDataJson(): Promise<LeaderboardUser[]> {
 }
 
 // --- Trading & Signal Actions ---
-
-// Helper to parse the AI's price string (which can be a range) into a single number
 const parsePrice = (priceStr: string | undefined | null): number => {
     if (!priceStr) return NaN;
     const cleanedStr = priceStr.replace(/[^0-9.-]/g, ' ');
     const parts = cleanedStr.split(' ').filter(p => p !== '' && !isNaN(parseFloat(p)));
     if (parts.length === 0) return NaN;
     if (parts.length === 1) return parseFloat(parts[0]);
-    // For a range like "60000 - 61000", take the average.
     const sum = parts.reduce((acc, val) => acc + parseFloat(val), 0);
     return sum / parts.length;
 };
 
-// This single action now handles both "Instant" and "SHADOW's Choice" signals.
 async function unifiedSignalGenerationAction(
   input: UnifiedStrategyInput, userId: string, isInstant: boolean
 ): Promise<{ signal: GeneratedSignal } | { error: string }> {
@@ -230,7 +223,6 @@ async function unifiedSignalGenerationAction(
         const strategy: UnifiedStrategyOutput = await generateUnifiedStrategy(input);
         if (!strategy) return { error: "SHADOW Core failed to generate a coherent strategy." };
 
-        // For guest users, we just return the AI output without saving it to DB.
         if (userId.startsWith('guest_')) {
             const tempSignal: GeneratedSignal = {
                 id: `guest_sig_${randomUUID()}`,
@@ -548,6 +540,62 @@ export async function closeAllPositionsAction(userId: string): Promise<{ closedC
     }
 }
 
+export async function confirmShadowSubscriptionAction(
+    userId: string,
+    tierName: string,
+    duration: 'Monthly' | 'Yearly' | 'Lifetime',
+    txSignature: string
+): Promise<{ success: boolean; error?: string }> {
+    if (!userId || userId.startsWith('guest_')) {
+        return { success: false, error: 'User must be registered.' };
+    }
+
+    // NOTE: In a real production app, you would have a robust system here to:
+    // 1. Verify the transaction signature on-chain to confirm its validity and details (amount, recipient).
+    // 2. Ensure this transaction signature has not been used before to prevent replay attacks.
+    // For this prototype, we will trust the client and proceed with the database update.
+    console.log(`Confirming subscription for user ${userId} with tx: ${txSignature}`);
+
+    try {
+        const now = new Date();
+        let expiresAt: Date | null = null;
+        
+        if (duration === 'Monthly') {
+            expiresAt = new Date(now.setMonth(now.getMonth() + 1));
+        } else if (duration === 'Yearly') {
+            expiresAt = new Date(now.setFullYear(now.getFullYear() + 1));
+        } else if (duration === 'Lifetime') {
+            expiresAt = null; // Lifetime subscription does not expire
+        }
+
+        const tierRewards = {
+            'Operator Monthly': { xp: 1000, airdrop: 120000 }, // 1.2x of 100k
+            'Analyst Yearly': { xp: 10000, airdrop: 1500000 }, // 1.5x of 1M
+            'Architect Lifetime': { xp: 50000, airdrop: 20000000 } // 2x of 10M
+        };
+        
+        const rewards = tierRewards[tierName as keyof typeof tierRewards] || { xp: 0, airdrop: 0 };
+        
+        await prisma.user.update({
+            where: { id: userId },
+            data: {
+                status: 'Premium',
+                subscriptionTier: tierName,
+                subscriptionExpiresAt: expiresAt,
+                weeklyPoints: { increment: rewards.xp },
+                airdropPoints: { increment: rewards.airdrop },
+            },
+        });
+
+        return { success: true };
+
+    } catch (error: any) {
+        console.error("Error confirming subscription:", error);
+        return { success: false, error: "Failed to update user subscription status in the database." };
+    }
+}
+
+
 // --- Other Actions ---
 export async function shadowChatAction(input: ShadowChatInput): Promise<ShadowChatOutput | { error: string }> {
     try {
@@ -598,5 +646,3 @@ export async function generatePerformanceReviewAction(userId: string, input: Per
     }
     return result;
 }
-
-    
