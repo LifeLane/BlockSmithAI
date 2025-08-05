@@ -54,7 +54,7 @@ export async function generateUnifiedStrategy(input: UnifiedStrategyInput): Prom
 
 const prompt = ai.definePrompt({
   name: 'generateUnifiedStrategyPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-1.5-pro-latest',
   tools: [fetchHistoricalDataTool, fetchNewsTool, fetchCoinGeckoDataTool, fetchCoinMarketCapDataTool, fetchEtherscanDataTool], 
   input: { schema: UnifiedStrategyInputSchema },
   output: { schema: UnifiedStrategyOutputSchema },

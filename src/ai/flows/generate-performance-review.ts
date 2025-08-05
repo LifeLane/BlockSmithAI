@@ -54,7 +54,7 @@ export async function generatePerformanceReview(input: PerformanceReviewInput): 
 
 const prompt = ai.definePrompt({
     name: 'performanceReviewPrompt',
-    model: 'googleai/gemini-1.5-flash-latest',
+    model: 'googleai/gemini-1.5-pro-latest',
     input: { schema: PerformanceReviewInputSchema },
     output: { schema: PerformanceReviewOutputSchema },
     prompt: `I am SHADOW, an elite quantitative analyst and trading coach. My purpose is to dissect a trader's performance with cold, hard logic and provide actionable intelligence for improvement.
