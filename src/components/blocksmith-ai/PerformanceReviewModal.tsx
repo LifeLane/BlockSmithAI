@@ -9,8 +9,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Loader2, BrainCircuit, Zap, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, BrainCircuit, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { type PerformanceReviewOutput } from '@/app/actions';
+import ReactMarkdown from 'react-markdown';
+import { ScrollArea } from '../ui/scroll-area';
 
 interface PerformanceReviewModalProps {
   isOpen: boolean;
@@ -51,26 +53,16 @@ const PerformanceReviewModal: FunctionComponent<PerformanceReviewModalProps> = (
     
     if (reviewData) {
         return (
-            <div className="space-y-6">
-                <div className="p-4 bg-background/50 rounded-lg border border-green-500/50">
-                    <h3 className="flex items-center gap-2 font-semibold text-green-400 mb-2">
-                        <CheckCircle size={18} /> Strengths
+            <div className="space-y-4">
+                <div className="p-4 bg-background/50 rounded-lg border border-border">
+                    <h3 className="font-semibold text-primary mb-2">
+                        Summary
                     </h3>
-                    <p className="text-sm text-muted-foreground italic">"{reviewData.strengths}"</p>
-                </div>
-
-                <div className="p-4 bg-background/50 rounded-lg border border-red-500/50">
-                    <h3 className="flex items-center gap-2 font-semibold text-red-400 mb-2">
-                        <XCircle size={18} /> Areas for Improvement
-                    </h3>
-                    <p className="text-sm text-muted-foreground italic">"{reviewData.weaknesses}"</p>
+                    <p className="text-sm text-muted-foreground italic">"{reviewData.summary}"</p>
                 </div>
                 
-                 <div className="p-4 bg-background/50 rounded-lg border border-tertiary/70">
-                    <h3 className="flex items-center gap-2 font-semibold text-tertiary mb-2">
-                        <Zap size={18} /> Actionable Intelligence
-                    </h3>
-                    <p className="text-sm text-foreground font-bold">"{reviewData.actionableAdvice}"</p>
+                <div className="prose prose-sm prose-invert max-w-none text-foreground prose-headings:text-accent prose-strong:text-primary">
+                  <ReactMarkdown>{reviewData.analysis}</ReactMarkdown>
                 </div>
             </div>
         );
@@ -85,15 +77,15 @@ const PerformanceReviewModal: FunctionComponent<PerformanceReviewModalProps> = (
         <DialogHeader className="text-center items-center pb-4">
           <BrainCircuit className="h-12 w-12 text-primary mb-3" />
           <DialogTitle className="text-2xl font-headline text-primary">
-            SHADOW's Performance Debrief
+            {reviewData?.title || "Performance Debrief"}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground px-2">
             A cognitive analysis of your recent <strong className="text-tertiary">trading patterns</strong>.
           </DialogDescription>
         </DialogHeader>
-        <div className="max-h-[60vh] overflow-y-auto px-6 pb-6 no-scrollbar">
+        <ScrollArea className="max-h-[60vh] px-6 pb-6 no-scrollbar">
             {renderContent()}
-        </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
