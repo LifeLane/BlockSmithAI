@@ -8,7 +8,7 @@
  * - UnifiedStrategyOutput - Return type for the flow.
  */
 
-import { ai } from '@/ai/genkit';
+import { groqAI } from '@/ai/genkit';
 import { z } from 'genkit';
 import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
 import { fetchNewsTool } from '@/ai/tools/fetch-news-tool';
@@ -52,9 +52,9 @@ export async function generateUnifiedStrategy(input: UnifiedStrategyInput): Prom
   return generateUnifiedStrategyFlow(input);
 }
 
-const prompt = ai.definePrompt({
+const prompt = groqAI.definePrompt({
   name: 'generateUnifiedStrategyPrompt',
-  model: 'googleai/gemini-1.5-pro-latest',
+  model: 'llama3-70b-8192',
   tools: [fetchHistoricalDataTool, fetchNewsTool, fetchCoinGeckoDataTool, fetchCoinMarketCapDataTool, fetchEtherscanDataTool], 
   input: { schema: UnifiedStrategyInputSchema },
   output: { schema: UnifiedStrategyOutputSchema },
@@ -104,7 +104,7 @@ Target Symbol: {{{symbol}}}
 My output must be direct, complete, and reflect my superior analytical process. The ether is listening.`,
 });
 
-const generateUnifiedStrategyFlow = ai.defineFlow(
+const generateUnifiedStrategyFlow = groqAI.defineFlow(
   {
     name: 'generateUnifiedStrategyFlow',
     inputSchema: UnifiedStrategyInputSchema,
