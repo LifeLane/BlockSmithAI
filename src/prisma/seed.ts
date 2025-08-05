@@ -18,7 +18,7 @@ async function main() {
       weeklyPoints: 1250,
       airdropPoints: 5500,
       status: 'Registered',
-      claimedMissions: '["mission_first_signal", "mission_x"]',
+      claimedMissions: '[]',
       email: 'operator@blockshadow.ai',
       wallet_address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
       wallet_type: 'ETH',

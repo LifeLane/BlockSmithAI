@@ -1,4 +1,4 @@
-
+'use server';
 import { config } from 'dotenv';
 config();
 
@@ -15,4 +15,3 @@ import '@/ai/tools/fetch-coinmarketcap-data-tool.ts';
 import '@/ai/tools/fetch-coingecko-data-tool.ts';
 import '@/ai/tools/fetch-etherscan-data-tool.ts';
 import '@/ai/tools/fetch-historical-data-tool.ts';
-

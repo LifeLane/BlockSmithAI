@@ -11,16 +11,11 @@ const DailyGreeting = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // This component is now disabled to conserve API quota.
-        // A static greeting will be used instead.
-        // In a real production app with a paid plan, this could be re-enabled.
         const fetchGreeting = async () => {
             setIsLoading(true);
             try {
-                // The AI call is commented out.
-                // const result = await getDailyGreeting();
-                // setGreeting(result.greeting);
-                setGreeting("The data stream is temporarily unavailable. Proceed with caution.");
+                const result = await getDailyGreeting();
+                setGreeting(result.greeting);
             } catch (error) {
                 console.error("Failed to fetch daily greeting:", error);
                 setGreeting("Data stream is temporarily unavailable. Proceed with caution.");
@@ -29,12 +24,7 @@ const DailyGreeting = () => {
             }
         };
 
-        // We are not calling fetchGreeting() to save API calls.
-        // If you upgrade your API plan, you can uncomment the line below.
-        // fetchGreeting();
-
-        setGreeting("The market breathes in cycles of fear and greed. Observe the patterns, not just the noise.");
-        setIsLoading(false);
+        fetchGreeting();
 
     }, []);
 
