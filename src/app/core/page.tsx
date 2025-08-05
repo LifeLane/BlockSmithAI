@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -27,7 +28,6 @@ import GlyphScramble from '@/components/blocksmith-ai/GlyphScramble';
 import { useClientState } from '@/hooks/use-client-state';
 import Link from 'next/link';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 const DEFAULT_SYMBOLS: FormattedSymbol[] = [
   { value: "BTCUSDT", label: "BTC/USDT" },
@@ -77,7 +77,6 @@ export default function CoreConsolePage() {
   const { toast } = useToast();
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { connected } = useWallet();
-  const walletButtonRef = useRef<HTMLButtonElement>(null);
   
   useEffect(() => {
     if (typeof window === 'undefined' || !user || user.status === 'Premium') {
@@ -262,13 +261,13 @@ export default function CoreConsolePage() {
     if (!connected) {
       return (
         <div className="md:col-span-2 flex justify-center">
-            <WalletMultiButton className="w-full md:w-auto font-semibold py-3 text-lg shadow-lg glow-button h-auto flex-col">
-                <div className="flex items-center">
+            <div className="w-full md:w-auto font-semibold py-3 text-lg shadow-lg glow-button h-auto flex-col text-center px-6">
+                <div className="flex items-center justify-center">
                     <Wallet className="mr-2 h-5 w-5" />
-                    <span className="md:hidden">Connect Wallet</span>
-                    <span className="hidden md:inline">Connect Wallet to Generate Signal</span>
+                    <span>Connect Wallet to Generate Signal</span>
                 </div>
-            </WalletMultiButton>
+                 <span className="text-xs font-normal opacity-80 mt-1">Use the button in the header.</span>
+            </div>
         </div>
       );
     }
@@ -364,9 +363,6 @@ export default function CoreConsolePage() {
         
       </div>
       <ChatbotPopup isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
-       <div style={{ display: 'none' }}>
-        <WalletMultiButton ref={walletButtonRef} />
-      </div>
     </>
   );
 }

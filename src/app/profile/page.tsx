@@ -10,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from 'lucide-react';
 import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
@@ -21,7 +21,6 @@ import {
   type LeaderboardUser,
 } from '../actions';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 // ---- Mission and Rank Data ----
 const missionsList = [
@@ -120,7 +119,6 @@ export default function ProfilePage() {
   const { user: currentUser, isLoading: isUserLoading, refetchUser } = useCurrentUserState();
   const { toast } = useToast();
   const { connected } = useWallet();
-  const walletButtonRef = useRef<HTMLButtonElement>(null);
   
   const loadPageData = useCallback(async () => {
     setLoading(true);
@@ -211,12 +209,9 @@ export default function ProfilePage() {
                         Connect Wallet
                     </CardTitle>
                     <CardDescription>
-                        Connect your wallet to be eligible for airdrops &amp; start earning rewards.
+                        Connect your wallet to be eligible for airdrops &amp; start earning rewards. Use the button in the header.
                     </CardDescription>
                 </CardHeader>
-                <CardFooter>
-                    <WalletMultiButton ref={walletButtonRef} className="w-full glow-button" />
-                </CardFooter>
             </Card>
         )
     }
@@ -441,9 +436,6 @@ export default function ProfilePage() {
             </TabsContent>
         </Tabs>
 
-      </div>
-       <div style={{ display: 'none' }}>
-        <WalletMultiButton ref={walletButtonRef} />
       </div>
     </>
   );
