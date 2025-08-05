@@ -2,7 +2,7 @@
  * @fileOverview A Genkit tool to fetch recent news for a given cryptocurrency.
  */
 
-import { ai, geminiModel } from '@/ai/genkit';
+import { googleAI } from '@/ai/genkit';
 import { z } from 'genkit';
 import { fetchRecentNews, type NewsArticle } from '@/services/news-service';
 
@@ -22,7 +22,7 @@ const FetchNewsOutputSchema = z.object({
   summary: z.string().optional().describe('A concise summary of the top articles provided for convenience.'),
 });
 
-export const fetchNewsTool = ai.defineTool(
+export const fetchNewsTool = googleAI.defineTool(
   {
     name: 'fetchNewsTool',
     description: 'Fetches recent news articles and sentiment for a given cryptocurrency symbol or name. This provides fundamental and sentiment analysis context.',
@@ -53,8 +53,8 @@ export const fetchNewsTool = ai.defineTool(
 
     const articlesText = articlesForSummary.map(a => `Title: ${a.title}\nDescription: ${a.description}`).join('\n\n---\n\n');
 
-    const { text } = await ai.generate({
-        model: geminiModel,
+    const { text } = await googleAI.generate({
+        model: 'googleai/gemini-1.5-flash-latest',
         prompt: `Based on the following news articles, provide a one-sentence summary of the overall market sentiment for ${input.query}.
         
         Articles:

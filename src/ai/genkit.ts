@@ -1,15 +1,19 @@
-import {genkit} from 'genkit';
+
+
+import {genkit, Plugin} from 'genkit';
 import {groq} from 'genkitx-groq';
-import {googleAI} from '@genkit-ai/googleai';
+import {googleAI as googleAIPlugin} from '@genkit-ai/googleai';
 
-export const geminiModel = 'googleai/gemini-1.5-flash-latest';
-export const groqModel = 'llama3-70b-8192';
+// Create a separate, named instance for the Google AI plugin
+export const googleAI = genkit({
+  plugins: [googleAIPlugin({apiKey: process.env.GEMINI_API_KEY})],
+  logLevel: 'debug',
+  enableTracingAndMetrics: true,
+});
 
-export const ai = genkit({
-  plugins: [
-    googleAI({apiKey: process.env.GEMINI_API_KEY}),
-    groq({apiKey: process.env.GROQ_API_KEY}),
-  ],
+// Create a separate, named instance for the Groq plugin
+export const groqAI = genkit({
+  plugins: [groq({apiKey: process.env.GROQ_API_KEY})],
   logLevel: 'debug',
   enableTracingAndMetrics: true,
 });

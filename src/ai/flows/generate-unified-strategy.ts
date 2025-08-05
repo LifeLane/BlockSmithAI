@@ -8,7 +8,7 @@
  * - UnifiedStrategyOutput - Return type for the flow.
  */
 
-import { ai, groqModel } from '@/ai/genkit';
+import { groqAI } from '@/ai/genkit';
 import { z } from 'genkit';
 import { fetchHistoricalDataTool } from '@/ai/tools/fetch-historical-data-tool';
 import { fetchNewsTool } from '@/ai/tools/fetch-news-tool';
@@ -21,7 +21,7 @@ import { fetchEtherscanDataTool } from '@/ai/tools/fetch-etherscan-data-tool';
 const UnifiedStrategyInputSchema = z.object({
   symbol: z.string().describe('The trading symbol (e.g., BTCUSDT).'),
   marketData: z.string().describe('Stringified JSON object of live market data including: symbol, current price, 24h price change percentage, etc.'),
-  tradingMode: z.string().nullable().describe('The user-selected trading style (e.g., Scalper, Intraday). If null, I will choose autonomously.'),
+  tradingMode: z.string().nullable().describe('The user-selected trading style (e.g., Scalper, Sniper, Intraday, or Swing). If null, I will choose autonomously.'),
   riskProfile: z.string().nullable().describe('The user-selected risk profile (e.g., Low, Medium). If null, I will choose autonomously.'),
 });
 export type UnifiedStrategyInput = z.infer<typeof UnifiedStrategyInputSchema>;
@@ -52,9 +52,9 @@ export async function generateUnifiedStrategy(input: UnifiedStrategyInput): Prom
   return generateUnifiedStrategyFlow(input);
 }
 
-const prompt = ai.definePrompt({
+const prompt = groqAI.definePrompt({
   name: 'generateUnifiedStrategyPrompt',
-  model: `groq/llama3-70b-8192`,
+  model: 'groq/llama3-70b-8192',
   tools: [fetchHistoricalDataTool, fetchNewsTool, fetchCoinGeckoDataTool, fetchCoinMarketCapDataTool, fetchEtherscanDataTool], 
   input: { schema: UnifiedStrategyInputSchema },
   output: { schema: UnifiedStrategyOutputSchema },
@@ -104,7 +104,7 @@ Target Symbol: {{{symbol}}}
 My output must be direct, complete, and reflect my superior analytical process. The ether is listening.`,
 });
 
-const generateUnifiedStrategyFlow = ai.defineFlow(
+const generateUnifiedStrategyFlow = groqAI.defineFlow(
   {
     name: 'generateUnifiedStrategyFlow',
     inputSchema: UnifiedStrategyInputSchema,

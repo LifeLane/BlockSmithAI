@@ -7,7 +7,7 @@
  * - PerformanceReviewOutput - The return type for the review flow.
  */
 
-import { ai } from '@/ai/genkit';
+import { googleAI } from '@/ai/genkit';
 import { z } from 'genkit';
 
 // Input Schemas
@@ -52,7 +52,7 @@ export async function generatePerformanceReview(input: PerformanceReviewInput): 
 }
 
 
-const prompt = ai.definePrompt({
+const prompt = googleAI.definePrompt({
     name: 'performanceReviewPrompt',
     input: { schema: PerformanceReviewInputSchema },
     output: { schema: PerformanceReviewOutputSchema },
@@ -79,7 +79,7 @@ const prompt = ai.definePrompt({
 });
 
 
-const generatePerformanceReviewFlow = ai.defineFlow(
+const generatePerformanceReviewFlow = googleAI.defineFlow(
   {
     name: 'generatePerformanceReviewFlow',
     inputSchema: PerformanceReviewInputSchema,

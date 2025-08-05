@@ -4,7 +4,7 @@
  * @fileOverview A Genkit tool to fetch cryptocurrency data from CoinMarketCap.
  */
 
-import { ai } from '@/ai/genkit';
+import { googleAI } from '@/ai/genkit';
 import { z } from 'genkit';
 import { getCoinMarketCapData } from '@/services/market-intelligence-service';
 
@@ -19,7 +19,7 @@ const CoinMarketCapOutputSchema = z.object({
     message: z.string().optional().describe('A summary of the operation.'),
 });
 
-export const fetchCoinMarketCapDataTool = ai.defineTool(
+export const fetchCoinMarketCapDataTool = googleAI.defineTool(
   {
     name: 'fetchCoinMarketCapDataTool',
     description: 'Fetches the latest market data for a given cryptocurrency symbol from CoinMarketCap. Provides information like market cap, rank, and volume.',
