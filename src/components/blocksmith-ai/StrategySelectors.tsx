@@ -79,7 +79,7 @@ const StrategySelectors: FunctionComponent<StrategySelectorsProps> = ({
   }, [symbol, symbols, isLoadingSymbols]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 bg-card rounded-lg border border-border/50 interactive-card">
+    <div className="grid grid-cols-1 gap-6 p-4 bg-card rounded-lg border border-border/50 interactive-card">
       <div>
         <Label htmlFor="symbol-select" className="mb-2 block text-sm font-medium text-muted-foreground flex items-center">
           <Target className="mr-2 h-4 w-4 text-primary" />
