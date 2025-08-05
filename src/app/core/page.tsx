@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -51,8 +50,6 @@ const LOADING_STEPS = [
     "Finalizing SHADOW Edict...",
 ];
 
-const STATIC_DISCLAIMER = "My analysis is a beacon in the chaos, not a crystal ball. The market writes its own script. Tread wisely.";
-
 export default function CoreConsolePage() {
   const [symbol, setSymbol] = useState<string>(INITIAL_DEFAULT_SYMBOL);
   const [tradingMode, setTradingMode] = useState<string>('Intraday');
@@ -80,7 +77,6 @@ export default function CoreConsolePage() {
   const { toast } = useToast();
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { connected } = useWallet();
-  const walletButtonRef = useRef<HTMLButtonElement>(null);
   
   useEffect(() => {
     if (typeof window === 'undefined' || !user || user.status === 'Premium') {
@@ -158,12 +154,6 @@ export default function CoreConsolePage() {
         return;
     }
     
-    if (!connected) {
-        toast({ title: "Wallet Connection Required", description: "Please connect your wallet to generate a signal." });
-        walletButtonRef.current?.click();
-        return;
-    }
-
     if (user.status !== 'Premium') {
       if (analysisCount >= DAILY_ANALYSIS_LIMIT) {
         toast({ title: "Daily Limit Reached", description: <span className="text-foreground">Your trial of <strong className="text-accent">{DAILY_ANALYSIS_LIMIT} analyses per day</strong> is over. <Link href="/premium" className="underline text-primary">Subscribe</Link> for <strong className="text-tertiary">unlimited access</strong>.</span> });
@@ -230,7 +220,7 @@ export default function CoreConsolePage() {
         stopLoadingAnimation();
     }
 
-  }, [symbol, tradingMode, riskProfile, liveMarketData, user, analysisCount, connected, fetchAndSetMarketData, updateUsageData, toast, refetchUser, addClientSignal, stopLoadingAnimation]);
+  }, [symbol, tradingMode, riskProfile, liveMarketData, user, analysisCount, fetchAndSetMarketData, updateUsageData, toast, refetchUser, addClientSignal, stopLoadingAnimation]);
 
   useEffect(() => {
     return () => {
@@ -244,7 +234,7 @@ export default function CoreConsolePage() {
   const showResults = aiStrategy || isLoading || strategyError;
 
   const getLimitMessage = () => {
-    if (!user || isUserLoading || !connected) return null;
+    if (!user || isUserLoading) return null;
     
     if (user.status !== 'Premium') {
         const isLimitReached = analysisCount >= DAILY_ANALYSIS_LIMIT;
@@ -271,14 +261,14 @@ export default function CoreConsolePage() {
     if (!connected) {
       return (
         <div className="md:col-span-2">
-            <Button onClick={() => walletButtonRef.current?.click()} className="w-full font-semibold py-3 text-lg shadow-lg glow-button h-auto">
+            <WalletMultiButton className="w-full font-semibold py-3 text-lg shadow-lg glow-button h-auto">
                 <div className="flex flex-col items-center">
                     <div className="flex items-center">
                         <Wallet className="mr-2 h-5 w-5" />
                         <GlyphScramble text="Connect Wallet to Generate Signal" />
                     </div>
                 </div>
-            </Button>
+            </WalletMultiButton>
         </div>
       );
     }
@@ -373,11 +363,7 @@ export default function CoreConsolePage() {
         )}
         
       </div>
-      <div style={{ display: 'none' }}>
-        <WalletMultiButton ref={walletButtonRef} />
-      </div>
       <ChatbotPopup isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
     </>
   );
 }
-
