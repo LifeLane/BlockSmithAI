@@ -6,7 +6,7 @@
  * - PerformanceReviewInput - Input type for the flow.
  * - PerformanceReviewOutput - Return type for the flow.
  */
-import { googleAI } from '@/ai/genkit';
+import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 const PerformanceReviewInputSchema = z.object({
@@ -28,7 +28,7 @@ export async function generatePerformanceReview(input: PerformanceReviewInput): 
     return generatePerformanceReviewFlow(input);
 }
 
-const reviewPrompt = googleAI.definePrompt({
+const reviewPrompt = ai.definePrompt({
     name: 'performanceReviewPrompt',
     model: 'gemini-1.5-pro-latest',
     input: { schema: PerformanceReviewInputSchema },
@@ -61,7 +61,7 @@ Your analysis will populate a structured JSON object. The 'analysis' field MUST 
 Begin the analysis. Your output must be nothing but the structured JSON required.`,
 });
 
-const generatePerformanceReviewFlow = googleAI.defineFlow(
+const generatePerformanceReviewFlow = ai.defineFlow(
   {
     name: 'generatePerformanceReviewFlow',
     inputSchema: PerformanceReviewInputSchema,

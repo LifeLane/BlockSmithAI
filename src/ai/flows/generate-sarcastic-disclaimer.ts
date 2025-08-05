@@ -6,7 +6,7 @@
  * - SarcasticDisclaimerOutput - The return type for the generateSarcasticDisclaimer function.
  */
 
-import { googleAI }from '@/ai/genkit';
+import { ai }from '@/ai/genkit';
 import {z}from 'zod';
 
 // Input schema no longer requires riskLevel
@@ -28,7 +28,7 @@ export async function generateSarcasticDisclaimer(
   return generateSarcasticDisclaimerFlow(input || {});
 }
 
-const prompt = googleAI.definePrompt({
+const prompt = ai.definePrompt({
   name: 'sarcasticDisclaimerPrompt',
   model: 'gemini-1.5-flash-latest',
   input: {schema: SarcasticDisclaimerInputSchema},
@@ -42,7 +42,7 @@ const prompt = googleAI.definePrompt({
   The goal is a disclaimer that is both pointed and humorous, underscoring the inherent uncertainties of algorithmic foresight while maintaining my superior, slightly theatrical persona.`,
 });
 
-const generateSarcasticDisclaimerFlow = googleAI.defineFlow(
+const generateSarcasticDisclaimerFlow = ai.defineFlow(
   {
     name: 'generateSarcasticDisclaimerFlow',
     inputSchema: SarcasticDisclaimerInputSchema,

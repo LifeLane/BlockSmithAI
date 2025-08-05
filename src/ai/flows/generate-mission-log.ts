@@ -7,7 +7,7 @@
  * - GenerateMissionLogOutput - The return type for the function.
  */
 
-import { googleAI }from '@/ai/genkit';
+import { ai }from '@/ai/genkit';
 import {z}from 'genkit';
 
 const GenerateMissionLogInputSchema = z.object({
@@ -29,7 +29,7 @@ export async function generateMissionLog(input: GenerateMissionLogInput): Promis
   return generateMissionLogFlow(input);
 }
 
-const prompt = googleAI.definePrompt({
+const prompt = ai.definePrompt({
   name: 'generateMissionLogPrompt',
   model: 'gemini-1.5-flash-latest',
   input: {schema: GenerateMissionLogInputSchema},
@@ -51,7 +51,7 @@ Generate a new, unique log for the provided agent.`,
   }
 });
 
-const generateMissionLogFlow = googleAI.defineFlow(
+const generateMissionLogFlow = ai.defineFlow(
   {
     name: 'generateMissionLogFlow',
     inputSchema: GenerateMissionLogInputSchema,
