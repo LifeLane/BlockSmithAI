@@ -77,6 +77,7 @@ export default function CoreConsolePage() {
   const { toast } = useToast();
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { connected } = useWallet();
+  const walletButtonRef = useRef<HTMLButtonElement>(null);
   
   useEffect(() => {
     if (typeof window === 'undefined' || !user || user.status === 'Premium') {
@@ -261,12 +262,11 @@ export default function CoreConsolePage() {
     if (!connected) {
       return (
         <div className="md:col-span-2">
-            <WalletMultiButton className="w-full font-semibold py-3 text-lg shadow-lg glow-button h-auto">
-                <div className="flex flex-col items-center">
-                    <div className="flex items-center">
-                        <Wallet className="mr-2 h-5 w-5" />
-                        <GlyphScramble text="Connect Wallet to Generate Signal" />
-                    </div>
+            <WalletMultiButton className="w-full font-semibold py-3 text-lg shadow-lg glow-button h-auto flex-col">
+                <div className="flex items-center">
+                    <Wallet className="mr-2 h-5 w-5" />
+                    <span className="md:hidden">Connect Wallet</span>
+                    <span className="hidden md:inline">Connect Wallet to Generate Signal</span>
                 </div>
             </WalletMultiButton>
         </div>
@@ -364,6 +364,9 @@ export default function CoreConsolePage() {
         
       </div>
       <ChatbotPopup isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
+       <div style={{ display: 'none' }}>
+        <WalletMultiButton ref={walletButtonRef} />
+      </div>
     </>
   );
 }
