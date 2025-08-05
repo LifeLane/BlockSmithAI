@@ -59,7 +59,7 @@ User: {{{currentUserInput}}}`;
 
 const chatPrompt = ai.definePrompt({
   name: 'shadowChatPrompt',
-  model: 'gemini-1.5-flash',
+  model: 'googleai/gemini-1.5-flash',
   tools: [fetchLiveMarketDataTool],
   input: { schema: ShadowChatInputSchema },
   output: { schema: ShadowChatOutputSchema },
