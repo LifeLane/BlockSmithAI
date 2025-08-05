@@ -7,7 +7,7 @@
  * - ShadowChatOutput - The return type for the chat flow.
  */
 
-import { groqAI } from '@/ai/genkit';
+import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 import { fetchLiveMarketDataTool } from '@/ai/tools/fetch-live-market-data-tool';
@@ -51,16 +51,15 @@ Your limitations:
 Conversation History (if any):
 {{#if chatHistory}}
   {{#each chatHistory}}
-    {{#if this.isUser}}User: {{this.parts.0.text}}{{/if}}
-    {{#if this.isModel}}SHADOW: {{this.parts.0.text}}{{/if}}
+    {{this.role}}: {{this.parts.0.text}}
   {{/each}}
 {{/if}}
 
-User's latest message: {{{currentUserInput}}}`;
+User: {{{currentUserInput}}}`;
 
-const chatPrompt = groqAI.definePrompt({
+const chatPrompt = ai.definePrompt({
   name: 'shadowChatPrompt',
-  model: 'groq/llama3-70b-8192',
+  model: 'googleai/gemini-1.5-flash-latest',
   tools: [fetchLiveMarketDataTool],
   input: { schema: ShadowChatInputSchema },
   output: { schema: ShadowChatOutputSchema },
@@ -70,23 +69,17 @@ const chatPrompt = groqAI.definePrompt({
   prompt: systemPrompt
 });
 
-const shadowChatFlow = groqAI.defineFlow(
+const shadowChatFlow = ai.defineFlow(
   {
     name: 'shadowChatFlow',
     inputSchema: ShadowChatInputSchema,
     outputSchema: ShadowChatOutputSchema,
   },
   async (input) => {
-    const processedHistory = (input.chatHistory || []).map(msg => ({
-      ...msg,
-      isUser: msg.role === 'user',
-      isModel: msg.role === 'model',
-    }));
-
     const flowInput = {
         userId: input.userId,
         currentUserInput: input.currentUserInput,
-        chatHistory: processedHistory
+        chatHistory: input.chatHistory || []
     };
 
     const { output } = await chatPrompt(flowInput);

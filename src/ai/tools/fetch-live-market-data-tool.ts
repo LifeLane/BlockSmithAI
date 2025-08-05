@@ -2,7 +2,7 @@
 /**
  * @fileOverview A Genkit tool to fetch live market data for a symbol.
  */
-import { googleAI } from '@/ai/genkit';
+import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { fetchMarketDataAction } from '@/services/market-data-service';
 import type { LiveMarketData } from '@/app/actions';
@@ -26,7 +26,7 @@ const FetchMarketDataOutputSchema = z.object({
   error: z.string().optional(),
 });
 
-export const fetchLiveMarketDataTool = googleAI.defineTool(
+export const fetchLiveMarketDataTool = ai.defineTool(
   {
     name: 'fetchLiveMarketData',
     description: 'Fetches real-time 24hr ticker statistics for a given trading symbol from Binance. Useful for getting the current price, volume, and daily change.',

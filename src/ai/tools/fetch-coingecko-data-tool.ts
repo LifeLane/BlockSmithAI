@@ -4,7 +4,7 @@
  * @fileOverview A Genkit tool to fetch market and sentiment data from CoinGecko.
  */
 
-import { googleAI } from '@/ai/genkit';
+import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { getCoinGeckoData } from '@/services/market-intelligence-service';
 
@@ -19,7 +19,7 @@ const CoinGeckoOutputSchema = z.object({
   message: z.string().optional().describe('A summary of the operation.'),
 });
 
-export const fetchCoinGeckoDataTool = googleAI.defineTool(
+export const fetchCoinGeckoDataTool = ai.defineTool(
   {
     name: 'fetchCoinGeckoDataTool',
     description: 'Fetches comprehensive market and sentiment data for a given cryptocurrency asset ID from CoinGecko. Provides public interest scores, developer data, community data, and market data. Use this for fundamental analysis.',

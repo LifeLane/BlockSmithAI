@@ -1183,9 +1183,6 @@ export namespace Prisma {
     wallet_address: string | null
     wallet_type: string | null
     phone: string | null
-    x_handle: string | null
-    telegram_handle: string | null
-    youtube_handle: string | null
     createdAt: Date | null
     updatedAt: Date | null
     subscriptionTier: string | null
@@ -1204,9 +1201,6 @@ export namespace Prisma {
     wallet_address: string | null
     wallet_type: string | null
     phone: string | null
-    x_handle: string | null
-    telegram_handle: string | null
-    youtube_handle: string | null
     createdAt: Date | null
     updatedAt: Date | null
     subscriptionTier: string | null
@@ -1225,9 +1219,6 @@ export namespace Prisma {
     wallet_address: number
     wallet_type: number
     phone: number
-    x_handle: number
-    telegram_handle: number
-    youtube_handle: number
     createdAt: number
     updatedAt: number
     subscriptionTier: number
@@ -1258,9 +1249,6 @@ export namespace Prisma {
     wallet_address?: true
     wallet_type?: true
     phone?: true
-    x_handle?: true
-    telegram_handle?: true
-    youtube_handle?: true
     createdAt?: true
     updatedAt?: true
     subscriptionTier?: true
@@ -1279,9 +1267,6 @@ export namespace Prisma {
     wallet_address?: true
     wallet_type?: true
     phone?: true
-    x_handle?: true
-    telegram_handle?: true
-    youtube_handle?: true
     createdAt?: true
     updatedAt?: true
     subscriptionTier?: true
@@ -1300,9 +1285,6 @@ export namespace Prisma {
     wallet_address?: true
     wallet_type?: true
     phone?: true
-    x_handle?: true
-    telegram_handle?: true
-    youtube_handle?: true
     createdAt?: true
     updatedAt?: true
     subscriptionTier?: true
@@ -1408,9 +1390,6 @@ export namespace Prisma {
     wallet_address: string | null
     wallet_type: string | null
     phone: string | null
-    x_handle: string | null
-    telegram_handle: string | null
-    youtube_handle: string | null
     createdAt: Date
     updatedAt: Date
     subscriptionTier: string | null
@@ -1448,9 +1427,6 @@ export namespace Prisma {
     wallet_address?: boolean
     wallet_type?: boolean
     phone?: boolean
-    x_handle?: boolean
-    telegram_handle?: boolean
-    youtube_handle?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     subscriptionTier?: boolean
@@ -1473,9 +1449,6 @@ export namespace Prisma {
     wallet_address?: boolean
     wallet_type?: boolean
     phone?: boolean
-    x_handle?: boolean
-    telegram_handle?: boolean
-    youtube_handle?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     subscriptionTier?: boolean
@@ -1494,9 +1467,6 @@ export namespace Prisma {
     wallet_address?: boolean
     wallet_type?: boolean
     phone?: boolean
-    x_handle?: boolean
-    telegram_handle?: boolean
-    youtube_handle?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     subscriptionTier?: boolean
@@ -1530,9 +1500,6 @@ export namespace Prisma {
       wallet_address: string | null
       wallet_type: string | null
       phone: string | null
-      x_handle: string | null
-      telegram_handle: string | null
-      youtube_handle: string | null
       createdAt: Date
       updatedAt: Date
       subscriptionTier: string | null
@@ -1944,9 +1911,6 @@ export namespace Prisma {
     readonly wallet_address: FieldRef<"User", 'String'>
     readonly wallet_type: FieldRef<"User", 'String'>
     readonly phone: FieldRef<"User", 'String'>
-    readonly x_handle: FieldRef<"User", 'String'>
-    readonly telegram_handle: FieldRef<"User", 'String'>
-    readonly youtube_handle: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
     readonly subscriptionTier: FieldRef<"User", 'String'>
@@ -5718,9 +5682,6 @@ export namespace Prisma {
     wallet_address: 'wallet_address',
     wallet_type: 'wallet_type',
     phone: 'phone',
-    x_handle: 'x_handle',
-    telegram_handle: 'telegram_handle',
-    youtube_handle: 'youtube_handle',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     subscriptionTier: 'subscriptionTier',
@@ -5903,9 +5864,6 @@ export namespace Prisma {
     wallet_address?: StringNullableFilter<"User"> | string | null
     wallet_type?: StringNullableFilter<"User"> | string | null
     phone?: StringNullableFilter<"User"> | string | null
-    x_handle?: StringNullableFilter<"User"> | string | null
-    telegram_handle?: StringNullableFilter<"User"> | string | null
-    youtube_handle?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     subscriptionTier?: StringNullableFilter<"User"> | string | null
@@ -5927,9 +5885,6 @@ export namespace Prisma {
     wallet_address?: SortOrderInput | SortOrder
     wallet_type?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
-    x_handle?: SortOrderInput | SortOrder
-    telegram_handle?: SortOrderInput | SortOrder
-    youtube_handle?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     subscriptionTier?: SortOrderInput | SortOrder
@@ -5954,9 +5909,6 @@ export namespace Prisma {
     status?: StringFilter<"User"> | string
     claimedMissions?: StringFilter<"User"> | string
     wallet_type?: StringNullableFilter<"User"> | string | null
-    x_handle?: StringNullableFilter<"User"> | string | null
-    telegram_handle?: StringNullableFilter<"User"> | string | null
-    youtube_handle?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     subscriptionTier?: StringNullableFilter<"User"> | string | null
@@ -5978,9 +5930,6 @@ export namespace Prisma {
     wallet_address?: SortOrderInput | SortOrder
     wallet_type?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
-    x_handle?: SortOrderInput | SortOrder
-    telegram_handle?: SortOrderInput | SortOrder
-    youtube_handle?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     subscriptionTier?: SortOrderInput | SortOrder
@@ -6007,9 +5956,6 @@ export namespace Prisma {
     wallet_address?: StringNullableWithAggregatesFilter<"User"> | string | null
     wallet_type?: StringNullableWithAggregatesFilter<"User"> | string | null
     phone?: StringNullableWithAggregatesFilter<"User"> | string | null
-    x_handle?: StringNullableWithAggregatesFilter<"User"> | string | null
-    telegram_handle?: StringNullableWithAggregatesFilter<"User"> | string | null
-    youtube_handle?: StringNullableWithAggregatesFilter<"User"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     subscriptionTier?: StringNullableWithAggregatesFilter<"User"> | string | null
@@ -6386,9 +6332,6 @@ export namespace Prisma {
     wallet_address?: string | null
     wallet_type?: string | null
     phone?: string | null
-    x_handle?: string | null
-    telegram_handle?: string | null
-    youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     subscriptionTier?: string | null
@@ -6410,9 +6353,6 @@ export namespace Prisma {
     wallet_address?: string | null
     wallet_type?: string | null
     phone?: string | null
-    x_handle?: string | null
-    telegram_handle?: string | null
-    youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     subscriptionTier?: string | null
@@ -6434,9 +6374,6 @@ export namespace Prisma {
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
-    x_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
@@ -6458,9 +6395,6 @@ export namespace Prisma {
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
-    x_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
@@ -6482,9 +6416,6 @@ export namespace Prisma {
     wallet_address?: string | null
     wallet_type?: string | null
     phone?: string | null
-    x_handle?: string | null
-    telegram_handle?: string | null
-    youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     subscriptionTier?: string | null
@@ -6503,9 +6434,6 @@ export namespace Prisma {
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
-    x_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
@@ -6524,9 +6452,6 @@ export namespace Prisma {
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
-    x_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
@@ -7082,9 +7007,6 @@ export namespace Prisma {
     wallet_address?: SortOrder
     wallet_type?: SortOrder
     phone?: SortOrder
-    x_handle?: SortOrder
-    telegram_handle?: SortOrder
-    youtube_handle?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     subscriptionTier?: SortOrder
@@ -7108,9 +7030,6 @@ export namespace Prisma {
     wallet_address?: SortOrder
     wallet_type?: SortOrder
     phone?: SortOrder
-    x_handle?: SortOrder
-    telegram_handle?: SortOrder
-    youtube_handle?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     subscriptionTier?: SortOrder
@@ -7129,9 +7048,6 @@ export namespace Prisma {
     wallet_address?: SortOrder
     wallet_type?: SortOrder
     phone?: SortOrder
-    x_handle?: SortOrder
-    telegram_handle?: SortOrder
-    youtube_handle?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     subscriptionTier?: SortOrder
@@ -8330,9 +8246,6 @@ export namespace Prisma {
     wallet_address?: string | null
     wallet_type?: string | null
     phone?: string | null
-    x_handle?: string | null
-    telegram_handle?: string | null
-    youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     subscriptionTier?: string | null
@@ -8353,9 +8266,6 @@ export namespace Prisma {
     wallet_address?: string | null
     wallet_type?: string | null
     phone?: string | null
-    x_handle?: string | null
-    telegram_handle?: string | null
-    youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     subscriptionTier?: string | null
@@ -8392,9 +8302,6 @@ export namespace Prisma {
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
-    x_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8415,9 +8322,6 @@ export namespace Prisma {
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
-    x_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8438,9 +8342,6 @@ export namespace Prisma {
     wallet_address?: string | null
     wallet_type?: string | null
     phone?: string | null
-    x_handle?: string | null
-    telegram_handle?: string | null
-    youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     subscriptionTier?: string | null
@@ -8461,9 +8362,6 @@ export namespace Prisma {
     wallet_address?: string | null
     wallet_type?: string | null
     phone?: string | null
-    x_handle?: string | null
-    telegram_handle?: string | null
-    youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     subscriptionTier?: string | null
@@ -8563,9 +8461,6 @@ export namespace Prisma {
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
-    x_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8586,9 +8481,6 @@ export namespace Prisma {
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
-    x_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8678,9 +8570,6 @@ export namespace Prisma {
     wallet_address?: string | null
     wallet_type?: string | null
     phone?: string | null
-    x_handle?: string | null
-    telegram_handle?: string | null
-    youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     subscriptionTier?: string | null
@@ -8701,9 +8590,6 @@ export namespace Prisma {
     wallet_address?: string | null
     wallet_type?: string | null
     phone?: string | null
-    x_handle?: string | null
-    telegram_handle?: string | null
-    youtube_handle?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     subscriptionTier?: string | null
@@ -8791,9 +8677,6 @@ export namespace Prisma {
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
-    x_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8814,9 +8697,6 @@ export namespace Prisma {
     wallet_address?: NullableStringFieldUpdateOperationsInput | string | null
     wallet_type?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
-    x_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    telegram_handle?: NullableStringFieldUpdateOperationsInput | string | null
-    youtube_handle?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null

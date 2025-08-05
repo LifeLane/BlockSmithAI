@@ -4,7 +4,7 @@
  * @fileOverview A Genkit tool to fetch historical candlestick data using Binance.
  */
 
-import {googleAI} from '@/ai/genkit';
+import {ai} from '@/ai/genkit';
 import {z}from 'genkit';
 
 const CANDLE_COUNT_TARGET = 100; // Number of candles we aim to fetch
@@ -35,7 +35,7 @@ const FetchHistoricalDataOutputSchema = z.object({
 });
 export type FetchHistoricalDataOutput = z.infer<typeof FetchHistoricalDataOutputSchema>;
 
-export const fetchHistoricalDataTool = googleAI.defineTool(
+export const fetchHistoricalDataTool = ai.defineTool(
   {
     name: 'fetchHistoricalDataTool',
     description: 'Fetches recent historical candlestick (OHLCV) data for a given trading symbol and interval from Binance. This data can be used to identify recent chart patterns, support, and resistance.',

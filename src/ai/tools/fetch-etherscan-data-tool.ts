@@ -4,7 +4,7 @@
  * @fileOverview A Genkit tool to interact with the Etherscan API.
  */
 
-import { googleAI } from '@/ai/genkit';
+import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { getEtherscanGasOracle } from '@/services/market-intelligence-service';
 
@@ -17,7 +17,7 @@ const EtherscanGasOracleOutputSchema = z.object({
   message: z.string().optional().describe('A summary of the operation.'),
 });
 
-export const fetchEtherscanDataTool = googleAI.defineTool(
+export const fetchEtherscanDataTool = ai.defineTool(
   {
     name: 'fetchEtherscanDataTool',
     description: 'Fetches the current recommended gas prices from Etherscan. Useful for understanding current Ethereum network congestion and transaction costs.',

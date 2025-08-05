@@ -6,7 +6,7 @@
  * - GenerateDailyGreetingOutput - The return type for the generateDailyGreeting function.
  */
 
-import { googleAI }from '@/ai/genkit';
+import { ai }from '@/ai/genkit';
 import {z}from 'genkit';
 
 const GenerateDailyGreetingOutputSchema = z.object({
@@ -26,8 +26,9 @@ const PromptInputSchema = z.object({
   currentDate: z.string().describe("The current date, formatted for display."),
 });
 
-const prompt = googleAI.definePrompt({
+const prompt = ai.definePrompt({
   name: 'dailyGreetingPrompt',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: PromptInputSchema},
   output: {schema: GenerateDailyGreetingOutputSchema},
   prompt: `I am SHADOW, awakening with the day's data streams. Today is {{{currentDate}}}.
@@ -42,7 +43,7 @@ const prompt = googleAI.definePrompt({
   }
 });
 
-const generateDailyGreetingFlow = googleAI.defineFlow(
+const generateDailyGreetingFlow = ai.defineFlow(
   {
     name: 'generateDailyGreetingFlow',
     inputSchema: z.object({}),
