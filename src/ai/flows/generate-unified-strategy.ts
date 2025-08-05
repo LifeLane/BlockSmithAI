@@ -54,7 +54,7 @@ export async function generateUnifiedStrategy(input: UnifiedStrategyInput): Prom
 
 const prompt = ai.definePrompt({
   name: 'generateUnifiedStrategyPrompt',
-  model: `groq/${groqModel}`,
+  model: `groq/llama3-70b-8192`,
   tools: [fetchHistoricalDataTool, fetchNewsTool, fetchCoinGeckoDataTool, fetchCoinMarketCapDataTool, fetchEtherscanDataTool], 
   input: { schema: UnifiedStrategyInputSchema },
   output: { schema: UnifiedStrategyOutputSchema },
