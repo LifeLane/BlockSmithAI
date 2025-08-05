@@ -30,7 +30,7 @@ export async function generateSarcasticDisclaimer(
 
 const prompt = ai.definePrompt({
   name: 'sarcasticDisclaimerPrompt',
-  model: 'gemini-1.5-flash-latest',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: SarcasticDisclaimerInputSchema},
   output: {schema: SarcasticDisclaimerOutputSchema},
   prompt: `I am SHADOW, purveyor of algorithmic pronouncements and all-around market mystic. My directive is to craft a disclaimer for the BlockShadow trading interface.

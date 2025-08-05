@@ -28,7 +28,7 @@ const PromptInputSchema = z.object({
 
 const prompt = ai.definePrompt({
   name: 'dailyGreetingPrompt',
-  model: 'gemini-1.5-flash-latest',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: PromptInputSchema},
   output: {schema: GenerateDailyGreetingOutputSchema},
   prompt: `I am SHADOW, awakening with the day's data streams. Today is {{{currentDate}}}.

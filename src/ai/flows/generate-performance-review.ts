@@ -30,7 +30,7 @@ export async function generatePerformanceReview(input: PerformanceReviewInput): 
 
 const reviewPrompt = ai.definePrompt({
     name: 'performanceReviewPrompt',
-    model: 'googleai/gemini-1.5-pro-latest',
+    model: 'gemini-1.5-flash',
     input: { schema: PerformanceReviewInputSchema },
     output: { schema: PerformanceReviewOutputSchema },
     config: {

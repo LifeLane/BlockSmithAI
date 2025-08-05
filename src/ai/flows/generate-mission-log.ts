@@ -31,7 +31,7 @@ export async function generateMissionLog(input: GenerateMissionLogInput): Promis
 
 const prompt = ai.definePrompt({
   name: 'generateMissionLogPrompt',
-  model: 'gemini-1.5-flash-latest',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: GenerateMissionLogInputSchema},
   output: {schema: GenerateMissionLogOutputSchema},
   prompt: `You are SHADOW, the AI Core. An allied AI agent has just completed a field operation. Your task is to write its mission log.
