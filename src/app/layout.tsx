@@ -38,8 +38,8 @@ export default function RootLayout({
               <div className="relative z-10 text-foreground min-h-screen flex flex-col">
                 <main className="flex-grow flex flex-col pb-24">
                   {children}
+                  <Footer />
                 </main>
-                <Footer />
                 <BottomNav />
               </div>
               <Toaster />
