@@ -261,8 +261,8 @@ export default function CoreConsolePage() {
   const renderActionButtons = () => {
     if (!connected) {
       return (
-        <div className="md:col-span-2">
-            <WalletMultiButton className="w-full font-semibold py-3 text-lg shadow-lg glow-button h-auto flex-col">
+        <div className="md:col-span-2 flex justify-center">
+            <WalletMultiButton className="w-full md:w-auto font-semibold py-3 text-lg shadow-lg glow-button h-auto flex-col">
                 <div className="flex items-center">
                     <Wallet className="mr-2 h-5 w-5" />
                     <span className="md:hidden">Connect Wallet</span>
