@@ -357,14 +357,24 @@ export default function ProfilePage() {
                             Complete missions to secure your <strong className="text-orange-400">$SHADOW</strong> allocation.
                         </CardDescription>
                     </CardHeader>
-                     <CardFooter>
+                     <CardFooter className="flex flex-col items-center">
                        {currentUser.status === 'Guest' ? (
-                            <WalletMultiButton ref={walletButtonRef} className="w-full glow-button" />
+                            <>
+                                <WalletMultiButton ref={walletButtonRef} className="w-full glow-button" />
+                                <p className="text-xs text-muted-foreground mt-2 text-center">
+                                    Connect to be eligible for airdrops &amp; start earning rewards.
+                                </p>
+                            </>
                         ) : (
-                             <Button className="w-full glow-button" disabled>
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                You are Registered
-                            </Button>
+                             <>
+                                <Button className="w-full glow-button" disabled>
+                                    <CheckCircle className="mr-2 h-4 w-4" />
+                                    You are Registered
+                                </Button>
+                                <p className="text-xs text-muted-foreground mt-2 text-center">
+                                    Your wallet is connected. You are now earning airdrop points.
+                                </p>
+                            </>
                         )}
                     </CardFooter>
                 </Card>
@@ -445,5 +455,3 @@ export default function ProfilePage() {
     </>
   );
 }
-
-    
