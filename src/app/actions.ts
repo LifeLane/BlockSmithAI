@@ -124,52 +124,50 @@ export async function getOrCreateUserAction(userId: string | null): Promise<User
     return newUser;
 }
 
-export async function updateUserSettingsJson(userId: string, data: { username?: string }): Promise<UserProfile | null> {
-    if (!userId || !data.username) return null;
-    return prisma.user.update({
-        where: { id: userId },
-        data: { username: data.username },
-        include: { badges: true },
-    });
+export async function updateUserSettingsJson(userId: string, data: { username?: string, email?: string, phone?:string }): Promise<UserProfile | { error: string }> {
+    if (!userId || userId.startsWith('guest_')) return { error: 'User must be registered to update settings.'};
+
+    try {
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: { 
+                username: data.username,
+                email: data.email,
+                phone: data.phone,
+            },
+            include: { badges: true },
+        });
+        return updatedUser;
+    } catch (e: any) {
+        console.error("Error in updateUserSettingsJson:", e);
+        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+            const target = e.meta?.target as string[];
+            if (target?.includes('username')) return { error: 'This username is already taken.' };
+            if (target?.includes('email')) return { error: 'This email is already registered.' };
+            if (target?.includes('phone')) return { error: 'This phone number is already registered.' };
+        }
+        return { error: 'An unexpected error occurred while updating settings.' };
+    }
 }
 
 export async function handleAirdropSignupAction(formData: AirdropFormData, userId: string): Promise<UserProfile | { error: string; }> {
-    if (!userId) return { error: "User not found." };
+    if (!userId || userId.startsWith('guest_')) return { error: "User must be connected to register." };
     if (!formData.wallet_address) return { error: "Wallet address is required for registration." };
 
-    const isGuest = userId.startsWith('guest_');
-
     try {
-        if (isGuest) {
-            const newUser = await prisma.user.create({
-                data: {
-                    username: formData.username,
-                    shadowId: `SHDW-${randomUUID().toUpperCase()}`,
-                    status: "Registered",
-                    email: formData.email,
-                    phone: formData.phone,
-                    wallet_address: formData.wallet_address,
-                    wallet_type: formData.wallet_type,
-                    claimedMissions: '[]',
-                },
-                include: { badges: true },
-            });
-            return newUser;
-        } else {
-            const updatedUser = await prisma.user.update({
-                where: { id: userId },
-                data: {
-                    username: formData.username,
-                    status: "Registered",
-                    email: formData.email,
-                    phone: formData.phone,
-                    wallet_address: formData.wallet_address,
-                    wallet_type: formData.wallet_type,
-                },
-                include: { badges: true },
-            });
-            return updatedUser;
-        }
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: {
+                username: formData.username,
+                status: "Registered",
+                email: formData.email,
+                phone: formData.phone,
+                wallet_address: formData.wallet_address,
+                wallet_type: formData.wallet_type,
+            },
+            include: { badges: true },
+        });
+        return updatedUser;
     } catch (e: any) {
         console.error("Error in handleAirdropSignupAction:", e);
         if (e instanceof Prisma.PrismaClientKnownRequestError) {

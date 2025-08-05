@@ -5,14 +5,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Crown, Shield, Trophy, Settings, Award, User, BarChart2, Zap, ShieldCheck, Gift, Clock, CheckCircle, Users, Repeat, TrendingUp } from 'lucide-react';
+import { Crown, Shield, Trophy, Settings, Award, User, BarChart2, Zap, ShieldCheck, Gift, Clock, CheckCircle, Users, Repeat, TrendingUp, Wallet } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Wallet } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useCurrentUserState } from '@/components/blocksmith-ai/CurrentUserProvider';
 import { 
   fetchLeaderboardDataJson, 
@@ -177,11 +177,11 @@ export default function ProfilePage() {
     if (currentUser && username && username !== currentUser.username) {
       setLoading(true);
       const updatedUser = await updateUserSettingsJson(currentUser.id, { username });
-      if (updatedUser) {
+      if ('error' in updatedUser) {
+         toast({ title: "Error", description: updatedUser.error, variant: "destructive"});
+      } else {
         toast({ title: "Success", description: "Username updated successfully."});
         refetchUser();
-      } else {
-         toast({ title: "Error", description: "Failed to update username.", variant: "destructive"});
       }
       setLoading(false);
     }
@@ -201,11 +201,27 @@ export default function ProfilePage() {
   
   const rankDetails = getRankDetails(currentUser.weeklyPoints || 0);
 
-  return (
-    <>
-      <AppHeader />
-      <div className="container mx-auto px-4 py-8 pb-24">
-        
+  const renderAirdropCard = () => {
+    if (!connected) {
+        return (
+             <Card className="mb-8 interactive-card">
+                <CardHeader>
+                    <CardTitle className="flex items-center text-xl text-accent">
+                        <Wallet className="mr-3 h-6 w-6"/>
+                        Connect Wallet
+                    </CardTitle>
+                    <CardDescription>
+                        Connect your wallet to be eligible for airdrops &amp; start earning rewards.
+                    </CardDescription>
+                </CardHeader>
+                <CardFooter>
+                    <WalletMultiButton ref={walletButtonRef} className="w-full glow-button" />
+                </CardFooter>
+            </Card>
+        )
+    }
+
+    return (
         <Card className="mb-8 bg-card/80 backdrop-blur-sm border-accent/50 shadow-lg shadow-accent/10 interactive-card">
             <CardHeader>
                 <CardTitle className="flex items-center text-lg text-accent">
@@ -225,6 +241,15 @@ export default function ProfilePage() {
                 </p>
             </CardContent>
         </Card>
+    )
+  }
+
+  return (
+    <>
+      <AppHeader />
+      <div className="container mx-auto px-4 py-8 pb-24">
+        
+        {renderAirdropCard()}
 
         <Tabs defaultValue="profile" className="w-full">
             <div className="flex justify-center">
@@ -347,38 +372,6 @@ export default function ProfilePage() {
             </TabsContent>
 
             <TabsContent value="missions" className="mt-6">
-                <Card className="mb-8 interactive-card">
-                    <CardHeader>
-                        <CardTitle className="flex items-center text-xl text-accent">
-                            <Award className="mr-3 h-6 w-6"/>
-                            Airdrop Initiative Dashboard
-                        </CardTitle>
-                        <CardDescription>
-                            Complete missions to secure your <strong className="text-orange-400">$SHADOW</strong> allocation.
-                        </CardDescription>
-                    </CardHeader>
-                     <CardFooter className="flex flex-col items-center">
-                       {currentUser.status === 'Guest' ? (
-                            <>
-                                <WalletMultiButton ref={walletButtonRef} className="w-full glow-button" />
-                                <p className="text-xs text-muted-foreground mt-2 text-center">
-                                    Connect to be eligible for airdrops &amp; start earning rewards.
-                                </p>
-                            </>
-                        ) : (
-                             <>
-                                <Button className="w-full glow-button" disabled>
-                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                    You are Registered
-                                </Button>
-                                <p className="text-xs text-muted-foreground mt-2 text-center">
-                                    Your wallet is connected. You are now earning airdrop points.
-                                </p>
-                            </>
-                        )}
-                    </CardFooter>
-                </Card>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {missionsList.map(mission => (
                         <MissionCard 
